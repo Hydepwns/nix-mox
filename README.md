@@ -1,5 +1,55 @@
 # Proxmox + NixOS + Windows: Quick Reference
 
+_This is a quick reference for setting up Proxmox + NixOS + Windows. It is not a complete guide._
+
+This is a _work in progress_, primarily for my personal build because windows is a pain to setup.
+
+## Quick Start
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/hydepwns/nix-mox.git
+   cd nix-mox
+   ```
+
+2. **Review and edit scripts/configs as needed for your environment.**
+3. **Make scripts executable:**
+
+   ```bash
+   chmod +x scripts/*.sh
+   ```
+
+4. **Deploy scripts:**
+   - Proxmox: Copy scripts to `/usr/local/sbin/` or `/root/`
+   - NixOS: Copy `nixos-flake-update.sh` to `/etc/nixos/`
+5. **Set up systemd timers and cron jobs as described below.**
+6. **Run scripts manually to verify setup:**
+
+   ```bash
+   sudo ./scripts/proxmox-update.sh
+   sudo ./scripts/zfs-snapshot.sh
+   sudo ./scripts/vzdump-backup.sh
+   sudo ./scripts/nixos-flake-update.sh
+   ```
+
+## Table of Contents
+
+- [Host Requirements](#host-requirements)
+- [NixOS on Proxmox](#nixos-on-proxmox)
+- [Windows on Proxmox](#windows-on-proxmox)
+- [Networking](#networking)
+- [Shared Storage](#shared-storage)
+- [Security](#security)
+- [Monitoring & Updates](#monitoring--updates)
+- [Hardware (Example)](#hardware-example)
+- [Network Topology](#network-topology)
+- [Storage Layout](#storage-layout)
+- [Update & Backup Flow](#update--backup-flow)
+- [Automation Scripts](#automation-scripts)
+- [Security Best Practices](#security-best-practices)
+- [References](#references)
+
 ## Host Requirements
 
 - Proxmox VE 7+ (IOMMU on for passthrough)
@@ -178,56 +228,44 @@ Proxmox Host
 ## Network Topology
 
 ```mermaid
-                [Internet]
-                    |
-                [Router]
-                    |
-                [Proxmox Host]
-                /     |      \
-         vmbr0      vmbr1    vmbr2
-        (LAN)      (DMZ)   (Mgmt)
-         |           |        |
-   [NixOS LXC]  [Windows VM]  [Admin PC]
-         |
-   [NixOS VM]
+flowchart TD
+    Internet --> Router --> "Proxmox Host"
+    "Proxmox Host" -->|vmbr0| "NixOS LXC"
+    "Proxmox Host" -->|vmbr1| "Windows VM"
+    "Proxmox Host" -->|vmbr2| "Admin PC"
+    "NixOS LXC" --> "NixOS VM"
 ```
 
 ## Storage Layout
 
 ```mermaid
-[ZFS Pool: rpool]
-├── VM Disks
-│   ├── NixOS VM
-│   └── Windows VM
-├── LXC Containers
-├── Backups (Proxmox)
-└── Shared Storage (/mnt/windows, virtio-fs)
+graph TD
+    rpool["ZFS Pool: rpool"]
+    rpool --> vmdisks["VM Disks"]
+    vmdisks --> nixosvm["NixOS VM"]
+    vmdisks --> winvm["Windows VM"]
+    rpool --> lxc["LXC Containers"]
+    rpool --> backups["Backups (Proxmox)"]
+    rpool --> shared["Shared Storage (/mnt/windows, virtio-fs)"]
 ```
 
 ## Update & Backup Flow
 
 ```mermaid
-[Internet]
-   |
-[Proxmox Host] <--- Proxmox updates (apt, web UI)
-   |
-   |--[NixOS LXC/VM]
-   |     |-- nix flake update
-   |     |-- nixos-rebuild switch (atomic, rollback)
-   |     |-- ZFS snapshot (pre/post update)
-   |
-   |--[Windows VM]
-         |-- Windows Update (manual/WSUS)
-         |-- QEMU guest agent (integration)
-         |-- ZFS snapshot (pre/post update)
-
-[Proxmox Backups]
-   |-- Scheduled VM/LXC backups (ZFS, vzdump)
-   |-- Store on rpool or external (NAS, USB)
-
-[Restore]
-   |-- Rollback: ZFS snapshot (instant)
-   |-- Restore: Proxmox backup (full VM/LXC)
+flowchart TD
+    Internet --> "Proxmox Host"
+    "Proxmox Host" -->|updates| "Proxmox Host"
+    "Proxmox Host" -->|nix flake update| "NixOS LXC/VM"
+    "NixOS LXC/VM" -->|nixos-rebuild switch| "NixOS LXC/VM"
+    "NixOS LXC/VM" -->|ZFS snapshot| "NixOS LXC/VM"
+    "Proxmox Host" -->|Windows Update| "Windows VM"
+    "Windows VM" -->|QEMU guest agent| "Windows VM"
+    "Windows VM" -->|ZFS snapshot| "Windows VM"
+    "Proxmox Host" -->|vzdump backups| "Proxmox Backups"
+    "Proxmox Backups" -->|store| "rpool or external (NAS, USB)"
+    "Proxmox Backups" -->|restore| "Proxmox Host"
+    "NixOS LXC/VM" -->|rollback| "NixOS LXC/VM"
+    "Windows VM" -->|rollback| "Windows VM"
 ```
 
 - Proxmox: auto/scheduled vzdump backups, manual or auto updates
@@ -260,7 +298,7 @@ Proxmox Host
   ```
 
 - **Proxmox vzdump Backups:**
-  *(Script and schedule with cron for retention)*
+  _(Script and schedule with cron for retention)_
 
   ```bash
   vzdump 100 --storage backup --mode snapshot --compress zstd
