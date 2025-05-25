@@ -229,11 +229,18 @@ Proxmox Host
 
 ```mermaid
 flowchart TD
-    Internet --> Router --> "Proxmox Host"
-    "Proxmox Host" -->|vmbr0| "NixOS LXC"
-    "Proxmox Host" -->|vmbr1| "Windows VM"
-    "Proxmox Host" -->|vmbr2| "Admin PC"
-    "NixOS LXC" --> "NixOS VM"
+    Internet --> Router --> ProxmoxHost
+    ProxmoxHost -- vmbr0 --> NixOS_LXC
+    ProxmoxHost -- vmbr1 --> Windows_VM
+    ProxmoxHost -- vmbr2 --> Admin_PC
+    NixOS_LXC --> NixOS_VM
+
+    %% Display names
+    ProxmoxHost["Proxmox Host"]
+    NixOS_LXC["NixOS LXC"]
+    Windows_VM["Windows VM"]
+    Admin_PC["Admin PC"]
+    NixOS_VM["NixOS VM"]
 ```
 
 ## Storage Layout
@@ -241,31 +248,37 @@ flowchart TD
 ```mermaid
 graph TD
     rpool["ZFS Pool: rpool"]
-    rpool --> vmdisks["VM Disks"]
-    vmdisks --> nixosvm["NixOS VM"]
-    vmdisks --> winvm["Windows VM"]
-    rpool --> lxc["LXC Containers"]
-    rpool --> backups["Backups (Proxmox)"]
-    rpool --> shared["Shared Storage (/mnt/windows, virtio-fs)"]
+    rpool --> VM_Disks
+    VM_Disks["VM Disks"]
+    VM_Disks --> NixOS_VM["NixOS VM"]
+    VM_Disks --> Windows_VM["Windows VM"]
+    rpool --> LXC_Containers["LXC Containers"]
+    rpool --> Backups["Backups (Proxmox)"]
+    rpool --> Shared_Storage["Shared Storage (/mnt/windows, virtio-fs)"]
 ```
 
 ## Update & Backup Flow
 
 ```mermaid
 flowchart TD
-    Internet --> "Proxmox Host"
-    "Proxmox Host" -->|updates| "Proxmox Host"
-    "Proxmox Host" -->|nix flake update| "NixOS LXC/VM"
-    "NixOS LXC/VM" -->|nixos-rebuild switch| "NixOS LXC/VM"
-    "NixOS LXC/VM" -->|ZFS snapshot| "NixOS LXC/VM"
-    "Proxmox Host" -->|Windows Update| "Windows VM"
-    "Windows VM" -->|QEMU guest agent| "Windows VM"
-    "Windows VM" -->|ZFS snapshot| "Windows VM"
-    "Proxmox Host" -->|vzdump backups| "Proxmox Backups"
-    "Proxmox Backups" -->|store| "rpool or external (NAS, USB)"
-    "Proxmox Backups" -->|restore| "Proxmox Host"
-    "NixOS LXC/VM" -->|rollback| "NixOS LXC/VM"
-    "Windows VM" -->|rollback| "Windows VM"
+    Internet --> ProxmoxHost
+    ProxmoxHost -- "nix flake update" --> NixOS_LXC_VM
+    NixOS_LXC_VM -- "nixos-rebuild switch" --> NixOS_LXC_VM
+    NixOS_LXC_VM -- "ZFS snapshot" --> NixOS_LXC_VM
+    ProxmoxHost -- "Windows Update" --> Windows_VM
+    Windows_VM -- "QEMU guest agent" --> Windows_VM
+    Windows_VM -- "ZFS snapshot" --> Windows_VM
+    ProxmoxHost -- "vzdump backups" --> Proxmox_Backups
+    Proxmox_Backups -- "store" --> Storage["rpool or external (NAS, USB)"]
+    Proxmox_Backups -- "restore" --> ProxmoxHost
+    NixOS_LXC_VM -- "rollback" --> NixOS_LXC_VM
+    Windows_VM -- "rollback" --> Windows_VM
+
+    %% Display names
+    ProxmoxHost["Proxmox Host"]
+    NixOS_LXC_VM["NixOS LXC/VM"]
+    Windows_VM["Windows VM"]
+    Proxmox_Backups["Proxmox Backups"]
 ```
 
 - Proxmox: auto/scheduled vzdump backups, manual or auto updates
