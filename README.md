@@ -1,8 +1,54 @@
 # Proxmox + NixOS + Windows: Quick Reference
 
-_This is a quick reference for setting up Proxmox + NixOS + Windows. It is not a complete guide._
+_This is a quick reference for setting up Proxmox + NixOS + Windows. For full usage and reference, see [USAGE.md](USAGE.md)._
 
-This is a _work in progress_, primarily for my personal build because windows is a pain to setup.
+---
+
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [Requirements](#requirements)
+- [Directory Structure](#directory-structure)
+- [Flake Outputs](#flake-outputs)
+- [Quick Start](#quick-start)
+- [Install & Uninstall Automation](#install--uninstall-automation)
+- [Usage & Reference](#usage--reference)
+- [Architecture Overview](#architecture-overview)
+- [Using This Flake as a Package Source](#using-this-flake-as-a-package-source)
+
+---
+
+## Getting Started
+
+1. Review [ARCHITECTURE.md](ARCHITECTURE.md) for system overview.
+2. Clone the repo and review scripts and configuration files.
+3. Follow the Quick Start below for setup.
+
+## Requirements
+
+- Proxmox VE (for virtualization)
+- NixOS (for declarative Linux configuration)
+- Bash shell (for running scripts)
+- Systemd (for timers/services)
+- Root privileges to install and run automation scripts
+
+## Directory Structure
+
+- `scripts/` — Automation scripts for Proxmox, NixOS, Windows
+- `ARCHITECTURE.md` — System diagrams and hardware overview
+- `README.md` — Main documentation and usage
+- `flake.nix` — Nix flake for NixOS config
+- `nixos-flake-update.*` — Systemd timer/service for NixOS updates
+
+## Flake Outputs
+
+- **devShells.default**: Development shell with common tools (git, nix, bash, shellcheck)
+- **formatter**: Nix code formatter (nixpkgs-fmt)
+- **nixosConfigurations.example**: Example NixOS configuration
+- **packages.<system>.proxmox-update**: Proxmox update script as a Nix package
+- **packages.<system>.vzdump-backup**: Proxmox vzdump backup script as a Nix package
+- **packages.<system>.zfs-snapshot**: ZFS snapshot/prune script as a Nix package
+- **packages.<system>.nixos-flake-update**: NixOS flake update script as a Nix package
 
 ## Quick Start
 
@@ -13,7 +59,7 @@ This is a _work in progress_, primarily for my personal build because windows is
    cd nix-mox
    ```
 
-2. **Review and edit scripts/configs as needed for your environment.**
+2. **Review and edit scripts and configuration files as needed for your environment.**
 3. **Make scripts executable:**
 
    ```bash
@@ -21,8 +67,9 @@ This is a _work in progress_, primarily for my personal build because windows is
    ```
 
 4. **Deploy scripts:**
-   - Proxmox: Copy scripts to `/usr/local/sbin/` or `/root/`
-   - NixOS: Copy `nixos-flake-update.sh` to `/etc/nixos/`
+   - **Proxmox:** Copy relevant scripts (e.g., `proxmox-update.sh`, `vzdump-backup.sh`, `zfs-snapshot.sh`) to `/usr/local/sbin/` or `/root/`.
+   - **NixOS:** Copy `nixos-flake-update.sh` to `/etc/nixos/`.
+   - **Windows Automation:** See [USAGE.md](USAGE.md#automated-steam--rust-installation-on-windows-nushell) for details on copying Windows-related scripts.
 5. **Set up systemd timers and cron jobs as described below.**
 6. **Run scripts manually to verify setup:**
 
@@ -33,336 +80,70 @@ This is a _work in progress_, primarily for my personal build because windows is
    sudo ./scripts/nixos-flake-update.sh
    ```
 
-## Table of Contents
+> **Note:** Most scripts require root privileges. Use `sudo` as shown above.
 
-- [Host Requirements](#host-requirements)
-- [NixOS on Proxmox](#nixos-on-proxmox)
-- [Windows on Proxmox](#windows-on-proxmox)
-- [Networking](#networking)
-- [Shared Storage](#shared-storage)
-- [Security](#security)
-- [Monitoring & Updates](#monitoring--updates)
-- [Hardware (Example)](#hardware-example)
-- [Network Topology](#network-topology)
-- [Storage Layout](#storage-layout)
-- [Update & Backup Flow](#update--backup-flow)
-- [Automation Scripts](#automation-scripts)
-- [Security Best Practices](#security-best-practices)
-- [References](#references)
+## Install & Uninstall Automation
 
-## Host Requirements
-
-- Proxmox VE 7+ (IOMMU on for passthrough)
-- Keep host updated
-
-## NixOS on Proxmox
-
-### LXC (Container)
-
-- Download LXD image: [Hydra](https://hydra.nixos.org/job/nixos/release-*/nixos.lxdContainerImage.x86_64-linux/latest)
-- Upload via Proxmox UI → CT Templates
-- Create:
-
-  ```bash
-  pct create <VMID> local:vztmpl/nixos-*.tar.xz \
-    --ostype unmanaged --features nesting=1 \
-    --net0 name=eth0,bridge=vmbr0,ip=dhcp
-  ```
-
-- Set root password, SSH keys
-
-### VM (Declarative)
-
-- Use [nixos-generators](https://github.com/nix-community/nixos-generators):
-
-  ```nix
-  { config, ... }: {
-    imports = [ <nixpkgs/nixos/modules/profiles/qemu-guest.nix> ];
-    services.qemuGuest.enable = true;
-  }
-  ```
-
-  ```bash
-  nixos-generate -f proxmox -c configuration.nix
-  ```
-
-- Upload `.vma.zst`, create VM, attach disk
-- Remote update:
-
-  ```bash
-  nixos-rebuild switch --flake .#vm --target-host root@proxmox
-  ```
-
-### Distroless NixOS (OCI/Container)
-
-- Minimal image:
-
-  ```nix
-  pkgs.dockerTools.buildImage {
-    name = "distroless-app";
-    config = { Cmd = [ "${pkgs.nginx}/bin/nginx" "-g" "daemon off;" ]; };
-  }
-  ```
-
-- Multi-stage:
-
-  ```nix
-  let buildEnv = pkgs.buildEnv { ... };
-      runtimeEnv = pkgs.runtimeOnlyDependencies buildEnv;
-  in pkgs.dockerTools.buildImage { copyToRoot = runtimeEnv; }
-  ```
-
-- Flake config:
-
-  ```nix
-  outputs = { nixpkgs, ... }: {
-    nixosConfigurations.my-container = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [ ({ ... }: {
-        environment.systemPackages = with pkgs; [ nginx ];
-        system.stateVersion = "24.11";
-      }) ];
-    };
-  };
-  ```
-
-## Windows on Proxmox
-
-- Create VM (UEFI, SCSI, VirtIO, attach ISOs)
-- PCI passthrough (GPU):
-
-  ```bash
-  -device vfio-pci,host=01:00.0,multifunction=on
-  ```
-
-- QEMU guest agent
-
-## Networking
-
-- Bridges: vmbr0 (NixOS), vmbr1 (Windows), vmbr2 (Mgmt)
-- Isolate traffic
-
-## Shared Storage
-
-- virtio-fs:
-
-  ```nix
-  virtualisation.sharedDirectories = {
-    win-share = { source = "/mnt/windows"; target = "/win-mount"; };
-  };
-  ```
-
-## Security
-
-- Read-only rootfs:
-
-  ```nix
-  fileSystems."/".options = [ "ro" "nosuid" "nodev" ];
-  ```
-
-- Non-root services:
-
-  ```nix
-  users.users.nginx = { isSystemUser = true; group = "nginx"; };
-  ```
-
-- SBOM:
-
-  ```bash
-  nix store make-content-addressable /nix/store/...-nginx-* --rewrite-outputs > sbom.json
-  ```
-
-## Monitoring & Updates
-
-- Unified logging:
-
-  ```nix
-  services.journald.extraConfig = ''
-    ForwardToSyslog=yes
-    MaxLevelSyslog=debug
-  '';
-  ```
-
-- Auto-upgrade:
-
-  ```nix
-  system.autoUpgrade = {
-    enable = true;
-    flake = "github:user/nix-config#my-container";
-    dates = "daily";
-  };
-  ```
-
-## Hardware (Example)
-
-| Component | Model/Details |
-|-----------|--------------|
-| CPU       | AMD Ryzen 5950X |
-| RAM       | 128GB ECC DDR4 |
-| Storage   | 2x2TB NVMe (ZFS mirror), 4x8TB HDD (ZFS RAIDZ1) |
-| GPU       | NVIDIA RTX 3060 (Windows passthrough) |
-| Network   | 2x 2.5GbE (Intel i225-V) |
-| Proxmox   | 8.1 |
+To install all automation scripts and set up systemd timers for automatic updates and backups, run:
 
 ```bash
-Proxmox Host
-├── NixOS LXC (services, immutable)
-├── NixOS VM (atomic updates)
-└── Windows VM (GPU, apps)
+sudo ./scripts/install.sh
 ```
 
-## My Hardware
+To remove all installed scripts and timers, run:
 
-- CPU: AMD Ryzen 5950X (16c/32t, virtualization OK)
-- RAM: 128GB ECC DDR4
-- Storage: 2x2TB NVMe (ZFS mirror), 4x8TB HDD (ZFS RAIDZ1)
-- GPU: NVIDIA RTX 3060 (Windows passthrough)
-- Network: 2x 2.5GbE (Intel i225-V)
-- Proxmox: 8.1
-
-### PCI Passthrough
-
-- GPU: 01:00.0, 01:00.1 (audio)
-- USB controller: 03:00.0
-
-## Network Topology
-
-```mermaid
-flowchart TD
-    Internet --> Router --> ProxmoxHost
-    ProxmoxHost -- vmbr0 --> NixOS_LXC
-    ProxmoxHost -- vmbr1 --> Windows_VM
-    ProxmoxHost -- vmbr2 --> Admin_PC
-    NixOS_LXC --> NixOS_VM
-
-    %% Display names
-    ProxmoxHost["Proxmox Host"]
-    NixOS_LXC["NixOS LXC"]
-    Windows_VM["Windows VM"]
-    Admin_PC["Admin PC"]
-    NixOS_VM["NixOS VM"]
+```bash
+sudo ./scripts/uninstall.sh
 ```
 
-## Storage Layout
+> **Note:** scripts require root.
 
-```mermaid
-graph TD
-    rpool["ZFS Pool: rpool"]
-    rpool --> VM_Disks
-    VM_Disks["VM Disks"]
-    VM_Disks --> NixOS_VM["NixOS VM"]
-    VM_Disks --> Windows_VM["Windows VM"]
-    rpool --> LXC_Containers["LXC Containers"]
-    rpool --> Backups["Backups (Proxmox)"]
-    rpool --> Shared_Storage["Shared Storage (/mnt/windows, virtio-fs)"]
-```
+See [USAGE.md](USAGE.md) for more details.
 
-## Update & Backup Flow
+---
 
-```mermaid
-flowchart TD
-    Internet --> ProxmoxHost
-    ProxmoxHost -- "nix flake update" --> NixOS_LXC_VM
-    NixOS_LXC_VM -- "nixos-rebuild switch" --> NixOS_LXC_VM
-    NixOS_LXC_VM -- "ZFS snapshot" --> NixOS_LXC_VM
-    ProxmoxHost -- "Windows Update" --> Windows_VM
-    Windows_VM -- "QEMU guest agent" --> Windows_VM
-    Windows_VM -- "ZFS snapshot" --> Windows_VM
-    ProxmoxHost -- "vzdump backups" --> Proxmox_Backups
-    Proxmox_Backups -- "store" --> Storage["rpool or external (NAS, USB)"]
-    Proxmox_Backups -- "restore" --> ProxmoxHost
-    NixOS_LXC_VM -- "rollback" --> NixOS_LXC_VM
-    Windows_VM -- "rollback" --> Windows_VM
+## Usage & Reference
 
-    %% Display names
-    ProxmoxHost["Proxmox Host"]
-    NixOS_LXC_VM["NixOS LXC/VM"]
-    Windows_VM["Windows VM"]
-    Proxmox_Backups["Proxmox Backups"]
-```
+See [USAGE.md](USAGE.md) for detailed usage instructions: VM/container setup, networking, storage, automation scripts, etc.
 
-- Proxmox: auto/scheduled vzdump backups, manual or auto updates
-- NixOS: atomic upgrades, rollback via ZFS or nix
-- Windows: manual update, snapshot before/after major changes
-- Store backups on ZFS pool, external NAS, or cloud
+## Architecture Overview
 
-### Automation Scripts
+See [ARCHITECTURE.md](ARCHITECTURE.md) for diagrams and a high-level overview of the system architecture, network topology, storage layout, update and backup flow, and hardware details.
 
-- **Proxmox Host Updates (cron):**
+## Using This Flake as a Package Source
+
+You can use this repository as a Nix flake to run or develop with the included automation scripts, without manual copying or installation.
+
+- **Run the default script (Proxmox update):**
 
   ```bash
-  apt update && apt -y dist-upgrade && apt -y autoremove
-  pveupdate && pveupgrade
+  nix run .\
+  # or explicitly
+  nix run .#proxmox-update
   ```
 
-- **NixOS Flake Update & Rebuild (systemd timer):**
+- **Run any script as a package:**
 
   ```bash
-  nix flake update /etc/nixos
-  nixos-rebuild switch --flake /etc/nixos#<hostname>
+  nix run .#<script-name>
+  # Example: backup all VMs/CTs
+  nix run .#vzdump-backup
+  # Example: take/prune ZFS snapshots
+  nix run .#zfs-snapshot
+  # Example: update NixOS flake
+  nix run .#nixos-flake-update
   ```
 
-- **ZFS Snapshots (cron):**
+- **Get a development shell with all tools:**
 
   ```bash
-  zfs snapshot -r rpool@$(date +%Y-%m-%d-%H%M)
-  zfs list -t snapshot
-  zfs destroy rpool@old-snapshot
+  nix develop
   ```
 
-- **Proxmox vzdump Backups:**
-  _(Script and schedule with cron for retention)_
+- **Format Nix code:**
 
   ```bash
-  vzdump 100 --storage backup --mode snapshot --compress zstd
+  nix fmt
   ```
 
-### Deployment
-
-1. Make scripts executable:
-
-   ```bash
-   chmod +x proxmox-update.sh nixos-flake-update.sh zfs-snapshot.sh vzdump-backup.sh
-   ```
-
-2. Deploy scripts:
-   - Proxmox: `/usr/local/sbin/` or `/root/`
-   - NixOS: `/etc/nixos/`
-3. Set up NixOS flake update timer:
-
-   ```bash
-   sudo cp nixos-flake-update.sh /etc/nixos/
-   sudo cp nixos-flake-update.service /etc/systemd/system/
-   sudo cp nixos-flake-update.timer /etc/systemd/system/
-   sudo systemctl daemon-reload
-   sudo systemctl enable --now nixos-flake-update.timer
-   ```
-
-4. Set up cron jobs (Proxmox):
-
-   ```cron
-   0 2 * * * /root/proxmox-update.sh
-   0 * * * * /root/zfs-snapshot.sh
-   0 3 * * * /root/vzdump-backup.sh
-   ```
-
-5. Verify logs: `/var/log/*update.log`, `/var/log/*snapshot.log`, etc.
-6. Test: Run scripts manually, confirm timers/cron
-7. (Optional) Add notifications (email, Matrix, Slack)
-
-## Security Best Practices
-
-- Proxmox UI: 2FA, restrict to mgmt VLAN
-- Firewall rules on all bridges
-- ZFS snapshots for rollback
-- Regularly update all systems
-- Use `age` or `sops` for secrets in NixOS
-- Monitor with Prometheus, alert to email/Matrix/Slack
-
-## References
-
-- [mtlynch.io](https://mtlynch.io/notes/nixos-proxmox/)
-- [Joshuamlee](https://www.joshuamlee.com/nixos-proxmox-vm-images/)
-- [nixos-generators](https://github.com/nix-community/nixos-generators)
-- [Distroless Nix](https://tmp.bearblog.dev/minimal-containers-using-nix/)
-- [Reddit: NixOS/Proxmox](https://www.reddit.com/r/NixOS/comments/16r92n9/tutorial_running_nixos_on_a_proxmox_vm_server/)
+> See the script headers and USAGE.md for options like --dry-run, --help, etc.
