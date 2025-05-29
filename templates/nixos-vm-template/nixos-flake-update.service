@@ -1,0 +1,6 @@
+[Unit]
+Description=Update NixOS flake and rebuild system
+
+[Service]
+Type=oneshot
+ExecStart=/etc/nixos/nixos-flake-update.sh 
