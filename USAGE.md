@@ -1,6 +1,37 @@
 # Usage & Reference
 
-This document contains detailed usage instructions and reference material for Proxmox + NixOS + Windows automation, including VM/container setup, networking, storage, automation scripts, and more. See [README.md](README.md) for quick start and project overview.
+Terse usage for scripts and templates. See below for advanced examples. See [README.md](README.md) for project overview.
+
+## Minimal Usage
+
+- **Run a script:**
+
+  ```bash
+  sudo ./scripts/<script>.sh
+  # or via Nix flake:
+  nix run .#<script-name>
+  ```
+
+- **Use a template:**
+  Copy from `templates/` to your infra, edit as needed.
+
+## Available Scripts
+
+- `proxmox-update.sh` — Update Proxmox host
+- `vzdump-backup.sh` — Backup VMs/CTs
+- `zfs-snapshot.sh` — ZFS snapshot/prune
+- `nixos-flake-update.sh` — Update NixOS flake
+- `install.sh` / `uninstall.sh` — Install/uninstall all automation
+
+## Available Templates
+
+- `containers/docker/` — Docker container examples
+- `containers/lxc/` — LXC container examples
+- `monitoring/grafana/` — Grafana dashboards
+- `nixos-vm-template/` — NixOS VM template
+- `zfs-ssd-caching/` — ZFS SSD caching example
+
+## Advanced Usage
 
 ## NixOS on Proxmox
 
