@@ -36,11 +36,11 @@ log_msg() {
         echo "$formatted" >> "$logfile"
     fi
 }
-log_info()    { log_msg "INFO"    "$GREEN"  "$1" "$2"; }
-log_warn()    { log_msg "WARN"    "$YELLOW" "$1" "$2"; }
-log_error()   { log_msg "ERROR"   "$RED"    "$1" "$2"; }
-log_success() { log_msg "SUCCESS" "$GREEN"  "$1" "$2"; }
-log_dryrun()  { log_msg "DRY RUN" "$YELLOW" "$1" "$2"; }
+log_info()    { log_msg "INFO"    "$GREEN"  "$1" "${2:-}"; }
+log_warn()    { log_msg "WARN"    "$YELLOW" "$1" "${2:-}"; }
+log_error()   { log_msg "ERROR"   "$RED"    "$1" "${2:-}"; }
+log_success() { log_msg "SUCCESS" "$GREEN"  "$1" "${2:-}"; }
+log_dryrun()  { log_msg "DRY RUN" "$YELLOW" "$1" "${2:-}"; }
 
 usage() {
   grep '^#' "$0" | cut -c 3-
