@@ -7,6 +7,10 @@ This directory contains example configurations for running services in container
 
 ---
 
+For general instructions on using, customizing, and best practices for templates, see [USAGE.md](../templates/USAGE.md).
+
+See the README in each subdirectory for container-specific details and examples.
+
 ## Using This Template for Different Container Types
 
 This template is designed to be a flexible base for a variety of container roles, such as web servers, database servers, CI runners, and more. To create a specialized container type:

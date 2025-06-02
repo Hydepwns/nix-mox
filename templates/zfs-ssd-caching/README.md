@@ -2,6 +2,10 @@
 
 This directory explains how to add SSDs as special vdevs or L2ARC to your ZFS pool for improved VM disk performance.
 
+---
+
+For general instructions on using, customizing, and best practices for templates, see [../USAGE.md](../templates/USAGE.md).
+
 ## Usage
 
 - Import this module or snippet into your NixOS configuration.

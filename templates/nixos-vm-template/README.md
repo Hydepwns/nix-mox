@@ -1,5 +1,11 @@
 # NixOS VM Template Example
 
+This directory provides a flexible base for building NixOS VM templates for different roles (web, db, CI, etc.).
+
+---
+
+For general instructions on using, customizing, and best practices for templates, see [../USAGE.md](../templates/USAGE.md).
+
 ## Quickstart
 
 1. Copy this directory for your new VM type (e.g., web, db, ci-runner).
@@ -36,111 +42,26 @@ nixosConfigurations.web-vm = nixpkgs.lib.nixosSystem {
 
 Add or customize roles by creating new `.nix` files and adding them to the `modules` array.
 
-## Usage
-
-- Clone this config and adjust the hostname and hardware settings as needed.
-- Build and deploy using `nixos-rebuild switch --flake .#your-vm`.
-- Store all changes in git for reproducibility.
-
 ## Converting a NixOS VM to a Proxmox Template
 
 1. **Prepare the VM:**
    - Ensure the system is fully updated and configured as desired.
    - Remove any sensitive or host-specific data (SSH host keys, logs, etc.) if needed.
    - Optionally, run `nix-collect-garbage -d` to minimize disk usage.
-
 2. **Shutdown the VM:**
    - From within the VM: `sudo poweroff`
-
 3. **Convert to Template in Proxmox:**
    - In the Proxmox web UI, right-click the VM and select **Convert to template**.
    - Alternatively, use the CLI: `qm template <VMID>`
-
 4. **Clone New VMs from Template:**
    - Use the Proxmox UI or CLI to create linked or full clones from the template.
    - For cloud-init or first-boot customization, see the next section.
 
-**Best Practices:**
-
-- Use this template as a base for different VM roles (web, DB, etc.) by customizing the flake or overlays before conversion.
-- Document any manual steps required after cloning (e.g., regenerating SSH host keys).
-
 ## First Boot & Cloud-Init Automation
 
-After cloning a VM from this template, you may want to automate post-clone setup (e.g., setting hostnames, regenerating SSH keys, running custom scripts). Here are several approaches:
+After cloning a VM from this template, you may want to automate post-clone setup (e.g., setting hostnames, regenerating SSH keys, running custom scripts). See the provided `first-boot-setup.nix` and `cloud-init-example.nix` modules for automation options.
 
-### 1. NixOS-Native First-Boot Automation
-
-You can add a systemd service or NixOS module that runs on first boot to perform tasks like:
-
-- Regenerating SSH host keys
-- Setting the hostname
-- Running `nixos-generate-config` (for new hardware)
-- Running custom scripts
-
-**Example NixOS module snippet:**
-
-```nix
-# Add to your configuration.nix or flake module
-systemd.services.first-boot-setup = {
-  description = "First boot setup";
-  wantedBy = [ "multi-user.target" ];
-  serviceConfig.Type = "oneshot";
-  script = ''
-    #!/bin/sh
-    # Regenerate SSH host keys
-    rm -f /etc/ssh/ssh_host_*
-    nixos-rebuild switch
-    # Custom logic here
-    # ...
-    # Disable this service after first run
-    systemctl disable first-boot-setup.service
-  '';
-};
-```
-
-### 2. Using nixos-infect
-
-[`nixos-infect`](https://github.com/elitak/nixos-infect) lets you convert a generic Linux VM (e.g., Debian) to NixOS on first boot. This is useful if your cloud or VM provider only supports non-NixOS images.
-
-- Launch a supported Linux VM
-- Run the `nixos-infect` script (see repo for details)
-- The VM will reboot into NixOS
-
-### 3. Cloud-Init Example
-
-Proxmox supports cloud-init for VM customization. NixOS has [cloud-init support](https://search.nixos.org/options?channel=23.11&show=services.cloud-init.enable&from=0&size=50&sort=relevance&type=packages&query=cloud-init).
-
-**Example NixOS flake snippet:**
-
-```nix
-# In your NixOS configuration
-{ config, ... }:
-{
-  services.cloud-init.enable = true;
-  # Optionally, configure cloud-init modules
-  services.cloud-init.extraConfig = ''
-    users:
-      - name: myuser
-        ssh-authorized-keys:
-          - ssh-rsa AAAA...yourkey...
-    hostname: my-nixos-vm
-    # ...
-  '';
-}
-```
-
-**Proxmox usage:**
-
-- Add a cloud-init drive to your VM in Proxmox
-- Set user, password, SSH key, etc. in the Proxmox UI
-- On first boot, NixOS will apply these settings
-
----
-
-Choose the approach that best fits your workflow. For most NixOS users, the native first-boot automation or cloud-init integration will be the most seamless.
-
----
+See comments in each example for further customization options.
 
 ## Using This Template for Different VM Types
 

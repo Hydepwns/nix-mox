@@ -5,6 +5,10 @@ This directory contains example configs for setting up Prometheus and Grafana to
 - `prometheus.yml`: Example Prometheus scrape config
 - `grafana/`: Example Grafana dashboard JSONs or provisioning configs
 
+---
+
+For general instructions on using, customizing, and best practices for templates, see [../USAGE.md](../USAGE.md).
+
 ## NixOS Module Examples
 
 ### Prometheus
@@ -26,6 +30,8 @@ This directory contains example configs for setting up Prometheus and Grafana to
   ```
 
 - Place dashboard JSON files (e.g., `node-exporter-sample.json`) in `grafana/dashboards/` to auto-provision them.
+
+See comments in each example for further customization options.
 
 ## Example Dashboard
 
