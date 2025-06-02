@@ -1,6 +1,67 @@
-# Usage & Reference
+# Usage & Deployment Guide
 
-Terse usage for scripts and templates. See below for advanced examples. See [README.md](README.md) for project overview.
+This project provides automation scripts and infrastructure templates for NixOS, Proxmox, containers, and monitoring.  
+**To deploy, follow the quick start below.**
+
+---
+
+## 🚀 Quick Start: Deploying This Project
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/hydepwns/nix-mox.git
+cd nix-mox
+```
+
+### 2. Install All Automation Scripts
+
+This sets up systemd timers and automation for Proxmox, ZFS, and NixOS.
+
+```bash
+sudo ./scripts/install.sh
+```
+
+- To remove/uninstall:  
+
+  ```bash
+  sudo ./scripts/uninstall.sh
+  ```
+
+### 3. Use a Template
+
+Copy any template from `templates/` to your infrastructure repo or host, then customize as needed.
+
+```bash
+cp -r templates/containers/docker/my-example/ ~/my-infra/
+# Edit files as needed, then deploy using your preferred method (e.g., docker-compose, lxc, etc.)
+```
+
+### 4. Run a Script Directly
+
+You can run any script manually:
+
+```bash
+sudo ./scripts/proxmox-update.sh
+```
+
+Or, if you use Nix flakes:
+
+```bash
+nix run .#proxmox-update
+```
+
+---
+
+## What's Next?
+
+- For advanced usage, see [Advanced Usage](#advanced-usage).
+- For Windows automation, see [Automated Steam + Rust Installation on Windows](#automated-steam--rust-installation-on-windows-nushell).
+- For details on each script and template, see the sections below.
+
+---
+
+# Usage & Reference
 
 ## Minimal Usage
 
