@@ -1,4 +1,7 @@
 #!/bin/bash
+# WARNING: This script is deprecated for Nix/NixOS users!
+# Use `nix run .#install` or `nix profile install .#install` instead.
+# This script is only for legacy/manual installs on non-NixOS systems.
 # install.sh - Bootstrap automation scripts for Proxmox + NixOS + Windows
 # Usage: sudo ./install.sh [--help]
 #
@@ -65,6 +68,9 @@ fi
 
 INSTALLED_SCRIPTS=()
 SYSTEMD_INSTALLED=0
+
+# Ensure target directory exists
+mkdir -p /usr/local/sbin
 
 # 1. Install .sh scripts to /usr/local/sbin
 log_info "Installing shell scripts to /usr/local/sbin..."

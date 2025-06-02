@@ -14,19 +14,25 @@ git clone https://github.com/hydepwns/nix-mox.git
 cd nix-mox
 ```
 
-### 2. Install All Automation Scripts
+### 2. Nix Flake Usage (Recommended for Nix/NixOS users)
 
-This sets up systemd timers and automation for Proxmox, ZFS, and NixOS.
-
-```bash
-sudo ./scripts/install.sh
-```
-
-- To remove/uninstall:  
+- Run any script directly:
 
   ```bash
-  sudo ./scripts/uninstall.sh
+  nix run .#proxmox-update
+  nix run .#zfs-snapshot
+  nix run .#nixos-flake-update
+  # ...etc
   ```
+
+- Install a script to your user profile:
+
+  ```bash
+  nix profile install .#proxmox-update
+  # ...etc
+  ```
+
+- See all available scripts in flake.nix or by running `nix flake show`.
 
 ### 3. Use a Template
 
@@ -37,19 +43,57 @@ cp -r templates/containers/docker/my-example/ ~/my-infra/
 # Edit files as needed, then deploy using your preferred method (e.g., docker-compose, lxc, etc.)
 ```
 
-### 4. Run a Script Directly
+### 4. Run a Script Directly (Manual/Legacy)
 
-You can run any script manually:
+- You can still run any script manually (not recommended for NixOS):
 
-```bash
-sudo ./scripts/proxmox-update.sh
-```
+  ```bash
+  sudo ./scripts/linux/proxmox-update.sh
+  ```
 
-Or, if you use Nix flakes:
+- Or use the legacy install scripts (see below).
 
-```bash
-nix run .#proxmox-update
-```
+---
+
+## Legacy/Manual Install (Non-NixOS only)
+
+> **Warning:** The install.sh and uninstall.sh scripts are deprecated for NixOS users. Use Nix flake methods above instead.
+
+- To install all scripts manually:
+
+  ```bash
+  sudo ./scripts/linux/install.sh
+  ```
+
+- To remove/uninstall:
+
+  ```bash
+  sudo ./scripts/linux/uninstall.sh
+  ```
+
+---
+
+## Using the NixOS Module (Optional)
+
+If you want all nix-mox scripts and the flake update timer/service available system-wide, you can enable the NixOS module:
+
+1. Add the module to your NixOS configuration (flake-based example):
+
+   ```nix
+   {
+     inputs.nix-mox.url = "github:hydepwns/nix-mox";
+     # ...
+   }
+   # In your configuration.nix or flake:
+   {
+     imports = [ nix-mox.nixosModules.nix-mox ];
+     services.nix-mox.enable = true;
+   }
+   ```
+
+2. This will:
+   - Add all nix-mox scripts to `environment.systemPackages`.
+   - Set up a systemd timer/service for `nixos-flake-update` (runs daily as root).
 
 ---
 
@@ -68,9 +112,8 @@ nix run .#proxmox-update
 - **Run a script:**
 
   ```bash
-  sudo ./scripts/<script>.sh
-  # or via Nix flake:
-  nix run .#<script-name>
+  nix run .#<script-name>         # Preferred (Nix/NixOS)
+  sudo ./scripts/linux/<script>.sh # Manual/legacy
   ```
 
 - **Use a template:**
@@ -82,7 +125,7 @@ nix run .#proxmox-update
 - `vzdump-backup.sh` — Backup VMs/CTs
 - `zfs-snapshot.sh` — ZFS snapshot/prune
 - `nixos-flake-update.sh` — Update NixOS flake
-- `install.sh` / `uninstall.sh` — Install/uninstall all automation
+- `install.sh` / `uninstall.sh` — Install/uninstall all automation (deprecated for NixOS)
 
 ## Available Templates
 

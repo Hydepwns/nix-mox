@@ -1,4 +1,7 @@
 #!/bin/bash
+# WARNING: This script is deprecated for Nix/NixOS users!
+# Use `nix run .#uninstall` or `nix profile install .#uninstall` instead.
+# This script is only for legacy/manual uninstalls on non-NixOS systems.
 # uninstall.sh - Remove automation scripts for Proxmox + NixOS + Windows
 # Usage: sudo ./uninstall.sh [--help]
 #

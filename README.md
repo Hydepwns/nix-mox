@@ -12,27 +12,49 @@ Terse, reproducible automation for Proxmox, NixOS, and Windows. See [USAGE.md](U
    git clone https://github.com/hydepwns/nix-mox.git && cd nix-mox
    ```
 
-2. See [USAGE.md](USAGE.md) for install and deployment instructions.
+2. **Nix Flake Usage (Recommended for Nix/NixOS users):**
 
----
+   - Run any script directly:
 
-## Directory Structure
+     ```bash
+     nix run .#proxmox-update
+     nix run .#zfs-snapshot
+     # ...etc
+     ```
 
-- `scripts/` — Automation scripts (Linux, Windows)
-- `templates/` — VM/container, monitoring, storage templates
-- `flake.nix` — Nix flake config
-- `ARCHITECTURE.md` — System overview
+   - Install a script to your user profile:
 
-## Flake Outputs (short)
+     ```bash
+     nix profile install .#proxmox-update
+     # ...etc
+     ```
 
-- `devShells.default`: Dev shell
-- `formatter`: Nix formatter
-- `nixosConfigurations.*`: Example configs
-- `packages.*`: Automation scripts as Nix packages
+   - See [USAGE.md](USAGE.md) for more details and all available scripts.
 
----
+3. **Legacy/Manual Install (Non-NixOS only):**
+   - The install.sh/uninstall.sh scripts are deprecated for NixOS users.
+   - For legacy/manual install instructions, see [USAGE.md](USAGE.md).
 
-## More
+## Using the NixOS Module (Optional)
 
-- See [USAGE.md](USAGE.md) for usage, scripts, and templates.
-- See [ARCHITECTURE.md](ARCHITECTURE.md) for system diagrams.
+If you want all nix-mox scripts and the flake update timer/service available system-wide, you can enable the NixOS module:
+
+1. Add the module to your NixOS configuration (flake-based example):
+
+   ```nix
+   {
+     inputs.nix-mox.url = "github:hydepwns/nix-mox";
+     # ...
+   }
+   # In your configuration.nix or flake:
+   {
+     imports = [ nix-mox.nixosModules.nix-mox ];
+     services.nix-mox.enable = true;
+   }
+   ```
+
+2. This will:
+   - Add all nix-mox scripts to `environment.systemPackages`.
+   - Set up a systemd timer/service for `nixos-flake-update` (runs daily as root).
+
+See [USAGE.md](USAGE.md) for more details.
