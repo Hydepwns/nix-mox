@@ -12,14 +12,7 @@ Terse, reproducible automation for Proxmox, NixOS, and Windows. See [USAGE.md](U
    git clone https://github.com/hydepwns/nix-mox.git && cd nix-mox
    ```
 
-2. Review/edit scripts in `scripts/` and templates in `templates/`.
-3. (Optional) Install all automation:
-
-   ```bash
-   sudo ./scripts/install.sh
-   ```
-
-4. See [USAGE.md](USAGE.md) for more.
+2. See [USAGE.md](USAGE.md) for install and deployment instructions.
 
 ---
 
