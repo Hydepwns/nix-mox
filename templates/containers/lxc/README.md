@@ -1,4 +1,10 @@
-- Add users, services, or automation as needed for your use case.
+# LXC Container Examples
+
+This directory contains example NixOS modules for running services in LXC containers (Proxmox-native).
+
+---
+
+For general instructions on using, customizing, and best practices for templates, see [../USAGE.md](../USAGE.md).
 
 ## Automation Examples
 

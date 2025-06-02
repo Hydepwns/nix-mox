@@ -2,15 +2,12 @@
 
 This directory contains example NixOS modules for running containers with Docker (via oci-containers).
 
-## Examples
-
-### Nginx
-
 - See `example-docker-service.nix` for running an Nginx container.
-
-### Alpine Linux
-
 - See `alpine-example.nix` for running a minimal Alpine Linux container.
+
+---
+
+For general instructions on using, customizing, and best practices for templates, see [../USAGE.md](../USAGE.md).
 
 ## Usage
 
@@ -22,6 +19,8 @@ This directory contains example NixOS modules for running containers with Docker
 
 2. The Alpine container will run `sleep infinity` by default to stay alive.
 3. Customize the `command`, environment, or ports as needed in `alpine-example.nix`.
+
+See comments in each example for further customization options.
 
 ## Customization
 
