@@ -121,11 +121,15 @@ If you want all nix-mox scripts and the flake update timer/service available sys
 
 ## Available Scripts
 
-- `proxmox-update.sh` — Update Proxmox host
-- `vzdump-backup.sh` — Backup VMs/CTs
-- `zfs-snapshot.sh` — ZFS snapshot/prune
-- `nixos-flake-update.sh` — Update NixOS flake
-- `install.sh` / `uninstall.sh` — Install/uninstall all automation (deprecated for NixOS)
+- `proxmox-update.sh` — Update and upgrade Proxmox host packages safely.
+- `vzdump-backup.sh` — Backup all Proxmox VMs and containers to specified storage.
+- `zfs-snapshot.sh` — Create and prune ZFS snapshots for the specified pool.
+- `nixos-flake-update.sh` — Update flake inputs and rebuild NixOS system.
+- `install.sh` — Legacy/compat install logic for nix-mox scripts (deprecated for NixOS).
+- `uninstall.sh` — Legacy/compat uninstall logic for nix-mox scripts (deprecated for NixOS).
+- `install-steam-rust.nu` — NuShell script to automate Steam installation and prompt for Rust installation on first boot.
+- `run-steam-rust.bat` — Batch wrapper to launch the NuShell script via Windows Task Scheduler.
+- `InstallSteamRust.xml` — Windows Scheduled Task definition to run the automation at user logon.
 
 ## Available Templates
 

@@ -7,4 +7,4 @@ This directory contains example templates and configuration files for improving 
 - ZFS SSD caching setup
 - Prometheus + Grafana monitoring stack
 
-Each subdirectory contains a README and sample config files to help you get started. 
+Each subdirectory contains a README and sample config files to help you get started.
