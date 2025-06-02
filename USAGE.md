@@ -5,6 +5,29 @@ This project provides automation scripts and infrastructure templates for NixOS,
 
 ---
 
+## Table of Contents
+
+- [Quick Start: Deploying This Project](#-quick-start-deploying-this-project)
+- [Legacy/Manual Install (Non-NixOS only)](#legacymanual-install-non-nixos-only)
+- [Using the NixOS Module (Optional)](#using-the-nixos-module-optional)
+- [What's Next?](#whats-next)
+- [Usage & Reference](#usage--reference)
+  - [Minimal Usage](#minimal-usage)
+  - [Available Scripts](#available-scripts)
+  - [Available Templates](#available-templates)
+  - [Advanced Usage](#advanced-usage)
+    - [NixOS on Proxmox](#nixos-on-proxmox)
+    - [Windows on Proxmox](#windows-on-proxmox)
+    - [Networking](#networking)
+    - [Shared Storage](#shared-storage)
+    - [Security](#security)
+    - [Monitoring & Updates](#monitoring--updates)
+    - [Automation Scripts](#automation-scripts)
+    - [Automated Steam + Rust Installation on Windows (NuShell)](#automated-steam--rust-installation-on-windows-nushell)
+    - [Install & Uninstall](#install--uninstall)
+
+---
+
 ## 🚀 Quick Start: Deploying This Project
 
 ### 1. Clone the Repository
@@ -36,12 +59,9 @@ cd nix-mox
 
 ### 3. Use a Template
 
-Copy any template from `templates/` to your infrastructure repo or host, then customize as needed.
+Templates for containers, VMs, monitoring, and storage are available in the `templates/` directory.
 
-```bash
-cp -r templates/containers/docker/my-example/ ~/my-infra/
-# Edit files as needed, then deploy using your preferred method (e.g., docker-compose, lxc, etc.)
-```
+**For all template usage, customization, and best practices, see [templates/USAGE.md](templates/USAGE.md).**
 
 ### 4. Run a Script Directly (Manual/Legacy)
 
@@ -117,7 +137,7 @@ If you want all nix-mox scripts and the flake update timer/service available sys
   ```
 
 - **Use a template:**
-  Copy from `templates/` to your infra, edit as needed.
+  See [templates/USAGE.md](templates/USAGE.md) for all template usage and best practices.
 
 ## Available Scripts
 
@@ -138,6 +158,8 @@ If you want all nix-mox scripts and the flake update timer/service available sys
 - `monitoring/grafana/` — Grafana dashboards
 - `nixos-vm-template/` — NixOS VM template
 - `zfs-ssd-caching/` — ZFS SSD caching example
+
+**For usage and customization, see [templates/USAGE.md](templates/USAGE.md).**
 
 ## Advanced Usage
 
