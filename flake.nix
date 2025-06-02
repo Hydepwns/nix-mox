@@ -49,12 +49,18 @@
               name = "proxmox-update";
               runtimeInputs = [ pkgs.apt pkgs.pve-manager pkgs.bash pkgs.coreutils ];
               text = builtins.readFile ./scripts/linux/proxmox-update.sh;
+              meta = {
+                description = "Update and upgrade Proxmox host packages safely.";
+              };
             };
             # Proxmox vzdump backup script: backs up all VMs and containers to specified storage
             vzdump-backup = pkgs.writeShellApplication {
               name = "vzdump-backup";
               runtimeInputs = [ pkgs.proxmox-backup-client pkgs.qemu pkgs.lxc pkgs.bash pkgs.coreutils pkgs.gawk ];
               text = builtins.readFile ./scripts/linux/vzdump-backup.sh;
+              meta = {
+                description = "Backup all Proxmox VMs and containers to specified storage.";
+              };
             };
             # ZFS snapshot/prune script: creates and prunes ZFS snapshots for the specified pool
             zfs-snapshot = pkgs.writeShellApplication {
@@ -69,24 +75,36 @@
                 pkgs.gnutar
               ];
               text = builtins.readFile ./scripts/linux/zfs-snapshot.sh;
+              meta = {
+                description = "Create and prune ZFS snapshots for the specified pool.";
+              };
             };
             # NixOS flake update script: updates flake inputs and rebuilds
             nixos-flake-update = pkgs.writeShellApplication {
               name = "nixos-flake-update";
               runtimeInputs = [ pkgs.nix pkgs.bash pkgs.coreutils ];
               text = builtins.readFile ./scripts/linux/nixos-flake-update.sh;
+              meta = {
+                description = "Update flake inputs and rebuild NixOS system.";
+              };
             };
             # Install script: legacy/compat install logic
             install = pkgs.writeShellApplication {
               name = "nix-mox-install";
               runtimeInputs = [ pkgs.bash pkgs.coreutils ];
               text = builtins.readFile ./scripts/linux/install.sh;
+              meta = {
+                description = "Legacy/compat install logic for nix-mox scripts.";
+              };
             };
             # Uninstall script: legacy/compat uninstall logic
             uninstall = pkgs.writeShellApplication {
               name = "nix-mox-uninstall";
               runtimeInputs = [ pkgs.bash pkgs.coreutils ];
               text = builtins.readFile ./scripts/linux/uninstall.sh;
+              meta = {
+                description = "Legacy/compat uninstall logic for nix-mox scripts.";
+              };
             };
           };
           apps = {
