@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v26
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Check Nix flake
+        run: nix flake check
+
+      - name: Check Nix formatting
+        run: nix fmt --check
+
+      - name: Lint shell scripts
+        run: |
+          find . -name "*.sh" -print0 | xargs -0 shellcheck 
