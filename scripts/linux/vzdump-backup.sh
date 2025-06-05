@@ -10,44 +10,17 @@
 
 set -euo pipefail
 
+SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./_common.sh
+source "$SCRIPTS_DIR/_common.sh"
+
+# Script-specific variables
 LOGFILE="/var/log/vzdump-backup.log"
 STORAGE="${STORAGE:-backup}"
 DRY_RUN=0
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-# Standardized logging functions
-log_msg() {
-    local level="$1"
-    local color="$2"
-    local msg="$3"
-    local logfile="${4:-}"
-    local timestamp
-    timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
-    local formatted="[$timestamp] [$level] $msg"
-    if [[ -n "$color" ]]; then
-        echo -e "${color}${formatted}${NC}"
-    else
-        echo "$formatted"
-    fi
-    if [[ -n "$logfile" ]]; then
-        echo "$formatted" >> "$logfile"
-    fi
-}
-log_info()    { log_msg "INFO"    "$GREEN"  "$1" "${2:-}"; }
-log_warn()    { log_msg "WARN"    "$YELLOW" "$1" "${2:-}"; }
-log_error()   { log_msg "ERROR"   "$RED"    "$1" "${2:-}"; }
-log_success() { log_msg "SUCCESS" "$GREEN"  "$1" "${2:-}"; }
-log_dryrun()  { log_msg "DRY RUN" "$YELLOW" "$1" "${2:-}"; }
-
-usage() {
-  grep '^#' "$0" | cut -c 3-
-  exit 0
-}
+# Ensure log file exists and is writable
+touch "$LOGFILE" || { log_error "Log file is not writable: $LOGFILE"; exit 1; }
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -64,17 +37,13 @@ while [[ $# -gt 0 ]]; do
       usage
       ;;
     *)
-      echo "Unknown option: $1" >&2
+      log_error "Unknown option: $1" "$LOGFILE"
       usage
       ;;
   esac
 done
 
-# Check for root
-if [[ $EUID -ne 0 ]]; then
-  log_error "This script must be run as root." "$LOGFILE"
-  exit 1
-fi
+check_root "$LOGFILE"
 
 # Check for required commands
 for cmd in vzdump qm pct; do
@@ -84,40 +53,60 @@ for cmd in vzdump qm pct; do
   fi
 done
 
-if [[ $DRY_RUN -eq 1 ]]; then
-  log_dryrun "No changes will be made." "$LOGFILE"
-fi
+# --- Main Logic ---
 
-trap 'log_error "vzdump backup failed: $(date)" "$LOGFILE"' ERR
+# Function to list and back up items (VMs or CTs)
+# Takes list_command, item_type (e.g., "VM"), and a reference to an error flag
+backup_items() {
+  local list_cmd="$1"
+  local item_type="$2"
+  local -n backup_failed_ref="$3"
 
-if [[ $DRY_RUN -eq 1 ]]; then
-  log_dryrun "No changes were made." "$LOGFILE"
-  exit 0
-else
-  {
-    log_info "Starting vzdump backup: $(date)" "$LOGFILE"
-    ALL_OK=1
-    for VMID in $(qm list | awk 'NR>1 {print $1}'); do
-      if vzdump "$VMID" --storage "$STORAGE" --mode snapshot --compress zstd; then
-        log_info "Backed up VM $VMID" "$LOGFILE"
-      else
-        log_error "Failed to backup VM $VMID" "$LOGFILE"
-        ALL_OK=0
-      fi
-    done
-    for CTID in $(pct list | awk 'NR>1 {print $1}'); do
-      if vzdump "$CTID" --storage "$STORAGE" --mode snapshot --compress zstd; then
-        log_info "Backed up CT $CTID" "$LOGFILE"
-      else
-        log_error "Failed to backup CT $CTID" "$LOGFILE"
-        ALL_OK=0
-      fi
-    done
-    if [[ $ALL_OK -eq 1 ]]; then
-      log_success "vzdump backup complete: $(date)" "$LOGFILE"
+  local ids
+  ids=$($list_cmd | awk 'NR>1 {print $1}' || true)
+
+  if [[ -z "$ids" ]]; then
+    log_info "No ${item_type}s found to back up."
+    return
+  fi
+
+  for id in $ids; do
+    log_info "Processing backup for $item_type $id..."
+    if [[ $DRY_RUN -eq 1 ]]; then
+      log_dryrun "Would back up $item_type $id to storage '$STORAGE'"
     else
-      log_error "vzdump backup completed with errors: $(date)" "$LOGFILE"
-      exit 1
+      if vzdump "$id" --storage "$STORAGE" --mode snapshot --compress zstd; then
+        log_success "Successfully backed up $item_type $id."
+      else
+        log_error "Failed to back up $item_type $id."
+        backup_failed_ref=1
+      fi
     fi
-  } 2>&1 | tee -a "$LOGFILE"
+  done
+}
+
+# --- Execution ---
+
+trap 'log_error "An unexpected error occurred on line $LINENO. Command: $BASH_COMMAND." "$LOGFILE"' ERR
+
+log_info "Starting Proxmox backup process..." "$LOGFILE"
+
+BACKUP_FAILED=0
+
+# Run backup process and redirect all output to the log file
+{
+  backup_items "qm list" "VM" BACKUP_FAILED
+  backup_items "pct list" "CT" BACKUP_FAILED
+} | tee -a "$LOGFILE"
+
+# Final status reporting
+if [[ $BACKUP_FAILED -eq 1 ]]; then
+  log_error "vzdump backup completed with one or more errors." "$LOGFILE"
+  exit 1
+else
+  if [[ $DRY_RUN -eq 1 ]]; then
+    log_dryrun "Dry run complete. No backups were performed." "$LOGFILE"
+  else
+    log_success "vzdump backup completed successfully." "$LOGFILE"
+  fi
 fi 

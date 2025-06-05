@@ -4,7 +4,11 @@
 # users.users.example.isLocked = true;
 #
 # To override disk or network config, copy this file and adjust fileSystems, swapDevices, or networking.* as needed for your environment (KVM, VMware, etc).
-{ config, pkgs, ... }:
+{ config, pkgs, lib, nix-mox, ... }:
+let
+  # Get the pre-packaged script from the root nix-mox flake
+  nixMoxUpdateScriptPkg = nix-mox.packages.${pkgs.system}.nixos-flake-update;
+in
 {
   networking.hostName = "example-vm";
   time.timeZone = "UTC";
@@ -62,6 +66,24 @@
   # networking.defaultGateway = "192.168.100.1";
   # networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
   # ---------------------------------------
+
+  # Place the nixos-flake-update script from the root flake into /etc/nixos/
+  environment.etc."nixos/nixos-flake-update.sh" = {
+    source = nixMoxUpdateScriptPkg;
+    mode = "0555"; # r-xr-xr-x, executable for all
+  };
+
+  # Enable the systemd service and timer for automatic updates
+  # The .service and .timer files are located in the same directory as this base.nix
+  # and will be discovered by NixOS.
+  systemd.services.nixos-flake-update = {
+    enable = true;
+  };
+
+  systemd.timers.nixos-flake-update = {
+    enable = true;
+    wantedBy = [ "timers.target" ]; # Ensures the timer is started on boot
+  };
 
   system.stateVersion = "24.05";
 } 

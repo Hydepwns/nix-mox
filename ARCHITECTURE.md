@@ -1,6 +1,6 @@
 # Architecture Overview
 
-This document provides a high-level overview of the architecture, network topology, storage layout, update and backup flow, and hardware for the Proxmox + NixOS + Windows setup. For usage and configuration details, see the [USAGE.md](USAGE.md) and [README.md](README.md).
+This document provides a high-level overview of the architecture, network topology, storage layout, update and backup flow, and hardware for the Proxmox + NixOS + Windows setup. For usage and configuration details, see the [USAGE.md](./USAGE.md).
 
 ---
 
@@ -83,23 +83,22 @@ flowchart TD
 
 > **Note:** The following hardware is a personal example. Adapt these specs to your own needs and available hardware.
 
-| Component | Model/Details |
-|-----------|--------------|
-| CPU       | AMD Ryzen 5950X (16c/32t, virtualization OK) |
-| RAM       | 128GB ECC DDR4 |
-| Storage   | 2x2TB NVMe (ZFS mirror), 4x8TB HDD (ZFS RAIDZ1) |
-| GPU       | NVIDIA RTX 3060 (Windows passthrough) |
-| Network   | 2x 2.5GbE (Intel i225-V) |
-| Proxmox   | 8.1 |
+| Component      | Model/Details                                  |
+|----------------|------------------------------------------------|
+| **CPU**        | AMD Ryzen 5950X (16c/32t, virtualization OK)   |
+| **RAM**        | 128GB ECC DDR4                                 |
+| **Storage**    | 2x2TB NVMe (ZFS mirror), 4x8TB HDD (ZFS RAIDZ1) |
+| **GPU**        | NVIDIA RTX 3060 (Windows passthrough)          |
+| **Network**    | 2x 2.5GbE (Intel i225-V)                       |
+| **Proxmox**    | 8.1                                            |
 
-```bash
-Proxmox Host
-├── NixOS LXC (services, immutable)
-├── NixOS VM (atomic updates)
-└── Windows VM (GPU, apps)
-```
+The host is configured with the following:
 
-For more on adapting the architecture to your hardware, see the [Getting Started](README.md#getting-started) and [Requirements](README.md#requirements) sections in the README.
+- NixOS LXC (for services, immutable)
+- NixOS VM (for atomic updates)
+- Windows VM (for GPU passthrough, apps)
+
+For more on adapting the architecture to your hardware, see the guides in [USAGE.md](./USAGE.md).
 
 ## PCI Passthrough
 
@@ -108,6 +107,8 @@ This section lists example PCI devices passed through to VMs. Update these value
 - GPU: 01:00.0, 01:00.1 (audio)
 - USB controller: 03:00.0
 
+For more details, see the [Windows on Proxmox Guide](./docs/windows-on-proxmox.md).
+
 ## Making nix-mox Scripts NixOS-Native
 
-For packaging and exposing scripts as Nix derivations and flake apps, see the detailed instructions in [USAGE.md](USAGE.md#using-the-nixos-module-optional) and your `flake.nix`.
+For packaging and exposing scripts as Nix derivations and flake apps, see the detailed instructions in [USAGE.md](./USAGE.md#using-the-nixos-module-optional) and your `flake.nix`.

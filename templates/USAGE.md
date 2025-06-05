@@ -9,6 +9,7 @@ This guide applies to all templates in the `templates/` directory, including con
 - [How to Use a Template](#how-to-use-a-template)
 - [Best Practices](#best-practices)
 - [Example: Importing a Template Module](#example-importing-a-template-module)
+- [Available Templates Overview](#available-templates-overview)
 
 ---
 
@@ -48,6 +49,19 @@ This guide applies to all templates in the `templates/` directory, including con
 # In your NixOS configuration
 imports = [ ./path/to/template.nix ];
 ```
+
+---
+
+## Available Templates Overview
+
+This directory contains example templates and configuration files for improving your Proxmox + NixOS + Windows infrastructure. These examples cover:
+
+- Immutable NixOS VM template configuration
+- Containerized service configuration (LXC and Docker)
+- ZFS SSD caching setup
+- Prometheus + Grafana monitoring stack
+
+Each subdirectory typically contains its own `README.md` and sample configuration files to help you get started with that specific template. For general template usage and best practices, refer to this document.
 
 ---
 

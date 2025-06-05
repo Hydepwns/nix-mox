@@ -1,217 +1,153 @@
 #!/bin/bash
-# WARNING: This script is deprecated for Nix/NixOS users!
-# Use `nix run .#install` or `nix profile install .#install` instead.
-# This script is only for legacy/manual installs on non-NixOS systems.
-# install.sh - Bootstrap automation scripts for Proxmox + NixOS + Windows
-# Usage: sudo ./install.sh [--help]
+# install.sh - Install nix-mox scripts
+# This script is intended for non-NixOS systems. For NixOS, use the flake.
+# Usage: sudo ./install.sh [--dry-run] [--windows-dir /path/to/win/dir] [--help]
 #
-# - Installs all .sh scripts to /usr/local/sbin and sets permissions
-# - Installs systemd timer/service for nixos-flake-update if on NixOS
-# - Optionally copies Windows/NuShell scripts to a user-specified directory
-# - Idempotent and safe to re-run
+# - Installs all .sh scripts to /usr/local/bin
+# - Creates an install manifest at /etc/nix-mox/install_manifest.txt
+# - Is idempotent and safe to re-run
 
 set -euo pipefail
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./_common.sh
+source "$SCRIPTS_DIR/_common.sh"
 
-# Standardized logging functions
-log_msg() {
-    local level="$1"
-    local color="$2"
-    local msg="$3"
-    local logfile="${4:-}"
-    local timestamp
-    timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
-    local formatted="[$timestamp] [$level] $msg"
-    if [[ -n "$color" ]]; then
-        echo -e "${color}${formatted}${NC}"
-    else
-        echo "$formatted"
-    fi
-    if [[ -n "$logfile" ]]; then
-        echo "$formatted" >> "$logfile"
-    fi
-}
-log_info()    { log_msg "INFO"    "$GREEN"  "$1" "${2:-}"; }
-log_warn()    { log_msg "WARN"    "$YELLOW" "$1" "${2:-}"; }
-log_error()   { log_msg "ERROR"   "$RED"    "$1" "${2:-}"; }
-log_success() { log_msg "SUCCESS" "$GREEN"  "$1" "${2:-}"; }
-log_dryrun()  { log_msg "DRY RUN" "$YELLOW" "$1" "${2:-}"; }
-
-usage() {
-    grep '^#' "$0" | cut -c 3-
-    exit 0
-}
-
-# Check if running as root
-if [[ $EUID -ne 0 ]]; then
-    log_error "This script must be run as root"
-    exit 1
-fi
-
-if [[ "${1:-}" == "--help" ]]; then
-    usage
-fi
-
-SCRIPTS_DIR="$(cd "$(dirname "$0")" && pwd)"
-ROOT_DIR="$(dirname "$SCRIPTS_DIR")"
-
+# --- Global Variables ---
+INSTALL_DIR="/usr/local/bin"
+MANIFEST_DIR="/etc/nix-mox"
+MANIFEST_FILE="$MANIFEST_DIR/install_manifest.txt"
 DRY_RUN=0
-if [[ "${1:-}" == "--dry-run" ]]; then
-    DRY_RUN=1
-    log_info "Dry-run mode enabled. No changes will be made."
-fi
+WINDOWS_DIR=""
+# This array tracks files created *by this specific run* for cleanup on failure.
+declare -a CREATED_THIS_RUN
 
-INSTALLED_SCRIPTS=()
-SYSTEMD_INSTALLED=0
+# --- Functions ---
+cleanup() {
+    # This function is called on ERR or EXIT to roll back this run's changes.
+    if [[ ${#CREATED_THIS_RUN[@]} -eq 0 ]]; then
+        return
+    fi
 
-# Ensure target directory exists
-mkdir -p /usr/local/sbin
+    log_warn "An error occurred. Rolling back changes made during this installation run..."
+    # Iterate in reverse to remove files before directories
+    for ((i=${#CREATED_THIS_RUN[@]}-1; i>=0; i--)); do
+        local item="${CREATED_THIS_RUN[i]}"
+        if [[ -f "$item" ]]; then
+            log_warn "Removing file: $item"
+            rm -f "$item"
+        elif [[ -d "$item" ]]; then
+            # Only remove dir if it's empty
+            if rmdir "$item" 2>/dev/null; then
+                log_warn "Removing directory: $item"
+            else
+                log_warn "Directory not empty, skipping removal: $item"
+            fi
+        fi
+    done
+    log_warn "Rollback complete."
+}
 
-# 1. Install .sh scripts to /usr/local/sbin
-log_info "Installing shell scripts to /usr/local/sbin..."
-for script in "$SCRIPTS_DIR"/*.sh; do
-    if [[ -f "$script" ]]; then
-        base="$(basename "$script")"
+add_to_manifest() {
+    # Adds a file or directory path to the manifest for the uninstaller.
+    local file_path="$1"
+    if [[ $DRY_RUN -eq 1 ]]; then return; fi
+    # Ensure file exists before adding
+    if ! grep -qxF "$file_path" "$MANIFEST_FILE"; then
+        echo "$file_path" >> "$MANIFEST_FILE"
+    fi
+}
+
+main() {
+    # --- Argument Parsing ---
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --dry-run)
+          DRY_RUN=1
+          shift
+          ;;
+        --windows-dir)
+          WINDOWS_DIR="$2"
+          if [[ ! "$WINDOWS_DIR" =~ ^/ ]]; then
+              log_error "Windows path must be absolute."
+              exit 1
+          fi
+          shift 2
+          ;;
+        --help|-h)
+          usage
+          ;;
+        *)
+          log_error "Unknown option: $1"
+          usage
+          ;;
+      esac
+    done
+
+    check_root
+
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_dryrun "Dry-run mode enabled. No files will be changed."
+    else
+        # Prepare manifest directory and file
+        mkdir -p "$MANIFEST_DIR"
+        CREATED_THIS_RUN+=("$MANIFEST_DIR")
+        touch "$MANIFEST_FILE"
+        CREATED_THIS_RUN+=("$MANIFEST_FILE")
+    fi
+
+    # 1. Install Linux scripts
+    log_info "Installing Linux scripts to $INSTALL_DIR..."
+    for script in "$SCRIPTS_DIR"/*.sh; do
+        if [[ "$(basename "$script")" == "_common.sh" || "$(basename "$script")" == "install.sh" || "$(basename "$script")" == "uninstall.sh" ]]; then
+            continue
+        fi
+        
+        local dest_path="$INSTALL_DIR/$(basename "$script" .sh)"
         if [[ $DRY_RUN -eq 1 ]]; then
-            echo "[DRY-RUN] Would install $base to /usr/local/sbin/"
+            log_dryrun "Would install '$script' to '$dest_path'"
         else
-            if [[ -f "/usr/local/sbin/$base" ]]; then
-                log_warn "Overwriting existing script: $base"
-            fi
-            if install -m 755 "$script" "/usr/local/sbin/$base"; then
-                log_info "Installed: $base"
-                INSTALLED_SCRIPTS+=("$base")
-            else
-                log_error "Failed to install: $base"
-                # Rollback previously installed scripts
-                for prev in "${INSTALLED_SCRIPTS[@]}"; do
-                    rm -f "/usr/local/sbin/$prev"
-                    log_warn "Rolled back: $prev"
-                done
-                exit 1
-            fi
+            log_info "Installing '$script' to '$dest_path'..."
+            install -m 755 "$script" "$dest_path"
+            CREATED_THIS_RUN+=("$dest_path")
+            add_to_manifest "$dest_path"
         fi
-    fi
-done
+    done
 
-# 2. Install systemd timer/service for nixos-flake-update if on NixOS
-if grep -q 'ID=nixos' /etc/os-release 2>/dev/null; then
-    log_info "Detected NixOS. Installing systemd timer/service for nixos-flake-update..."
-    
-    if [[ ! -f "$ROOT_DIR/nixos-flake-update.timer" ]] || [[ ! -f "$ROOT_DIR/nixos-flake-update.service" ]]; then
-        log_error "Required systemd files not found in $ROOT_DIR"
-        # Rollback scripts if any were installed
-        if [[ $DRY_RUN -ne 1 ]]; then
-            for prev in "${INSTALLED_SCRIPTS[@]}"; do
-                rm -f "/usr/local/sbin/$prev"
-                log_warn "Rolled back: $prev"
-            done
-        fi
-        exit 1
-    fi
-    
-    if [[ $DRY_RUN -eq 1 ]]; then
-        echo "[DRY-RUN] Would install nixos-flake-update.timer and service to /etc/systemd/system/ and enable timer."
-    else
-        if install -m 644 "$ROOT_DIR/nixos-flake-update.timer" /etc/systemd/system/ && \
-           install -m 644 "$ROOT_DIR/nixos-flake-update.service" /etc/systemd/system/; then
-            if systemctl daemon-reload && systemctl enable --now nixos-flake-update.timer; then
-                log_info "nixos-flake-update.timer enabled and started"
-                SYSTEMD_INSTALLED=1
-            else
-                log_error "Failed to enable/start nixos-flake-update.timer"
-                # Rollback systemd units and scripts
-                rm -f /etc/systemd/system/nixos-flake-update.timer
-                rm -f /etc/systemd/system/nixos-flake-update.service
-                for prev in "${INSTALLED_SCRIPTS[@]}"; do
-                    rm -f "/usr/local/sbin/$prev"
-                    log_warn "Rolled back: $prev"
-                done
-                exit 1
-            fi
+    # 2. Copy Windows scripts if requested
+    if [[ -n "$WINDOWS_DIR" ]]; then
+        log_info "Copying Windows scripts to $WINDOWS_DIR..."
+        local win_scripts_src="$SCRIPTS_DIR/../windows"
+        
+        if [[ $DRY_RUN -eq 1 ]]; then
+            log_dryrun "Would create directory '$WINDOWS_DIR' and copy files into it."
         else
-            log_error "Failed to install systemd files"
-            # Rollback scripts
-            for prev in "${INSTALLED_SCRIPTS[@]}"; do
-                rm -f "/usr/local/sbin/$prev"
-                log_warn "Rolled back: $prev"
-            done
-            exit 1
-        fi
-    fi
-fi
+            mkdir -p "$WINDOWS_DIR"
+            CREATED_THIS_RUN+=("$WINDOWS_DIR")
+            add_to_manifest "$WINDOWS_DIR"
 
-# 3. Optionally copy Windows/NuShell scripts
-read -r -p "Copy Windows/NuShell scripts (scripts/install-steam-rust.nu, scripts/run-steam-rust.bat, scripts/InstallSteamRust.xml) to a Windows-accessible directory? [y/n] " yn
-if [[ "$yn" =~ ^[Yy]$ ]]; then
-    read -r -p "Enter target directory (e.g., /mnt/windows/scripts): " win_dir
-    
-    if [[ ! "$win_dir" =~ ^/ ]]; then
-        log_error "Please provide an absolute path"
-        # Rollback if not dry-run
-        if [[ $DRY_RUN -ne 1 ]]; then
-            for prev in "${INSTALLED_SCRIPTS[@]}"; do
-                rm -f "/usr/local/sbin/$prev"
-                log_warn "Rolled back: $prev"
+            for f in "$win_scripts_src"/*; do
+                local dest_file="$WINDOWS_DIR/$(basename "$f")"
+                log_info "Copying '$f' to '$dest_file'..."
+                cp "$f" "$dest_file"
+                CREATED_THIS_RUN+=("$dest_file")
+                add_to_manifest "$dest_file"
             done
-            if [[ $SYSTEMD_INSTALLED -eq 1 ]]; then
-                rm -f /etc/systemd/system/nixos-flake-update.timer
-                rm -f /etc/systemd/system/nixos-flake-update.service
-                log_warn "Rolled back systemd units"
-            fi
         fi
-        exit 1
     fi
-    
+
+    # If we got this far, the installation was successful. Clear the trap.
+    trap - ERR EXIT
+
     if [[ $DRY_RUN -eq 1 ]]; then
-        echo "[DRY-RUN] Would create directory $win_dir and copy Windows/NuShell scripts."
+        log_dryrun "Dry run complete."
     else
-        if ! mkdir -p "$win_dir"; then
-            log_error "Failed to create directory: $win_dir"
-            # Rollback
-            for prev in "${INSTALLED_SCRIPTS[@]}"; do
-                rm -f "/usr/local/sbin/$prev"
-                log_warn "Rolled back: $prev"
-            done
-            if [[ $SYSTEMD_INSTALLED -eq 1 ]]; then
-                rm -f /etc/systemd/system/nixos-flake-update.timer
-                rm -f /etc/systemd/system/nixos-flake-update.service
-                log_warn "Rolled back systemd units"
-            fi
-            exit 1
-        fi
-        for f in install-steam-rust.nu run-steam-rust.bat InstallSteamRust.xml; do
-            if [[ ! -f "$SCRIPTS_DIR/$f" ]]; then
-                log_warn "File not found: $f"
-                continue
-            fi
-            if ! cp "$SCRIPTS_DIR/$f" "$win_dir/"; then
-                log_error "Failed to copy: $f"
-                # Rollback
-                for prev in "${INSTALLED_SCRIPTS[@]}"; do
-                    rm -f "/usr/local/sbin/$prev"
-                    log_warn "Rolled back: $prev"
-                done
-                if [[ $SYSTEMD_INSTALLED -eq 1 ]]; then
-                    rm -f /etc/systemd/system/nixos-flake-update.timer
-                    rm -f /etc/systemd/system/nixos-flake-update.service
-                    log_warn "Rolled back systemd units"
-                fi
-                exit 1
-            fi
-            log_info "Copied: $f to $win_dir/"
-        done
+        log_success "Installation complete."
+        log_info "An install manifest has been created at: $MANIFEST_FILE"
+        log_info "Use uninstall.sh to remove all installed files."
     fi
-fi
+}
 
-if [[ $DRY_RUN -eq 1 ]]; then
-    log_info "Dry-run complete. No changes were made."
-else
-    log_info "Install complete."
-    log_info "For Windows/NuShell automation, see nix-mox/USAGE.md for further setup instructions."
-fi
+# --- Execution ---
+trap cleanup ERR EXIT
+main "$@"

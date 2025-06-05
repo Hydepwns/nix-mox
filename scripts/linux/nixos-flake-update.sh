@@ -10,45 +10,18 @@
 
 set -euo pipefail
 
+SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./_common.sh
+source "$SCRIPTS_DIR/_common.sh"
+
+# Script-specific variables
 LOGFILE="/var/log/nixos-flake-update.log"
 FLAKE_PATH="${FLAKE_PATH:-/etc/nixos}"
 HOSTNAME=$(hostname)
 DRY_RUN=0
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-# Standardized logging functions
-log_msg() {
-    local level="$1"
-    local color="$2"
-    local msg="$3"
-    local logfile="${4:-}"
-    local timestamp
-    timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
-    local formatted="[$timestamp] [$level] $msg"
-    if [[ -n "$color" ]]; then
-        echo -e "${color}${formatted}${NC}"
-    else
-        echo "$formatted"
-    fi
-    if [[ -n "$logfile" ]]; then
-        echo "$formatted" >> "$logfile"
-    fi
-}
-log_info()    { log_msg "INFO"    "$GREEN"  "$1" "${2:-}"; }
-log_warn()    { log_msg "WARN"    "$YELLOW" "$1" "${2:-}"; }
-log_error()   { log_msg "ERROR"   "$RED"    "$1" "${2:-}"; }
-log_success() { log_msg "SUCCESS" "$GREEN"  "$1" "${2:-}"; }
-log_dryrun()  { log_msg "DRY RUN" "$YELLOW" "$1" "${2:-}"; }
-
-usage() {
-  grep '^#' "$0" | cut -c 3-
-  exit 0
-}
+# Ensure log file exists and is writable
+touch "$LOGFILE" || { log_error "Log file is not writable: $LOGFILE"; exit 1; }
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -65,36 +38,61 @@ while [[ $# -gt 0 ]]; do
       usage
       ;;
     *)
-      echo "Unknown option: $1" >&2
+      log_error "Unknown option: $1" "$LOGFILE"
       usage
       ;;
   esac
 done
 
-# Check for root
-if [[ $EUID -ne 0 ]]; then
-  log_error "This script must be run as root." "$LOGFILE"
-  exit 1
-fi
+check_root "$LOGFILE"
 
 # Check for required commands
-for cmd in nix nixos-rebuild; do
+for cmd in nix git; do
   if ! command -v $cmd &>/dev/null; then
     log_error "Required command '$cmd' not found." "$LOGFILE"
     exit 1
   fi
 done
 
-trap 'log_error "NixOS flake update failed: $(date)" "$LOGFILE"' ERR
+trap 'log_error "An unexpected error occurred on line $LINENO. Command: $BASH_COMMAND." "$LOGFILE"' ERR
+
+log_info "Starting NixOS flake update process for $FLAKE_PATH..." "$LOGFILE"
+
+if [[ ! -d "$FLAKE_PATH/.git" ]]; then
+    log_warn "Flake path '$FLAKE_PATH' is not a git repository. Cannot check for changes."
+fi
+
+# Get the state of the lock file before the update
+pre_update_hash=""
+if [[ -f "$FLAKE_PATH/flake.lock" ]]; then
+    pre_update_hash=$(git -C "$FLAKE_PATH" rev-parse HEAD:flake.lock 2>/dev/null || date -r "$FLAKE_PATH/flake.lock" +%s)
+fi
 
 if [[ $DRY_RUN -eq 1 ]]; then
-  log_dryrun "No changes were made." "$LOGFILE"
-  exit 0
-else
-  {
-    log_info "Starting NixOS flake update: $(date)" "$LOGFILE"
+    log_dryrun "Dry-run mode: Would attempt to update flake inputs at '$FLAKE_PATH'." "$LOGFILE"
+    log_dryrun "Dry-run mode: Would rebuild system if flake inputs changed." "$LOGFILE"
+    exit 0
+fi
+
+# Run update and rebuild, redirecting all output to the log file
+{
+    log_info "Updating flake inputs..."
     nix flake update "$FLAKE_PATH"
-    nixos-rebuild switch --flake "$FLAKE_PATH#$HOSTNAME"
-    log_success "NixOS flake update complete: $(date)" "$LOGFILE"
-  } 2>&1 | tee -a "$LOGFILE"
-fi 
+
+    # Get the state of the lock file after the update
+    post_update_hash=""
+    if [[ -f "$FLAKE_PATH/flake.lock" ]]; then
+        post_update_hash=$(git -C "$FLAKE_PATH" rev-parse HEAD:flake.lock 2>/dev/null || date -r "$FLAKE_PATH/flake.lock" +%s)
+    fi
+
+    if [[ "$pre_update_hash" == "$post_update_hash" ]]; then
+        log_info "No changes to flake.lock detected. System is up to date."
+    else
+        log_info "flake.lock changed. Rebuilding system..."
+        nixos-rebuild switch --flake "$FLAKE_PATH#$(hostname)"
+        log_success "NixOS system rebuild complete."
+    fi
+
+} | tee -a "$LOGFILE"
+
+log_success "NixOS flake update process finished." "$LOGFILE" 

@@ -1,124 +1,98 @@
 #!/bin/bash
-# WARNING: This script is deprecated for Nix/NixOS users!
-# Use `nix run .#uninstall` or `nix profile install .#uninstall` instead.
-# This script is only for legacy/manual uninstalls on non-NixOS systems.
-# uninstall.sh - Remove automation scripts for Proxmox + NixOS + Windows
-# Usage: sudo ./uninstall.sh [--help]
+# uninstall.sh - Remove nix-mox scripts installed by install.sh
+# This script is intended for non-NixOS systems. For NixOS, use the flake.
+# Usage: sudo ./uninstall.sh [--dry-run] [--help]
 #
-# - Removes all .sh scripts from /usr/local/sbin
-# - Removes systemd timer/service for nixos-flake-update if on NixOS
-# - Optionally removes Windows/NuShell scripts from a user-specified directory
-# - Idempotent and safe to re-run
+# - Reads the install manifest at /etc/nix-mox/install_manifest.txt
+# - Removes all files and directories listed in the manifest.
+# - Is idempotent and safe to re-run.
 
 set -euo pipefail
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./_common.sh
+source "$SCRIPTS_DIR/_common.sh"
 
-# Standardized logging functions
-log_msg() {
-    local level="$1"
-    local color="$2"
-    local msg="$3"
-    local logfile="${4:-}"
-    local timestamp
-    timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
-    local formatted="[$timestamp] [$level] $msg"
-    if [[ -n "$color" ]]; then
-        echo -e "${color}${formatted}${NC}"
-    else
-        echo "$formatted"
-    fi
-    if [[ -n "$logfile" ]]; then
-        echo "$formatted" >> "$logfile"
-    fi
-}
-log_info()    { log_msg "INFO"    "$GREEN"  "$1" "${2:-}"; }
-log_warn()    { log_msg "WARN"    "$YELLOW" "$1" "${2:-}"; }
-log_error()   { log_msg "ERROR"   "$RED"    "$1" "${2:-}"; }
-log_success() { log_msg "SUCCESS" "$GREEN"  "$1" "${2:-}"; }
-log_dryrun()  { log_msg "DRY RUN" "$YELLOW" "$1" "${2:-}"; }
+# --- Global Variables ---
+MANIFEST_FILE="/etc/nix-mox/install_manifest.txt"
+DRY_RUN=0
 
-usage() {
-    grep '^#' "$0" | cut -c 3-
-    exit 0
-}
+main() {
+    # --- Argument Parsing ---
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --dry-run)
+          DRY_RUN=1
+          shift
+          ;;
+        --help|-h)
+          usage
+          ;;
+        *)
+          log_error "Unknown option: $1"
+          usage
+          ;;
+      esac
+    done
 
-# Check if running as root
-if [[ $EUID -ne 0 ]]; then
-    log_error "This script must be run as root"
-    exit 1
-fi
+    check_root
 
-if [[ "${1:-}" == "--help" ]]; then
-    usage
-fi
-
-SCRIPTS_DIR="$(cd "$(dirname "$0")" && pwd)"
-ROOT_DIR="$(dirname "$SCRIPTS_DIR")"
-
-# 1. Remove .sh scripts from /usr/local/sbin
-log_info "Removing shell scripts from /usr/local/sbin..."
-for script in "$SCRIPTS_DIR"/*.sh; do
-    if [[ -f "$script" ]]; then
-        base="$(basename "$script")"
-        if [[ -f "/usr/local/sbin/$base" ]]; then
-            rm -f "/usr/local/sbin/$base"
-            log_info "Removed: $base"
-        fi
-    fi
-done
-
-# 2. Remove systemd timer/service for nixos-flake-update if on NixOS
-if grep -q 'ID=nixos' /etc/os-release 2>/dev/null; then
-    log_info "Detected NixOS. Removing systemd timer/service for nixos-flake-update..."
-    
-    if systemctl is-active --quiet nixos-flake-update.timer; then
-        if ! systemctl disable --now nixos-flake-update.timer; then
-            log_error "Failed to disable nixos-flake-update.timer"
-            exit 1
-        fi
+    if [[ ! -f "$MANIFEST_FILE" ]]; then
+        log_warn "Install manifest not found at $MANIFEST_FILE. Nothing to do."
+        exit 0
     fi
     
-    rm -f /etc/systemd/system/nixos-flake-update.timer
-    rm -f /etc/systemd/system/nixos-flake-update.service
-    
-    if ! systemctl daemon-reload; then
-        log_error "Failed to reload systemd daemon"
-        exit 1
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_dryrun "Dry-run mode enabled. No files will be changed."
     fi
-    
-    log_info "nixos-flake-update.timer disabled and removed"
-fi
 
-# 3. Optionally remove Windows/NuShell scripts
-read -r -p "Remove Windows/NuShell scripts (install-steam-rust.nu, run-steam-rust.bat, InstallSteamRust.xml) from a directory? [y/N] " yn
-if [[ "$yn" =~ ^[Yy]$ ]]; then
-    read -r -p "Enter target directory (e.g., /mnt/windows/scripts): " win_dir
+    log_info "Starting uninstallation..."
     
-    # Validate directory path
-    if [[ ! "$win_dir" =~ ^/ ]]; then
-        log_error "Please provide an absolute path"
-        exit 1
-    fi
-    
-    if [[ ! -d "$win_dir" ]]; then
-        log_error "Directory does not exist: $win_dir"
-        exit 1
-    fi
-    
-    for f in install-steam-rust.nu run-steam-rust.bat InstallSteamRust.xml; do
-        if [[ -f "$win_dir/$f" ]]; then
-            if ! rm -f "$win_dir/$f"; then
-                log_error "Failed to remove: $f"
-                exit 1
+    # Read manifest into an array to process in reverse
+    mapfile -t items_to_remove < "$MANIFEST_FILE"
+
+    # Iterate in reverse order to remove files before their parent directories
+    for ((i=${#items_to_remove[@]}-1; i>=0; i--)); do
+        local item="${items_to_remove[i]}"
+        
+        if [[ -z "$item" ]]; then continue; fi
+
+        if [[ $DRY_RUN -eq 1 ]]; then
+            if [[ -e "$item" ]]; then
+                log_dryrun "Would remove: $item"
             fi
-            log_info "Removed: $f from $win_dir/"
+            continue
+        fi
+
+        if [[ -f "$item" ]]; then
+            log_info "Removing file: $item"
+            rm -f "$item"
+        elif [[ -d "$item" ]]; then
+            # Attempt to remove directory, will only succeed if empty
+            if rmdir "$item" 2>/dev/null; then
+                log_info "Removing empty directory: $item"
+            else
+                log_warn "Directory not empty or does not exist, skipping: $item"
+            fi
+        else
+            log_warn "Item not found, skipping: $item"
         fi
     done
-fi
+    
+    # Finally, remove the manifest file itself if not in dry run
+    if [[ $DRY_RUN -eq 0 ]]; then
+        log_info "Removing manifest file: $MANIFEST_FILE"
+        rm -f "$MANIFEST_FILE"
+        # Try to remove the parent dir, will fail if not empty (which is fine)
+        rmdir "$(dirname "$MANIFEST_FILE")" 2>/dev/null || true
+    fi
 
-log_info "Uninstall complete."
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_dryrun "Dry run complete."
+    else
+        log_success "Uninstallation complete."
+    fi
+}
+
+# --- Execution ---
+main "$@"

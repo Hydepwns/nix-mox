@@ -1,9 +1,9 @@
 { config, lib, pkgs, ... }:
 {
-  options.services.nix-mox = {
-    enable = lib.mkEnableOption "Enable nix-mox automation scripts and timers";
+  options.services.nix-mox.common = {
+    enable = lib.mkEnableOption "Enable nix-mox common scripts and timers";
   };
-  config = lib.mkIf config.services.nix-mox.enable {
+  config = lib.mkIf config.services.nix-mox.common.enable {
     environment.systemPackages = [
       pkgs.nix-mox.proxmox-update
       pkgs.nix-mox.vzdump-backup

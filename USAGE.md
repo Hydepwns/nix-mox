@@ -9,22 +9,18 @@ This project provides automation scripts and infrastructure templates for NixOS,
 
 - [Quick Start: Deploying This Project](#-quick-start-deploying-this-project)
 - [Legacy/Manual Install (Non-NixOS only)](#legacymanual-install-non-nixos-only)
-- [Using the NixOS Module (Optional)](#using-the-nixos-module-optional)
+- [Using the NixOS Modules (Optional)](#using-the-nixos-modules-optional)
+  - [Common Module](#common-module)
+  - [ZFS Auto-Snapshot Module](#zfs-auto-snapshot-module)
+  - [Infisical Secrets Module](#infisical-secrets-module)
+  - [Tailscale Module](#tailscale-module)
 - [What's Next?](#whats-next)
 - [Usage & Reference](#usage--reference)
   - [Minimal Usage](#minimal-usage)
   - [Available Scripts](#available-scripts)
   - [Available Templates](#available-templates)
-  - [Advanced Usage](#advanced-usage)
-    - [NixOS on Proxmox](#nixos-on-proxmox)
-    - [Windows on Proxmox](#windows-on-proxmox)
-    - [Networking](#networking)
-    - [Shared Storage](#shared-storage)
-    - [Security](#security)
-    - [Monitoring & Updates](#monitoring--updates)
-    - [Automation Scripts](#automation-scripts)
-    - [Automated Steam + Rust Installation on Windows (NuShell)](#automated-steam--rust-installation-on-windows-nushell)
-    - [Install & Uninstall](#install--uninstall)
+  - [Advanced Usage & Guides](#advanced-usage--guides)
+- [Install & Uninstall](#install--uninstall)
 
 ---
 
@@ -93,34 +89,178 @@ Templates for containers, VMs, monitoring, and storage are available in the `tem
 
 ---
 
-## Using the NixOS Module (Optional)
+## Using the NixOS Modules (Optional)
 
-If you want all nix-mox scripts and the flake update timer/service available system-wide, you can enable the NixOS module:
+This project provides several NixOS modules to declaratively manage system services. To use them, add the flake to your inputs and import the desired modules.
 
-1. Add the module to your NixOS configuration (flake-based example):
+1. **Add the flake input** to your `flake.nix`:
 
-   ```nix
-   {
-     inputs.nix-mox.url = "github:hydepwns/nix-mox";
-     # ...
-   }
-   # In your configuration.nix or flake:
-   {
-     imports = [ nix-mox.nixosModules.nix-mox ];
-     services.nix-mox.enable = true;
-   }
-   ```
+    ```nix
+    {
+      inputs.nix-mox.url = "github:hydepwns/nix-mox";
+      # ...
+    }
+    ```
 
-2. This will:
-   - Add all nix-mox scripts to `environment.systemPackages`.
-   - Set up a systemd timer/service for `nixos-flake-update` (runs daily as root).
+2. **Import the modules** in your NixOS configuration:
+
+    ```nix
+    # In your configuration.nix or other imported file
+    {
+      imports = [
+        nix-mox.nixosModules.nix-mox
+        nix-mox.nixosModules.zfs-auto-snapshot
+        nix-mox.nixosModules.infisical
+        nix-mox.nixosModules.tailscale
+      ];
+    }
+    ```
+
+All module options are available under the `services.nix-mox` namespace.
+
+### Common Module
+
+The common module installs all `nix-mox` scripts and sets up a systemd timer for automatic flake updates.
+
+- **Enable the module**:
+
+    ```nix
+    {
+      services.nix-mox.common.enable = true;
+    }
+    ```
+
+- **This will**:
+  - Add all `nix-mox` scripts to `environment.systemPackages`.
+  - Set up a systemd timer/service for `nixos-flake-update` (runs daily as root).
+
+### ZFS Auto-Snapshot Module
+
+This module declaratively manages ZFS snapshots and retention.
+
+1. **Enable and configure the module**:
+    Define which pools or datasets to snapshot, how often, and the retention period in days.
+
+    ```nix
+    services.nix-mox.zfs-auto-snapshot = {
+      enable = true;
+      pools = {
+        # Snapshot 'rpool' hourly and keep for 7 days
+        "rpool" = {
+          frequency = "hourly";
+          retention_days = 7;
+        };
+
+        # Snapshot a specific dataset daily and keep for 30 days
+        "rpool/data/documents" = {
+          frequency = "daily";
+          retention_days = 30;
+        };
+
+        # Disable snapshots for a specific dataset if inherited
+        "rpool/data/cache" = {
+          enable = false;
+        };
+      };
+    };
+    ```
+
+2. After rebuilding your system, systemd timers will be created to automatically take and prune snapshots according to your configuration.
+
+### Infisical Secrets Module
+
+This module declaratively manages secrets with Infisical, fetching them and making them available as environment files.
+
+1. **Provide the Infisical token** (e.g., via `sops-nix`):
+
+    ```nix
+    {
+      # Provide the Infisical token securely (e.g., using sops-nix)
+      sops.secrets.infisical_token = {
+        # sops-nix configuration...
+      };
+    }
+    ```
+
+2. **Enable and configure the service**:
+    Define which secrets to fetch for different projects and environments.
+
+    ```nix
+    services.nix-mox.infisical = {
+      enable = true;
+      tokenFile = config.sops.secrets.infisical_token.path;
+
+      # Define sets of secrets to fetch
+      secrets = {
+        # For a 'my-app' service
+        "my-app" = {
+          project = "a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890";
+          environment = "prod";
+          path = "/run/secrets/my-app.env";
+        };
+
+        # For a 'grafana' service, with a custom refresh timer
+        "grafana" = {
+          project = "b2c3d4e5-f6a1-b2c3-d4e5-f6a1b2c3d4e5";
+          environment = "staging";
+          path = "/run/secrets/grafana.env";
+          update_timer = {
+            enable = true;
+            frequency = "hourly"; # Refresh secrets hourly
+          };
+        };
+      };
+    };
+    ```
+
+3. **Use the secrets in other services**:
+    After rebuilding, the secrets will be available at the specified paths. You can use them in other systemd services.
+
+    ```nix
+    systemd.services.my-app = {
+      # ...
+      serviceConfig = {
+        EnvironmentFile = config.services.nix-mox.infisical.secrets."my-app".path;
+        # ...
+      };
+    };
+    ```
+
+### Tailscale Module
+
+This module simplifies enabling and configuring Tailscale.
+
+1. **Enable the module**:
+
+    ```nix
+    {
+      services.nix-mox.tailscale.enable = true;
+    }
+    ```
+
+2. **For headless machines**, you can pre-authorize the node by providing an auth key. This is useful for servers that you can't log into interactively.
+
+    Create a file with your Tailscale auth key and secure it (e.g., with `sops-nix`):
+
+    ```nix
+    # In your configuration, provide the path to the auth key file
+    sops.secrets.tailscale_auth_key = {
+      # sops-nix configuration...
+    };
+
+    services.nix-mox.tailscale = {
+      enable = true;
+      authKeyFile = config.sops.secrets.tailscale_auth_key.path;
+    };
+    ```
+
+3. After rebuilding your system, Tailscale will be enabled. If an `authKeyFile` is provided, the node will attempt to authenticate on its first boot.
 
 ---
 
 ## What's Next?
 
-- For advanced usage, see [Advanced Usage](#advanced-usage).
-- For Windows automation, see [Automated Steam + Rust Installation on Windows](#automated-steam--rust-installation-on-windows-nushell).
+- For advanced usage, see the [guides below](#advanced-usage--guides).
 - For details on each script and template, see the sections below.
 
 ---
@@ -161,214 +301,27 @@ If you want all nix-mox scripts and the flake update timer/service available sys
 
 **For usage and customization, see [templates/USAGE.md](templates/USAGE.md).**
 
-## Advanced Usage
+## Advanced Usage & Guides
 
-## NixOS on Proxmox
+For detailed guides on more advanced topics, see the following documents:
 
-### LXC (Container)
+- **[📄 NixOS on Proxmox](./docs/nixos-on-proxmox.md)**:
+  Deploying NixOS as a VM or LXC container on Proxmox.
 
-- Download LXD image: [Hydra](https://hydra.nixos.org/job/nixos/release-*/nixos.lxdContainerImage.x86_64-linux/latest)
-- Upload via Proxmox UI → CT Templates
-- Create:
+- **[📄 Windows on Proxmox](./docs/windows-on-proxmox.md)**:
+  Best practices for creating and configuring a Windows VM.
 
-  ```bash
-  pct create <VMID> local:vztmpl/nixos-*.tar.xz \
-    --ostype unmanaged --features nesting=1 \
-    --net0 name=eth0,bridge=vmbr0,ip=dhcp
-  ```
+- **[📄 Windows Automation Guide](./docs/windows-automation-guide.md)**:
+  Automate the installation of Steam and Rust on a Windows system.
 
-- Set root password, SSH keys
-
-### VM (Declarative)
-
-- Use [nixos-generators](https://github.com/nix-community/nixos-generators):
-
-  ```nix
-  { config, ... }: {
-    imports = [ <nixpkgs/nixos/modules/profiles/qemu-guest.nix> ];
-    services.qemuGuest.enable = true;
-  }
-  ```
-
-  ```bash
-  nixos-generate -f proxmox -c configuration.nix
-  ```
-
-- Upload `.vma.zst`, create VM, attach disk
-- Remote update:
-
-  ```bash
-  nixos-rebuild switch --flake .#vm --target-host root@proxmox
-  ```
-
-### Distroless NixOS (OCI/Container)
-
-- Minimal image:
-
-  ```nix
-  pkgs.dockerTools.buildImage {
-    name = "distroless-app";
-    config = { Cmd = [ "${pkgs.nginx}/bin/nginx" "-g" "daemon off;" ]; };
-  }
-  ```
-
-- Multi-stage:
-
-  ```nix
-  let buildEnv = pkgs.buildEnv { ... };
-      runtimeEnv = pkgs.runtimeOnlyDependencies buildEnv;
-  in pkgs.dockerTools.buildImage { copyToRoot = runtimeEnv; }
-  ```
-
-- Flake config:
-
-  ```nix
-  outputs = { nixpkgs, ... }: {
-    nixosConfigurations.my-container = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [ ({ ... }: {
-        environment.systemPackages = with pkgs; [ nginx ];
-        system.stateVersion = "24.11";
-      }) ];
-    };
-  };
-  ```
-
-## Windows on Proxmox
-
-- Create VM (UEFI, SCSI, VirtIO, attach ISOs)
-- PCI passthrough (GPU):
-
-  ```bash
-  -device vfio-pci,host=01:00.0,multifunction=on
-  ```
-
-- QEMU guest agent
-
-## Networking
-
-- Bridges: vmbr0 (NixOS), vmbr1 (Windows), vmbr2 (Mgmt)
-- Isolate traffic
-
-## Shared Storage
-
-- virtio-fs:
-
-  ```nix
-  virtualisation.sharedDirectories = {
-    win-share = { source = "/mnt/windows"; target = "/win-mount"; };
-  };
-  ```
-
-## Security
-
-- Read-only rootfs:
-
-  ```nix
-  fileSystems."/".options = [ "ro" "nosuid" "nodev" ];
-  ```
-
-- Non-root services:
-
-  ```nix
-  users.users.nginx = { isSystemUser = true; group = "nginx"; };
-  ```
-
-- SBOM:
-
-  ```bash
-  nix store make-content-addressable /nix/store/...-nginx-* --rewrite-outputs > sbom.json
-  ```
-
-## Monitoring & Updates
-
-- Unified logging:
-
-  ```nix
-  services.journald.extraConfig = ''
-    ForwardToSyslog=yes
-    MaxLevelSyslog=debug
-  '';
-  ```
-
-- Auto-upgrade:
-
-  ```nix
-  system.autoUpgrade = {
-    enable = true;
-    flake = "github:user/nix-config#my-container";
-    dates = "daily";
-  };
-  ```
-
-## Automation Scripts
-
-- See scripts in the `scripts/` directory for automation of Proxmox updates, vzdump backups, ZFS snapshots, and NixOS flake updates.
-
-## Automated Steam + Rust Installation on Windows (NuShell)
-
-Automate the installation of Steam and prompt for Rust (by Facepunch Studios, appid 252490) on a Windows system using NuShell and the provided scripts.
-
-### Prerequisites
-
-- A Windows system (VM or bare metal)
-- [NuShell](https://www.nushell.sh/) installed (see below)
-- The following files from [`scripts/`](scripts/):
-  - [`install-steam-rust.nu`](scripts/install-steam-rust.nu)
-  - [`run-steam-rust.bat`](scripts/run-steam-rust.bat)
-  - [`InstallSteamRust.xml`](scripts/InstallSteamRust.xml)
-
-### Steps
-
-1. **Copy Scripts to Windows**  
-   Copy the above files to a directory on your Windows system, e.g. `C:\scripts\`.
-
-2. **Install NuShell**  
-   If NuShell is not already installed, open PowerShell as Administrator and run:
-
-   ```powershell
-   Set-ExecutionPolicy Bypass -Scope Process -Force; `
-   [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
-   iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-   choco install nushell -y
-   ```
-
-   > **Note:** This will install `nu.exe` to `C:\Program Files\Nu\bin\nu.exe` by default.
-
-3. **Register the Scheduled Task**  
-   Open PowerShell as Administrator and run:
-
-   ```powershell
-   schtasks /Create /TN "InstallSteamRust" /XML "C:\scripts\InstallSteamRust.xml"
-   ```
-
-   > **Note:** This creates a scheduled task that runs at user logon and executes the NuShell script via the batch wrapper.
-
-4. **First Logon Behavior**  
-   On the next user logon, the following will happen automatically:
-   - The NuShell script will download and silently install Steam.
-   - Steam will be started once to initialize (you may see the login prompt).
-   - The script will prompt you to log in to Steam and install Rust via the Steam client.
+- **[📄 Advanced Configuration](./docs/advanced-configuration.md)**:
+  Guides for networking, shared storage, security, and monitoring.
 
 ---
-
-#### Optional: Remove the Task After First Run
-
-To have the scheduled task delete itself after running once, add the following line to the end of [`install-steam-rust.nu`](scripts/install-steam-rust.nu):
-
-```nu
-run-external "schtasks.exe" "/Delete" "/TN" "InstallSteamRust" "/F"
-```
-
-#### Optional: Full Headless Rust Install
-
-For a fully automated Rust install (no user interaction), you can use SteamCMD and provide Steam credentials. See the comments in [`install-steam-rust.nu`](scripts/install-steam-rust.nu) for a template, but be aware of the security risks of storing credentials in scripts.
-
----
-
-This process allows you to prepare a Windows image that will automatically install Steam and prompt for Rust installation on first boot, making it easy to flash or deploy to new hardware or VMs.
 
 ## Install & Uninstall
+
+> **Warning:** The install.sh and uninstall.sh scripts are deprecated for NixOS users. Use Nix flake methods above instead.
 
 To install all automation scripts and set up systemd timers, run:
 
@@ -381,7 +334,3 @@ To remove all installed scripts and timers, run:
 ```bash
 sudo ./scripts/uninstall.sh
 ```
-
----
-
-This process allows you to prepare a Windows image that will automatically install Steam and prompt for Rust installation on first boot, making it easy to flash or deploy to new hardware or VMs.
