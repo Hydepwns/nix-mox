@@ -3,12 +3,16 @@ name: CI
 on:
   push:
     branches: [ "main" ]
+    tags: [ "v*" ]
   pull_request:
     branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        system: [x86_64-linux, aarch64-linux]
 
     steps:
       - name: Checkout repository
@@ -19,6 +23,20 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
 
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v13
+        with:
+          name: nix-mox
+          signingKey: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: Cache Nix store
+        uses: actions/cache@v4
+        with:
+          path: /nix/store
+          key: nix-store-${{ runner.os }}-${{ hashFiles('**/*.nix') }}
+          restore-keys: |
+            nix-store-${{ runner.os }}-
+
       - name: Check Nix flake
         run: nix flake check
 
@@ -27,4 +45,30 @@ jobs:
 
       - name: Lint shell scripts
         run: |
-          find . -name "*.sh" -print0 | xargs -0 shellcheck 
+          find . -name "*.sh" -print0 | xargs -0 shellcheck --severity=error --shell=bash
+
+      - name: Build all packages
+        run: |
+          nix build .#all --system ${{ matrix.system }}
+
+      - name: Test NixOS module
+        run: |
+          nix build .#nixosConfigurations.test-vm.config.system.build.toplevel --system ${{ matrix.system }}
+
+      - name: Run shell script tests
+        run: |
+          # Test script syntax
+          find . -name "*.sh" -print0 | xargs -0 bash -n
+          
+          # Test script execution (if any test scripts exist)
+          if [ -d "./tests" ]; then
+            find ./tests -name "*.sh" -print0 | xargs -0 bash
+          fi
+
+      - name: Upload build artifacts
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: nix-mox-${{ matrix.system }}
+          path: result/
+          if-no-files-found: error 
