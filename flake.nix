@@ -18,9 +18,11 @@
   nixConfig = {
     extra-substituters = [
       "https://hydepwns.cachix.org"
+      "https://nix-mox.cachix.org"
     ];
     extra-trusted-public-keys = [
       "hydepwns.cachix.org-1:xg8huKdwzBkLdkq5eCKenadhCROHIICGI9H6y3simJU="
+      "nix-mox.cachix.org-1:MVJZxC7ZyRFAxVsxDuq0nmMRxlTIt5nFFm4Ur10ZCI4="
     ];
   };
 
