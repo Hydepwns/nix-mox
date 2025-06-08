@@ -15,6 +15,15 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
+  nixConfig = {
+    extra-substituters = [
+      "https://hydepwns.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "hydepwns.cachix.org-1:xg8huKdwzBkLdkq5eCKenadhCROHIICGI9H6y3simJU="
+    ];
+  };
+
   outputs = { self, nixpkgs, flake-utils, ... }:
     let
       nixosModules = {
