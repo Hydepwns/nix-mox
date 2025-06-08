@@ -21,6 +21,10 @@ This project provides automation scripts and infrastructure templates for NixOS,
   - [Available Templates](#available-templates)
   - [Advanced Usage & Guides](#advanced-usage--guides)
 - [Install & Uninstall](#install--uninstall)
+- [Development & Testing](#development--testing)
+  - [Development Environment](#development-environment)
+  - [Running Tests](#running-tests)
+  - [Contributing](#contributing)
 
 ---
 
@@ -334,3 +338,78 @@ To remove all installed scripts and timers, run:
 ```bash
 sudo ./scripts/uninstall.sh
 ```
+
+## Development & Testing
+
+This section covers how to contribute to the project, run tests, and ensure code quality.
+
+### Development Environment
+
+1. **Setup Development Shell**
+
+   ```bash
+   # Enter the development shell with all required tools
+   nix develop
+   ```
+
+   This provides:
+   - git
+   - nix
+   - bash
+   - shellcheck
+   - nushell
+   - coreutils
+   - nixpkgs-fmt
+   - fd
+   - ripgrep
+
+2. **Code Formatting**
+
+   ```bash
+   # Format all Nix files
+   nix fmt
+   ```
+
+### Running Tests
+
+1. **Shell Script Tests**
+
+   ```bash
+   # Run all shell script tests
+   ./tests/test-common.sh
+   ./tests/test-zfs-snapshot.sh
+   ```
+
+2. **NixOS Module Tests**
+
+   ```bash
+   # Test the NixOS module
+   nix build .#nixosConfigurations.test-vm.config.system.build.toplevel
+   ```
+
+3. **Package Build Tests**
+
+   ```bash
+   # Test building all packages
+   nix build .#all
+   ```
+
+### Contributing
+
+1. **Code Style**
+   - Use `nix fmt` for Nix code
+   - Follow shellcheck guidelines for shell scripts
+   - Document new features in ARCHITECTURE.md and USAGE.md
+
+2. **Testing**
+   - Add tests for new features
+   - Ensure all tests pass before submitting PRs
+   - Update documentation for new functionality
+
+3. **Pull Requests**
+   - Create feature branches
+   - Ensure CI passes
+   - Update documentation
+   - Add tests for new features
+
+For more details on the testing infrastructure, see [ARCHITECTURE.md](./ARCHITECTURE.md#testing--cicd).

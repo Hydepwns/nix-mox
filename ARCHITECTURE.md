@@ -12,6 +12,7 @@ This document provides a high-level overview of the architecture, network topolo
 - [Hardware Example](#hardware-example)
 - [PCI Passthrough](#pci-passthrough)
 - [Making nix-mox Scripts NixOS-Native](#making-nix-mox-scripts-nixos-native)
+- [Testing & CI/CD](#testing--cicd)
 
 ---
 
@@ -112,3 +113,56 @@ For more details, see the [Windows on Proxmox Guide](./docs/windows-on-proxmox.m
 ## Making nix-mox Scripts NixOS-Native
 
 For packaging and exposing scripts as Nix derivations and flake apps, see the detailed instructions in [USAGE.md](./USAGE.md#using-the-nixos-module-optional) and your `flake.nix`.
+
+## Testing & CI/CD
+
+This project uses GitHub Actions for continuous integration and deployment. The CI/CD pipeline ensures code quality and reliability through automated testing and building.
+
+### Test Infrastructure
+
+```mermaid
+graph TD
+    A[GitHub Actions] --> B[Build & Test]
+    B --> C[Shell Script Tests]
+    B --> D[NixOS Module Tests]
+    B --> E[Package Builds]
+    B --> F[Format & Lint]
+    C --> G[Test Results]
+    D --> G
+    E --> G
+    F --> G
+```
+
+### Test Components
+
+1. **Shell Script Tests**
+   - Located in `tests/` directory
+   - Tests common functions and script behavior
+   - Uses mock commands for system interactions
+   - Ensures script reliability and error handling
+
+2. **NixOS Module Tests**
+   - Tests module integration
+   - Verifies configuration options
+   - Ensures systemd service setup
+   - Validates module dependencies
+
+3. **Build Verification**
+   - Multi-architecture builds (x86_64-linux, aarch64-linux)
+   - Package build verification
+   - Flake compatibility checks
+
+4. **Code Quality**
+   - Shell script linting (shellcheck)
+   - Nix code formatting (nixpkgs-fmt)
+   - Documentation validation
+
+### CI/CD Pipeline
+
+The pipeline runs on:
+
+- Every push to `main`
+- Every pull request
+- Every version tag (v*)
+
+For detailed CI/CD configuration, see `.github/workflows/ci.yml`.
