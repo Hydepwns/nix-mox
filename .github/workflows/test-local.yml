@@ -1,0 +1,37 @@
+name: Test Local
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: nixos/nix:2.19.2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Configure Nix
+        run: |
+          mkdir -p /etc/nix
+          echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
+      - name: Configure Git for local testing
+        run: |
+          git config --global --add safe.directory /Users/droo/Documents/CODE/nix-mox
+          git config --global user.email "test@example.com"
+          git config --global user.name "Test User"
+      - name: Check Nix flake
+        run: NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nix flake check --accept-flake-config --impure
+      - name: Build packages
+        run: |
+          export ENABLE_INFISICAL=0
+          export SHELLCHECK_OPTS="-e SC2155"
+          NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nix build .#all --accept-flake-config --impure
+
+      - name: Test nix-mox in CI mode
+        run: |
+          export CI=true
+          ./scripts/nix-mox --script install --platform linux --verbose
+          ./scripts/nix-mox --script install --platform windows --verbose
+          ./scripts/nix-mox --script install --parallel --verbose 

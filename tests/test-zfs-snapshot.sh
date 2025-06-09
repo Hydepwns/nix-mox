@@ -68,6 +68,28 @@ test_snapshot_creation() {
     echo "✅ Snapshot creation test passed"
 }
 
+# Test CI mode execution
+test_ci_mode() {
+    echo "Testing CI mode execution..."
+    
+    # Set CI mode
+    export CI=true
+    
+    # Run the script in CI mode
+    output=$("$SCRIPTS_DIR/scripts/linux/zfs-snapshot.sh" 2>&1)
+    
+    # Check for CI mode specific behavior
+    if ! echo "$output" | grep -q "Running in CI mode"; then
+        echo "❌ CI mode test failed"
+        exit 1
+    fi
+    
+    # Unset CI mode
+    unset CI
+    
+    echo "✅ CI mode test passed"
+}
+
 # Cleanup
 cleanup() {
     rm -f "$SCRIPTS_DIR/tests/zfs"
@@ -79,4 +101,5 @@ trap cleanup EXIT
 echo "Starting ZFS snapshot tests..."
 test_dry_run
 test_snapshot_creation
+test_ci_mode
 echo "All ZFS snapshot tests passed! 🎉" 

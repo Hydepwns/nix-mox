@@ -65,6 +65,24 @@ jobs:
             find ./tests -name "*.sh" -print0 | xargs -0 bash
           fi
 
+      - name: Test nix-mox script
+        env:
+          CI: "true"
+        run: |
+          # Test Linux scripts
+          ./scripts/nix-mox --script install --platform linux --verbose
+          ./scripts/nix-mox --script uninstall --platform linux --verbose
+          
+          # Test Windows scripts
+          ./scripts/nix-mox --script install --platform windows --verbose
+          ./scripts/nix-mox --script run --platform windows --verbose
+          
+          # Test auto-detection
+          ./scripts/nix-mox --script install --verbose
+          
+          # Test parallel execution
+          ./scripts/nix-mox --script install --parallel --verbose
+
       - name: Upload build artifacts
         if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4

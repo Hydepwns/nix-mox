@@ -39,17 +39,51 @@ test_log_functions() {
 test_check_root() {
     echo "Testing check_root function..."
     
-    # This should fail when not run as root
-    if check_root 2>/dev/null; then
-        echo "❌ check_root test failed (should fail when not root)"
-        exit 1
+    # Test as non-root (should fail)
+    if [[ $EUID -eq 0 ]]; then
+        # Temporarily change EUID to test non-root case
+        local original_euid=$EUID
+        EUID=1000
+        if check_root "$@" 2>/dev/null; then
+            echo "❌ check_root test failed (should fail when not root)"
+            exit 1
+        fi
+        EUID=$original_euid
+    else
+        # Already running as non-root
+        if check_root "$@" 2>/dev/null; then
+            echo "❌ check_root test failed (should fail when not root)"
+            exit 1
+        fi
     fi
     
     echo "✅ check_root test passed"
 }
 
+# Test CI mode detection
+test_ci_mode() {
+    echo "Testing CI mode detection..."
+    
+    # Test with CI=true
+    export CI=true
+    if ! is_ci_mode; then
+        echo "❌ CI mode detection test failed (should detect CI mode)"
+        exit 1
+    fi
+    
+    # Test without CI=true
+    unset CI
+    if is_ci_mode; then
+        echo "❌ CI mode detection test failed (should not detect CI mode)"
+        exit 1
+    fi
+    
+    echo "✅ CI mode detection test passed"
+}
+
 # Run all tests
 echo "Starting tests..."
 test_log_functions
-test_check_root
+test_check_root "$@"
+test_ci_mode
 echo "All tests passed! 🎉" 
