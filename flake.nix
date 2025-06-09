@@ -7,7 +7,6 @@
   # - packages.<system>.zfs-snapshot: ZFS snapshot/prune script as a Nix package
 
   description = "Proxmox + NixOS + Windows gaming automation flake";
-  version = "0.1.0";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
