@@ -9,10 +9,6 @@
 
 set -euo pipefail
 
-SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=./_common.sh
-source "$SCRIPTS_DIR/_common.sh"
-
 # --- Global Variables ---
 MANIFEST_FILE="/etc/nix-mox/install_manifest.txt"
 DRY_RUN=0
@@ -35,7 +31,7 @@ main() {
       esac
     done
 
-    check_root
+    check_root "$@"
 
     if [[ ! -f "$MANIFEST_FILE" ]]; then
         log_warn "Install manifest not found at $MANIFEST_FILE. Nothing to do."

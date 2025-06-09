@@ -42,6 +42,9 @@
         let
           pkgs = import nixpkgs { inherit system; };
 
+          # Flag to control Infisical inclusion
+          enableInfisical = builtins.getEnv "ENABLE_INFISICAL" == "1";
+
           # Infisical CLI version and hashes
           infisicalVersion = "0.22.0";
           infisicalHashes = {
@@ -77,6 +80,144 @@
               platforms = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
             };
           };
+
+          isLinux = builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
+
+          allPackages = {
+            vzdump-backup = if isLinux then pkgs.writeShellApplication {
+              name = "vzdump-backup";
+              runtimeInputs = [ pkgs.proxmox-backup-client pkgs.qemu pkgs.lxc pkgs.bash pkgs.coreutils pkgs.gawk ];
+              text = builtins.readFile ./scripts/linux/vzdump-backup.sh;
+              meta = {
+                description = "Backup all Proxmox VMs and containers to specified storage.";
+                platforms = [ "x86_64-linux" "aarch64-linux" ];
+              };
+            } else null;
+            zfs-snapshot = if isLinux then pkgs.writeShellApplication {
+              name = "zfs-snapshot";
+              runtimeInputs = [
+                pkgs.zfs
+                pkgs.bash
+                pkgs.coreutils
+                pkgs.gnugrep
+                pkgs.gawk
+                pkgs.gnused
+                pkgs.gnutar
+              ];
+              text = builtins.readFile ./scripts/linux/zfs-snapshot.sh;
+              meta = {
+                description = "Create and prune ZFS snapshots for the specified pool.";
+                platforms = [ "x86_64-linux" "aarch64-linux" ];
+              };
+            } else null;
+            nixos-flake-update = if isLinux then pkgs.writeShellApplication {
+              name = "nixos-flake-update";
+              runtimeInputs = [ pkgs.nix pkgs.bash pkgs.coreutils ];
+              text = builtins.readFile ./scripts/linux/nixos-flake-update.sh;
+              meta = {
+                description = "Update flake inputs and rebuild NixOS system.";
+                platforms = [ "x86_64-linux" "aarch64-linux" ];
+              };
+            } else null;
+            install = if isLinux then pkgs.writeScriptBin "nix-mox-install" ''
+              #!${pkgs.bash}/bin/bash
+              ${builtins.readFile ./scripts/linux/install.sh}
+            '' else null;
+            uninstall = if isLinux then let
+              commonSh = builtins.readFile ./scripts/linux/_common.sh;
+              uninstallSh = builtins.readFile ./scripts/linux/uninstall.sh;
+            in pkgs.writeShellApplication {
+              name = "nix-mox-uninstall";
+              runtimeInputs = [ pkgs.bash pkgs.coreutils ];
+              text = ''
+                #!${pkgs.bash}/bin/bash
+                set -euo pipefail
+
+                # Write _common.sh to a temp file
+                common_sh=$(mktemp)
+                cat > "$common_sh" <<'EOF'
+${commonSh}
+EOF
+
+                # Source common functions
+                source "$common_sh"
+
+                # Main uninstall logic
+${uninstallSh}
+              '';
+              meta = {
+                description = "Legacy/compat uninstall logic for nix-mox scripts.";
+                platforms = [ "x86_64-linux" "aarch64-linux" ];
+              };
+            } else null;
+            install-steam-rust = pkgs.writeTextFile {
+              name = "install-steam-rust.nu";
+              destination = "/bin/install-steam-rust.nu";
+              text = ''
+                #!${pkgs.nushell}/bin/nu
+                ${builtins.readFile ./scripts/windows/install-steam-rust.nu}
+              '';
+              executable = true;
+            };
+            windows-automation-assets-sources = pkgs.stdenv.mkDerivation {
+              name = "windows-automation-assets-sources";
+              src = ./scripts/windows;
+              installPhase = ''
+                mkdir -p $out
+                cp $src/install-steam-rust.nu $out/
+                cp $src/run-steam-rust.bat $out/
+                cp $src/InstallSteamRust.xml $out/
+              '';
+              meta = {
+                description = "Source files for Windows automation (Steam, Rust NuShell script, .bat, .xml). Requires Nushell on the Windows host.";
+              };
+            };
+          } // (if enableInfisical then { infisical-cli = infisical-cli; } else {});
+          proxmoxUpdate = if isLinux then {
+            proxmox-update = pkgs.writeShellApplication {
+              name = "proxmox-update";
+              runtimeInputs = [ pkgs.apt pkgs.bash pkgs.coreutils ];
+              text = builtins.readFile ./scripts/linux/proxmox-update.sh;
+              meta = {
+                description = "Update and upgrade Proxmox host packages safely.";
+                platforms = [ "x86_64-linux" "aarch64-linux" ];
+              };
+            };
+          } else {};
+
+          apps =
+            if isLinux then {
+              proxmox-update = {
+                type = "app";
+                program = "${self.packages.${system}.proxmox-update}/bin/proxmox-update";
+                description = "Update and upgrade Proxmox host packages safely.";
+              };
+              vzdump-backup = {
+                type = "app";
+                program = "${self.packages.${system}.vzdump-backup}/bin/vzdump-backup";
+                description = "Backup all Proxmox VMs and containers to specified storage.";
+              };
+              zfs-snapshot = {
+                type = "app";
+                program = "${self.packages.${system}.zfs-snapshot}/bin/zfs-snapshot";
+                description = "Create and prune ZFS snapshots for the specified pool.";
+              };
+              nixos-flake-update = {
+                type = "app";
+                program = "${self.packages.${system}.nixos-flake-update}/bin/nixos-flake-update";
+                description = "Update flake inputs and rebuild NixOS system.";
+              };
+              install = {
+                type = "app";
+                program = "${self.packages.${system}.install}/bin/nix-mox-install";
+                description = "Legacy/compat install logic for nix-mox scripts.";
+              };
+              uninstall = {
+                type = "app";
+                program = "${self.packages.${system}.uninstall}/bin/nix-mox-uninstall";
+                description = "Legacy/compat uninstall logic for nix-mox scripts.";
+              };
+            } else {};
         in {
           # Development shell with common tools for working on this repository
           # Usage: nix develop
@@ -98,131 +239,13 @@
           # Usage: nix fmt
           # Formats all Nix files in the repository for consistent style.
           formatter = pkgs.nixpkgs-fmt;
-          packages = {
-            # Infisical CLI for secret management
-            infisical-cli = infisical-cli;
-            # Proxmox update script: updates and upgrades Proxmox host packages
-            proxmox-update = pkgs.writeShellApplication {
-              name = "proxmox-update";
-              runtimeInputs = [ pkgs.apt pkgs.pve-manager pkgs.bash pkgs.coreutils ];
-              text = builtins.readFile ./scripts/linux/proxmox-update.sh;
-              meta = {
-                description = "Update and upgrade Proxmox host packages safely.";
-              };
-            };
-            # Proxmox vzdump backup script: backs up all VMs and containers to specified storage
-            vzdump-backup = pkgs.writeShellApplication {
-              name = "vzdump-backup";
-              runtimeInputs = [ pkgs.proxmox-backup-client pkgs.qemu pkgs.lxc pkgs.bash pkgs.coreutils pkgs.gawk ];
-              text = builtins.readFile ./scripts/linux/vzdump-backup.sh;
-              meta = {
-                description = "Backup all Proxmox VMs and containers to specified storage.";
-              };
-            };
-            # ZFS snapshot/prune script: creates and prunes ZFS snapshots for the specified pool
-            zfs-snapshot = pkgs.writeShellApplication {
-              name = "zfs-snapshot";
-              runtimeInputs = [
-                pkgs.zfs
-                pkgs.bash
-                pkgs.coreutils
-                pkgs.gnugrep
-                pkgs.gawk
-                pkgs.gnused
-                pkgs.gnutar
-              ];
-              text = builtins.readFile ./scripts/linux/zfs-snapshot.sh;
-              meta = {
-                description = "Create and prune ZFS snapshots for the specified pool.";
-              };
-            };
-            # NixOS flake update script: updates flake inputs and rebuilds
-            nixos-flake-update = pkgs.writeShellApplication {
-              name = "nixos-flake-update";
-              runtimeInputs = [ pkgs.nix pkgs.bash pkgs.coreutils ];
-              text = builtins.readFile ./scripts/linux/nixos-flake-update.sh;
-              meta = {
-                description = "Update flake inputs and rebuild NixOS system.";
-              };
-            };
-            # Install script: legacy/compat install logic
-            install = pkgs.writeShellApplication {
-              name = "nix-mox-install";
-              runtimeInputs = [ pkgs.bash pkgs.coreutils ];
-              text = builtins.readFile ./scripts/linux/install.sh;
-              meta = {
-                description = "Legacy/compat install logic for nix-mox scripts.";
-              };
-            };
-            # Uninstall script: legacy/compat uninstall logic
-            uninstall = pkgs.writeShellApplication {
-              name = "nix-mox-uninstall";
-              runtimeInputs = [ pkgs.bash pkgs.coreutils ];
-              text = builtins.readFile ./scripts/linux/uninstall.sh;
-              meta = {
-                description = "Legacy/compat uninstall logic for nix-mox scripts.";
-              };
-            };
-            # Nushell script for Steam+Rust installation on Windows
-            install-steam-rust = pkgs.writeShellApplication {
-              name = "install-steam-rust";
-              runtimeInputs = [ pkgs.nushell ]; # Requires nushell in PATH
-              text = builtins.readFile ./scripts/windows/install-steam-rust.nu;
-              meta = {
-                description = "Automate Steam installation and prompt for Rust on Windows.";
-                platforms = pkgs.lib.platforms.windows; # Indicate it's for Windows
-              };
-            };
-            # Package bundling all Windows automation assets (source files)
-            windows-automation-assets-sources = pkgs.stdenv.mkDerivation {
-              name = "windows-automation-assets-sources";
-              src = ./scripts/windows; # Source directory
-              installPhase = ''
-                mkdir -p $out
-                cp $src/install-steam-rust.nu $out/
-                cp $src/run-steam-rust.bat $out/
-                cp $src/InstallSteamRust.xml $out/
-              '';
-              meta = {
-                description = "Source files for Windows automation (Steam, Rust NuShell script, .bat, .xml). Requires Nushell on the Windows host.";
-              };
+          packages = pkgs.lib.filterAttrs (name: value: value != null) (allPackages // proxmoxUpdate) // {
+            all = pkgs.symlinkJoin {
+              name = "all-nix-mox";
+              paths = builtins.filter (p: p != null) (builtins.attrValues (allPackages // proxmoxUpdate));
             };
           };
-          apps = {
-            proxmox-update = {
-              type = "app";
-              program = "${self.packages.${system}.proxmox-update}/bin/proxmox-update";
-              description = "Update and upgrade Proxmox host packages safely.";
-            };
-            vzdump-backup = {
-              type = "app";
-              program = "${self.packages.${system}.vzdump-backup}/bin/vzdump-backup";
-              description = "Backup all Proxmox VMs and containers to specified storage.";
-            };
-            zfs-snapshot = {
-              type = "app";
-              program = "${self.packages.${system}.zfs-snapshot}/bin/zfs-snapshot";
-              description = "Create and prune ZFS snapshots for the specified pool.";
-            };
-            nixos-flake-update = {
-              type = "app";
-              program = "${self.packages.${system}.nixos-flake-update}/bin/nixos-flake-update";
-              description = "Update flake inputs and rebuild NixOS system.";
-            };
-            install = {
-              type = "app";
-              program = "${self.packages.${system}.install}/bin/nix-mox-install";
-              description = "Legacy/compat install logic for nix-mox scripts.";
-            };
-            uninstall = {
-              type = "app";
-              program = "${self.packages.${system}.uninstall}/bin/nix-mox-uninstall";
-              description = "Legacy/compat uninstall logic for nix-mox scripts.";
-            };
-            # Note: install-steam-rust is not added as an app here as it's Windows-specific
-            # and `nix run` is typically used on the host (Linux/macOS).
-            # Users should build .#windows-automation-assets and copy to Windows.
-          };
+          apps = apps;
         }
       ) // {
         nixosModules = nixosModules;

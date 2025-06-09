@@ -58,4 +58,9 @@ usage() {
   script_path=$(readlink -f "${BASH_SOURCE[1]}")
   grep '^#' "$script_path" | cut -c 3-
   exit 0
+}
+
+# Function to check if running in CI mode
+is_ci_mode() {
+    [ "${CI:-false}" = "true" ]
 } 

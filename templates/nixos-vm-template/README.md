@@ -93,47 +93,32 @@ This template is designed to be a flexible base for a variety of VM roles, such 
 - Use Nix flakes to share common modules or overlays between VM types.
 - Document any required secrets or environment variables separately (do not commit secrets to git).
 - Test your template by cloning and booting a new VM before using in production.
+- Use CI mode for automated testing and deployment.
 
 ---
 
-By following these steps, you can quickly spin up new, immutable NixOS VMs tailored for any role in your infrastructure.
+## CI/CD Integration
 
-## Optional Modules: First Boot & Cloud-Init
+This template supports CI/CD integration through the `nix-mox` script:
 
-To enable first-boot logic or cloud-init support, add the relevant module to your VM's `modules` array in `flake.nix`:
+1. **CI Mode Features**:
+   - Automatic platform detection
+   - Parallel execution of platform-specific scripts
+   - Enhanced error reporting and logging
+   - Retry mechanisms for failed operations
 
-```nix
-modules = [
-  ./base.nix
-  # ./web-server.nix
-  ./first-boot-setup.nix  # For first-boot automation
-  ./cloud-init-example.nix # For Proxmox cloud-init integration
-];
-```
+2. **Example CI Usage**:
 
-- `first-boot-setup.nix`: Regenerates SSH host keys and runs custom logic on first boot.
-- `cloud-init-example.nix`: Enables cloud-init for Proxmox or other platforms.
+   ```bash
+   export CI=true
+   ./scripts/nix-mox --script install --parallel --verbose
+   ```
 
-## Scrubbing Sensitive Data Before Templating
-
-Before converting a VM to a template, run the following checklist:
-
-- [ ] Remove SSH host keys: `sudo rm -f /etc/ssh/ssh_host_*`
-- [ ] Clear logs: `sudo rm -rf /var/log/*`
-- [ ] Clear shell history: `history -c && rm -f ~/.bash_history ~/.zsh_history`
-- [ ] Remove temporary files: `sudo rm -rf /tmp/* /var/tmp/*`
-- [ ] (Optional) Run `nix-collect-garbage -d`
-
-## Local Testing with QEMU
-
-You can test your VM template locally using QEMU:
-
-```sh
-nix build .#nixosConfigurations.web-vm.config.system.build.vm
-./result/bin/run-*-vm
-```
-
-This boots the VM in a QEMU virtual machine for quick testing before uploading to Proxmox.
+3. **CI Best Practices**:
+   - Always use `--verbose` in CI for detailed logs
+   - Consider using `--parallel` for faster execution
+   - Set appropriate timeouts with `--timeout`
+   - Use `--retry` for handling transient failures
 
 ## Automated Flake Updates
 
@@ -184,3 +169,24 @@ To adapt for different environments (KVM, VMware, etc.), copy and adjust the rel
 
 - `fileSystems` and `swapDevices` for disks
 - `networking.interfaces` for network config
+
+## Scrubbing Sensitive Data Before Templating
+
+Before converting a VM to a template, run the following checklist:
+
+- [ ] Remove SSH host keys: `sudo rm -f /etc/ssh/ssh_host_*`
+- [ ] Clear logs: `sudo rm -rf /var/log/*`
+- [ ] Clear shell history: `history -c && rm -f ~/.bash_history ~/.zsh_history`
+- [ ] Remove temporary files: `sudo rm -rf /tmp/* /var/tmp/*`
+- [ ] (Optional) Run `nix-collect-garbage -d`
+
+## Local Testing with QEMU
+
+You can test your VM template locally using QEMU:
+
+```sh
+nix build .#nixosConfigurations.web-vm.config.system.build.vm
+./result/bin/run-*-vm
+```
+
+This boots the VM in a QEMU virtual machine for quick testing before uploading to Proxmox.

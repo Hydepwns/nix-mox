@@ -20,7 +20,7 @@ MANIFEST_FILE="$MANIFEST_DIR/install_manifest.txt"
 DRY_RUN=0
 WINDOWS_DIR=""
 # This array tracks files created *by this specific run* for cleanup on failure.
-declare -a CREATED_THIS_RUN
+CREATED_THIS_RUN=()
 
 # --- Functions ---
 cleanup() {
@@ -31,8 +31,10 @@ cleanup() {
 
     log_warn "An error occurred. Rolling back changes made during this installation run..."
     # Iterate in reverse to remove files before directories
+    local i
     for ((i=${#CREATED_THIS_RUN[@]}-1; i>=0; i--)); do
-        local item="${CREATED_THIS_RUN[i]}"
+        local item
+        item="${CREATED_THIS_RUN[i]}"
         if [[ -f "$item" ]]; then
             log_warn "Removing file: $item"
             rm -f "$item"
@@ -50,7 +52,8 @@ cleanup() {
 
 add_to_manifest() {
     # Adds a file or directory path to the manifest for the uninstaller.
-    local file_path="$1"
+    local file_path
+    file_path="$1"
     if [[ $DRY_RUN -eq 1 ]]; then return; fi
     # Ensure file exists before adding
     if ! grep -qxF "$file_path" "$MANIFEST_FILE"; then
@@ -84,7 +87,7 @@ main() {
       esac
     done
 
-    check_root
+    check_root "$@"
 
     if [[ $DRY_RUN -eq 1 ]]; then
         log_dryrun "Dry-run mode enabled. No files will be changed."
@@ -98,12 +101,14 @@ main() {
 
     # 1. Install Linux scripts
     log_info "Installing Linux scripts to $INSTALL_DIR..."
+    local script
     for script in "$SCRIPTS_DIR"/*.sh; do
         if [[ "$(basename "$script")" == "_common.sh" || "$(basename "$script")" == "install.sh" || "$(basename "$script")" == "uninstall.sh" ]]; then
             continue
         fi
         
-        local dest_path="$INSTALL_DIR/$(basename "$script" .sh)"
+        local dest_path
+        dest_path="$INSTALL_DIR/$(basename "$script" .sh)"
         if [[ $DRY_RUN -eq 1 ]]; then
             log_dryrun "Would install '$script' to '$dest_path'"
         else
@@ -117,7 +122,8 @@ main() {
     # 2. Copy Windows scripts if requested
     if [[ -n "$WINDOWS_DIR" ]]; then
         log_info "Copying Windows scripts to $WINDOWS_DIR..."
-        local win_scripts_src="$SCRIPTS_DIR/../windows"
+        local win_scripts_src
+        win_scripts_src="$SCRIPTS_DIR/../windows"
         
         if [[ $DRY_RUN -eq 1 ]]; then
             log_dryrun "Would create directory '$WINDOWS_DIR' and copy files into it."
@@ -126,8 +132,10 @@ main() {
             CREATED_THIS_RUN+=("$WINDOWS_DIR")
             add_to_manifest "$WINDOWS_DIR"
 
+            local f
             for f in "$win_scripts_src"/*; do
-                local dest_file="$WINDOWS_DIR/$(basename "$f")"
+                local dest_file
+                dest_file="$WINDOWS_DIR/$(basename "$f")"
                 log_info "Copying '$f' to '$dest_file'..."
                 cp "$f" "$dest_file"
                 CREATED_THIS_RUN+=("$dest_file")
