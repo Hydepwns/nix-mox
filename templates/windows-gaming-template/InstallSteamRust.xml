@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Settings>
+        <Version>1.0</Version>
+        <CI_Mode>false</CI_Mode>
+        <LogLevel>info</LogLevel>
+    </Settings>
+    
+    <Prerequisites>
+        <WindowsVersion>10.0.19041.0</WindowsVersion>
+        <RequiredDiskSpace>50</RequiredDiskSpace>
+        <RequiredRAM>8</RequiredRAM>
+        <RequiredCPU>Cores: 4, Threads: 8</RequiredCPU>
+        <RequiredGPU>DirectX 11 compatible</RequiredGPU>
+    </Prerequisites>
+    
+    <Steam>
+        <InstallPath>C:\Program Files (x86)\Steam</InstallPath>
+        <DownloadURL>https://steamcdn-a.akamaihd.net/client/installer/SteamSetup.exe</DownloadURL>
+        <SilentInstall>true</SilentInstall>
+        <AutoUpdate>false</AutoUpdate>
+        <Config>
+            <AllowDownloadsDuringAnyApp>true</AllowDownloadsDuringAnyApp>
+            <StreamingThrottleEnabled>false</StreamingThrottleEnabled>
+            <AllowDownloadsWhileAnyAppRunning>true</AllowDownloadsWhileAnyAppRunning>
+        </Config>
+    </Steam>
+    
+    <Rust>
+        <AppID>252490</AppID>
+        <InstallPath>C:\Program Files (x86)\Steam\steamapps\common\Rust</InstallPath>
+        <LaunchOptions>
+            <Windowed>false</Windowed>
+            <Fullscreen>true</Fullscreen>
+            <Resolution>1920x1080</Resolution>
+            <GraphicsQuality>5</GraphicsQuality>
+            <MaxFPS>144</MaxFPS>
+        </LaunchOptions>
+        <Performance>
+            <TextureQuality>5</TextureQuality>
+            <ShadowQuality>3</ShadowQuality>
+            <WaterQuality>2</WaterQuality>
+            <AntiAliasing>2</AntiAliasing>
+            <AnisotropicFiltering>8</AnisotropicFiltering>
+        </Performance>
+    </Rust>
+    
+    <Monitoring>
+        <Enabled>true</Enabled>
+        <LogPath>C:\Program Files (x86)\Steam\logs</LogPath>
+        <Metrics>
+            <FPS>true</FPS>
+            <CPU>true</CPU>
+            <GPU>true</GPU>
+            <Memory>true</Memory>
+            <Network>true</Network>
+        </Metrics>
+        <Alerts>
+            <LowFPS>30</LowFPS>
+            <HighCPU>90</HighCPU>
+            <HighGPU>90</HighGPU>
+            <LowMemory>10</LowMemory>
+        </Alerts>
+    </Monitoring>
+    
+    <CI_Configuration>
+        <TestMode>true</TestMode>
+        <SkipPrerequisites>true</SkipPrerequisites>
+        <VerboseLogging>true</VerboseLogging>
+        <Timeout>3600</Timeout>
+        <RetryCount>3</RetryCount>
+        <CleanupOnExit>true</CleanupOnExit>
+    </CI_Configuration>
+</Configuration> 
