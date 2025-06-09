@@ -166,3 +166,25 @@ The pipeline runs on:
 - Every version tag (v*)
 
 For detailed CI/CD configuration, see `.github/workflows/ci.yml`.
+
+### CI Mode
+
+The `nix-mox` script supports a special CI mode that enables:
+
+- Automatic platform detection and execution
+- Parallel execution of platform-specific scripts
+- Enhanced error reporting and logging
+- Retry mechanisms for failed operations
+
+To enable CI mode:
+
+1. Set the `CI` environment variable to "true"
+2. Use the `--parallel` flag for concurrent execution
+3. Use `--verbose` for detailed logging
+
+Example CI configuration:
+
+```bash
+export CI=true
+./scripts/nix-mox --script install --parallel --verbose
+```

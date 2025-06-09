@@ -10,6 +10,8 @@ This guide applies to all templates in the `templates/` directory, including con
 - [Best Practices](#best-practices)
 - [Example: Importing a Template Module](#example-importing-a-template-module)
 - [Available Templates Overview](#available-templates-overview)
+- [CI/CD Integration](#cicd-integration)
+- [Windows Automation](#windows-automation)
 
 ---
 
@@ -40,6 +42,7 @@ This guide applies to all templates in the `templates/` directory, including con
 - **Customization:** Use Nix flakes or overlays to share common modules or settings between templates.
 - **Testing:** Test your template by deploying or cloning before using in production.
 - **Secrets:** Document required secrets or environment variables separately; do not commit secrets to git.
+- **CI/CD:** Use the provided CI mode and parallel execution features for automated testing and deployment.
 
 ---
 
@@ -60,8 +63,55 @@ This directory contains example templates and configuration files for improving 
 - Containerized service configuration (LXC and Docker)
 - ZFS SSD caching setup
 - Prometheus + Grafana monitoring stack
+- Windows VM automation templates
 
 Each subdirectory typically contains its own `README.md` and sample configuration files to help you get started with that specific template. For general template usage and best practices, refer to this document.
+
+---
+
+## CI/CD Integration
+
+The templates support CI/CD integration through the `nix-mox` script:
+
+1. **CI Mode Features**:
+   - Automatic platform detection
+   - Parallel execution of platform-specific scripts
+   - Enhanced error reporting and logging
+   - Retry mechanisms for failed operations
+
+2. **Example CI Usage**:
+
+   ```bash
+   export CI=true
+   ./scripts/nix-mox --script install --parallel --verbose
+   ```
+
+3. **CI Best Practices**:
+   - Always use `--verbose` in CI for detailed logs
+   - Consider using `--parallel` for faster execution
+   - Set appropriate timeouts with `--timeout`
+   - Use `--retry` for handling transient failures
+
+---
+
+## Windows Automation
+
+The templates include Windows-specific automation features:
+
+1. **Steam & Rust Installation**:
+   - Automated installation scripts for Windows VMs
+   - Pre-configured Windows Scheduled Tasks
+   - NuShell-based automation scripts
+
+2. **Usage**:
+
+   ```bash
+   # Build Windows automation assets
+   nix build .#windows-automation-assets
+   
+   # Copy to Windows VM and run
+   ./install-steam-rust.nu
+   ```
 
 ---
 

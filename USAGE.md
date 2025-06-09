@@ -269,7 +269,7 @@ This module simplifies enabling and configuring Tailscale.
 
 ---
 
-# Usage & Reference
+## Usage & Reference
 
 ## Minimal Usage
 
@@ -305,7 +305,7 @@ This module simplifies enabling and configuring Tailscale.
 
 **For usage and customization, see [templates/USAGE.md](templates/USAGE.md).**
 
-## Advanced Usage & Guides
+### Advanced Usage & Guides
 
 For detailed guides on more advanced topics, see the following documents:
 
@@ -323,7 +323,7 @@ For detailed guides on more advanced topics, see the following documents:
 
 ---
 
-## Install & Uninstall
+### Install & Uninstall
 
 > **Warning:** The install.sh and uninstall.sh scripts are deprecated for NixOS users. Use Nix flake methods above instead.
 
@@ -339,11 +339,11 @@ To remove all installed scripts and timers, run:
 sudo ./scripts/uninstall.sh
 ```
 
-## Development & Testing
+### Development & Testing
 
 This section covers how to contribute to the project, run tests, and ensure code quality.
 
-### Development Environment
+#### Development Environment
 
 1. **Setup Development Shell**
 
@@ -364,13 +364,16 @@ This section covers how to contribute to the project, run tests, and ensure code
    - ripgrep
 
 2. **Code Formatting**
+   - Use `nix fmt` for Nix code
+   - Follow shellcheck guidelines for shell scripts
+   - Document new features in ARCHITECTURE.md and USAGE.md
 
    ```bash
    # Format all Nix files
    nix fmt
    ```
 
-### Running Tests
+#### Running Tests
 
 1. **Shell Script Tests**
 
@@ -394,22 +397,46 @@ This section covers how to contribute to the project, run tests, and ensure code
    nix build .#all
    ```
 
-### Contributing
+#### Contributing
 
-1. **Code Style**
-   - Use `nix fmt` for Nix code
-   - Follow shellcheck guidelines for shell scripts
-   - Document new features in ARCHITECTURE.md and USAGE.md
-
-2. **Testing**
+1. **Testing**
    - Add tests for new features
    - Ensure all tests pass before submitting PRs
    - Update documentation for new functionality
 
-3. **Pull Requests**
+2. **Pull Requests**
    - Create feature branches
    - Ensure CI passes
    - Update documentation
    - Add tests for new features
+
+#### CI Integration
+
+The `nix-mox` script is designed to work seamlessly in CI environments:
+
+1. **Automatic CI Detection**
+   - The script automatically detects CI environments
+   - Sets appropriate logging and error handling
+   - Enables parallel execution capabilities
+
+2. **CI-Specific Features**
+   - Parallel execution of platform scripts
+   - Enhanced error reporting
+   - Retry mechanisms for failed operations
+   - Detailed logging for debugging
+
+3. **Example CI Usage**
+
+   ```bash
+   # In your CI pipeline
+   export CI=true
+   ./scripts/nix-mox --script install --parallel --verbose
+   ```
+
+4. **CI Best Practices**
+   - Always use `--verbose` in CI for detailed logs
+   - Consider using `--parallel` for faster execution
+   - Set appropriate timeouts with `--timeout`
+   - Use `--retry` for handling transient failures
 
 For more details on the testing infrastructure, see [ARCHITECTURE.md](./ARCHITECTURE.md#testing--cicd).
