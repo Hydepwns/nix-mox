@@ -9,7 +9,10 @@
   outputs = { self, nixpkgs, nix-mox }:
     let
       system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; };
+      pkgs = import nixpkgs { 
+        inherit system;
+        overlays = [ nix-mox.overlays.default ];
+      };
     in
     {
       nixosConfigurations.test-vm = nixpkgs.lib.nixosSystem {

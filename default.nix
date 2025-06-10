@@ -1,1 +1,1 @@
-(import ./flake.nix).outputs 
+(import ./flake.nix) { }

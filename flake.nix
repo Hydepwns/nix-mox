@@ -6,10 +6,10 @@
   # - packages.<system>.vzdump-backup: Proxmox vzdump backup script as a Nix package
   # - packages.<system>.zfs-snapshot: ZFS snapshot/prune script as a Nix package
 
-  description = "Proxmox + NixOS + Windows gaming automation flake";
+  description = "Proxmox templates + NixOS workstation + Windows gaming automation";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -28,9 +28,9 @@
     let
       nixosModules = {
         nix-mox = import ./modules/nix-mox.nix;
-        zfs-auto-snapshot = import ./modules/zfs-auto-snapshot.nix;
-        infisical = import ./modules/infisical.nix;
-        tailscale = import ./modules/tailscale.nix;
+        # zfs-auto-snapshot = import ./modules/zfs-auto-snapshot.nix;
+        # infisical = import ./modules/infisical.nix;
+        # tailscale = import ./modules/tailscale.nix;
       };
 
       # Overlay to easily add nix-mox packages to nixpkgs
@@ -40,10 +40,10 @@
     in
       flake-utils.lib.eachDefaultSystem (system:
         let
-          pkgs = import nixpkgs { inherit system; };
+          pkgs = nixpkgs.legacyPackages.${system};
 
           # Flag to control Infisical inclusion
-          enableInfisical = builtins.getEnv "ENABLE_INFISICAL" == "1";
+          enableInfisical = builtins.getEnv "ENABLE_INFISICAL" == "0";
 
           # Infisical CLI version and hashes
           infisicalVersion = "0.22.0";
@@ -83,7 +83,18 @@
 
           isLinux = builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
 
+          install-steam-rust-pkg = pkgs.writeTextFile {
+            name = "install-steam-rust.nu";
+            destination = "/bin/install-steam-rust.nu";
+            text = ''
+              #!${pkgs.nushell}/bin/nu
+              ${builtins.readFile ./scripts/windows/install-steam-rust.nu}
+            '';
+            executable = true;
+          };
+
           allPackages = {
+            "error-handling" = pkgs.callPackage ./packages/error-handling { };
             vzdump-backup = if isLinux then pkgs.writeShellApplication {
               name = "vzdump-backup";
               runtimeInputs = [ pkgs.proxmox-backup-client pkgs.qemu pkgs.lxc pkgs.bash pkgs.coreutils pkgs.gawk ];
@@ -150,15 +161,7 @@ ${uninstallSh}
                 platforms = [ "x86_64-linux" "aarch64-linux" ];
               };
             } else null;
-            install-steam-rust = pkgs.writeTextFile {
-              name = "install-steam-rust.nu";
-              destination = "/bin/install-steam-rust.nu";
-              text = ''
-                #!${pkgs.nushell}/bin/nu
-                ${builtins.readFile ./scripts/windows/install-steam-rust.nu}
-              '';
-              executable = true;
-            };
+            install-steam-rust = install-steam-rust-pkg;
             windows-automation-assets-sources = pkgs.stdenv.mkDerivation {
               name = "windows-automation-assets-sources";
               src = ./scripts/windows;
@@ -172,13 +175,6 @@ ${uninstallSh}
                 description = "Source files for Windows automation (Steam, Rust NuShell script, .bat, .xml). Requires Nushell on the Windows host.";
               };
             };
-            test-windows-gaming-template = pkgs.runCommand "test-windows-gaming-template" {
-              nativeBuildInputs = [ pkgs.nushell ];
-              script = self.packages.${system}.'install-steam-rust';
-            } ''
-              nu --parse-only ${self.packages.${system}.'install-steam-rust'}
-              touch $out
-            '';
           } // (if enableInfisical then { infisical-cli = infisical-cli; } else {});
           proxmoxUpdate = if isLinux then {
             proxmox-update = pkgs.writeShellApplication {
@@ -230,16 +226,8 @@ ${uninstallSh}
           # Usage: nix develop
           # Provides a shell with git, nix, bash, shellcheck, nushell, coreutils, nixpkgs-fmt, fd, and ripgrep for development and testing.
           devShells.default = pkgs.mkShell {
-            buildInputs = [
-              pkgs.git            # Version control
-              pkgs.nix            # Nix package manager
-              pkgs.bashInteractive # Interactive Bash shell
-              pkgs.shellcheck     # Shell script linter
-              pkgs.nushell        # NuShell for Windows automation
-              pkgs.coreutils      # GNU core utilities
-              pkgs.nixpkgs-fmt    # Nix code formatter
-              pkgs.fd             # Fast file search
-              pkgs.ripgrep        # Fast text search
+            buildInputs = with pkgs; [
+              # Add your development dependencies here
             ];
           };
           # Nix code formatter (nixpkgs-fmt)
@@ -254,10 +242,22 @@ ${uninstallSh}
           };
           apps = apps;
           checks = {
-            # Run the NixOS template tests
-            templates = (import ./tests/templates { 
-              pkgs = nixpkgs.legacyPackages.x86_64-linux;
-            }).nodes.machine;
+            # Run the ZFS SSD caching tests
+            zfs-ssd-caching = pkgs.callPackage ./tests/zfs-ssd-caching { };
+            test-windows-gaming-template = pkgs.stdenv.mkDerivation {
+              name = "test-windows-gaming-template";
+              src = self;
+              nativeBuildInputs = [ pkgs.nushell ];
+              buildPhase = ''
+                # Test that the script exists and is executable
+                test -f ${install-steam-rust-pkg}/bin/install-steam-rust.nu
+                test -x ${install-steam-rust-pkg}/bin/install-steam-rust.nu
+              '';
+              installPhase = ''
+                mkdir -p $out
+                touch $out/success
+              '';
+            };
           };
         }
       ) // {

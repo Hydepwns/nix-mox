@@ -1,17 +1,19 @@
 # tests/templates/default.nix
+{ pkgs ? import <nixpkgs> { overlays = [ (import ../..).overlays.default ]; }, ... }:
+let
+  # Define a dummy override source
+  override-src = pkgs.stdenv.mkDerivation {
+    name = "web-server-override";
+    src = pkgs.writeTextDir "info.txt" "Overridden by test!";
+    installPhase = "cp -r $src $out";
+  };
+in
 {
   name = "nix-mox-templates";
-  nodes.machine = { pkgs, ... }: 
-    let
-      # Define a dummy override source
-      override-src = pkgs.stdenv.mkDerivation {
-        name = "web-server-override";
-        src = pkgs.writeTextDir "info.txt" "Overridden by test!";
-        installPhase = "cp -r $src $out";
-      };
-    in
+  nodes.machine =
   {
     imports = [ ../../modules/templates.nix ];
+    nixpkgs.overlays = [ (import ../..).overlays.default ];
     services.nix-mox.templates = {
       enable = true;
       templates = [ "web-app-stack" "secure-web-server" ];
@@ -31,6 +33,9 @@
         "web-server" = override-src;
       };
     };
+
+    # Add nix-mox package to the test environment
+    environment.systemPackages = [ pkgs.nix-mox ];
   };
 
   testScript = ''
