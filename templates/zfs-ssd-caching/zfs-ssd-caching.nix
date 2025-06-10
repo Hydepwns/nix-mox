@@ -1,8 +1,11 @@
 { config, pkgs, lib, ... }:
 let
+  # Import error handling module
+  errorHandling = import ../common/error-handling.nix { inherit config pkgs lib; };
+
   # CI/CD specific configuration
   isCI = builtins.getEnv "CI" == "true";
-  logLevel = if isCI then "debug" else "info";
+  isTest = builtins.getEnv "TEST" == "true";
   
   # Configuration options
   cfg = {
@@ -10,37 +13,86 @@ let
     devicePattern = "/dev/nvme*n1";
     useSpecialVdevs = false;
     enableLogging = true;
+    maxRetries = 3;
+    retryDelay = 5;
+    # New configuration options
+    enableMonitoring = true;
+    enableMetrics = true;
+    cacheType = "l2arc"; # or "special"
+    cacheMode = "mirror"; # or "stripe"
+    cacheSize = "auto"; # or specific size like "100G"
+    enableAutoScrub = true;
+    scrubInterval = "weekly";
+    enableAutoTrim = true;
+    trimInterval = "weekly";
   };
 
-  # Helper functions
-  logMessage = message: ''
-    if [ "${toString cfg.enableLogging}" = "true" ]; then
-      echo "[$(date '+%Y-%m-%d %H:%M:%S')] $message"
-    fi
+  # Use standardized error handling functions
+  inherit (errorHandling) logMessage handleError retryOperation validateConfig checkHealth cleanup withTimeout withLock recoverFromError;
+
+  # Validation functions
+  validateZFSConfig = ''
+    ${validateConfig ''
+      [ -n "${cfg.poolName}" ] || ${handleError "1" "Pool name is not configured"}
+      [ -n "${cfg.devicePattern}" ] || ${handleError "1" "Device pattern is not configured"}
+      [ "${cfg.cacheType}" = "l2arc" ] || [ "${cfg.cacheType}" = "special" ] || ${handleError "1" "Invalid cache type: ${cfg.cacheType}"}
+      [ "${cfg.cacheMode}" = "mirror" ] || [ "${cfg.cacheMode}" = "stripe" ] || ${handleError "1" "Invalid cache mode: ${cfg.cacheMode}"}
+    ''}
   '';
 
+  # Enhanced device checking with health checks
   checkDevice = dev: ''
-    if [ ! -b "${dev}" ]; then
-      ${logMessage "Device ${dev} not found"}
-      return 1
-    fi
+    ${checkHealth "test -b ${dev}" "Device ${dev} not found"} || return 1
+    ${checkHealth "smartctl -H ${dev} 2>/dev/null | grep -q 'PASSED'" "Device ${dev} health check failed"} || return 1
+    ${logMessage "INFO" "Device ${dev} found and healthy"}
     return 0
   '';
 
+  # Enhanced pool checking with health status
   checkPool = ''
-    if ! zpool list ${cfg.poolName} >/dev/null 2>&1; then
-      ${logMessage "Pool ${cfg.poolName} not found"}
-      return 1
-    fi
+    ${checkHealth "zpool list ${cfg.poolName} >/dev/null 2>&1" "Pool ${cfg.poolName} not found"} || return 1
+    ${checkHealth "zpool status ${cfg.poolName} | grep -q 'state: ONLINE'" "Pool ${cfg.poolName} not healthy"} || return 1
+    ${logMessage "INFO" "Pool ${cfg.poolName} found and healthy"}
     return 0
+  '';
+
+  # New function for cache size calculation
+  calculateCacheSize = dev: ''
+    if [ "${cfg.cacheSize}" = "auto" ]; then
+      # Use 80% of device size for cache
+      size=$(blockdev --getsize64 "${dev}")
+      cache_size=$((size * 80 / 100))
+      echo "$cache_size"
+    else
+      echo "${cfg.cacheSize}"
+    fi
+  '';
+
+  # Cleanup function
+  cleanupZFS = ''
+    ${logMessage "INFO" "Running ZFS cleanup operations"}
+    zpool scrub -s ${cfg.poolName} 2>/dev/null || true
+    zpool trim ${cfg.poolName} 2>/dev/null || true
   '';
 in
 {
+  # Import error handling module
+  imports = [ ../common/error-handling.nix ];
+
+  # Configure error handling
+  template.errorHandling = {
+    enable = true;
+    logLevel = if isCI || isTest then "debug" else "info";
+    maxRetries = cfg.maxRetries;
+    retryDelay = cfg.retryDelay;
+    logFile = "/var/log/zfs-ssd-caching.log";
+  };
+
   # Ensure the rpool is imported before running this service
   boot.zfs.extraPools = [ cfg.poolName ];
 
   systemd.services.zfs-ssd-caching = {
-    description = "Auto-configure ZFS SSD caching (L2ARC)";
+    description = "Auto-configure ZFS SSD caching (L2ARC/Special)";
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";
@@ -57,61 +109,102 @@ in
       #!/bin/sh
       set -e
 
-      ${logMessage "Starting ZFS SSD caching configuration"}
-      ${logMessage "CI Mode: ${toString isCI}"}
-      ${logMessage "Log Level: ${logLevel}"}
+      # Source error handling functions
+      . template-error-handler
 
-      # Check if pool exists
-      ${checkPool} || exit 1
+      ${logMessage "INFO" "Starting ZFS SSD caching configuration"}
+      ${logMessage "DEBUG" "CI Mode: ${toString isCI}"}
+      ${logMessage "DEBUG" "Test Mode: ${toString isTest}"}
+
+      # Validate configuration
+      ${validateZFSConfig}
+
+      # Check if pool exists and is healthy
+      ${checkPool} || ${handleError "2" "Pool ${cfg.poolName} not found or unhealthy"}
 
       # Detect all NVMe SSDs
       for dev in ${cfg.devicePattern}; do
-        # Check if device exists
+        # Check if device exists and is healthy
         ${checkDevice "$dev"} || continue
 
         # Only add if not already present in the pool
         if ! zpool status ${cfg.poolName} | grep -q "$dev"; then
-          ${logMessage "Adding $dev as ${if cfg.useSpecialVdevs then "special vdev" else "L2ARC cache"} to ${cfg.poolName}"}
+          cache_size=$(${calculateCacheSize "$dev"})
+          ${logMessage "INFO" "Adding $dev as ${cfg.cacheType} (${cfg.cacheMode}) to ${cfg.poolName} with size $cache_size"}
           
-          if ${toString cfg.useSpecialVdevs}; then
-            zpool add ${cfg.poolName} special mirror "$dev" || {
-              ${logMessage "Failed to add $dev as special vdev"}
-              continue
-            }
-          else
-            zpool add ${cfg.poolName} cache "$dev" || {
-              ${logMessage "Failed to add $dev as L2ARC cache"}
-              continue
-            }
-          fi
+          # Use resource locking for pool operations
+          ${withLock "/var/lock/zfs-${cfg.poolName}.lock" ''
+            if [ "${cfg.cacheType}" = "special" ]; then
+              if [ "${cfg.cacheMode}" = "mirror" ]; then
+                ${retryOperation "zpool add ${cfg.poolName} special mirror \"$dev\"" "Failed to add $dev as special vdev" ${toString cfg.maxRetries} ${toString cfg.retryDelay}} || continue
+              else
+                ${retryOperation "zpool add ${cfg.poolName} special \"$dev\"" "Failed to add $dev as special vdev" ${toString cfg.maxRetries} ${toString cfg.retryDelay}} || continue
+              fi
+            else
+              if [ "${cfg.cacheMode}" = "mirror" ]; then
+                ${retryOperation "zpool add ${cfg.poolName} cache mirror \"$dev\"" "Failed to add $dev as L2ARC cache" ${toString cfg.maxRetries} ${toString cfg.retryDelay}} || continue
+              else
+                ${retryOperation "zpool add ${cfg.poolName} cache \"$dev\"" "Failed to add $dev as L2ARC cache" ${toString cfg.maxRetries} ${toString cfg.retryDelay}} || continue
+              fi
+            fi
+          ''}
           
-          ${logMessage "Successfully added $dev"}
+          ${logMessage "INFO" "Successfully added $dev"}
         else
-          ${logMessage "Device $dev already in use"}
+          ${logMessage "INFO" "Device $dev already in use"}
         fi
       done
 
-      ${logMessage "ZFS SSD caching configuration completed"}
+      # Configure auto-scrub if enabled
+      if ${toString cfg.enableAutoScrub}; then
+        ${logMessage "INFO" "Configuring auto-scrub with interval: ${cfg.scrubInterval}"}
+        ${withTimeout 30 "zpool set autoscrub=on ${cfg.poolName}"} || ${handleError "4" "Failed to configure auto-scrub"}
+        ${withTimeout 30 "zpool set autoscrub_interval=${cfg.scrubInterval} ${cfg.poolName}"} || ${handleError "4" "Failed to set scrub interval"}
+      fi
+
+      # Configure auto-trim if enabled
+      if ${toString cfg.enableAutoTrim}; then
+        ${logMessage "INFO" "Configuring auto-trim with interval: ${cfg.trimInterval}"}
+        ${withTimeout 30 "zpool set autotrim=on ${cfg.poolName}"} || ${handleError "4" "Failed to configure auto-trim"}
+        ${withTimeout 30 "zpool set autotrim_interval=${cfg.trimInterval} ${cfg.poolName}"} || ${handleError "4" "Failed to set trim interval"}
+      fi
+
+      # Run cleanup operations
+      ${cleanupZFS}
+
+      ${logMessage "INFO" "ZFS SSD caching configuration completed"}
     '';
   };
 
-  # Add monitoring for ZFS
-  services.prometheus.exporters.node = {
+  # Enhanced monitoring configuration
+  services.prometheus.exporters.node = lib.mkIf cfg.enableMonitoring {
     enable = true;
     enabledCollectors = [
       "zfs"
       "filesystem"
       "diskstats"
+      "smartmon"
     ];
   };
 
-  # Add ZFS monitoring to Prometheus
-  services.prometheus.scrapeConfigs = [
+  # Enhanced Prometheus configuration
+  services.prometheus.scrapeConfigs = lib.mkIf cfg.enableMetrics [
     {
       job_name = "zfs";
       static_configs = [{
         targets = [ "localhost:9100" ];
       }];
+    }
+  ];
+
+  # Add ZFS monitoring to Grafana if enabled
+  services.grafana.provision.datasources = lib.mkIf cfg.enableMonitoring [
+    {
+      name = "ZFS Metrics";
+      type = "prometheus";
+      url = "http://localhost:9090";
+      access = "proxy";
+      isDefault = true;
     }
   ];
 } 
