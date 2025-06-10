@@ -1,27 +1,48 @@
 { config, lib, pkgs, ... }:
+
+let
+  cfg = config.services.nix-mox;
+in
 {
-  options.services.nix-mox.common = {
+  imports = [
+    ./templates.nix
+  ];
+
+  options.services.nix-mox = {
     enable = lib.mkEnableOption "Enable nix-mox common scripts and timers";
   };
-  config = lib.mkIf config.services.nix-mox.common.enable {
-    environment.systemPackages = [
-      pkgs.nix-mox.proxmox-update
-      pkgs.nix-mox.vzdump-backup
-      pkgs.nix-mox.zfs-snapshot
-      pkgs.nix-mox.nixos-flake-update
-      pkgs.nix-mox.install
-      pkgs.nix-mox.uninstall
+
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [
+      nix-mox.error-handling
     ];
-    # Example: systemd timer for flake update
-    systemd.timers.nixos-flake-update = {
-      wantedBy = [ "timers.target" ];
-      timerConfig.OnCalendar = "daily";
+
+    # Add nix-mox commands to PATH
+    environment.shellInit = ''
+      # Add nix-mox commands to PATH
+      export PATH="$PATH:${pkgs.nix-mox.error-handling}/bin"
+    '';
+
+    # Create systemd timers for scheduled tasks
+    systemd.timers = {
+      nix-mox-daily = {
+        description = "Run nix-mox daily tasks";
+        wantedBy = [ "timers.target" ];
+        timerConfig = {
+          OnCalendar = "daily";
+          Persistent = true;
+        };
+      };
     };
-    systemd.services.nixos-flake-update = {
-      script = "${pkgs.nix-mox.nixos-flake-update}/bin/nixos-flake-update";
-      serviceConfig = {
-        Type = "oneshot";
-        User = "root";
+
+    # Create systemd services for scheduled tasks
+    systemd.services = {
+      nix-mox-daily = {
+        description = "Run nix-mox daily tasks";
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = "${pkgs.nix-mox.error-handling}/bin/template-error-handler";
+        };
       };
     };
   };

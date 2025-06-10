@@ -172,6 +172,13 @@ ${uninstallSh}
                 description = "Source files for Windows automation (Steam, Rust NuShell script, .bat, .xml). Requires Nushell on the Windows host.";
               };
             };
+            test-windows-gaming-template = pkgs.runCommand "test-windows-gaming-template" {
+              nativeBuildInputs = [ pkgs.nushell ];
+              script = self.packages.${system}.'install-steam-rust';
+            } ''
+              nu --parse-only ${self.packages.${system}.'install-steam-rust'}
+              touch $out
+            '';
           } // (if enableInfisical then { infisical-cli = infisical-cli; } else {});
           proxmoxUpdate = if isLinux then {
             proxmox-update = pkgs.writeShellApplication {
