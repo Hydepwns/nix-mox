@@ -47,33 +47,43 @@ This template provides automated installation and configuration of Steam and Rus
 
 ## Configuration
 
-### XML Configuration
+The template is configured through the `services.nix-mox.templates.customOptions.windows-gaming` attribute set in your NixOS configuration.
 
-Edit `InstallSteamRust.xml` to customize:
+### Example NixOS Configuration
 
-- Installation paths
-- Performance settings
-- Monitoring options
-- CI/CD settings
+```nix
+services.nix-mox.templates = {
+  enable = true;
+  templates = [ "windows-gaming" ];
+  customOptions = {
+    windows-gaming = {
+      steam = {
+        installPath = "C:\\Steam";
+      };
+      rust = {
+        installPath = "C:\\Steam\\steamapps\\common\\Rust";
+      };
+      monitoring = {
+        enable = true;
+        logPath = "C:\\Steam\\logs";
+      };
+    };
+  };
+};
+```
 
 ### Steam Settings
 
 The template configures Steam with:
 
 - Silent installation
-- Automatic updates
 - Download optimization
-- Performance settings
 
 ### Rust Settings
 
 Default Rust configuration includes:
 
-- Fullscreen mode
-- 1920x1080 resolution
-- High graphics quality
-- 144 FPS cap
-- Optimized performance settings
+- Installation via the configured AppID.
 
 ## CI/CD Integration
 

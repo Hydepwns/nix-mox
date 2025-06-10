@@ -1,6 +1,9 @@
 # Windows Gaming Template: Steam and Rust Installation Script
 # This script automates the installation of Steam and Rust on Windows
 
+# Load configuration from JSON
+let config = (open config.json)
+
 # CI/CD configuration
 let isCI = $env.CI? == "true"
 let logLevel = if $isCI { "debug" } else { "info" }
@@ -37,11 +40,11 @@ def check-prerequisites [] {
 
 def download-steam [] {
     log "Downloading Steam installer..."
-    let steamUrl = "https://steamcdn-a.akamaihd.net/client/installer/SteamSetup.exe"
-    let steamPath = "C:\Windows\Temp\SteamSetup.exe"
+    let steamUrl = $config.steam.downloadURL
+    let steamPath = $"($env.TEMP)\\SteamSetup.exe"
     
     try {
-        Invoke-WebRequest -Uri $steamUrl -OutFile $steamPath
+        http get $steamUrl | save --force $steamPath
         log "Steam installer downloaded successfully"
     } catch {
         error make {msg: "Failed to download Steam installer"}
@@ -50,10 +53,16 @@ def download-steam [] {
 
 def install-steam [] {
     log "Installing Steam..."
-    let steamPath = "C:\Windows\Temp\SteamSetup.exe"
+    let steamPath = $"($env.TEMP)\\SteamSetup.exe"
+    let steamInstallPath = $config.steam.installPath
     
     try {
-        Start-Process -FilePath $steamPath -ArgumentList "/S" -Wait
+        # Create target directory
+        mkdir -p $steamInstallPath
+        
+        # Run installer
+        let args = if $config.steam.silentInstall { ["/S", "/D=" + $steamInstallPath] } else { ["/D=" + $steamInstallPath] }
+        Start-Process -FilePath $steamPath -ArgumentList $args -Wait
         log "Steam installed successfully"
     } catch {
         error make {msg: "Failed to install Steam"}
@@ -62,11 +71,12 @@ def install-steam [] {
 
 def install-rust [] {
     log "Installing Rust..."
-    let steamPath = "C:\Program Files (x86)\Steam\Steam.exe"
+    let steamPath = $"($config.steam.installPath)\\Steam.exe"
+    let rustAppId = $config.rust.appId
     
     try {
         # Launch Steam and install Rust
-        Start-Process -FilePath $steamPath -ArgumentList "-applaunch 252490" -Wait
+        Start-Process -FilePath $steamPath -ArgumentList $"-applaunch ($rustAppId)" -Wait
         log "Rust installation initiated"
     } catch {
         error make {msg: "Failed to install Rust"}
@@ -75,11 +85,11 @@ def install-rust [] {
 
 def configure-steam [] {
     log "Configuring Steam..."
-    let steamConfigPath = "C:\Program Files (x86)\Steam\config\config.vdf"
+    let steamConfigPath = $"($config.steam.installPath)\\config\\config.vdf"
     
     try {
         # Create or update Steam configuration
-        $config = @"
+        $configContent = @"
 "InstallConfigStore"
 {
     "Software"
@@ -98,7 +108,7 @@ def configure-steam [] {
     }
 }
 "@
-        $config | Out-File -FilePath $steamConfigPath -Encoding UTF8
+        $configContent | Out-File -FilePath $steamConfigPath -Encoding UTF8
         log "Steam configuration updated"
     } catch {
         error make {msg: "Failed to configure Steam"}
@@ -116,6 +126,14 @@ def main [] {
     configure-steam
     install-rust
     
+    # Create a config for the run script
+    let runConfig = {
+        steam_path: $config.steam.installPath,
+        rust_path: $config.rust.installPath,
+        rust_app_id: $config.rust.appId
+    }
+    $runConfig | to json | save run.json
+
     log "Installation completed successfully"
 }
 
