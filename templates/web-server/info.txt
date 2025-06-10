@@ -1,0 +1,2 @@
+Hello, the administrator is @admin_user@.
+The domain is @domain@. 
