@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 let
   # Import error handling module
-  errorHandling = import ../common/error-handling.nix { inherit config pkgs lib; };
+  errorHandling = pkgs.nix-mox.error-handling;
 
   # CI/CD specific configuration
   isCI = builtins.getEnv "CI" == "true";
@@ -77,7 +77,7 @@ let
 in
 {
   # Import error handling module
-  imports = [ ../common/error-handling.nix ];
+  imports = [ ../../modules/error-handling.nix ];
 
   # Configure error handling
   template.errorHandling = {

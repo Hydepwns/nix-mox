@@ -2,7 +2,7 @@
 
 let
   # Import error handling module
-  errorHandling = import ../../modules/error-handling.nix { inherit lib; };
+  errorHandling = import ../../modules/error-handling.nix { inherit config lib pkgs; };
 
   # Template configuration
   cfg = config.services.nix-mox.cache-server;

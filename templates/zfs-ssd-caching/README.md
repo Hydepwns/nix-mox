@@ -180,14 +180,3 @@ Logs are available in:
 
 - System journal: `journalctl -u zfs-ssd-caching`
 - Log file: `/var/log/zfs-ssd-caching.log` (in CI mode)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new features
-4. Submit a pull request
-
-## License
-
-This template is licensed under the MIT License.

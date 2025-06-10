@@ -15,7 +15,10 @@
   outputs = { self, nixpkgs, flake-utils, nix-mox, ... }: # Added nix-mox
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit system; };
+        pkgs = import nixpkgs { 
+          inherit system;
+          overlays = [ nix-mox.overlays.default ];
+        };
       in {
         nixosConfigurations.example-vm = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
