@@ -1,8 +1,11 @@
 #!/bin/sh
 set -e
 
-# Source test utilities
-. ../test-utils.nix
+# Get the directory where this script is located
+SCRIPT_DIR="$(dirname "$0")"
+
+# Source test utilities from the same directory
+. "$SCRIPT_DIR/test-utils.sh"
 
 echo "Running ZFS SSD caching performance tests..."
 

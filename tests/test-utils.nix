@@ -80,4 +80,23 @@ in
       ${validationScript}
       touch $out
     '';
+
+  # Common test patterns
+  runUnitTests = { testScript, dependencies ? [] }:
+    pkgs.runCommand "unit-tests" { buildInputs = dependencies; } ''
+      ${testScript}
+      touch $out
+    '';
+
+  runIntegrationTests = { testScript, dependencies ? [] }:
+    pkgs.runCommand "integration-tests" { buildInputs = dependencies; } ''
+      ${testScript}
+      touch $out
+    '';
+
+  runPerformanceTests = { testScript, dependencies ? [] }:
+    pkgs.runCommand "performance-tests" { buildInputs = dependencies; } ''
+      ${testScript}
+      touch $out
+    '';
 } 

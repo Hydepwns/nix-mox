@@ -1,8 +1,11 @@
 #!/bin/sh
 set -e
 
-# Source test utilities
-. ../test-utils.nix
+# Get the directory where this script is located
+SCRIPT_DIR="$(dirname "$0")"
+
+# Source test utilities from the same directory
+. "$SCRIPT_DIR/test-utils.sh"
 
 echo "Running ZFS SSD caching integration tests..."
 
@@ -34,7 +37,8 @@ testLogging "ERROR" "Retry failed" "[ERROR] Retry failed" || exit 1
 
 # Test configuration validation with logging
 echo "Testing configuration validation with logging..."
-testConfigValidation "" "Configuration validation failed" || exit 1
+# Test that empty config fails validation
+testConfigValidation "" "Configuration validation failed" && exit 1
 testLogging "ERROR" "Configuration validation failed" "[ERROR] Configuration validation failed" || exit 1
 
 echo "Integration tests completed successfully" 
