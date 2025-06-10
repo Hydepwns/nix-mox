@@ -1,4 +1,5 @@
 # tests/templates/default.nix
+{ pkgs ? import <nixpkgs> {} }:
 {
   name = "nix-mox-templates";
   nodes.machine = { pkgs, ... }: {

@@ -246,6 +246,12 @@ ${uninstallSh}
             };
           };
           apps = apps;
+          checks = {
+            # Run the NixOS template tests
+            templates = (import ./tests/templates { 
+              pkgs = nixpkgs.legacyPackages.x86_64-linux;
+            }).nodes.machine;
+          };
         }
       ) // {
         nixosModules = nixosModules;
