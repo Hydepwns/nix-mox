@@ -42,5 +42,6 @@ module performance-tests {
 }
 
 if $env.NU_TEST == "true" {
-    performance-tests main
+    use performance-tests
+    main
 }
