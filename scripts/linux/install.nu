@@ -6,7 +6,7 @@
 # - Creates an install manifest at /etc/nix-mox/install_manifest.txt
 # - Is idempotent and safe to re-run
 
-use ../../scripts/_common.nu *
+use ../../scripts/lib/common.nu *
 
 # --- Global Variables ---
 const INSTALL_DIR = "/usr/local/bin"
@@ -64,7 +64,7 @@ def main [] {
         if ($script.name == "_common.nu" or $script.name == "install.nu" or $script.name == "uninstall.nu") {
             continue
         }
-        
+
         let dest_path = $INSTALL_DIR + "/" + ($script.name | str replace ".nu" "")
         if $env.STATE.dry_run {
             log_dryrun $"Would install '($script.name)' to '($dest_path)'"
@@ -81,7 +81,7 @@ def main [] {
     if $env.STATE.windows_dir != "" {
         log_info $"Copying Windows scripts to ($env.STATE.windows_dir)..."
         let win_scripts_src = "../windows"
-        
+
         if $env.STATE.dry_run {
             log_dryrun $"Would create directory '($env.STATE.windows_dir)' and copy files into it."
         } else {
@@ -152,4 +152,4 @@ try {
 } catch {
     cleanup $env.STATE.created_files
     exit 1
-} 
+}
