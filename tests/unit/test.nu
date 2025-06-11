@@ -68,11 +68,11 @@ def test_errors [] {
     print "Testing error handling..."
     
     # Test invalid platform
-    let invalid_platform = (nu scripts/nix-mox.nu --platform invalid --dry-run 2>&1)
+    let invalid_platform = (do { nu scripts/nix-mox.nu --platform invalid --dry-run } | complete | get stderr)
     assert ($invalid_platform | str contains "Invalid platform")
     
     # Test invalid script
-    let invalid_script = (nu scripts/nix-mox.nu --script invalid --dry-run 2>&1)
+    let invalid_script = (do { nu scripts/nix-mox.nu --script invalid --dry-run } | complete | get stderr)
     assert ($invalid_script | str contains "Invalid script")
 }
 

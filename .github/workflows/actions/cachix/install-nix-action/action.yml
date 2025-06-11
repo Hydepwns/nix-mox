@@ -1,0 +1,10 @@
+name: 'Install Nix'
+description: 'Install Nix package manager'
+runs:
+  using: "composite"
+  steps:
+    - name: Install Nix
+      shell: bash
+      run: |
+        echo "Mock: Installing Nix"
+        touch /nix/var/nix/profiles/default/etc/profile.d/nix.sh 

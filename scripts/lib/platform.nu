@@ -13,7 +13,7 @@ def detect_platform [] {
 
 def validate_platform [platform: string] {
     let valid_platforms = ["linux", "windows", "darwin", "auto"]
-    $valid_platforms | where $it == $platform | length > 0
+    $valid_platforms | any {|p| $p == $platform}
 }
 
 def get_platform_script [platform: string, script: string] {
@@ -112,7 +112,7 @@ def get_available_scripts [platform: string] {
 
 def get_script_dependencies [script_path: string] {
     let content = open $script_path
-    let mut deps = []
+    mut deps = []
     
     # Look for common dependency patterns
     if ($content | find "#!/usr/bin/env" | length) > 0 {

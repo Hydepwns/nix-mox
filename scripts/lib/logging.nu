@@ -42,8 +42,8 @@ def log [level: string, message: string] {
     }
 }
 
-def handle_error [code: int, message: string, ...details: string] {
-    let error_code = $ERROR_CODES | get -i $code
+def handle_error [code: int, message: string, details: list<string>] {
+    mut error_code = $ERROR_CODES | get -i $code
     if $error_code == null {
         $error_code = $code
     }
@@ -54,34 +54,34 @@ def handle_error [code: int, message: string, ...details: string] {
     }
 
     match $error_code {
-        $ERROR_CODES.INVALID_ARGUMENT => {
+        1 => {
             log "INFO" "Try running with --help for usage information"
         }
-        $ERROR_CODES.FILE_NOT_FOUND => {
+        2 => {
             log "INFO" "Check if the file exists and you have the correct permissions"
         }
-        $ERROR_CODES.PERMISSION_DENIED => {
+        3 => {
             log "INFO" "Try running with elevated privileges or check file permissions"
         }
-        $ERROR_CODES.HANDLER_NOT_FOUND => {
+        4 => {
             log "INFO" "Check if the handler script exists and is executable"
         }
-        $ERROR_CODES.DEPENDENCY_MISSING => {
+        5 => {
             log "INFO" "Install the required dependencies and try again"
         }
-        $ERROR_CODES.EXECUTION_FAILED => {
+        6 => {
             log "INFO" "Try running with --verbose for more details or check the script for errors"
         }
-        $ERROR_CODES.TIMEOUT => {
+        7 => {
             log "INFO" "Try increasing the timeout with --timeout or optimize the script"
         }
-        $ERROR_CODES.INVALID_STATE => {
+        8 => {
             log "INFO" "The system is in an unexpected state. Try resetting or checking configuration"
         }
-        $ERROR_CODES.NETWORK_ERROR => {
+        9 => {
             log "INFO" "Check your network connection and try again"
         }
-        $ERROR_CODES.CONFIGURATION_ERROR => {
+        10 => {
             log "INFO" "Check your configuration files for errors"
         }
         _ => {
@@ -102,7 +102,7 @@ def main [] {
     let args = $in
     match $args.0 {
         "log" => { log $args.1 $args.2 }
-        "error" => { handle_error $args.1 $args.2 $args.3... }
+        "error" => { handle_error $args.1 $args.2 ($args | skip 2) }
         _ => { print "Unknown logging operation" }
     }
 } 

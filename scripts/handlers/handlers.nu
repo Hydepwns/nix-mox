@@ -1,19 +1,39 @@
 # Handlers module for nix-mox
 # This replaces the bash handlers.sh with a more robust Nushell implementation
 
-use logging.nu *
-use exec.nu *
+export-env {
+    $env.SCRIPT_HANDLERS = {
+        bash: "bash"
+        nu: "nu"
+        powershell: "powershell"
+        python: "python3"
+        node: "node"
+        ruby: "ruby"
+        perl: "perl"
+        lua: "lua"
+        php: "php"
+        ts: "ts-node"
+        fish: "fish"
+        zsh: "zsh"
+        ksh: "ksh"
+        dash: "dash"
+        vbs: "cscript"
+        wsf: "cscript"
+        cmd: "cmd"
+        psm1: "powershell"
+    }
+}
 
-def validate_dependencies [dependencies: list<string>] {
+export def validate_dependencies [dependencies: list<string>] {
     for dep in $dependencies {
-        if not (which $dep | length > 0) {
+        if (which $dep | length) == 0 {
             log "ERROR" $"Required dependency not found: ($dep)"
             handle_error $env.ERROR_CODES.DEPENDENCY_MISSING "Missing dependency" $"Please install ($dep) and try again"
         }
     }
 }
 
-def check_permissions [path: string] {
+export def check_permissions [path: string] {
     if not ($path | path exists) {
         log "ERROR" $"Path does not exist: ($path)"
         handle_error $env.ERROR_CODES.FILE_NOT_FOUND "File not found" $"Path: ($path)"
@@ -23,14 +43,9 @@ def check_permissions [path: string] {
         log "ERROR" $"Not a file: ($path)"
         handle_error $env.ERROR_CODES.INVALID_ARGUMENT "Invalid file" $"Path: ($path)"
     }
-
-    if not ($path | path type) == "file" {
-        log "ERROR" $"Not a file: ($path)"
-        handle_error $env.ERROR_CODES.INVALID_ARGUMENT "Invalid file" $"Path: ($path)"
-    }
 }
 
-def run_platform_script [platform: string, script: string, ...args: string] {
+export def run_platform_script [platform: string, script: string, ...args: string] {
     let script_file = get_platform_script $platform $script
     if $script_file == null {
         handle_error $env.ERROR_CODES.HANDLER_NOT_FOUND "Script not found" $"Platform: ($platform), Script: ($script)"
@@ -48,14 +63,10 @@ def run_platform_script [platform: string, script: string, ...args: string] {
     }
 }
 
-def handle_script [script_path: string, ...args: string] {
-    # Validate script exists and is executable
+export def handle_script [script_path: string, ...args: string] {
     check_permissions $script_path
-
-    # Get script handler
     let handler = get_script_handler $script_path
 
-    # Run the script with appropriate handler
     match $handler {
         "bash" | "sh" => {
             validate_dependencies ["bash"]
@@ -80,36 +91,11 @@ def handle_script [script_path: string, ...args: string] {
     }
 }
 
-# Export the functions
-export-env {
-    $env.SCRIPT_HANDLERS = {
-        bash: "bash"
-        nu: "nu"
-        powershell: "powershell"
-        python: "python3"
-        node: "node"
-        ruby: "ruby"
-        perl: "perl"
-        lua: "lua"
-        php: "php"
-        ts: "ts-node"
-        fish: "fish"
-        zsh: "zsh"
-        ksh: "ksh"
-        dash: "dash"
-        vbs: "cscript"
-        wsf: "cscript"
-        cmd: "cmd"
-        psm1: "powershell"
-    }
-}
-
-# Main function to handle script operations
-def main [] {
+export def main [] {
     let args = $in
     match $args.0 {
-        "run" => { handle_script $args.1 $args.2... }
-        "platform" => { run_platform_script $args.1 $args.2 $args.3... }
+        "run" => { handle_script $args.1 ($args | skip 2) }
+        "platform" => { run_platform_script $args.1 $args.2 ($args | skip 3) }
         _ => { print "Unknown handler operation" }
     }
 } 

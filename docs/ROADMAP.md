@@ -1,66 +1,115 @@
 # Future Development Roadmap
 
-This document outlines potential future directions and enhancements for the `nix-mox` templating system. With the core features for customization, documentation, and testing now in place, these ideas represent the next steps in evolving the project into a more powerful and user-friendly platform.
+This document outlines the next steps for evolving `nix-mox` into a more powerful and user-friendly platform.
 
 ## 1. Template Marketplace
 
-A centralized, community-driven repository for discovering and sharing `nix-mox` templates.
+```mermaid
+graph TD
+    A[Template Marketplace] --> B[GitHub Repository]
+    A --> C[Web Interface]
+    A --> D[CLI Integration]
+    B --> E[Curated Templates]
+    C --> F[Search & Filter]
+    D --> G[nix-mox template search]
+    D --> H[nix-mox template add]
+```
 
-- **Concept**: Lower the barrier for users to find and implement solutions for their own infrastructure, and for developers to share their work. The marketplace would serve as a curated hub for high-quality, reusable templates.
-- **Implementation Ideas**:
-  - A dedicated GitHub repository acting as a simple, curated list of approved templates, categorized by function (e.g., web, database, monitoring).
-  - A web interface that provides a searchable, filterable catalog of templates, complete with documentation and usage examples.
-  - A CLI extension, such as `nix-mox template search <keyword>` or `nix-mox template add <template-name>`, to integrate discovery directly into the user's workflow.
-- **Benefits**: Fosters a vibrant community ecosystem, accelerates development by promoting reuse, and helps standardize best practices across different infrastructure types.
+- **Core Concept**: Centralized hub for template discovery and sharing
+- **Key Features**:
+  - Curated GitHub repository
+  - Searchable web interface
+  - CLI integration (`nix-mox template search/add`)
+- **Benefits**: Community growth, faster development, standardized practices
 
 ## 2. Advanced Template Dependencies
 
-An explicit dependency management system where templates can declare dependencies on other templates.
+```mermaid
+graph LR
+    A[Template] -->|depends on| B[Monitoring]
+    A -->|depends on| C[Database]
+    B -->|version 2.0+| D[Base Template]
+    C -->|version 1.5+| D
+```
 
-- **Concept**: While template composition allows for building stacks, it doesn't enforce required dependencies. A formal dependency system would allow a template to state, "I cannot function without the `monitoring` template."
-- **Implementation Ideas**:
-  - Introduce a `templateDependencies` attribute to template definitions in `modules/templates.nix`.
-  - The template resolution logic would be updated to recursively find and enable all required template dependencies, ensuring a complete and valid configuration.
-  - Could be extended to support version constraints (e.g., `dependsOn = ["database-management>=2.0"]`), though this would require a more robust versioning scheme.
-- **Benefits**: Improves the modularity and reliability of complex templates, prevents runtime errors from missing dependencies, and makes the relationships between different services explicit.
+- **Core Concept**: Formal dependency management system
+- **Implementation**:
+  - `templateDependencies` attribute
+  - Recursive dependency resolution
+  - Version constraints support
+- **Benefits**: Better modularity, explicit relationships, error prevention
 
 ## 3. Automated Template Updates
 
-A streamlined process for users to update their templates to the latest versions.
+```mermaid
+graph TD
+    A[nix-mox template update] --> B[Check Config]
+    B --> C[Check Upstream]
+    C --> D[Report Updates]
+    D --> E[Auto Apply]
+    D --> F[Migration Guide]
+```
 
-- **Concept**: As templates in the main `nix-mox` repository (or a marketplace) are improved and patched, users should have an easy way to pull in these updates.
-- **Implementation Ideas**:
-  - A new CLI command, `nix-mox template update`, that inspects the user's configuration, checks the upstream sources for new versions, and reports on available updates.
-  - The tool could offer to automatically apply non-breaking changes or provide a migration guide for breaking changes.
-  - This would integrate well with the existing flake mechanism, providing a more user-friendly layer on top of `nix flake update`.
-- **Benefits**: Simplifies long-term maintenance for users, ensures timely application of security patches and bug fixes, and keeps the user's infrastructure current with best practices.
+- **Core Concept**: Streamlined update process
+- **Features**:
+  - Automatic version checking
+  - Non-breaking change updates
+  - Migration guides
+- **Benefits**: Easier maintenance, security updates, best practices
 
 ## 4. Enhanced Template Security
 
-A more formalized set of security-focused features and best practices for the template ecosystem.
+```mermaid
+graph TD
+    A[Security Features] --> B[Sandboxing]
+    A --> C[Code Signing]
+    A --> D[Security Scanner]
+    B --> E[Restricted Environment]
+    C --> F[Crypto Signatures]
+    D --> G[Vulnerability Checks]
+```
 
-- **Concept**: As the number of community-contributed templates grows, ensuring they are safe and trustworthy becomes paramount.
-- **Implementation Ideas**:
-  - **Sandboxing**: Investigate running template-related scripts in more restrictive environments to limit their access to the host system.
-  - **Code Signing**: A system for templates in the marketplace to be cryptographically signed, allowing users to verify their integrity and origin.
-  - **Security Scanner**: A dedicated CI job that automatically scans templates for common security vulnerabilities, such as hardcoded secrets, insecure default permissions, or use of deprecated packages.
-- **Benefits**: Builds user trust in community templates, mitigates the risk of supply chain attacks, and promotes a culture of security-by-default within the project.
+- **Core Concept**: Security-first template ecosystem
+- **Features**:
+  - Template sandboxing
+  - Cryptographic signing
+  - Automated security scanning
+- **Benefits**: Trust building, supply chain security, secure defaults
 
 ## 5. Rich Template Validation
 
-A schema-based system for validating the structure, options, and metadata of a template.
+```mermaid
+graph TD
+    A[Validation System] --> B[Schema Definition]
+    A --> C[CLI Validation]
+    A --> D[CI Integration]
+    B --> E[JSON Schema/DSL]
+    C --> F[Local Checks]
+    D --> G[Pipeline Validation]
+```
 
-- **Concept**: Go beyond basic Nix type checking to provide a more descriptive and robust validation layer for template authors and users.
-- **Implementation Ideas**:
-  - Define a formal schema (e.g., using JSON Schema or a custom Nix-based DSL) for `customOptions` that allows for more complex validation rules (e.g., string patterns, integer ranges, conditional fields).
-  - A `nix-mox template validate` command to check a local template directory against the schema, providing clear and actionable feedback to the developer.
-  - Enforce schema validation in the CI pipeline for any templates submitted to the marketplace.
-- **Benefits**: Catches errors early in the development process, improves the quality and consistency of templates, and provides a better user experience by preventing misconfigurations.
+- **Core Concept**: Robust template validation
+- **Features**:
+  - Formal schema definition
+  - CLI validation tool
+  - CI pipeline integration
+- **Benefits**: Early error detection, consistent quality, better UX
 
-## 6. Further Enhancements to Customization
+## 6. Enhanced Customization
 
-The existing customization features (`Composition`, `Inheritance`, `Variables`, and `Overrides`) are powerful but could be extended further.
+```mermaid
+graph TD
+    A[Customization] --> B[Scoped Variables]
+    A --> C[Deeper Merging]
+    A --> D[Conditional Logic]
+    B --> E[Per-Template Vars]
+    C --> F[List Append]
+    D --> G[Template Conditions]
+```
 
-- **Scoped Variables**: Allow `templateVariables` to be defined on a per-template basis, rather than only globally.
-- **Deeper Merging**: Provide more control over how `customOptions` are merged during inheritance (e.g., appending to lists instead of replacing them).
-- **Conditional Logic**: Introduce simple conditional logic within template files (e.g., `if @enable_feature@ ... endif`) that could be controlled by variables or options.
+- **Core Concept**: Extended customization capabilities
+- **Features**:
+  - Template-scoped variables
+  - Advanced merging strategies
+  - Conditional template logic
+- **Benefits**: More flexible templates, better control, cleaner code

@@ -11,7 +11,7 @@ This document provides a high-level overview of the architecture, network topolo
 - [Update & Backup Flow](#update--backup-flow)
 - [Hardware Example](#hardware-example)
 - [PCI Passthrough](#pci-passthrough)
-- [Making nix-mox Scripts NixOS-Native](#making-nix-mox-scripts-nixos-native)
+- [Nix Integration](#nix-integration)
 - [Testing & CI/CD](#testing--cicd)
 
 ---
@@ -103,16 +103,168 @@ For more on adapting the architecture to your hardware, see the guides in [USAGE
 
 ## PCI Passthrough
 
-This section lists example PCI devices passed through to VMs. Update these values for your own hardware as needed.
+Example PCI devices passed through to VMs.
+Update these values for your own hardware as needed.
 
 - GPU: 01:00.0, 01:00.1 (audio)
 - USB controller: 03:00.0
 
-For more details, see the [Windows on Proxmox Guide](./docs/windows-on-proxmox.md).
+For more details, see the [Windows on Proxmox Guide](./docs/guides/windows-on-proxmox.md).
 
-## Making nix-mox Scripts NixOS-Native
+## Nix Integration
 
-For packaging and exposing scripts as Nix derivations and flake apps, see the detailed instructions in [USAGE.md](./USAGE.md#using-the-nixos-module-optional) and your `flake.nix`.
+The project provides several Nix-based components for automation and system management. Below are detailed diagrams showing how these components interact and work together.
+
+### Nix Flakes Structure
+
+```mermaid
+graph TD
+    A[Flake.nix] --> B[Packages]
+    A --> C[Apps]
+    A --> D[DevShell]
+    A --> E[NixOS Modules]
+    
+    B --> B1[proxmox-update]
+    B --> B2[vzdump-backup]
+    B --> B3[zfs-snapshot]
+    B --> B4[nixos-flake-update]
+    
+    C --> C1[nix run .#proxmox-update]
+    C --> C2[nix run .#vzdump-backup]
+    C --> C3[nix run .#zfs-snapshot]
+    C --> C4[nix run .#nixos-flake-update]
+    
+    D --> D1[Nushell]
+    D --> D2[Git]
+    D --> D3[Nix]
+    D --> D4[Development Tools]
+    
+    E --> E1[System Services]
+    E --> E2[Automation Scripts]
+    E --> E3[Update Services]
+```
+
+### Automation Scripts Flow
+
+```mermaid
+flowchart TD
+    A[User] --> B[nix run]
+    B --> C{Script Type}
+    
+    C -->|proxmox-update| D[Proxmox Host]
+    C -->|vzdump-backup| E[Backup System]
+    C -->|zfs-snapshot| F[ZFS Storage]
+    C -->|nixos-flake-update| G[NixOS Systems]
+    
+    D --> D1[Update Packages]
+    D --> D2[System Maintenance]
+    
+    E --> E1[VM Backups]
+    E --> E2[Container Backups]
+    E --> E3[Storage Management]
+    
+    F --> F1[Create Snapshots]
+    F --> F2[Prune Old Snapshots]
+    F --> F3[Storage Optimization]
+    
+    G --> G1[Update Flakes]
+    G --> G2[Rebuild Systems]
+    G --> G3[Service Updates]
+```
+
+### NixOS Module Integration
+
+```mermaid
+graph TD
+    A[NixOS Module] --> B[System Services]
+    A --> C[Automation Scripts]
+    A --> D[Update Services]
+    
+    B --> B1[systemd Services]
+    B --> B2[Timers]
+    B --> B3[User Services]
+    
+    C --> C1[Script Installation]
+    C --> C2[Path Configuration]
+    C --> C3[Permissions]
+    
+    D --> D1[Daily Updates]
+    D --> D2[Flake Updates]
+    D --> D3[System Rebuilds]
+    
+    B1 --> E[System Integration]
+    C1 --> E
+    D1 --> E
+```
+
+### Windows Automation Flow
+
+```mermaid
+flowchart TD
+    A[Windows VM] --> B[Nushell Scripts]
+    B --> C{Automation Tasks}
+    
+    C -->|Steam| D[Game Installation]
+    C -->|Rust| E[Development Setup]
+    C -->|Scheduled Tasks| F[Automated Updates]
+    
+    D --> D1[Download]
+    D --> D2[Install]
+    D --> D3[Configure]
+    
+    E --> E1[Toolchain Setup]
+    E --> E2[Environment Config]
+    E --> E3[Project Setup]
+    
+    F --> F1[Update Check]
+    F --> F2[Install Updates]
+    F --> F3[System Maintenance]
+```
+
+### Component Relationships
+
+```mermaid
+graph TD
+    A[User] --> B[Nix Commands]
+    B --> C[Nix Flakes]
+    B --> D[NixOS Module]
+    
+    C --> E[Automation Scripts]
+    C --> F[Development Tools]
+    
+    D --> G[System Services]
+    D --> H[Update Services]
+    
+    E --> I[Proxmox Management]
+    E --> J[Storage Management]
+    E --> K[Windows Automation]
+    
+    G --> L[System Integration]
+    H --> L
+    I --> L
+    J --> L
+    K --> L
+```
+
+These diagrams illustrate:
+
+1. **Nix Flakes Structure**: Shows how the flake.nix file organizes packages, apps, development shells, and NixOS modules.
+
+2. **Automation Scripts Flow**: Demonstrates how different scripts interact with various system components and what actions they perform.
+
+3. **NixOS Module Integration**: Visualizes how the NixOS module integrates with system services, automation scripts, and update services.
+
+4. **Windows Automation Flow**: Shows the flow of Windows automation tasks, from script execution to specific actions.
+
+5. **Component Relationships**: Provides a high-level view of how all components interact with each other and the system.
+
+Each diagram helps visualize different aspects of the Nix integration, making it easier to understand:
+
+- How components are organized
+- How data and commands flow through the system
+- How different parts interact with each other
+- The automation and update processes
+- The relationship between user actions and system responses
 
 ## Testing & CI/CD
 
@@ -185,6 +337,7 @@ nu scripts/run-tests.nu
 ```
 
 The test suite will:
+
 - Execute all test modules
 - Validate script functionality
 - Check error handling

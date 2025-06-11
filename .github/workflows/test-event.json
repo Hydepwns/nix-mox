@@ -1,0 +1,18 @@
+{
+  "pull_request": {
+    "number": 1,
+    "head": {
+      "ref": "main",
+      "sha": "main"
+    },
+    "base": {
+      "ref": "main",
+      "sha": "main"
+    }
+  },
+  "repository": {
+    "name": "nix-mox",
+    "full_name": "hydepwns/nix-mox"
+  },
+  "action": "opened"
+} 

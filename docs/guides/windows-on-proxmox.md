@@ -1,46 +1,127 @@
 # Windows on Proxmox Guide
 
-This guide provides best practices for creating and configuring a Windows virtual machine on Proxmox, including PCI passthrough for devices like GPUs.
+Terse guide for setting up Windows VMs on Proxmox with GPU passthrough.
 
----
+## VM Creation Flow
 
-### 1. Create the VM
+```mermaid
+flowchart TD
+    A[Create VM] --> B[System Settings]
+    B --> C[Storage Setup]
+    C --> D[Network Config]
+    D --> E[PCI Passthrough]
+    E --> F[Install Windows]
+    F --> G[Install Drivers]
+    G --> H[Configure Updates]
+```
 
-When creating a Windows VM in the Proxmox UI, use the following settings for best performance and compatibility:
+## System Configuration
 
-- **OS**: Select the appropriate Windows version.
-- **System**:
-  - **Guest Agent**: Enable `QEMU Guest Agent`.
-  - **BIOS**: `OVMF (UEFI)`.
-  - **Machine**: `q35`.
-- **Disks**:
-  - **Bus/Device**: `SCSI` or `VirtIO Block`. Using `SCSI` with the `VirtIO SCSI` controller type is often recommended.
-- **CPU**:
-  - **Type**: `host`.
-- **Network**:
-  - **Model**: `VirtIO (paravirtualized)`.
+```mermaid
+graph TD
+    A[VM Settings] --> B[System]
+    A --> C[Storage]
+    A --> D[Network]
+    A --> E[PCI Devices]
+    
+    B --> B1[OVMF/UEFI]
+    B --> B2[Q35 Machine]
+    B --> B3[Host CPU]
+    
+    C --> C1[VirtIO Block]
+    C --> C2[VirtIO SCSI]
+    
+    D --> D1[VirtIO Net]
+    
+    E --> E1[GPU]
+    E --> E2[USB Controller]
+```
 
-### 2. Attach VirtIO Drivers
+## Quick Setup
 
-Windows does not have VirtIO drivers built-in. You must provide them during installation.
+1. **Create VM**
 
-1. Download the latest stable VirtIO drivers ISO from [the official Fedora repository](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso).
-2. Upload the ISO to your Proxmox storage.
-3. Attach the VirtIO drivers ISO to the VM as a secondary CD/DVD drive alongside your Windows installation ISO.
-4. During Windows setup, when prompted to choose an installation disk, it may appear empty. Click "Load driver" and browse to the VirtIO ISO to install the appropriate drivers for your storage controller (`viostor` for VirtIO Block/SCSI) and network card (`NetKVM`).
+   ```bash
+   # System
+   - BIOS: OVMF (UEFI)
+   - Machine: q35
+   - CPU: host
+   
+   # Storage
+   - Bus: VirtIO Block/SCSI
+   
+   # Network
+   - Model: VirtIO
+   ```
 
-### 3. PCI Passthrough (GPU, etc.)
+2. **Install Drivers**
 
-To pass a physical device like a GPU to a Windows VM:
+   ```bash
+   # Download & attach VirtIO ISO
+   wget https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso
+   
+   # Required drivers
+   - viostor (storage)
+   - NetKVM (network)
+   - QEMU Guest Agent
+   ```
 
-1. Follow the Proxmox documentation for [PCI(e) Passthrough](https://pve.proxmox.com/wiki/Pci_passthrough). This involves enabling IOMMU, isolating the device from the host, and other host-level configurations.
-2. Once the host is configured, add the device to your VM via the "Hardware" tab in the Proxmox UI or by editing the VM's configuration file (`/etc/pve/qemu-server/<VMID>.conf`).
+3. **PCI Passthrough**
 
-    ```
-    # Example for passing through a GPU
-    -device vfio-pci,host=01:00.0,multifunction=on
-    ```
+   ```bash
+   # Add to VM config
+   -device vfio-pci,host=01:00.0,multifunction=on  # GPU
+   -device vfio-pci,host=01:00.1                  # GPU Audio
+   -device vfio-pci,host=03:00.0                  # USB Controller
+   ```
 
-### 4. Install QEMU Guest Agent
+## Update Flow
 
-After Windows is installed, install the QEMU Guest Agent from the attached VirtIO drivers ISO. This will improve integration with the Proxmox host, allowing for proper shutdowns, reboots, and information reporting in the Proxmox UI.
+```mermaid
+flowchart TD
+    A[Windows VM] --> B[QEMU Guest Agent]
+    B --> C[Proxmox Host]
+    C --> D[Backup System]
+    D --> E[ZFS Snapshots]
+    
+    A --> F[Windows Update]
+    F --> G[Driver Updates]
+    G --> H[System Maintenance]
+```
+
+## Maintenance
+
+```mermaid
+graph TD
+    A[Regular Tasks] --> B[Updates]
+    A --> C[Backups]
+    A --> D[Snapshots]
+    
+    B --> B1[Windows]
+    B --> B2[Drivers]
+    B --> B3[QEMU Agent]
+    
+    C --> C1[VZDump]
+    C --> C2[ZFS]
+    
+    D --> D1[Before Updates]
+    D --> D2[Before Changes]
+```
+
+## Troubleshooting
+
+```mermaid
+flowchart TD
+    A[Issue] --> B{Type}
+    B -->|Performance| C[Check CPU/RAM]
+    B -->|Graphics| D[Verify Passthrough]
+    B -->|Network| E[VirtIO Drivers]
+    B -->|Storage| F[VirtIO Drivers]
+    
+    C --> G[Solution]
+    D --> G
+    E --> G
+    F --> G
+```
+
+For detailed troubleshooting and advanced configuration, see the [Proxmox PCI Passthrough Guide](https://pve.proxmox.com/wiki/Pci_passthrough).

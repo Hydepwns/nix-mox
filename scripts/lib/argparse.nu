@@ -20,8 +20,8 @@ def show_help [] {
 }
 
 def parse_args [] {
-    let args = $in
-    let mut config = {
+    let args = $env._args
+    $env.config = {
         platform: "auto"
         script: "install"
         dry_run: false
@@ -35,53 +35,53 @@ def parse_args [] {
         retry_delay: 5
     }
 
-    let mut i = 0
-    while $i < ($args | length) {
-        let arg = $args[$i]
+    $env.i = 0
+    while $env.i < ($args | length) {
+        let arg = ($args | get $env.i)
         match $arg {
             "--platform" => {
-                $config.platform = $args[$i + 1]
-                $i = $i + 2
+                $env.config.platform = ($args | get ($env.i + 1))
+                $env.i = $env.i + 2
             }
             "--script" => {
-                $config.script = $args[$i + 1]
-                $i = $i + 2
+                $env.config.script = ($args | get ($env.i + 1))
+                $env.i = $env.i + 2
             }
             "--dry-run" => {
-                $config.dry_run = true
-                $i = $i + 1
+                $env.config.dry_run = true
+                $env.i = $env.i + 1
             }
             "--verbose" | "-v" => {
-                $config.verbose = true
-                $i = $i + 1
+                $env.config.verbose = true
+                $env.i = $env.i + 1
             }
             "--force" | "-f" => {
-                $config.force = true
-                $i = $i + 1
+                $env.config.force = true
+                $env.i = $env.i + 1
             }
             "--quiet" | "-q" => {
-                $config.quiet = true
-                $i = $i + 1
+                $env.config.quiet = true
+                $env.i = $env.i + 1
             }
             "--log-file" => {
-                $config.log_file = $args[$i + 1]
-                $i = $i + 2
+                $env.config.log_file = ($args | get ($env.i + 1))
+                $env.i = $env.i + 2
             }
             "--parallel" | "-p" => {
-                $config.parallel = true
-                $i = $i + 1
+                $env.config.parallel = true
+                $env.i = $env.i + 1
             }
             "--timeout" => {
-                $config.timeout = ($args[$i + 1] | into int)
-                $i = $i + 2
+                $env.config.timeout = ($args | get ($env.i + 1) | into int)
+                $env.i = $env.i + 2
             }
             "--retry" => {
-                $config.retry_count = ($args[$i + 1] | into int)
-                $i = $i + 2
+                $env.config.retry_count = ($args | get ($env.i + 1) | into int)
+                $env.i = $env.i + 2
             }
             "--retry-delay" => {
-                $config.retry_delay = ($args[$i + 1] | into int)
-                $i = $i + 2
+                $env.config.retry_delay = ($args | get ($env.i + 1) | into int)
+                $env.i = $env.i + 2
             }
             "--help" => {
                 show_help
@@ -94,7 +94,7 @@ def parse_args [] {
             }
         }
     }
-    $config
+    $env.config
 }
 
 # Export the functions
@@ -114,16 +114,16 @@ export-env {
 
 # Main function to parse arguments and update environment
 def main [] {
-    let config = parse_args $in
-    $env.PLATFORM = $config.platform
-    $env.SCRIPT = $config.script
-    $env.DRY_RUN = $config.dry_run
-    $env.VERBOSE = $config.verbose
-    $env.FORCE = $config.force
-    $env.QUIET = $config.quiet
-    $env.LOG_FILE = $config.log_file
-    $env.PARALLEL = $config.parallel
-    $env.TIMEOUT = $config.timeout
-    $env.RETRY_COUNT = $config.retry_count
-    $env.RETRY_DELAY = $config.retry_delay
+    parse_args
+    $env.PLATFORM = $env.config.platform
+    $env.SCRIPT = $env.config.script
+    $env.DRY_RUN = $env.config.dry_run
+    $env.VERBOSE = $env.config.verbose
+    $env.FORCE = $env.config.force
+    $env.QUIET = $env.config.quiet
+    $env.LOG_FILE = $env.config.log_file
+    $env.PARALLEL = $env.config.parallel
+    $env.TIMEOUT = $env.config.timeout
+    $env.RETRY_COUNT = $env.config.retry_count
+    $env.RETRY_DELAY = $env.config.retry_delay
 } 

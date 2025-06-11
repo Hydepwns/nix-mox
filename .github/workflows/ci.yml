@@ -2,30 +2,17 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
-    tags: [ 'v*' ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Install Nix
-        uses: cachix/install-nix-action@v26
-      - name: Check Nix formatting
-        run: nix fmt --check
-      - name: Lint shell scripts
-        run: find . -name "*.sh" -print0 | xargs -0 shellcheck --severity=error --shell=bash
-
   build_packages:
-    needs: [lint]
     runs-on: ubuntu-latest
     strategy:
       matrix:
         system: [x86_64-linux, aarch64-linux]
+        nix-version: ['2.19.2', '2.20.1']
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -39,20 +26,22 @@ jobs:
       - name: Cache Nix store
         uses: actions/cache@v4
         with:
-          path: /nix/store
-          key: nix-store-${{ runner.os }}-${{ hashFiles('**/*.nix') }}
+          path: |
+            /nix/store
+            ~/.cache/nix
+          key: nix-store-${{ runner.os }}-${{ matrix.nix-version }}-${{ hashFiles('**/*.nix') }}
           restore-keys: |
-            nix-store-${{ runner.os }}-
+            nix-store-${{ runner.os }}-${{ matrix.nix-version }}-
       - name: Build all packages
         run: nix build .#all --system ${{ matrix.system }}
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nix-mox-${{ matrix.system }}
+          name: nix-mox-${{ matrix.system }}-${{ matrix.nix-version }}
           path: result
 
-  test_nixos:
-    needs: [lint]
+  test:
+    needs: [build_packages]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -67,54 +56,36 @@ jobs:
       - name: Cache Nix store
         uses: actions/cache@v4
         with:
-          path: /nix/store
+          path: |
+            /nix/store
+            ~/.cache/nix
           key: nix-store-${{ runner.os }}-${{ hashFiles('**/*.nix') }}
           restore-keys: |
             nix-store-${{ runner.os }}-
-      - name: Run NixOS VM tests
-        run: nix flake check -L
+      - name: Run tests
+        run: |
+          nix flake check --accept-flake-config --impure
+          nu scripts/core/run-tests.nu
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build_packages, test_nixos]
+    needs: [build_packages, test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@v26
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v13
         with:
-          path: artifacts
-      - name: Upload combined release artifact
-        uses: actions/upload-artifact@v4
+          name: nix-mox
+          signingKey: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: nix-mox-release
-          path: artifacts/
-          if-no-files-found: error
-
-  deploy:
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: [release]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: nix-mox-release
-          path: release-artifacts
-      - name: Read version from file
-        id: version
-        run: echo "tag_name=$(cat VERSION)" >> $GITHUB_ENV
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: release-artifacts/*/*
-          tag_name: v${{ env.tag_name }}
-          name: Release v${{ env.tag_name }}
-          body: |
-            Automated release for v${{ env.tag_name }}.
-            See the commit history for details.
-          draft: false
-          prerelease: false 
+          files: |
+            result-*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

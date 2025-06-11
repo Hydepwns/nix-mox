@@ -15,7 +15,7 @@
 
 let dry_run = ($in | get dry-run | default false)
 let help = ($in | get help | default false)
-let mut errors = []
+mut errors = []
 
 # Standardized logging function for NuShell
 let log = {|level, msg|
@@ -91,7 +91,7 @@ if $dry_run {
 } else {
   log_info "Killing Steam process if running..."
   let procs = (ps | where name == "Steam.exe")
-  if ($procs | is-empty) {
+  if ($procs | length) == 0 {
     log_success "No Steam process running."
   } else {
     let kill_results = ($procs | each { kill $in.pid | complete })
@@ -108,10 +108,11 @@ if $dry_run {
   log_dryrun "No changes were made."
 }
 
-if ($errors | is-empty) {
+if ($errors | length) == 0 {
   log_success "Steam installed. Please log in to Steam and install Rust (Facepunch, appid 252490) via the Steam client."
   exit 0
 } else {
-  log_error $"The following steps failed: ($errors | str join ", ")"
+  let error_msg = ($errors | str join ", ")
+  log_error $"The following steps failed: ($error_msg)"
   exit 1
 } 

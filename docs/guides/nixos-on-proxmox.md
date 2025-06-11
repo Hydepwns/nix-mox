@@ -1,114 +1,179 @@
 # NixOS on Proxmox Guide
 
-This guide covers methods for deploying NixOS as either a container (LXC) or a virtual machine (VM) on a Proxmox host.
+Terse guide for deploying NixOS on Proxmox via LXC, VM, or distroless containers.
 
----
+## Deployment Options
 
-### LXC (Container)
+```mermaid
+graph TD
+    A[NixOS on Proxmox] --> B[LXC Container]
+    A --> C[VM]
+    A --> D[Distroless]
+    
+    B --> B1[Lightweight]
+    B --> B2[Fast Boot]
+    B --> B3[Resource Efficient]
+    
+    C --> C1[Full VM]
+    C --> C2[Declarative]
+    C --> C3[Remote Updates]
+    
+    D --> D1[Minimal]
+    D --> D2[Secure]
+    D --> D3[OCI Compatible]
+```
 
-Deploying NixOS in an LXC container is efficient and lightweight.
+## LXC Container Setup
 
-1. **Download LXD Image**:
-    You can find the latest official NixOS LXD container image on [Hydra](https://hydra.nixos.org/job/nixos/release-*/nixos.lxdContainerImage.x86_64-linux/latest).
+```mermaid
+flowchart TD
+    A[Download Image] --> B[Upload to Proxmox]
+    B --> C[Create Container]
+    C --> D[Configure]
+    D --> E[Start Services]
+    
+    A --> A1[Hydra]
+    B --> B1[Local Storage]
+    C --> C1[pct create]
+    D --> D1[SSH Keys]
+```
 
-2. **Upload to Proxmox**:
-    Upload the downloaded `.tar.xz` image to your Proxmox host's local storage via the Proxmox web UI (`Datacenter` -> `Storage` -> `local` -> `CT Templates` -> `Upload`).
+### Quick Setup
 
-3. **Create the Container**:
-    Use the `pct create` command to create the container.
+```bash
+# Create container
+pct create <VMID> local:vztmpl/nixos-*.tar.xz \
+  --ostype unmanaged \
+  --features nesting=1 \
+  --net0 name=eth0,bridge=vmbr0,ip=dhcp
+```
 
-    ```bash
-    pct create <VMID> local:vztmpl/nixos-*.tar.xz \
-      --ostype unmanaged --features nesting=1 \
-      --net0 name=eth0,bridge=vmbr0,ip=dhcp
-    ```
+## VM Deployment
 
-    - Replace `<VMID>` with a unique ID for your container.
-    - The `--features nesting=1` flag is important for running certain applications, like Docker, inside the NixOS container.
+```mermaid
+flowchart TD
+    A[Prepare Config] --> B[Build Image]
+    B --> C[Upload to Proxmox]
+    C --> D[Create VM]
+    D --> E[Restore Image]
+    
+    A --> A1[QEMU Guest Agent]
+    B --> B1[nixos-generate]
+    C --> C1[vzdump]
+    D --> D1[Detach Disk]
+    E --> E1[qmrestore]
+```
 
-4. **Initial Configuration**:
-    After creation, start the container and set a root password and add your SSH keys to `/root/.ssh/authorized_keys` for remote access.
+### Configuration
 
-### VM (Declarative using nixos-generators)
+```nix
+# configuration.nix
+{ config, ... }: {
+  imports = [ <nixpkgs/nixos/modules/profiles/qemu-guest.nix> ];
+  services.qemuGuest.enable = true;
+}
+```
 
-For a fully-declarative VM, you can use [nixos-generators](https://github.com/nix-community/nixos-generators) to build a Proxmox-compatible VM image directly from a NixOS configuration.
+### Build & Deploy
 
-1. **Prepare your VM Configuration**:
-    Ensure your NixOS configuration includes the QEMU guest agent for proper integration with Proxmox.
+```bash
+# Build image
+nixos-generate -f proxmox -c configuration.nix
 
-    ```nix
-    # in your configuration.nix or vm.nix
-    { config, ... }: {
-      imports = [ <nixpkgs/nixos/modules/profiles/qemu-guest.nix> ];
-      services.qemuGuest.enable = true;
-    }
-    ```
+# Deploy
+qmrestore /path/to/image.vma.zst <VMID>
 
-2. **Build the VM Image**:
+# Remote update
+nixos-rebuild switch --flake .#myVmName --target-host root@vm-ip
+```
 
-    ```bash
-    nixos-generate -f proxmox -c configuration.nix
-    ```
+## Distroless Containers
 
-    This command will produce a `.vma.zst` compressed image file.
+```mermaid
+graph TD
+    A[Build Image] --> B[Runtime Dependencies]
+    A --> C[Build Dependencies]
+    
+    B --> D[Final Image]
+    C --> E[Build Environment]
+    
+    D --> F[Deploy]
+    E --> G[Build Process]
+```
 
-3. **Deploy on Proxmox**:
-    - Upload the generated `.vma.zst` file to your Proxmox host's `vzdump` directory (e.g., `/var/lib/vz/dump/`).
-    - Create a new VM in the Proxmox UI, then detach and remove its default disk.
-    - Use the `qmrestore` command on the Proxmox host to create a new disk for the VM from your image: `qmrestore /path/to/your/image.vma.zst <VMID>`.
-    - Attach the newly created disk to your VM.
+### Minimal Example
 
-4. **Remote Updates**:
-    You can update your VM remotely from your local machine using `nixos-rebuild`.
+```nix
+# Minimal nginx container
+pkgs.dockerTools.buildImage {
+  name = "distroless-app";
+  config = { 
+    Cmd = [ "${pkgs.nginx}/bin/nginx" "-g" "daemon off;" ]; 
+  };
+}
+```
 
-    ```bash
-    nixos-rebuild switch --flake .#myVmName --target-host root@your-vm-ip
-    ```
+### Multi-stage Build
 
-### Distroless NixOS (OCI/Container)
+```nix
+# Multi-stage container build
+let
+  buildEnv = pkgs.buildEnv { ... };
+  runtimeEnv = pkgs.runtimeOnlyDependencies buildEnv;
+in
+pkgs.dockerTools.buildImage {
+  copyToRoot = runtimeEnv;
+}
+```
 
-For minimal, secure container images, you can build a "distroless" image using `dockerTools`.
+### Flake Configuration
 
-- **Minimal Image Example**:
-
-  ```nix
-  pkgs.dockerTools.buildImage {
-    name = "distroless-app";
-    # Only includes nginx and its runtime dependencies
-    config = { Cmd = [ "${pkgs.nginx}/bin/nginx" "-g" "daemon off;" ]; };
-  }
-  ```
-
-- **Multi-stage Build Example**:
-
-  ```nix
-  let
-    # Build environment with all build-time dependencies
-    buildEnv = pkgs.buildEnv { ... };
-    # Runtime environment with only runtime dependencies
-    runtimeEnv = pkgs.runtimeOnlyDependencies buildEnv;
-  in
-  pkgs.dockerTools.buildImage {
-    # Copy only the runtime dependencies to the final image
-    copyToRoot = runtimeEnv;
-  }
-  ```
-
-- **Flake Configuration Example**:
-
-  ```nix
-  # in your flake.nix
+```nix
+# flake.nix
+{
   outputs = { nixpkgs, ... }: {
     nixosConfigurations.my-container = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [ ({ pkgs, ... }: {
-        # Define the container's configuration
         environment.systemPackages = [ pkgs.nginx ];
-        # It's good practice to set the state version
         system.stateVersion = "24.11";
-        # Disable unnecessary things for a container
         boot.isContainer = true;
       }) ];
     };
   };
-  ```
+}
+```
+
+## Update Flow
+
+```mermaid
+flowchart TD
+    A[Local Changes] --> B[Build]
+    B --> C{Deployment Type}
+    
+    C -->|LXC| D[Container Update]
+    C -->|VM| E[VM Update]
+    C -->|Distroless| F[Image Update]
+    
+    D --> G[Apply Changes]
+    E --> G
+    F --> G
+```
+
+## Resource Allocation
+
+```mermaid
+graph TD
+    A[Resource Planning] --> B[CPU]
+    A --> C[Memory]
+    A --> D[Storage]
+    
+    B --> B1[LXC: Shared]
+    B --> B2[VM: Dedicated]
+    
+    C --> C1[LXC: Flexible]
+    C --> C2[VM: Fixed]
+    
+    D --> D1[LXC: Thin]
+    D --> D2[VM: Thick]
+```

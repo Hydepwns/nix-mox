@@ -1,0 +1,11 @@
+--bind
+--container-architecture linux/amd64
+--env-file .env
+--secret-file .secrets
+--use-gitignore
+--artifact-server-path /tmp/artifacts
+--action-cache-path /tmp/actioncache
+--env ACTIONS_RUNNER_DEBUG=true
+--env ACTIONS_STEP_DEBUG=true
+--env GITHUB_TOKEN=test-token
+--env CACHIX_AUTH_TOKEN=test-token 

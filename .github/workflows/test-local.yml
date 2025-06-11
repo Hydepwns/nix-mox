@@ -2,9 +2,20 @@ name: Test Local
 
 on:
   workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of test to run'
+        required: true
+        type: choice
+        options:
+          - all
+          - basic
+          - performance
+          - cross-platform
+        default: 'all'
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     container:
       image: nixos/nix:2.19.2
@@ -21,17 +32,44 @@ jobs:
           git config --global --add safe.directory /Users/droo/Documents/CODE/nix-mox
           git config --global user.email "test@example.com"
           git config --global user.name "Test User"
-      - name: Check Nix flake
-        run: NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nix flake check --accept-flake-config --impure
-      - name: Build packages
+
+      - name: Basic Tests
+        if: ${{ github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'basic' }}
         run: |
           export ENABLE_INFISICAL=0
           export SHELLCHECK_OPTS="-e SC2155"
+          NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nix flake check --accept-flake-config --impure
           NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nix build .#all --accept-flake-config --impure
 
-      - name: Test nix-mox in CI mode
+      - name: Performance Tests
+        if: ${{ github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'performance' }}
         run: |
           export CI=true
+          echo "Running performance benchmarks..."
+          time ./scripts/nix-mox --script install --platform linux --verbose
+          time ./scripts/nix-mox --script install --platform windows --verbose
+          time ./scripts/nix-mox --script install --parallel --verbose
+
+      - name: Cross-Platform Tests
+        if: ${{ github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'cross-platform' }}
+        run: |
+          export CI=true
+          echo "Testing cross-platform compatibility..."
+          # Test Linux compatibility
           ./scripts/nix-mox --script install --platform linux --verbose
+          # Test Windows compatibility
           ./scripts/nix-mox --script install --platform windows --verbose
-          ./scripts/nix-mox --script install --parallel --verbose 
+          # Test macOS compatibility
+          ./scripts/nix-mox --script install --platform darwin --verbose
+          # Test parallel execution
+          ./scripts/nix-mox --script install --parallel --verbose
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            *.log
+            test-results/
+          if-no-files-found: warn 

@@ -1,0 +1,16 @@
+name: 'Setup Cachix'
+description: 'Setup Cachix for Nix caching'
+inputs:
+  name:
+    description: 'Cachix cache name'
+    required: true
+  signingKey:
+    description: 'Cachix signing key'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Cachix
+      shell: bash
+      run: |
+        echo "Mock: Setting up Cachix cache ${{ inputs.name }}" 

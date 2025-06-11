@@ -1,161 +1,188 @@
 # Nushell Implementation
 
-This document describes the Nushell implementation of nix-mox, which provides a more robust and type-safe alternative to the bash implementation.
+Terse guide for nix-mox's Nushell implementation, providing robust and type-safe automation.
 
-## Modules
+## Architecture
 
-### argparse.nu
-
-Handles command-line argument parsing with type safety and better error handling.
-
-```nushell
-# Example usage
-let config = parse_args ["--platform", "linux", "--script", "install"]
+```mermaid
+graph TD
+    A[nix-mox.nu] --> B[Modules]
+    B --> C[argparse.nu]
+    B --> D[platform.nu]
+    B --> E[logging.nu]
+    B --> F[exec.nu]
+    B --> G[handlers.nu]
+    
+    C --> H[Type Safety]
+    D --> I[Platform Detection]
+    E --> J[Logging]
+    F --> K[Execution]
+    G --> L[Handlers]
 ```
 
-### platform.nu
+## Module Flow
 
-Provides platform detection and script management with improved data structures.
-
-```nushell
-# Example usage
-let platform = detect_platform
-let script = get_platform_script $platform "install"
-```
-
-### logging.nu
-
-Implements logging with better formatting and error handling.
-
-```nushell
-# Example usage
-log "INFO" "Operation completed successfully"
-handle_error $env.ERROR_CODES.INVALID_ARGUMENT "Invalid input" "Details here"
-```
-
-### exec.nu
-
-Manages script execution with timeout and retry capabilities.
-
-```nushell
-# Example usage
-run_script "scripts/install.sh" --verbose
-run_with_retry "scripts/install.sh" --force
-```
-
-### handlers.nu
-
-Manages script handlers and dependency validation.
-
-```nushell
-# Example usage
-handle_script "scripts/install.sh" --platform linux
-run_platform_script "linux" "install"
+```mermaid
+flowchart TD
+    A[Input] --> B[Parse Args]
+    B --> C[Detect Platform]
+    C --> D[Setup Logging]
+    D --> E[Execute Script]
+    E --> F[Handle Result]
+    
+    B --> G[Type Check]
+    C --> H[Validate]
+    D --> I[Format]
+    E --> J[Timeout]
+    F --> K[Report]
 ```
 
 ## Features
 
-### Type Safety
-
-- Strong typing for function parameters
-- Type checking for command-line arguments
-- Better error messages for type mismatches
-
-### Improved Data Structures
-
-- Tables for structured data
-- Records for configuration
-- Lists for collections
-- Better string manipulation
-
-### Better Process Management
-
-- Native support for parallel execution
-- Improved timeout handling
-- Better error capture and reporting
-
-### Enhanced Logging
-
-- Structured log messages
-- Log levels (INFO, WARN, ERROR)
-- Log file support
-- Better formatting
-
-### Platform Support
-
-- Better platform detection
-- Cross-platform compatibility
-- Improved script handler selection
-
-## Usage
-
-### Basic Usage
-
-```nushell
-# Run with default settings
-./scripts/nix-mox.nu
-
-# Run with specific platform
-./scripts/nix-mox.nu --platform linux
-
-# Run with verbose output
-./scripts/nix-mox.nu --verbose
-
-# Run in dry-run mode
-./scripts/nix-mox.nu --dry-run
+```mermaid
+graph TD
+    A[Features] --> B[Type Safety]
+    A --> C[Data Structures]
+    A --> D[Process Management]
+    A --> E[Logging]
+    A --> F[Platform Support]
+    
+    B --> B1[Strong Typing]
+    B --> B2[Type Checking]
+    
+    C --> C1[Tables]
+    C --> C2[Records]
+    
+    D --> D1[Parallel Exec]
+    D --> D2[Timeout]
+    
+    E --> E1[Structured Logs]
+    E --> E2[Levels]
+    
+    F --> F1[Detection]
+    F --> F2[Compatibility]
 ```
 
-### Advanced Usage
+## Usage Examples
 
 ```nushell
-# Run with timeout
+# Basic
+./scripts/nix-mox.nu
+./scripts/nix-mox.nu --platform linux
+./scripts/nix-mox.nu --verbose
+
+# Advanced
 ./scripts/nix-mox.nu --timeout 30
-
-# Run with retries
 ./scripts/nix-mox.nu --retry 3 --retry-delay 5
-
-# Run in parallel (CI mode)
 ./scripts/nix-mox.nu --parallel
-
-# Run with log file
 ./scripts/nix-mox.nu --log-file install.log
 ```
 
-## Testing
+## Error Handling
 
-Run the test suite:
-
-```nushell
-$env.NU_TEST = "true"
-./scripts/tests/test.nu
+```mermaid
+graph TD
+    A[Error] --> B{Type}
+    B -->|Invalid Arg| C[Code 1]
+    B -->|File Missing| D[Code 2]
+    B -->|Permission| E[Code 3]
+    B -->|Handler| F[Code 4]
+    B -->|Dependency| G[Code 5]
+    B -->|Execution| H[Code 6]
+    B -->|Timeout| I[Code 7]
+    B -->|State| J[Code 8]
+    B -->|Network| K[Code 9]
+    B -->|Config| L[Code 10]
 ```
 
-## Error Codes
+## Testing Flow
 
-| Code | Name | Description |
-|------|------|-------------|
-| 0 | SUCCESS | Operation completed successfully |
-| 1 | INVALID_ARGUMENT | Invalid command-line argument |
-| 2 | FILE_NOT_FOUND | Required file not found |
-| 3 | PERMISSION_DENIED | Insufficient permissions |
-| 4 | HANDLER_NOT_FOUND | Script handler not found |
-| 5 | DEPENDENCY_MISSING | Required dependency missing |
-| 6 | EXECUTION_FAILED | Script execution failed |
-| 7 | TIMEOUT | Script execution timed out |
-| 8 | INVALID_STATE | System in invalid state |
-| 9 | NETWORK_ERROR | Network operation failed |
-| 10 | CONFIGURATION_ERROR | Configuration error |
+```mermaid
+flowchart TD
+    A[Test Suite] --> B[Unit Tests]
+    A --> C[Integration Tests]
+    A --> D[Performance Tests]
+    
+    B --> E[Module Tests]
+    C --> F[System Tests]
+    D --> G[Benchmarks]
+    
+    E --> H[Results]
+    F --> H
+    G --> H
+```
 
-## Contributing
+## Module Examples
 
-1. Follow the Nushell style guide
-2. Add tests for new features
-3. Update documentation
-4. Use type annotations
-5. Handle errors appropriately
+### Argument Parsing
+
+```nushell
+# argparse.nu
+let config = parse_args ["--platform", "linux", "--script", "install"]
+```
+
+### Platform Detection
+
+```nushell
+# platform.nu
+let platform = detect_platform
+let script = get_platform_script $platform "install"
+```
+
+### Logging
+
+```nushell
+# logging.nu
+log "INFO" "Operation completed"
+handle_error $env.ERROR_CODES.INVALID_ARGUMENT "Invalid input"
+```
+
+### Execution
+
+```nushell
+# exec.nu
+run_script "scripts/install.sh" --verbose
+run_with_retry "scripts/install.sh" --force
+```
+
+### Handlers
+
+```nushell
+# handlers.nu
+handle_script "scripts/install.sh" --platform linux
+run_platform_script "linux" "install"
+```
 
 ## Dependencies
 
-- Nushell 0.80.0 or higher
-- Required handlers (bash, python, etc.)
-- Platform-specific tools
+```mermaid
+graph TD
+    A[Dependencies] --> B[Nushell]
+    A --> C[Handlers]
+    A --> D[Tools]
+    
+    B --> B1[0.80.0+]
+    
+    C --> C1[Bash]
+    C --> C2[Python]
+    
+    D --> D1[Platform Specific]
+    D --> D2[Build Tools]
+```
+
+## Development Flow
+
+```mermaid
+flowchart TD
+    A[Development] --> B[Style Guide]
+    A --> C[Testing]
+    A --> D[Documentation]
+    A --> E[Type Annotations]
+    A --> F[Error Handling]
+    
+    B --> G[Review]
+    C --> G
+    D --> G
+    E --> G
+    F --> G
+```

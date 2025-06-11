@@ -5,8 +5,8 @@ set -euo pipefail
 # Determine the directory where the script is located
 SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Source common functions
-source "$SCRIPTS_DIR/scripts/_common.nu"
+# Source common functions (now a bash file)
+source "$SCRIPTS_DIR/linux/_common.nu"
 
 # Default values
 VERBOSE=false

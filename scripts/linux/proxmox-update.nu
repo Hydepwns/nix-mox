@@ -9,9 +9,9 @@ use ../../scripts/_common.nu *
 
 # Script-specific variables
 const LOGFILE = "/var/log/proxmox-update.log"
-let DRY_RUN = false
-let APT_OPTIONS = "-y" # Default options for apt
-let PVE_OPTIONS = ""   # Default options for pveupdate/pveupgrade
+$env.DRY_RUN = false
+$env.APT_OPTIONS = "-y" # Default options for apt
+$env.PVE_OPTIONS = ""   # Default options for pveupdate/pveupgrade
 
 # Ensure log file exists and is writable
 try {
@@ -27,9 +27,9 @@ def main [] {
     for arg in $args {
         match $arg {
             "--dry-run" => {
-                $DRY_RUN = true
-                $APT_OPTIONS = "--dry-run"
-                $PVE_OPTIONS = "--dry-run"
+                $env.DRY_RUN = true
+                $env.APT_OPTIONS = "--dry-run"
+                $env.PVE_OPTIONS = "--dry-run"
             }
             "--help" | "-h" => { usage }
             _ => {
@@ -39,11 +39,11 @@ def main [] {
         }
     }
 
-    check_root $LOGFILE
+    check_root
 
     # Check for required commands
     for cmd in ["apt", "pveupdate", "pveupgrade"] {
-        if not (which $cmd | length) > 0 {
+        if not ((which $cmd | length | into int) > 0) {
             log_error $"Required command '($cmd)' not found." $LOGFILE
             exit 1
         }
@@ -51,32 +51,32 @@ def main [] {
 
     log_info "Starting Proxmox update..." $LOGFILE
 
-    if $DRY_RUN {
+    if $env.DRY_RUN {
         log_dryrun "Dry-run mode enabled. The following commands would be executed:" $LOGFILE
     }
 
     # Run updates, redirecting stdout/stderr to the log file
     try {
         log_info "Updating package lists..." $LOGFILE
-        apt update | tee -a $LOGFILE
+        apt update | append-to-log $LOGFILE
 
         log_info "Performing distribution upgrade..." $LOGFILE
-        apt $APT_OPTIONS dist-upgrade | tee -a $LOGFILE
+        apt $env.APT_OPTIONS dist-upgrade | append-to-log $LOGFILE
 
         log_info "Removing unused packages..." $LOGFILE
-        apt $APT_OPTIONS autoremove | tee -a $LOGFILE
+        apt $env.APT_OPTIONS autoremove | append-to-log $LOGFILE
 
         log_info "Running pveupdate..." $LOGFILE
-        pveupdate $PVE_OPTIONS | tee -a $LOGFILE
+        pveupdate $env.PVE_OPTIONS | append-to-log $LOGFILE
 
         log_info "Running pveupgrade..." $LOGFILE
-        pveupgrade $PVE_OPTIONS | tee -a $LOGFILE
+        pveupgrade $env.PVE_OPTIONS | append-to-log $LOGFILE
     } catch {
         log_error $"An error occurred: ($env.LAST_ERROR)" $LOGFILE
         exit 1
     }
 
-    if $DRY_RUN {
+    if $env.DRY_RUN {
         log_dryrun "Dry run complete. No changes were made." $LOGFILE
     } else {
         log_success "Proxmox update complete." $LOGFILE

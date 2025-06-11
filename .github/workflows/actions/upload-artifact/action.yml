@@ -1,0 +1,22 @@
+name: 'Upload Artifact'
+description: 'Upload a build artifact that can be used by subsequent workflow steps'
+inputs:
+  name:
+    description: 'Artifact name'
+    required: true
+  path:
+    description: 'Path to artifact'
+    required: true
+  if-no-files-found:
+    description: 'Behavior if no files are found'
+    required: false
+    default: 'warn'
+runs:
+  using: "composite"
+  steps:
+    - name: Upload Artifact
+      shell: bash
+      run: |
+        echo "Mock: Uploading artifact ${{ inputs.name }} from ${{ inputs.path }}"
+        mkdir -p /tmp/artifacts/${{ inputs.name }}
+        cp -r ${{ inputs.path }}/* /tmp/artifacts/${{ inputs.name }}/ || true 

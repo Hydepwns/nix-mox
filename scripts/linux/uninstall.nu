@@ -10,14 +10,14 @@ use ../../scripts/_common.nu *
 
 # --- Global Variables ---
 const MANIFEST_FILE = "/etc/nix-mox/install_manifest.txt"
-let DRY_RUN = false
+$env.DRY_RUN = false
 
 def main [] {
     # --- Argument Parsing ---
     let args = $env._args
     for arg in $args {
         match $arg {
-            "--dry-run" => { $DRY_RUN = true }
+            "--dry-run" => { $env.DRY_RUN = true }
             "--help" | "-h" => { usage }
             _ => {
                 log_error $"Unknown option: ($arg)"
@@ -33,7 +33,7 @@ def main [] {
         exit 0
     }
     
-    if $DRY_RUN {
+    if $env.DRY_RUN {
         log_dryrun "Dry-run mode enabled. No files will be changed."
     }
 
@@ -46,7 +46,7 @@ def main [] {
     for item in ($items_to_remove | reverse) {
         if ($item | str trim | is-empty) { continue }
 
-        if $DRY_RUN {
+        if $env.DRY_RUN {
             if ($item | path exists) {
                 log_dryrun $"Would remove: ($item)"
             }
@@ -72,7 +72,7 @@ def main [] {
     }
     
     # Finally, remove the manifest file itself if not in dry run
-    if not $DRY_RUN {
+    if not $env.DRY_RUN {
         log_info $"Removing manifest file: ($MANIFEST_FILE)"
         rm $MANIFEST_FILE
         # Try to remove the parent dir, will fail if not empty (which is fine)
@@ -81,7 +81,7 @@ def main [] {
         }
     }
 
-    if $DRY_RUN {
+    if $env.DRY_RUN {
         log_dryrun "Dry run complete."
     } else {
         log_success "Uninstallation complete."

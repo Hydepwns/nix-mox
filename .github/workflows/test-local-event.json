@@ -1,0 +1,9 @@
+{
+  "inputs": {
+    "test_type": "basic"
+  },
+  "repository": {
+    "name": "nix-mox",
+    "full_name": "hydepwns/nix-mox"
+  }
+} 
