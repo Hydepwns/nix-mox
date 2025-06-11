@@ -4,8 +4,8 @@ Terse, reproducible, and opinionated automation for Proxmox, NixOS, and Windows.
 
 This repository provides a set of scripts, NixOS modules, and templates to streamline the management of a home server environment running Proxmox, with a focus on declarative systems using NixOS and automated setups for Windows VMs.
 
-- **Usage & Install Instructions:** See [USAGE.md](./USAGE.md)
-- **Architecture & Design:** See [ARCHITECTURE.md](./ARCHITECTURE.md)
+- **Usage & Install Instructions:** See [USAGE.md](./docs/USAGE.md)
+- **Architecture & Design:** See [ARCHITECTURE.md](./docs/ARCHITECTURE.md)
 
 ---
 
@@ -23,6 +23,10 @@ This repository provides a set of scripts, NixOS modules, and templates to strea
   - Examples for ZFS caching, Docker/LXC containers, and Grafana monitoring dashboards.
 - **🛠️ Developer Environment**:
   - Get a consistent and reproducible development environment with `nix develop`, which provides all the tools needed to work on this repository.
+- **🧪 Comprehensive Testing**:
+  - Built-in test suite using Nushell's native testing capabilities.
+  - Automated CI/CD pipeline with GitHub Actions.
+  - Support for both unit and integration testing.
 
 ## 🚀 Quick Start
 
@@ -44,8 +48,18 @@ This repository provides a set of scripts, NixOS modules, and templates to strea
     ```
 
 3. **Review the Documentation**:
-    - For all usage, installation, and module instructions, see [**USAGE.md**](./USAGE.md).
-    - For a high-level overview of the setup, see [**ARCHITECTURE.md**](./ARCHITECTURE.md).
+    - For all usage, installation, and module instructions, see [**USAGE.md**](./docs/USAGE.md).
+    - For a high-level overview of the setup, see [**ARCHITECTURE.md**](./docs/ARCHITECTURE.md).
+
+4. **Run Tests**:
+
+    ```bash
+    # Run all tests
+    nu scripts/run-tests.nu
+
+    # Run tests with verbose output
+    nu scripts/run-tests.nu --verbose
+    ```
 
 ---
 
@@ -58,4 +72,4 @@ nix-mox provides automation scripts and templates for:
 - Windows automation (Steam, Rust, etc.)
 - Container and monitoring templates
 
-It leverages Nix Flakes for easy script execution (e.g., `nix run .#proxmox-update`) and a consistent development environment (`nix develop`).
+It leverages Nix Flakes for easy script execution (e.g., `nix run .#proxmox-update`) and a consistent development environment (`nix develop`). All scripts are written in Nushell for improved reliability and maintainability.

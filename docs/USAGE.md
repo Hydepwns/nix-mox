@@ -75,7 +75,7 @@ Templates for containers, VMs, monitoring, and storage are available in the `tem
 - You can still run any script manually (not recommended for NixOS):
 
   ```bash
-  sudo ./scripts/linux/proxmox-update.sh
+  sudo nu scripts/linux/proxmox-update.nu
   ```
 
 - Or use the legacy install scripts (see below).
@@ -84,18 +84,18 @@ Templates for containers, VMs, monitoring, and storage are available in the `tem
 
 ## Legacy/Manual Install (Non-NixOS only)
 
-> **Warning:** The install.sh and uninstall.sh scripts are deprecated for NixOS users. Use Nix flake methods above instead.
+> **Warning:** The install.nu and uninstall.nu scripts are deprecated for NixOS users. Use Nix flake methods above instead.
 
 - To install all scripts manually:
 
   ```bash
-  sudo ./scripts/linux/install.sh
+  sudo nu scripts/linux/install.nu
   ```
 
 - To remove/uninstall:
 
   ```bash
-  sudo ./scripts/linux/uninstall.sh
+  sudo nu scripts/linux/uninstall.nu
   ```
 
 ---
@@ -249,16 +249,15 @@ This module simplifies enabling and configuring Tailscale.
     }
     ```
 
-2. **For headless machines**, you can pre-authorize the node by providing an auth key. This is useful for servers that you can't log into interactively.
-
-    Create a file with your Tailscale auth key and secure it (e.g., with `sops-nix`):
+2. **Configure Tailscale** (optional):
 
     ```nix
-    # In your configuration, provide the path to the auth key file
-    services.nix-mox.tailscale.authKeyFile = "/path/to/your/tailscale-auth-key";
+    services.nix-mox.tailscale = {
+      enable = true;
+      authKeyFile = config.sops.secrets.tailscale_auth_key.path;
+      extraUpFlags = ["--advertise-exit-node"];
+    };
     ```
-
-3. After rebuilding your system, Tailscale will be enabled. If an `authKeyFile` is provided, the node will attempt to authenticate on its first boot.
 
 ---
 
@@ -277,7 +276,7 @@ This module simplifies enabling and configuring Tailscale.
 
   ```bash
   nix run .#<script-name>         # Preferred (Nix/NixOS)
-  sudo ./scripts/linux/<script>.sh # Manual/legacy
+  sudo nu scripts/linux/<script>.nu # Manual/legacy
   ```
 
 - **Use a template:**
@@ -460,98 +459,69 @@ This section covers how to contribute to the project, run tests, and ensure code
 
 #### Development Environment
 
-1. **Setup Development Shell**
+1. **Enter the development environment**:
 
-   ```bash
-   # Enter the development shell with all required tools
-   nix develop
-   ```
+    ```bash
+    nix develop
+    ```
 
-   This provides:
-   - git
-   - nix
-   - bash
-   - shellcheck
-   - nushell
-   - coreutils
-   - nixpkgs-fmt
-   - fd
-   - ripgrep
+2. **Required tools**:
+    - Nushell (version 0.80.0 or higher)
+    - Nix (version 2.4 or higher)
+    - Git
 
-2. **Code Formatting**
-   - Use `nix fmt` for Nix code
-   - Follow shellcheck guidelines for shell scripts
-   - Document new features in ARCHITECTURE.md and USAGE.md
+### Running Tests
 
-   ```bash
-   # Format all Nix files
-   nix fmt
-   ```
+The project uses Nushell's native testing capabilities. To run the tests:
 
-#### Running Tests
+1. **Run all tests**:
 
-1. **Shell Script Tests**
+    ```bash
+    nu scripts/run-tests.nu
+    ```
 
-   ```bash
-   # Run all shell script tests
-   ./tests/test-common.sh
-   ./tests/test-zfs-snapshot.sh
-   ```
+2. **Run tests with verbose output**:
 
-2. **NixOS Module Tests**
+    ```bash
+    nu scripts/run-tests.nu --verbose
+    ```
 
-   ```bash
-   # Test the NixOS module
-   nix build .#nixosConfigurations.test-vm.config.system.build.toplevel
-   ```
+3. **Run specific test modules**:
 
-3. **Package Build Tests**
+    ```bash
+    nu scripts/run-tests.nu --module unit-tests
+    nu scripts/run-tests.nu --module integration-tests
+    nu scripts/run-tests.nu --module performance-tests
+    ```
 
-   ```bash
-   # Test building all packages
-   nix build .#all
-   ```
+### Contributing
 
-#### Contributing
+1. **Fork the repository**
+2. **Create a feature branch**:
 
-1. **Testing**
-   - Add tests for new features
-   - Ensure all tests pass before submitting PRs
-   - Update documentation for new functionality
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
 
-2. **Pull Requests**
-   - Create feature branches
-   - Ensure CI passes
-   - Update documentation
-   - Add tests for new features
+3. **Make your changes**
+4. **Run the tests**:
 
-#### CI Integration
+    ```bash
+    nu scripts/run-tests.nu
+    ```
 
-The `nix-mox` script is designed to work seamlessly in CI environments:
+5. **Commit your changes**:
 
-1. **Automatic CI Detection**
-   - The script automatically detects CI environments
-   - Sets appropriate logging and error handling
-   - Enables parallel execution capabilities
+    ```bash
+    git commit -m "feat: your feature description"
+    ```
 
-2. **CI-Specific Features**
-   - Parallel execution of platform scripts
-   - Enhanced error reporting
-   - Retry mechanisms for failed operations
-   - Detailed logging for debugging
+6. **Push to your fork**:
 
-3. **Example CI Usage**
+    ```bash
+    git push origin feature/your-feature-name
+    ```
 
-   ```bash
-   # In your CI pipeline
-   export CI=true
-   ./scripts/nix-mox --script install --parallel --verbose
-   ```
+7. **Create a pull request**
 
-4. **CI Best Practices**
-   - Always use `--verbose` in CI for detailed logs
-   - Consider using `--parallel` for faster execution
-   - Set appropriate timeouts with `--timeout`
-   - Use `--retry` for handling transient failures
-
-For more details on the testing infrastructure, see [ARCHITECTURE.md](./ARCHITECTURE.md#testing--cicd).
+For more details on contributing, see [CONTRIBUTING.md](./CONTRIBUTING.md).

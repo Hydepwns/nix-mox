@@ -6,6 +6,7 @@ in
 {
   imports = [
     ./templates.nix
+    ./error-handling.nix
   ];
 
   options.services.nix-mox = {

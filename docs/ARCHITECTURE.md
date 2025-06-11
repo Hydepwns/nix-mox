@@ -123,7 +123,7 @@ This project uses GitHub Actions for continuous integration and deployment. The 
 ```mermaid
 graph TD
     A[GitHub Actions] --> B[Build & Test]
-    B --> C[Shell Script Tests]
+    B --> C[Nushell Tests]
     B --> D[NixOS Module Tests]
     B --> E[Package Builds]
     B --> F[Format & Lint]
@@ -135,11 +135,17 @@ graph TD
 
 ### Test Components
 
-1. **Shell Script Tests**
+1. **Nushell Tests**
    - Located in `tests/` directory
-   - Tests common functions and script behavior
-   - Uses mock commands for system interactions
-   - Ensures script reliability and error handling
+   - Comprehensive test suite using Nushell's native testing capabilities
+   - Tests include:
+     - Argument parsing and validation
+     - Platform detection and validation
+     - Script handling and execution
+     - Logging functionality
+     - Error handling and reporting
+   - Uses Nushell's built-in `assert` for validation
+   - Supports both unit and integration testing
 
 2. **NixOS Module Tests**
    - Tests module integration
@@ -153,7 +159,7 @@ graph TD
    - Flake compatibility checks
 
 4. **Code Quality**
-   - Shell script linting (shellcheck)
+   - Nushell code formatting and linting
    - Nix code formatting (nixpkgs-fmt)
    - Documentation validation
 
@@ -167,24 +173,58 @@ The pipeline runs on:
 
 For detailed CI/CD configuration, see `.github/workflows/ci.yml`.
 
-### CI Mode
+### Running Tests Locally
 
-The `nix-mox` script supports a special CI mode that enables:
+To run the test suite locally:
 
-- Automatic platform detection and execution
-- Parallel execution of platform-specific scripts
-- Enhanced error reporting and logging
-- Retry mechanisms for failed operations
-
-To enable CI mode:
-
-1. Set the `CI` environment variable to "true"
-2. Use the `--parallel` flag for concurrent execution
-3. Use `--verbose` for detailed logging
-
-Example CI configuration:
+1. Ensure Nushell is installed (version 0.80.0 or higher)
+2. Run the test suite:
 
 ```bash
-export CI=true
-./scripts/nix-mox --script install --parallel --verbose
+nu scripts/run-tests.nu
 ```
+
+The test suite will:
+- Execute all test modules
+- Validate script functionality
+- Check error handling
+- Verify logging capabilities
+- Report test results
+
+For more detailed test output, use the `--verbose` flag:
+
+```bash
+nu scripts/run-tests.nu --verbose
+```
+
+### Test Modules
+
+1. **Unit Tests** (`tests/unit-tests.nu`)
+   - Tests individual functions and components
+   - Validates argument parsing
+   - Checks error handling
+   - Verifies logging functionality
+
+2. **Integration Tests** (`tests/integration-tests.nu`)
+   - Tests script interactions
+   - Validates platform detection
+   - Checks script execution
+   - Verifies system integration
+
+3. **Performance Tests** (`tests/performance-tests.nu`)
+   - Measures script execution time
+   - Validates resource usage
+   - Checks memory consumption
+   - Verifies CPU utilization
+
+### Test Utilities
+
+The `tests/test-utils.nu` module provides common testing utilities:
+
+- Test environment setup
+- Mock functions
+- Assertion helpers
+- Logging utilities
+- Error handling helpers
+
+For more details on testing, see the [Testing Guide](./docs/testing.md).

@@ -98,7 +98,7 @@
             vzdump-backup = if isLinux then pkgs.writeShellApplication {
               name = "vzdump-backup";
               runtimeInputs = [ pkgs.proxmox-backup-client pkgs.qemu pkgs.lxc pkgs.bash pkgs.coreutils pkgs.gawk ];
-              text = builtins.readFile ./scripts/linux/vzdump-backup.sh;
+              text = builtins.readFile ./scripts/linux/vzdump-backup.nu;
               meta = {
                 description = "Backup all Proxmox VMs and containers to specified storage.";
                 platforms = [ "x86_64-linux" "aarch64-linux" ];
@@ -115,7 +115,7 @@
                 pkgs.gnused
                 pkgs.gnutar
               ];
-              text = builtins.readFile ./scripts/linux/zfs-snapshot.sh;
+              text = builtins.readFile ./scripts/linux/zfs-snapshot.nu;
               meta = {
                 description = "Create and prune ZFS snapshots for the specified pool.";
                 platforms = [ "x86_64-linux" "aarch64-linux" ];
@@ -124,7 +124,7 @@
             nixos-flake-update = if isLinux then pkgs.writeShellApplication {
               name = "nixos-flake-update";
               runtimeInputs = [ pkgs.nix pkgs.bash pkgs.coreutils ];
-              text = builtins.readFile ./scripts/linux/nixos-flake-update.sh;
+              text = builtins.readFile ./scripts/linux/nixos-flake-update.nu;
               meta = {
                 description = "Update flake inputs and rebuild NixOS system.";
                 platforms = [ "x86_64-linux" "aarch64-linux" ];
@@ -132,11 +132,11 @@
             } else null;
             install = if isLinux then pkgs.writeScriptBin "nix-mox-install" ''
               #!${pkgs.bash}/bin/bash
-              ${builtins.readFile ./scripts/linux/install.sh}
+              ${builtins.readFile ./scripts/linux/install.nu}
             '' else null;
             uninstall = if isLinux then let
-              commonSh = builtins.readFile ./scripts/linux/_common.sh;
-              uninstallSh = builtins.readFile ./scripts/linux/uninstall.sh;
+              commonSh = builtins.readFile ./scripts/linux/_common.nu;
+              uninstallSh = builtins.readFile ./scripts/linux/uninstall.nu;
             in pkgs.writeShellApplication {
               name = "nix-mox-uninstall";
               runtimeInputs = [ pkgs.bash pkgs.coreutils ];
@@ -144,7 +144,7 @@
                 #!${pkgs.bash}/bin/bash
                 set -euo pipefail
 
-                # Write _common.sh to a temp file
+                # Write _common.nu to a temp file
                 common_sh=$(mktemp)
                 cat > "$common_sh" <<'EOF'
 ${commonSh}
@@ -180,7 +180,7 @@ ${uninstallSh}
             proxmox-update = pkgs.writeShellApplication {
               name = "proxmox-update";
               runtimeInputs = [ pkgs.apt pkgs.bash pkgs.coreutils ];
-              text = builtins.readFile ./scripts/linux/proxmox-update.sh;
+              text = builtins.readFile ./scripts/linux/proxmox-update.nu;
               meta = {
                 description = "Update and upgrade Proxmox host packages safely.";
                 platforms = [ "x86_64-linux" "aarch64-linux" ];
@@ -221,26 +221,42 @@ ${uninstallSh}
                 description = "Legacy/compat uninstall logic for nix-mox scripts.";
               };
             } else {};
-        in {
-          # Development shell with common tools for working on this repository
-          # Usage: nix develop
-          # Provides a shell with git, nix, bash, shellcheck, nushell, coreutils, nixpkgs-fmt, fd, and ripgrep for development and testing.
+
+          # Development shell with all required tools
           devShells.default = pkgs.mkShell {
-            buildInputs = with pkgs; [
-              # Add your development dependencies here
+            buildInputs = [
+              pkgs.nushell
+              pkgs.git
+              pkgs.nix
+              pkgs.nixpkgs-fmt
+              pkgs.shellcheck
+              pkgs.coreutils
+              pkgs.fd
+              pkgs.ripgrep
             ];
+            shellHook = ''
+              echo "Welcome to the nix-mox dev shell!"
+              echo "Available tools:"
+              echo "  - nu (Nushell)"
+              echo "  - git"
+              echo "  - nix"
+              echo "  - nixpkgs-fmt"
+              echo "  - shellcheck"
+              echo "  - coreutils"
+              echo "  - fd"
+              echo "  - ripgrep"
+              echo ""
+              echo "Run 'nu tests/run-tests.nu' to run the test suite."
+            '';
           };
-          # Nix code formatter (nixpkgs-fmt)
-          # Usage: nix fmt
-          # Formats all Nix files in the repository for consistent style.
+        in
+        {
+          inherit overlay;
+          inherit nixosModules;
+          inherit devShells;
+          inherit apps;
+          packages = allPackages // proxmoxUpdate;
           formatter = pkgs.nixpkgs-fmt;
-          packages = pkgs.lib.filterAttrs (name: value: value != null) (allPackages // proxmoxUpdate) // {
-            all = pkgs.symlinkJoin {
-              name = "all-nix-mox";
-              paths = builtins.filter (p: p != null) (builtins.attrValues (allPackages // proxmoxUpdate));
-            };
-          };
-          apps = apps;
           checks = {
             # Run the ZFS SSD caching tests
             zfs-ssd-caching = pkgs.callPackage ./tests/zfs-ssd-caching { };

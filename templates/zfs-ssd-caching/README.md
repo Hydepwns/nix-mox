@@ -101,7 +101,7 @@ When `enableMonitoring` is enabled, the template automatically configures a Graf
 The template includes a comprehensive test suite that can be run using:
 
 ```bash
-nix-build tests/zfs-ssd-caching-test.nix
+nix-build tests/fixtures/zfs-ssd-caching/default.nix
 ```
 
 The test suite includes:

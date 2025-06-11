@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 
-# shellcheck source=scripts/_common.sh
 set -euo pipefail
 
 # Determine the directory where the script is located
 SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Source common functions
-source "$SCRIPTS_DIR/_common.sh"
+source "$SCRIPTS_DIR/scripts/_common.nu"
 
 # Default values
 VERBOSE=false
