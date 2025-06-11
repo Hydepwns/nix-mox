@@ -248,27 +248,13 @@ graph TD
 
 These diagrams illustrate:
 
-1. **Nix Flakes Structure**: Shows how the flake.nix file organizes packages, apps, development shells, and NixOS modules.
+- **Nix Flakes Structure:** How the Nix flakes are organized and their components.
+- **Automation Scripts Flow:** The flow of automation scripts and their interactions with different systems.
+- **NixOS Module Integration:** How NixOS modules are integrated into the system.
+- **Windows Automation Flow:** The automation tasks and their flow within the Windows VM.
+- **Component Relationships:** The relationships between different components and how they integrate into the system.
 
-2. **Automation Scripts Flow**: Demonstrates how different scripts interact with various system components and what actions they perform.
-
-3. **NixOS Module Integration**: Visualizes how the NixOS module integrates with system services, automation scripts, and update services.
-
-4. **Windows Automation Flow**: Shows the flow of Windows automation tasks, from script execution to specific actions.
-
-5. **Component Relationships**: Provides a high-level view of how all components interact with each other and the system.
-
-Each diagram helps visualize different aspects of the Nix integration, making it easier to understand:
-
-- How components are organized
-- How data and commands flow through the system
-- How different parts interact with each other
-- The automation and update processes
-- The relationship between user actions and system responses
-
-## Testing & CI/CD
-
-This project uses GitHub Actions for continuous integration and deployment. The CI/CD pipeline ensures code quality and reliability through automated testing and building.
+For more detailed usage and configuration, refer to the [USAGE.md](./USAGE.md) document.
 
 ### Test Infrastructure
 
@@ -314,41 +300,6 @@ graph TD
    - Nushell code formatting and linting
    - Nix code formatting (nixpkgs-fmt)
    - Documentation validation
-
-### CI/CD Pipeline
-
-The pipeline runs on:
-
-- Every push to `main`
-- Every pull request
-- Every version tag (v*)
-
-For detailed CI/CD configuration, see `.github/workflows/ci.yml`.
-
-### Running Tests Locally
-
-To run the test suite locally:
-
-1. Ensure Nushell is installed (version 0.80.0 or higher)
-2. Run the test suite:
-
-```bash
-nu scripts/run-tests.nu
-```
-
-The test suite will:
-
-- Execute all test modules
-- Validate script functionality
-- Check error handling
-- Verify logging capabilities
-- Report test results
-
-For more detailed test output, use the `--verbose` flag:
-
-```bash
-nu scripts/run-tests.nu --verbose
-```
 
 ### Test Modules
 

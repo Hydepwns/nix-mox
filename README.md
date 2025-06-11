@@ -2,42 +2,7 @@
 
 Proxmox templates + NixOS workstation + Windows gaming automation
 
-## Project Structure
-
-```bash
-nix-mox/
-├── .github/           # GitHub workflows and templates
-├── config/           # Configuration files
-├── docs/             # Documentation
-│   ├── guides/      # User guides
-│   ├── api/         # API documentation
-│   ├── examples/    # Example configurations
-│   └── development/ # Development documentation
-├── lib/              # Library code and utilities
-├── modules/          # NixOS modules
-│   ├── core/        # Core functionality
-│   ├── services/    # Service-specific modules
-│   └── storage/     # Storage-related modules
-├── packages/         # Package definitions
-│   ├── linux/       # Linux packages
-│   └── windows/     # Windows packages
-├── scripts/          # Scripts
-│   ├── core/        # Core scripts
-│   ├── handlers/    # Event handlers
-│   ├── lib/         # Script utilities
-│   ├── linux/       # Linux scripts
-│   └── windows/     # Windows scripts
-├── shells/           # Development shells
-├── templates/        # Templates
-│   ├── nixos/       # NixOS templates
-│   ├── windows/     # Windows templates
-│   └── common/      # Shared template components
-└── tests/            # Tests
-    ├── linux/       # Linux-specific tests
-    ├── windows/     # Windows-specific tests
-    ├── integration/ # Integration tests
-    └── unit/        # Unit tests
-```
+nix-mox provides automation for Proxmox hosts, NixOS systems, and Windows VMs using Nix Flakes and Nushell scripts. All tools are available via `nix run` with a consistent development environment through `nix develop`.
 
 ## Features
 
@@ -49,13 +14,35 @@ nix-mox/
 
 ## Installation
 
+### Requirements
+
+- **Nix:** Ensure you have Nix installed. You can install it by running:
+
+  ```bash
+  sh <(curl -L https://nixos.org/nix/install) --daemon
+  ```
+
+- **Proxmox VE:** A running Proxmox VE instance is required for managing VMs and containers.
+
+- **NixOS:** For NixOS-specific features, ensure you have a NixOS system or VM set up.
+
+- **Windows VM:** For Windows gaming automation, a Windows VM is required.
+
+- **ZFS:** Ensure ZFS is set up on your system for snapshot management.
+
+- **Nushell:** Required for running the test suite and scripts. Install it using Nix:
+
+  ```bash
+  nix profile install nixpkgs#nushell
+  ```
+
 ### NixOS
 
 Add to your `flake.nix`:
 
 ```nix
 {
-  inputs.nix-mox.url = "github:yourusername/nix-mox";
+  inputs.nix-mox.url = "github:hydepwns/nix-mox";
   
   outputs = { self, nixpkgs, nix-mox, ... }: {
     nixosConfigurations.your-host = nixpkgs.lib.nixosSystem {
@@ -70,7 +57,7 @@ Add to your `flake.nix`:
 ### Non-NixOS
 
 ```bash
-nix profile install github:yourusername/nix-mox
+nix profile install github:hydepwns/nix-mox
 ```
 
 ## Development
@@ -201,16 +188,39 @@ graph TD
 - [Template Variables](./docs/nixamples/05-variables/) - Dynamic configuration
 - [Template Overrides](./docs/nixamples/06-overrides/) - Customize templates
 
-## 🧪 Testing
+## Project Structure
 
 ```bash
-# Run all tests
-nu scripts/run-tests.nu
-
-# Verbose output
-nu scripts/run-tests.nu --verbose
+nix-mox/
+├── .github/           # GitHub workflows and templates
+├── config/           # Configuration files
+├── docs/             # Documentation
+│   ├── guides/      # User guides
+│   ├── api/         # API documentation
+│   ├── examples/    # Example configurations
+│   └── development/ # Development documentation
+├── lib/              # Library code and utilities
+├── modules/          # NixOS modules
+│   ├── core/        # Core functionality
+│   ├── services/    # Service-specific modules
+│   └── storage/     # Storage-related modules
+├── packages/         # Package definitions
+│   ├── linux/       # Linux packages
+│   └── windows/     # Windows packages
+├── scripts/          # Scripts
+│   ├── core/        # Core scripts
+│   ├── handlers/    # Event handlers
+│   ├── lib/         # Script utilities
+│   ├── linux/       # Linux scripts
+│   └── windows/     # Windows scripts
+├── shells/           # Development shells
+├── templates/        # Templates
+│   ├── nixos/       # NixOS templates
+│   ├── windows/     # Windows templates
+│   └── common/      # Shared template components
+└── tests/            # Tests
+    ├── linux/       # Linux-specific tests
+    ├── windows/     # Windows-specific tests
+    ├── integration/ # Integration tests
+    └── unit/        # Unit tests
 ```
-
-## About
-
-nix-mox provides automation for Proxmox hosts, NixOS systems, and Windows VMs using Nix Flakes and Nushell scripts. All tools are available via `nix run` with a consistent development environment through `nix develop`.
