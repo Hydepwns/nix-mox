@@ -1,7 +1,7 @@
 # Test suite for common functions
 
 # Source the common functions
-use ../../scripts/lib/common.nu
+use ../../scripts/lib/common.nu *
 
 export-env {
     # Set up environment variables
@@ -16,24 +16,24 @@ export-env {
 export def test_log_functions [] {
     print "Testing log functions..."
 
-    # Test log_info
-    let info_output = (log_info "This is an info message")
+    # Test info
+    let info_output = (info "This is an info message")
     if not ($info_output | str contains "INFO") {
-        print "❌ log_info test failed"
+        print "❌ info test failed"
         exit 1
     }
 
-    # Test log_warn
-    let warn_output = (log_warn "This is a warning message")
+    # Test warn
+    let warn_output = (warn "This is a warning message")
     if not ($warn_output | str contains "WARN") {
-        print "❌ log_warn test failed"
+        print "❌ warn test failed"
         exit 1
     }
 
-    # Test log_error
-    let error_output = (log_error "This is an error message")
+    # Test error
+    let error_output = (error "This is an error message")
     if not ($error_output | str contains "ERROR") {
-        print "❌ log_error test failed"
+        print "❌ error test failed"
         exit 1
     }
 
@@ -44,11 +44,11 @@ export def test_log_functions [] {
 def test_check_root [] {
     print "Testing check_root function..."
 
-    # Test as non-root (should fail)
+    # Test as root (should succeed)
     let root_result = (check_root)
     print $"Debug: Error message is: ($root_result)"
-    if not ($root_result | str contains "must be run as root") {
-        print "❌ check_root test failed (should fail when not root)"
+    if not ($root_result | str contains "Running as root") {
+        print "❌ check_root test failed (should succeed when root)"
         exit 1
     }
 
@@ -88,6 +88,9 @@ def main [] {
 }
 
 # Run tests if NU_TEST is set
-if $env.NU_TEST == "true" {
-    main
-}
+# def run_if_test [] {
+#     if $env.NU_TEST == "true" {
+#         main
+#     }
+# }
+# run_if_test

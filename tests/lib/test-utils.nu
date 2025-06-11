@@ -4,10 +4,12 @@
 use ../../scripts/lib/common.nu *
 
 # --- Test Configuration ---
-$env.TEST_DIR = "tests"
-$env.UNIT_TEST_DIR = $"($env.TEST_DIR)/unit"
-$env.INTEGRATION_TEST_DIR = $"($env.TEST_DIR)/integration"
-$env.FIXTURES_DIR = $"($env.TEST_DIR)/fixtures"
+export-env {
+    $env.TEST_DIR = "tests"
+    $env.UNIT_TEST_DIR = $"($env.TEST_DIR)/unit"
+    $env.INTEGRATION_TEST_DIR = $"($env.TEST_DIR)/integration"
+    $env.FIXTURES_DIR = $"($env.TEST_DIR)/fixtures"
+}
 
 # --- Test Helpers ---
 def run_test [test_file: string] {

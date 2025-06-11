@@ -1,4 +1,4 @@
-use ./test-utils.nu *
+use ../lib/test-utils.nu *
 
 def main [] {
     print "Running ZFS SSD caching integration tests..."
@@ -45,6 +45,7 @@ def main [] {
     print "Integration tests completed successfully"
 }
 
-if $env.NU_TEST == "true" {
+if ($env.NU_TEST? == "true") {
     main
-} 
+}
+main

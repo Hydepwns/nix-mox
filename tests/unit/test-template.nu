@@ -1,6 +1,6 @@
 # Test template for nix-mox components
 
-use ./test-utils.nu *
+use ../lib/test-utils.nu *
 
 def main [] {
     print $"Running tests for component: ($env.COMPONENT_NAME)"
@@ -44,6 +44,7 @@ def run_performance_tests [] {
     } 5
 }
 
-if $env.NU_TEST == "true" {
+if ($env.NU_TEST? == "true") {
     main
-} 
+}
+main

@@ -39,7 +39,11 @@ export def log [level: string, message: string] {
             _ => $NC
         }
         let timestamp = (timestamp)
-        print $"($timestamp) [($color)($level)($NC)] ($message)"
+        let log_string = $"($timestamp) [($color)($level)($NC)] ($message)"
+        print $log_string
+        $log_string
+    } else {
+        ""
     }
 }
 
@@ -67,7 +71,7 @@ export def handle_error [message: string] {
 
 export def check_root [] {
     if (whoami | str trim) == 'root' {
-        # ok, do nothing
+        "Running as root."
     } else {
         print $"ERROR: This script must be run as root."
         exit 1

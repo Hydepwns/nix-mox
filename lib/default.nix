@@ -1,1 +1,1 @@
-(import ./flake.nix) { }
+(import ../flake.nix) { }

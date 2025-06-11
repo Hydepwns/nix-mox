@@ -1,6 +1,6 @@
 use ../../tests/lib/test-common.nu *
 
-def-env main [] {
+def main [] {
     print "Starting test suite..."
 
     # Run common tests
@@ -22,7 +22,7 @@ def-env main [] {
     print "\nAll tests completed successfully! 🎉"
 }
 
-if $env.NU_TEST? == "true" {
+if ($env.NU_TEST? == "true") {
     main
 } else {
     $env.NU_TEST = "true"
