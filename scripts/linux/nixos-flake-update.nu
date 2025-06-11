@@ -7,7 +7,7 @@
 #   --flake-path PATH Set flake path (default: /etc/nixos or $FLAKE_PATH)
 #   --help            Show this help message
 
-use ../../scripts/_common.nu *
+use ../../scripts/lib/common.nu *
 
 # Script-specific variables
 $env.LOGFILE = "/var/log/nixos-flake-update.log"
@@ -104,4 +104,4 @@ def main [] {
 }
 
 # --- Execution ---
-main 
+main

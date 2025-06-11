@@ -5,7 +5,7 @@
 # - Maintains an update log
 # - Is idempotent and safe to re-run
 
-use ../../scripts/_common.nu *
+use ../../scripts/lib/common.nu *
 
 # Script-specific variables
 const LOGFILE = "/var/log/proxmox-update.log"
@@ -84,4 +84,4 @@ def main [] {
 }
 
 # --- Execution ---
-main 
+main

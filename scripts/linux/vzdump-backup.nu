@@ -6,7 +6,7 @@
 # - Maintains a backup log
 # - Is idempotent and safe to re-run
 
-use ../../scripts/_common.nu *
+use ../../scripts/lib/common.nu *
 
 # Proxmox vzdump Backup Script
 # Usage: sudo nu vzdump-backup.nu [--dry-run] [--storage NAME] [--help]
@@ -113,4 +113,4 @@ def main [] {
 }
 
 # --- Execution ---
-main 
+main

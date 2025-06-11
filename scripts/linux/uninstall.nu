@@ -6,7 +6,7 @@
 # - Removes all files and directories listed in the manifest.
 # - Is idempotent and safe to re-run.
 
-use ../../scripts/_common.nu *
+use ../../scripts/lib/common.nu *
 
 # --- Global Variables ---
 const MANIFEST_FILE = "/etc/nix-mox/install_manifest.txt"
@@ -32,13 +32,13 @@ def main [] {
         log_warn $"Install manifest not found at ($MANIFEST_FILE). Nothing to do."
         exit 0
     }
-    
+
     if $env.DRY_RUN {
         log_dryrun "Dry-run mode enabled. No files will be changed."
     }
 
     log_info "Starting uninstallation..."
-    
+
     # Read manifest into an array to process in reverse
     let items_to_remove = (open $MANIFEST_FILE | lines)
 
@@ -70,7 +70,7 @@ def main [] {
             log_warn $"Item not found, skipping: ($item)"
         }
     }
-    
+
     # Finally, remove the manifest file itself if not in dry run
     if not $env.DRY_RUN {
         log_info $"Removing manifest file: ($MANIFEST_FILE)"
@@ -89,4 +89,4 @@ def main [] {
 }
 
 # --- Execution ---
-main 
+main

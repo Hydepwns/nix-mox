@@ -8,7 +8,7 @@
 #   --pool NAME       Set ZFS pool name (default: rpool or $ZFS_POOL)
 #   --help            Show this help message
 
-use ../../scripts/_common.nu *
+use ../../scripts/lib/common.nu *
 
 # Script-specific variables
 const LOGFILE = "/var/log/zfs-snapshot.log"
@@ -130,4 +130,4 @@ def main [] {
 }
 
 # --- Execution ---
-main 
+main
