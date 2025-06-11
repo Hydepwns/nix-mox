@@ -4,17 +4,15 @@ let
   inherit (config.meta.platforms) linux;
 in
 {
-  "error-handling" = pkgs.callPackage ./error-handling { };
-
   vzdump-backup = if isLinux pkgs.system then createShellApp {
     name = "vzdump-backup";
-    runtimeInputs = [ 
-      pkgs.proxmox-backup-client 
-      pkgs.qemu 
-      pkgs.lxc 
-      pkgs.bash 
-      pkgs.coreutils 
-      pkgs.gawk 
+    runtimeInputs = [
+      pkgs.proxmox-backup-client
+      pkgs.qemu
+      pkgs.lxc
+      pkgs.bash
+      pkgs.coreutils
+      pkgs.gawk
     ];
     text = readScript ./scripts/linux/vzdump-backup.nu;
     meta = {
@@ -93,4 +91,4 @@ ${uninstallSh}
       platforms = linux;
     };
   } else null;
-} 
+}
