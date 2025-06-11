@@ -22,23 +22,46 @@ def main [] {
 
     # Test device detection
     print "Testing device detection..."
-    if (ls /dev/nvme0n1 | length) > 0 {
-        print "NVMe device found"
+    let os = (sys host | get name)
+    if $os == "Linux" {
+        # Linux-specific device checks
+        if (ls /dev/nvme0n1 | default [] | length) > 0 {
+            print "NVMe device found"
+        } else if (ls /dev/sd* | default [] | length) > 0 {
+            print "SATA/SCSI device found"
+        } else {
+            print "No storage devices found, skipping device tests"
+        }
+    } else if $os == "Darwin" {
+        # macOS-specific device checks
+        if (ls /dev/disk* | default [] | length) > 0 {
+            print "Storage device found"
+        } else {
+            print "No storage devices found, skipping device tests"
+        }
     } else {
-        print "No NVMe device found, skipping device tests"
+        print $"Unsupported OS: ($os), skipping device tests"
     }
 
     # Test pool operations
     print "Testing pool operations..."
-    if (zpool list rpool | length) > 0 {
-        print "ZFS pool found"
+    if $os == "Linux" {
+        if (which zpool | length) > 0 {
+            if (zpool list rpool 2>/dev/null | length) > 0 {
+                print "ZFS pool found"
+            } else {
+                print "No ZFS pool found, skipping pool tests"
+            }
+        } else {
+            print "ZFS not installed, skipping pool tests"
+        }
     } else {
-        print "No ZFS pool found, skipping pool tests"
+        print $"ZFS tests not supported on ($os), skipping pool tests"
     }
 
     print "Unit tests completed successfully"
 }
 
-if $env.NU_TEST == "true" {
+if $env.NU_TEST? == "true" {
     main
 }

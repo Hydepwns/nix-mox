@@ -5,7 +5,7 @@ def main [] {
 
     # Test CI/CD integration
     print "Testing CI/CD integration..."
-    if $env.CI == "true" {
+    if $env.CI? == "true" {
         print "Running in CI environment"
         # Test debug logging in CI
         test_logging "DEBUG" "CI test message" "[DEBUG] CI test message"
@@ -15,16 +15,21 @@ def main [] {
 
     # Test monitoring integration
     print "Testing monitoring integration..."
-    if (systemctl is-active prometheus-node-exporter | str contains "active") {
-        print "Prometheus node exporter is running"
-        # Test metrics collection
-        if (curl -s http://localhost:9100/metrics | str contains "zfs_") {
-            print "ZFS metrics found"
+    let os = (sys host | get name)
+    if $os == "Linux" {
+        if (systemctl is-active prometheus-node-exporter | str contains "active") {
+            print "Prometheus node exporter is running"
+            # Test metrics collection
+            if (curl -s http://localhost:9100/metrics | str contains "zfs_") {
+                print "ZFS metrics found"
+            } else {
+                print "No ZFS metrics found"
+            }
         } else {
-            print "No ZFS metrics found"
+            print "Prometheus node exporter is not running, skipping monitoring tests"
         }
     } else {
-        print "Prometheus node exporter is not running, skipping monitoring tests"
+        print ("Monitoring integration tests are only supported on Linux (current: " + $os + "), skipping.")
     }
 
     # Test error handling integration
