@@ -27,7 +27,8 @@
   outputs = { self, nixpkgs, flake-utils, ... }:
     let
       config = import ./config/default.nix;
-      helpers = import ./lib/helpers.nix { inherit nixpkgs; };
+      pkgs = nixpkgs.legacyPackages.${system};
+      helpers = import ./lib/helpers.nix { inherit pkgs; };
 
       nixosModules = {
         nix-mox = import ./modules/core/nix-mox.nix;
@@ -46,7 +47,6 @@
     in
       flake-utils.lib.eachDefaultSystem (system:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
           linuxPackages = import ./packages/linux { inherit pkgs helpers config; };
           windowsPackages = import ./packages/windows { inherit pkgs helpers config; };
           devShell = import ./shells/default.nix { inherit pkgs; };
