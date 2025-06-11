@@ -1,6 +1,6 @@
 use ../lib/test-utils.nu *
 
-export def main [] {
+def main [] {
     print "Running ZFS SSD caching performance tests..."
 
     # Test retry performance
