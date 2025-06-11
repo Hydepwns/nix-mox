@@ -1,17 +1,19 @@
 # Test suite for common functions
 
 # Source the common functions
-use ../../scripts/lib/common.nu *
+use ../../scripts/lib/common.nu
 
-# Set up environment variables
-$env.GREEN = (ansi green)
-$env.YELLOW = (ansi yellow)
-$env.RED = (ansi red)
-$env.NC = (ansi reset)
-$env.LOG_LEVEL = "INFO"
+export-env {
+    # Set up environment variables
+    $env.GREEN = (ansi green)
+    $env.YELLOW = (ansi yellow)
+    $env.RED = (ansi red)
+    $env.NC = (ansi reset)
+    $env.LOG_LEVEL = "INFO"
+}
 
 # Test log functions
-def test_log_functions [] {
+export def test_log_functions [] {
     print "Testing log functions..."
 
     # Test log_info
