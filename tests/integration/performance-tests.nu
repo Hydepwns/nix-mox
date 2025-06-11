@@ -1,6 +1,6 @@
-use ./test-utils.nu *
+use ../lib/test-utils.nu *
 
-def main [] {
+export def main [] {
     print "Running ZFS SSD caching performance tests..."
 
     # Test retry performance
@@ -41,4 +41,4 @@ def main [] {
 
 if $env.NU_TEST == "true" {
     main
-} 
+}
