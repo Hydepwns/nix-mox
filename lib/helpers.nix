@@ -31,5 +31,8 @@ let
 
     # File operations
     readScript = path: builtins.readFile path;
+
+    # Expose platform detection functions
+    inherit isLinux isDarwin;
   };
 in self
