@@ -54,7 +54,9 @@
         {
           inherit overlays;
           inherit nixosModules;
-          inherit devShells;
+          devShells = {
+            default = devShell;
+          };
           packages = linuxPackages // windowsPackages;
           formatter = pkgs.nixpkgs-fmt;
           checks = {
