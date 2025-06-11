@@ -20,7 +20,7 @@ def main [] {
     print "\nAll tests completed successfully! 🎉"
 }
 
-if $env.NU_TEST == "true" {
+if $env.NU_TEST? == "true" {
     main
 } else {
     $env.NU_TEST = "true"

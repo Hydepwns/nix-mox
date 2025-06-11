@@ -22,9 +22,9 @@ export def get_log_level [] {
 # Define the log function with more idiomatic pattern matching
 export def log [level: string, message: string] {
     let current_level = get_log_level
-    let level_value = $LOG_LEVELS | get $level | default -1
+    let level_value = $LOG_LEVELS | get $level | default "0"
 
-    if $level_value >= ($LOG_LEVELS | get $current_level) {
+    if ($level_value | into int) >= ($LOG_LEVELS | get $current_level) {
         let color = match $level {
             "ERROR" => $RED
             "WARN" => $YELLOW

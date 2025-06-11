@@ -4,5 +4,5 @@
 $env.NU_TEST = "true"
 
 # Run the test module
-source scripts/tests/test.nu
-main 
+source ../tests/run-tests.nu
+main
