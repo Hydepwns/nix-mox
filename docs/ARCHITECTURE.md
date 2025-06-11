@@ -12,7 +12,6 @@ This document provides a high-level overview of the architecture, network topolo
 - [Hardware Example](#hardware-example)
 - [PCI Passthrough](#pci-passthrough)
 - [Nix Integration](#nix-integration)
-- [Testing & CI/CD](#testing--cicd)
 
 ---
 
