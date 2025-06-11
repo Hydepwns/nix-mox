@@ -3,19 +3,19 @@ def main [] {
 
     # Run common tests
     print "\nRunning common tests..."
-    source ./test-common.nu
+    source ../../tests/lib/test-common.nu
 
     # Run unit tests
     print "\nRunning unit tests..."
-    source ./unit-tests.nu
+    source ../../tests/unit/unit-tests.nu
 
     # Run integration tests
     print "\nRunning integration tests..."
-    source ./integration-tests.nu
+    source ../../tests/integration/integration-tests.nu
 
     # Run performance tests
     print "\nRunning performance tests..."
-    source ./performance-tests.nu
+    source ../../tests/integration/performance-tests.nu
 
     print "\nAll tests completed successfully! 🎉"
 }
@@ -25,4 +25,4 @@ if $env.NU_TEST? == "true" {
 } else {
     $env.NU_TEST = "true"
     main
-} 
+}
