@@ -11,7 +11,7 @@ def main [] {
     print "Testing logging performance..."
     test_performance {
         for i in 1..100 {
-            test_logging "INFO" $"Test message ($i)" $"[INFO] Test message ($i)"
+            test_logging "INFO" "Test message ($i)" "[INFO] Test message ($i)"
         }
     } 10
 
@@ -19,7 +19,7 @@ def main [] {
     print "Testing configuration validation performance..."
     test_performance {
         for i in 1..100 {
-            test_config_validation $"test($i)" "Configuration validation failed"
+            test_config_validation "test($i)" "Configuration validation failed"
         }
     } 10
 
