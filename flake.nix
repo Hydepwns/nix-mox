@@ -50,6 +50,7 @@
           linuxPackages = import ./packages/linux { inherit pkgs helpers config; };
           windowsPackages = import ./packages/windows { inherit pkgs helpers config; };
           devShell = import ./shells/default.nix { inherit pkgs; };
+          allPackages = linuxPackages // windowsPackages;
         in
         {
           inherit overlays;
@@ -57,7 +58,12 @@
           devShells = {
             default = devShell;
           };
-          packages = linuxPackages // windowsPackages;
+          packages = allPackages // {
+            all = pkgs.symlinkJoin {
+              name = "all";
+              paths = builtins.attrValues allPackages;
+            };
+          };
           formatter = pkgs.nixpkgs-fmt;
           checks = {
             zfs-ssd-caching = pkgs.callPackage ./tests/storage/zfs-ssd-caching { };
