@@ -1,28 +1,34 @@
-def main [] {
-    print "Starting test suite..."
+module run-tests {
+    use ../../tests/lib/test-common.nu
 
-    # Run common tests
-    print "\nRunning common tests..."
-    use ../../tests/lib/test-common.nu *
+    export def main [] {
+        print "Starting test suite..."
 
-    # Run unit tests
-    print "\nRunning unit tests..."
-    use ../../tests/unit/unit-tests.nu *
+        # Run common tests
+        print "\nRunning common tests..."
+        test_log_functions
 
-    # Run integration tests
-    print "\nRunning integration tests..."
-    use ../../tests/integration/integration-tests.nu *
+        # Run unit tests
+        print "\nRunning unit tests..."
+        test_unit_tests
 
-    # Run performance tests
-    print "\nRunning performance tests..."
-    use ../../tests/integration/performance-tests.nu *
+        # Run integration tests
+        print "\nRunning integration tests..."
+        test_integration_tests
 
-    print "\nAll tests completed successfully! 🎉"
+        # Run performance tests
+        print "\nRunning performance tests..."
+        test_performance_tests
+
+        print "\nAll tests completed successfully! 🎉"
+    }
 }
 
 if $env.NU_TEST? == "true" {
+    use run-tests
     main
 } else {
     $env.NU_TEST = "true"
+    use run-tests
     main
 }
