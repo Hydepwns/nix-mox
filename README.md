@@ -1,44 +1,71 @@
 # nix-mox
 
-Proxmox templates + NixOS workstation + Windows gaming automation
+> Proxmox templates + NixOS workstation + Windows gaming automation
 
-nix-mox provides automation for Proxmox hosts, NixOS systems, and Windows VMs using Nix Flakes and Nushell scripts. All tools are available via `nix run` with a consistent development environment through `nix develop`.
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+  - [Prerequisites](#prerequisites)
+  - [Optional Dependencies](#optional-dependencies)
+  - [Installation Methods](#installation-methods)
+- [Usage](#usage)
+- [Development](#development)
+
+## Overview
+
+nix-mox is a comprehensive toolkit for managing Proxmox environments, NixOS workstations, and Windows gaming setups. It provides automation scripts, templates, and configurations to streamline your infrastructure management.
 
 ## Features
 
-- Proxmox VM templates
-- NixOS workstation configuration
-- Windows gaming automation
-- ZFS snapshot management
-- Automated system updates
+- 🖥️ **Proxmox Management**
+  - Automated VM and container templates
+  - Backup and snapshot management
+  - Network configuration tools
+
+- 🎮 **Windows Gaming**
+  - Automated Steam and Rust installation
+  - Performance optimization scripts
+  - Gaming VM templates
+
+- 🔧 **NixOS Integration**
+  - System configuration modules
+  - Development environment setup
+  - Package management tools
 
 ## Installation
 
-### Requirements
+### Prerequisites
 
-- **Nix:** Ensure you have Nix installed. You can install it by running:
+Before installing nix-mox, ensure you have the following:
+
+- **Nix Package Manager**: Required for all nix-mox functionality
 
   ```bash
   sh <(curl -L https://nixos.org/nix/install) --daemon
   ```
 
-- **Proxmox VE:** A running Proxmox VE instance is required for managing VMs and containers.
-
-- **NixOS:** For NixOS-specific features, ensure you have a NixOS system or VM set up.
-
-- **Windows VM:** For Windows gaming automation, a Windows VM is required.
-
-- **ZFS:** Ensure ZFS is set up on your system for snapshot management.
-
-- **Nushell:** Required for running the test suite and scripts. Install it using Nix:
+- **Nushell**: Required for running automation scripts and tests
 
   ```bash
   nix profile install nixpkgs#nushell
   ```
 
-### NixOS
+### Optional Dependencies
 
-Add to your `flake.nix`:
+Depending on your use case, you may need:
+
+- **Proxmox VE**: For VM and container management
+- **NixOS**: For NixOS-specific features
+- **Windows VM**: For Windows gaming automation
+- **ZFS**: For snapshot management
+
+### Installation Methods
+
+#### For NixOS Systems
+
+Add nix-mox to your system configuration by updating your `flake.nix`:
 
 ```nix
 {
@@ -54,18 +81,60 @@ Add to your `flake.nix`:
 }
 ```
 
-### Non-NixOS
+#### For Other Systems
+
+Install nix-mox directly using Nix:
 
 ```bash
 nix profile install github:hydepwns/nix-mox
 ```
 
-## Development
+## Usage
 
-1. Install Nix:
+### Quick Start
+
+1. Install nix-mox using one of the methods above
+2. Configure your environment:
 
    ```bash
-   sh <(curl -L https://nixos.org/nix/install) --daemon
+   nix-mox configure
+   ```
+
+3. Start using the tools:
+
+   ```bash
+   nix-mox --help
+   ```
+
+### Common Tasks
+
+- Create a new Proxmox template:
+
+  ```bash
+  nix-mox template create
+  ```
+
+- Set up a Windows gaming VM:
+
+  ```bash
+  nix-mox gaming setup
+  ```
+
+- Manage ZFS snapshots:
+
+  ```bash
+  nix-mox zfs snapshot
+  ```
+
+## Development
+
+### Setup
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/hydepwns/nix-mox.git
+   cd nix-mox
    ```
 
 2. Enter the development shell:
@@ -74,32 +143,34 @@ nix profile install github:hydepwns/nix-mox
    nix develop
    ```
 
-3. Run tests:
+### Testing
 
-   ```bash
-   nu scripts/core/run-tests.nu
-   ```
+Run the test suite using Nushell:
 
-## Contributing
+```bash
+nu scripts/core/run-tests.nu
+```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+### Building
 
-## License
+Build all packages:
 
-MIT
+```bash
+nix build
+```
 
-```mermaid
-graph TD
-    A[nix-mox] --> B[Proxmox Management]
-    A --> C[NixOS Systems]
-    A --> D[Windows VMs]
-    B --> E[Maintenance Scripts]
-    B --> F[ZFS Snapshots]
-    B --> G[Backups]
-    C --> H[LXC Containers]
-    C --> I[Full VMs]
-    D --> J[Steam Setup]
-    D --> K[Rust Setup]
+Build specific packages:
+
+```bash
+nix build .#package-name
+```
+
+### Code Style
+
+Format Nix code:
+
+```bash
+nix fmt
 ```
 
 ## 🚀 Quick Start
@@ -116,42 +187,26 @@ nix flake show
 nix run .#proxmox-update
 ```
 
-## 🌟 Core Features
+## Core Features
 
-```mermaid
-graph LR
-    A[Features] --> B[Nix-Powered]
-    A --> C[Windows VM]
-    A --> D[Templates]
-    A --> E[Dev Tools]
-    B --> F[Maintenance]
-    B --> G[Updates]
-    C --> H[Steam/Rust]
-    D --> I[LXC/VM]
-    E --> J[nix develop]
-```
+- Proxmox maintenance scripts
+- NixOS system updates
+- System-wide module integration
 
-### 🛠️ Key Components
+- Windows VM Tools
+- Automated Steam/Rust setup
+- Scheduled task integration
+- Gaming VM optimization
 
-- **Nix Automation**
-  - Proxmox maintenance scripts
-  - NixOS system updates
-  - System-wide module integration
+- Templates
+- NixOS LXC containers
+- Full VM deployments
+- ZFS/Docker/Monitoring
 
-- **Windows VM Tools**
-  - Automated Steam/Rust setup
-  - Scheduled task integration
-  - Gaming VM optimization
-
-- **Templates**
-  - NixOS LXC containers
-  - Full VM deployments
-  - ZFS/Docker/Monitoring
-
-- **Development**
-  - `nix develop` environment
-  - Nushell test suite
-  - CI/CD pipeline
+- Development
+- `nix develop` environment
+- Nushell test suite
+- CI/CD pipeline
 
 ## 📚 Documentation
 
