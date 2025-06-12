@@ -2,24 +2,42 @@
 
 This document provides a high-level overview of the architecture, network topology, storage layout, update and backup flow, and hardware for the Proxmox + NixOS + Windows setup. For usage and configuration details, see the [USAGE.md](./USAGE.md).
 
----
-
 ## Table of Contents
 
-- [Network Topology](#network-topology)
-- [Storage Layout](#storage-layout)
-- [Update & Backup Flow](#update--backup-flow)
-- [Hardware Example](#hardware-example)
-- [PCI Passthrough](#pci-passthrough)
+- [Core Components](#core-components)
+- [System Architecture](#system-architecture)
+  - [Network Topology](#network-topology)
+  - [Storage Layout](#storage-layout)
+  - [Update & Backup Flow](#update--backup-flow)
+- [Hardware & Configuration](#hardware--configuration)
+  - [Hardware Example](#hardware-example)
+  - [PCI Passthrough](#pci-passthrough)
 - [Nix Integration](#nix-integration)
+  - [Flake Structure](#flake-structure)
+  - [Automation Flow](#automation-flow)
+  - [Module Integration](#module-integration)
+- [Testing Infrastructure](#testing-infrastructure)
 
----
+## Core Components
 
-## Network Topology
+```mermaid
+graph LR
+    A[Core Features] --> B[Nix-Powered]
+    A --> C[Windows VM]
+    A --> D[Templates]
+    A --> E[Dev Tools]
+    B --> F[Maintenance]
+    B --> G[Updates]
+    C --> H[Steam/Rust]
+    D --> I[LXC/VM]
+    E --> J[nix develop]
+```
+
+## System Architecture
+
+### Network Topology
 
 > **Note:** Diagrams use [Mermaid](https://mermaid-js.github.io/) syntax. Rendered diagrams require a compatible Markdown viewer (e.g., GitHub, VS Code, Obsidian).
-
-This section illustrates the logical network connections between Proxmox, NixOS, Windows, and admin systems.
 
 ```mermaid
 flowchart TD
@@ -37,9 +55,7 @@ flowchart TD
     NixOS_VM["NixOS VM"]
 ```
 
-## Storage Layout
-
-This section shows how storage is organized, including ZFS pools, VM disks, containers, backups, and shared storage.
+### Storage Layout
 
 ```mermaid
 graph TD
@@ -53,9 +69,7 @@ graph TD
     rpool --> Shared_Storage["Shared Storage (/mnt/windows, virtio-fs)"]
 ```
 
-## Update & Backup Flow
-
-This section outlines the flow of updates and backups for both NixOS and Windows systems, as well as how snapshots and restores are managed.
+### Update & Backup Flow
 
 ```mermaid
 flowchart TD
@@ -79,7 +93,9 @@ flowchart TD
     Proxmox_Backups["Proxmox Backups"]
 ```
 
-## Hardware Example
+## Hardware & Configuration
+
+### Hardware Example
 
 > **Note:** The following hardware is a personal example. Adapt these specs to your own needs and available hardware.
 
@@ -92,18 +108,15 @@ flowchart TD
 | **Network**    | 2x 2.5GbE (Intel i225-V)                       |
 | **Proxmox**    | 8.1                                            |
 
-The host is configured with the following:
+The host is configured with:
 
 - NixOS LXC (for services, immutable)
 - NixOS VM (for atomic updates)
 - Windows VM (for GPU passthrough, apps)
 
-For more on adapting the architecture to your hardware, see the guides in [USAGE.md](./USAGE.md).
+### PCI Passthrough
 
-## PCI Passthrough
-
-Example PCI devices passed through to VMs.
-Update these values for your own hardware as needed.
+Example PCI devices passed through to VMs:
 
 - GPU: 01:00.0, 01:00.1 (audio)
 - USB controller: 03:00.0
@@ -112,9 +125,7 @@ For more details, see the [Windows on Proxmox Guide](./docs/guides/windows-on-pr
 
 ## Nix Integration
 
-The project provides several Nix-based components for automation and system management. Below are detailed diagrams showing how these components interact and work together.
-
-### Nix Flakes Structure
+### Flake Structure
 
 ```mermaid
 graph TD
@@ -143,7 +154,7 @@ graph TD
     E --> E3[Update Services]
 ```
 
-### Automation Scripts Flow
+### Automation Flow
 
 ```mermaid
 flowchart TD
@@ -171,7 +182,7 @@ flowchart TD
     G --> G3[Service Updates]
 ```
 
-### NixOS Module Integration
+### Module Integration
 
 ```mermaid
 graph TD
@@ -196,66 +207,7 @@ graph TD
     D1 --> E
 ```
 
-### Windows Automation Flow
-
-```mermaid
-flowchart TD
-    A[Windows VM] --> B[Nushell Scripts]
-    B --> C{Automation Tasks}
-    
-    C -->|Steam| D[Game Installation]
-    C -->|Rust| E[Development Setup]
-    C -->|Scheduled Tasks| F[Automated Updates]
-    
-    D --> D1[Download]
-    D --> D2[Install]
-    D --> D3[Configure]
-    
-    E --> E1[Toolchain Setup]
-    E --> E2[Environment Config]
-    E --> E3[Project Setup]
-    
-    F --> F1[Update Check]
-    F --> F2[Install Updates]
-    F --> F3[System Maintenance]
-```
-
-### Component Relationships
-
-```mermaid
-graph TD
-    A[User] --> B[Nix Commands]
-    B --> C[Nix Flakes]
-    B --> D[NixOS Module]
-    
-    C --> E[Automation Scripts]
-    C --> F[Development Tools]
-    
-    D --> G[System Services]
-    D --> H[Update Services]
-    
-    E --> I[Proxmox Management]
-    E --> J[Storage Management]
-    E --> K[Windows Automation]
-    
-    G --> L[System Integration]
-    H --> L
-    I --> L
-    J --> L
-    K --> L
-```
-
-These diagrams illustrate:
-
-- **Nix Flakes Structure:** How the Nix flakes are organized and their components.
-- **Automation Scripts Flow:** The flow of automation scripts and their interactions with different systems.
-- **NixOS Module Integration:** How NixOS modules are integrated into the system.
-- **Windows Automation Flow:** The automation tasks and their flow within the Windows VM.
-- **Component Relationships:** The relationships between different components and how they integrate into the system.
-
-For more detailed usage and configuration, refer to the [USAGE.md](./USAGE.md) document.
-
-### Test Infrastructure
+## Testing Infrastructure
 
 ```mermaid
 graph TD
@@ -272,62 +224,26 @@ graph TD
 
 ### Test Components
 
-1. **Nushell Tests**
-   - Located in `tests/` directory
-   - Comprehensive test suite using Nushell's native testing capabilities
-   - Tests include:
-     - Argument parsing and validation
-     - Platform detection and validation
-     - Script handling and execution
-     - Logging functionality
-     - Error handling and reporting
-   - Uses Nushell's built-in `assert` for validation
-   - Supports both unit and integration testing
+1. **Nushell Tests** (`tests/`)
+   - Unit tests (`unit-tests.nu`)
+   - Integration tests (`integration-tests.nu`)
+   - Performance tests (`performance-tests.nu`)
+   - Test utilities (`test-utils.nu`)
 
 2. **NixOS Module Tests**
-   - Tests module integration
-   - Verifies configuration options
-   - Ensures systemd service setup
-   - Validates module dependencies
+   - Module integration
+   - Configuration validation
+   - Service verification
+   - Dependency checks
 
 3. **Build Verification**
-   - Multi-architecture builds (x86_64-linux, aarch64-linux)
-   - Package build verification
-   - Flake compatibility checks
+   - Multi-architecture builds
+   - Package verification
+   - Flake compatibility
 
 4. **Code Quality**
-   - Nushell code formatting and linting
-   - Nix code formatting (nixpkgs-fmt)
+   - Nushell formatting/linting
+   - Nix code formatting
    - Documentation validation
-
-### Test Modules
-
-1. **Unit Tests** (`tests/unit-tests.nu`)
-   - Tests individual functions and components
-   - Validates argument parsing
-   - Checks error handling
-   - Verifies logging functionality
-
-2. **Integration Tests** (`tests/integration-tests.nu`)
-   - Tests script interactions
-   - Validates platform detection
-   - Checks script execution
-   - Verifies system integration
-
-3. **Performance Tests** (`tests/performance-tests.nu`)
-   - Measures script execution time
-   - Validates resource usage
-   - Checks memory consumption
-   - Verifies CPU utilization
-
-### Test Utilities
-
-The `tests/test-utils.nu` module provides common testing utilities:
-
-- Test environment setup
-- Mock functions
-- Assertion helpers
-- Logging utilities
-- Error handling helpers
 
 For more details on testing, see the [Testing Guide](./docs/testing.md).
