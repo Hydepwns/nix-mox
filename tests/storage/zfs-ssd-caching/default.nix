@@ -359,6 +359,179 @@ let
           --group_reporting
       }
 
+      # Send/Receive tests
+      testSendReceive() {
+        local pool_name="test_pool"
+        local remote_pool="remote_pool"
+        echo "Testing ZFS send/receive..."
+
+        # Setup source pool
+        setupTestPool "$pool_name" "mirror" ""
+
+        # Setup remote pool
+        setupTestPool "$remote_pool" "mirror" ""
+
+        # Create test dataset
+        ${pkgs.zfs}/bin/zfs create "$pool_name/test"
+
+        # Generate test data
+        echo "Test data" > "/$pool_name/test/data"
+
+        # Create snapshot
+        ${pkgs.zfs}/bin/zfs snapshot "$pool_name/test@snap1"
+
+        # Send snapshot to remote pool
+        ${pkgs.zfs}/bin/zfs send "$pool_name/test@snap1" | ${pkgs.zfs}/bin/zfs receive "$remote_pool/test"
+
+        # Verify data was received
+        local remote_data=$(cat "/$remote_pool/test/data")
+        assertEqual "Test data" "$remote_data" "Data should be received correctly"
+
+        # Test incremental send/receive
+        echo "Modified data" > "/$pool_name/test/data"
+        ${pkgs.zfs}/bin/zfs snapshot "$pool_name/test@snap2"
+
+        ${pkgs.zfs}/bin/zfs send -i "$pool_name/test@snap1" "$pool_name/test@snap2" | \
+          ${pkgs.zfs}/bin/zfs receive "$remote_pool/test"
+
+        local remote_modified=$(cat "/$remote_pool/test/data")
+        assertEqual "Modified data" "$remote_modified" "Incremental data should be received correctly"
+
+        cleanupTestPool "$pool_name"
+        cleanupTestPool "$remote_pool"
+      }
+
+      testSendReceiveEncrypted() {
+        local pool_name="test_pool"
+        local remote_pool="remote_pool"
+        echo "Testing encrypted ZFS send/receive..."
+
+        # Setup pools
+        setupTestPool "$pool_name" "mirror" ""
+        setupTestPool "$remote_pool" "mirror" ""
+
+        # Create encrypted dataset
+        ${pkgs.zfs}/bin/zfs create -o encryption=on -o keyformat=passphrase "$pool_name/encrypted"
+
+        # Generate test data
+        echo "Secret data" > "/$pool_name/encrypted/data"
+
+        # Create snapshot
+        ${pkgs.zfs}/bin/zfs snapshot "$pool_name/encrypted@snap1"
+
+        # Send encrypted snapshot
+        ${pkgs.zfs}/bin/zfs send -w "$pool_name/encrypted@snap1" | \
+          ${pkgs.zfs}/bin/zfs receive "$remote_pool/encrypted"
+
+        # Verify encryption is preserved
+        local remote_encryption=$(${pkgs.zfs}/bin/zfs get -H -o value encryption "$remote_pool/encrypted")
+        assertEqual "on" "$remote_encryption" "Encryption should be preserved"
+
+        cleanupTestPool "$pool_name"
+        cleanupTestPool "$remote_pool"
+      }
+
+      # Replication tests
+      testReplication() {
+        local source_pool="source_pool"
+        local target_pool="target_pool"
+        echo "Testing ZFS replication..."
+
+        # Setup pools
+        setupTestPool "$source_pool" "mirror" ""
+        setupTestPool "$target_pool" "mirror" ""
+
+        # Create test dataset
+        ${pkgs.zfs}/bin/zfs create "$source_pool/test"
+
+        # Generate test data
+        echo "Test data" > "/$source_pool/test/data"
+
+        # Create snapshot
+        ${pkgs.zfs}/bin/zfs snapshot "$source_pool/test@snap1"
+
+        # Setup replication
+        ${pkgs.zfs}/bin/zfs set readonly=on "$target_pool/test"
+
+        # Perform replication
+        ${pkgs.zfs}/bin/zfs send "$source_pool/test@snap1" | \
+          ${pkgs.zfs}/bin/zfs receive -F "$target_pool/test"
+
+        # Verify replication
+        local target_data=$(cat "/$target_pool/test/data")
+        assertEqual "Test data" "$target_data" "Data should be replicated correctly"
+
+        # Test incremental replication
+        echo "Modified data" > "/$source_pool/test/data"
+        ${pkgs.zfs}/bin/zfs snapshot "$source_pool/test@snap2"
+
+        ${pkgs.zfs}/bin/zfs send -i "$source_pool/test@snap1" "$source_pool/test@snap2" | \
+          ${pkgs.zfs}/bin/zfs receive -F "$target_pool/test"
+
+        local target_modified=$(cat "/$target_pool/test/data")
+        assertEqual "Modified data" "$target_modified" "Incremental data should be replicated correctly"
+
+        cleanupTestPool "$source_pool"
+        cleanupTestPool "$target_pool"
+      }
+
+      # Quota tests
+      testQuotas() {
+        local pool_name="test_pool"
+        echo "Testing ZFS quotas..."
+
+        setupTestPool "$pool_name" "mirror" ""
+
+        # Create test dataset
+        ${pkgs.zfs}/bin/zfs create "$pool_name/test"
+
+        # Set quota
+        ${pkgs.zfs}/bin/zfs set quota=100M "$pool_name/test"
+
+        # Verify quota
+        local quota=$(${pkgs.zfs}/bin/zfs get -H -o value quota "$pool_name/test")
+        assertEqual "100M" "$quota" "Quota should be set to 100M"
+
+        # Test quota enforcement
+        local quota_exceeded=false
+        if ! dd if=/dev/zero of="/$pool_name/test/data" bs=1M count=200 2>/dev/null; then
+          quota_exceeded=true
+        fi
+
+        assertEqual "true" "$quota_exceeded" "Quota should be enforced"
+
+        # Test refquota
+        ${pkgs.zfs}/bin/zfs set refquota=50M "$pool_name/test"
+        local refquota=$(${pkgs.zfs}/bin/zfs get -H -o value refquota "$pool_name/test")
+        assertEqual "50M" "$refquota" "Refquota should be set to 50M"
+
+        cleanupTestPool "$pool_name"
+      }
+
+      testQuotaInheritance() {
+        local pool_name="test_pool"
+        echo "Testing quota inheritance..."
+
+        setupTestPool "$pool_name" "mirror" ""
+
+        # Create parent dataset with quota
+        ${pkgs.zfs}/bin/zfs create -o quota=200M "$pool_name/parent"
+
+        # Create child dataset
+        ${pkgs.zfs}/bin/zfs create "$pool_name/parent/child"
+
+        # Verify child inherits quota
+        local child_quota=$(${pkgs.zfs}/bin/zfs get -H -o value quota "$pool_name/parent/child")
+        assertEqual "200M" "$child_quota" "Child should inherit parent's quota"
+
+        # Test child quota override
+        ${pkgs.zfs}/bin/zfs set quota=100M "$pool_name/parent/child"
+        local new_child_quota=$(${pkgs.zfs}/bin/zfs get -H -o value quota "$pool_name/parent/child")
+        assertEqual "100M" "$new_child_quota" "Child should be able to override quota"
+
+        cleanupTestPool "$pool_name"
+      }
+
       echo "Test utilities loaded successfully"
     '';
   };
@@ -452,6 +625,20 @@ let
         testEncryptionSetup
         testEncryptedOperations
         testEncryptionPerformance
+
+        # Run send/receive tests
+        echo "Running send/receive tests..."
+        testSendReceive
+        testSendReceiveEncrypted
+
+        # Run replication tests
+        echo "Running replication tests..."
+        testReplication
+
+        # Run quota tests
+        echo "Running quota tests..."
+        testQuotas
+        testQuotaInheritance
       else
         echo "ZFS not available, skipping ZFS-specific tests"
       fi
