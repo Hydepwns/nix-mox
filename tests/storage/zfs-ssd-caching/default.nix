@@ -3,7 +3,6 @@
 let
   # Platform-specific dependencies
   platformDeps = with pkgs; [
-    zfs
     fio
     gnumake
     gcc
@@ -12,7 +11,7 @@ let
     gnugrep
     gnused
     gawk
-  ];
+  ] ++ (if pkgs.stdenv.isLinux then [ zfs ] else []);
 
   # Test utilities script
   testUtils = pkgs.writeTextFile {
@@ -98,14 +97,22 @@ let
       }
 
       measureL2ARCHits() {
-        echo "Measuring L2ARC cache hits..."
-        ${pkgs.zfs}/bin/zpool iostat -v
-        ${pkgs.zfs}/bin/zpool status
+        if command -v ${pkgs.zfs}/bin/zpool >/dev/null 2>&1; then
+          echo "Measuring L2ARC cache hits..."
+          ${pkgs.zfs}/bin/zpool iostat -v
+          ${pkgs.zfs}/bin/zpool status
+        else
+          echo "ZFS not available, skipping L2ARC measurements"
+        fi
       }
 
       measureSpecialVDevPerformance() {
-        echo "Measuring Special VDEV performance..."
-        ${pkgs.zfs}/bin/zpool iostat -v
+        if command -v ${pkgs.zfs}/bin/zpool >/dev/null 2>&1; then
+          echo "Measuring Special VDEV performance..."
+          ${pkgs.zfs}/bin/zpool iostat -v
+        else
+          echo "ZFS not available, skipping Special VDEV measurements"
+        fi
       }
 
       measureIOLatency() {
