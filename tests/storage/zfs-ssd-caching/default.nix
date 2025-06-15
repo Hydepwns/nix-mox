@@ -5,7 +5,6 @@ let
   platformDeps = with pkgs; [
     zfs
     fio
-    iozone3
     gnumake
     gcc
     binutils
