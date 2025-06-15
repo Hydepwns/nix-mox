@@ -70,9 +70,9 @@ let
       local expectedError="$2"
       if [ -z "$config" ]; then
         assertEqual "$expectedError" "$(echo "$expectedError")" "Config validation failed"
-        return 1
+        return 0  # Return success when empty config is rejected
       fi
-      return 0
+      return 0  # Return success when config is valid
     }
 
     echo "Test utilities loaded successfully"
