@@ -5,7 +5,7 @@ let
 
   # Platform-specific dependencies
   platformDeps = if pkgs.stdenv.isLinux then
-    with pkgs; [ zfs nvme-cli ]
+    with pkgs; [ zfs nvme-cli fio iozone3 ]
   else
     with pkgs; [ ];
 
@@ -75,6 +75,86 @@ let
       return 0  # Return success when config is valid
     }
 
+    # Performance test utilities
+    runFioTest() {
+      local test_name="$1"
+      local test_type="$2"
+      local test_size="$3"
+      local test_runtime="$4"
+
+      echo "Running FIO test: $test_name"
+      fio --name="$test_name" \
+          --rw="$test_type" \
+          --size="$test_size" \
+          --runtime="$test_runtime" \
+          --time_based \
+          --direct=1 \
+          --ioengine=libaio \
+          --iodepth=64 \
+          --numjobs=4 \
+          --group_reporting
+    }
+
+    measureL2ARCHits() {
+      local pool="$1"
+      echo "Measuring L2ARC hits for pool: $pool"
+      zpool iostat -v "$pool" 1 1 | grep "L2ARC" || echo "L2ARC not available"
+    }
+
+    measureSpecialVDevPerformance() {
+      local pool="$1"
+      echo "Measuring Special VDEV performance for pool: $pool"
+      zpool iostat -v "$pool" 1 1 | grep "special" || echo "Special VDEV not available"
+    }
+
+    measureIOLatency() {
+      local test_file="$1"
+      local test_size="1G"
+
+      echo "Measuring I/O latency"
+      # Sequential read
+      fio --name=seq_read \
+          --rw=read \
+          --size="$test_size" \
+          --runtime=30 \
+          --time_based \
+          --direct=1 \
+          --ioengine=libaio \
+          --iodepth=1 \
+          --numjobs=1 \
+          --group_reporting
+
+      # Random read
+      fio --name=rand_read \
+          --rw=randread \
+          --size="$test_size" \
+          --runtime=30 \
+          --time_based \
+          --direct=1 \
+          --ioengine=libaio \
+          --iodepth=1 \
+          --numjobs=1 \
+          --group_reporting
+    }
+
+    warmCache() {
+      local test_file="$1"
+      local test_size="1G"
+
+      echo "Warming cache"
+      # Sequential read to warm cache
+      fio --name=warm_cache \
+          --rw=read \
+          --size="$test_size" \
+          --runtime=30 \
+          --time_based \
+          --direct=1 \
+          --ioengine=libaio \
+          --iodepth=64 \
+          --numjobs=4 \
+          --group_reporting
+    }
+
     echo "Test utilities loaded successfully"
   '';
 
@@ -141,7 +221,41 @@ let
 
     echo "Running performance tests..."
 
-    # Add performance tests here if needed
+    # Create test directory
+    TEST_DIR="/tmp/zfs-ssd-caching-test"
+    mkdir -p "$TEST_DIR"
+    cd "$TEST_DIR"
+
+    # Run FIO tests
+    echo "Running FIO tests..."
+    runFioTest "seq_read" "read" "1G" "30"
+    runFioTest "seq_write" "write" "1G" "30"
+    runFioTest "rand_read" "randread" "1G" "30"
+    runFioTest "rand_write" "randwrite" "1G" "30"
+
+    # Measure L2ARC hits if available
+    if command -v zpool >/dev/null 2>&1; then
+      echo "Measuring L2ARC hits..."
+      measureL2ARCHits "tank"  # Replace with your pool name
+    fi
+
+    # Measure Special VDEV performance if available
+    if command -v zpool >/dev/null 2>&1; then
+      echo "Measuring Special VDEV performance..."
+      measureSpecialVDevPerformance "tank"  # Replace with your pool name
+    fi
+
+    # Measure I/O latency
+    echo "Measuring I/O latency..."
+    measureIOLatency "$TEST_DIR/testfile"
+
+    # Warm cache and measure performance
+    echo "Warming cache and measuring performance..."
+    warmCache "$TEST_DIR/testfile"
+
+    # Cleanup
+    cd - > /dev/null
+    rm -rf "$TEST_DIR"
 
     echo "Performance tests completed successfully"
   '';
