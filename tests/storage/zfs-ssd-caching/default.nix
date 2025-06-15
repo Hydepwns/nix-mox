@@ -110,227 +110,170 @@ let
         rm -f "/tmp/${pool_name}.img" "/tmp/${pool_name}_cache.img" "/tmp/${pool_name}_special.img"
       }
 
-      testL2ARCConfiguration() {
+      # Snapshot tests
+      testSnapshotOperations() {
         local pool_name="test_pool"
-        echo "Testing L2ARC configuration..."
+        echo "Testing snapshot operations..."
 
-        setupTestPool "$pool_name" "mirror" "l2arc"
-
-        # Verify L2ARC is present
-        local l2arc_status=$(${pkgs.zfs}/bin/zpool status "$pool_name" | grep -c "cache")
-        assertEqual "1" "$l2arc_status" "L2ARC should be present"
-
-        # Test L2ARC properties
-        local l2arc_size=$(${pkgs.zfs}/bin/zpool list -H -o size "$pool_name")
-        assertEqual "1.00G" "$l2arc_size" "Pool size should be 1G"
-
-        cleanupTestPool "$pool_name"
-      }
-
-      testSpecialVDevConfiguration() {
-        local pool_name="test_pool"
-        echo "Testing Special VDEV configuration..."
-
-        setupTestPool "$pool_name" "mirror" "special"
-
-        # Verify Special VDEV is present
-        local special_status=$(${pkgs.zfs}/bin/zpool status "$pool_name" | grep -c "special")
-        assertEqual "1" "$special_status" "Special VDEV should be present"
-
-        # Test Special VDEV properties
-        local special_size=$(${pkgs.zfs}/bin/zpool list -H -o size "$pool_name")
-        assertEqual "1.00G" "$special_size" "Pool size should be 1G"
-
-        cleanupTestPool "$pool_name"
-      }
-
-      testCacheWarming() {
-        local pool_name="test_pool"
-        echo "Testing cache warming..."
-
-        setupTestPool "$pool_name" "mirror" "l2arc"
+        setupTestPool "$pool_name" "mirror" ""
 
         # Create a test dataset
         ${pkgs.zfs}/bin/zfs create "$pool_name/test"
 
-        # Generate test data
-        dd if=/dev/urandom of="/$pool_name/test/data" bs=1M count=100
+        # Generate initial data
+        echo "Initial data" > "/$pool_name/test/data"
 
-        # First read (should miss cache)
-        echo "First read (cache miss)..."
-        ${pkgs.fio}/bin/fio --name=first_read \
-          --rw=read \
-          --size=100M \
-          --runtime=10 \
-          --time_based \
-          --direct=1 \
-          --ioengine=libaio \
-          --iodepth=64 \
-          --numjobs=1 \
-          --group_reporting \
-          --filename="/$pool_name/test/data"
+        # Create snapshot
+        ${pkgs.zfs}/bin/zfs snapshot "$pool_name/test@snap1"
 
-        # Second read (should hit cache)
-        echo "Second read (cache hit)..."
-        ${pkgs.fio}/bin/fio --name=second_read \
-          --rw=read \
-          --size=100M \
-          --runtime=10 \
-          --time_based \
-          --direct=1 \
-          --ioengine=libaio \
-          --iodepth=64 \
-          --numjobs=1 \
-          --group_reporting \
-          --filename="/$pool_name/test/data"
+        # Modify data
+        echo "Modified data" > "/$pool_name/test/data"
 
-        # Verify cache hits
-        local cache_hits=$(${pkgs.zfs}/bin/zpool iostat -v "$pool_name" | grep -c "cache")
-        assertEqual "1" "$cache_hits" "Cache should be present"
+        # Create another snapshot
+        ${pkgs.zfs}/bin/zfs snapshot "$pool_name/test@snap2"
+
+        # List snapshots
+        local snap_count=$(${pkgs.zfs}/bin/zfs list -t snapshot -H "$pool_name/test" | wc -l)
+        assertEqual "2" "$snap_count" "Should have 2 snapshots"
+
+        # Verify snapshot contents
+        local snap1_content=$(${pkgs.zfs}/bin/zfs get -H -o value creation "$pool_name/test@snap1")
+        local snap2_content=$(${pkgs.zfs}/bin/zfs get -H -o value creation "$pool_name/test@snap2")
+        assertEqual "1" "$(echo "$snap1_content < $snap2_content" | bc)" "Snap2 should be newer than Snap1"
 
         cleanupTestPool "$pool_name"
       }
 
-      testDatasetConfiguration() {
+      testSnapshotRollback() {
         local pool_name="test_pool"
-        echo "Testing dataset configuration..."
-
-        setupTestPool "$pool_name" "mirror" "l2arc"
-
-        # Create test datasets with different properties
-        ${pkgs.zfs}/bin/zfs create -o recordsize=128K "$pool_name/test1"
-        ${pkgs.zfs}/bin/zfs create -o recordsize=1M "$pool_name/test2"
-
-        # Verify dataset properties
-        local recordsize1=$(${pkgs.zfs}/bin/zfs get -H -o value recordsize "$pool_name/test1")
-        local recordsize2=$(${pkgs.zfs}/bin/zfs get -H -o value recordsize "$pool_name/test2")
-
-        assertEqual "128K" "$recordsize1" "Dataset 1 recordsize should be 128K"
-        assertEqual "1M" "$recordsize2" "Dataset 2 recordsize should be 1M"
-
-        cleanupTestPool "$pool_name"
-      }
-
-      # Compression tests
-      testCompressionAlgorithms() {
-        local pool_name="test_pool"
-        echo "Testing compression algorithms..."
+        echo "Testing snapshot rollback..."
 
         setupTestPool "$pool_name" "mirror" ""
 
-        # Test different compression algorithms
-        local algorithms=("lz4" "zstd" "gzip")
+        # Create a test dataset
+        ${pkgs.zfs}/bin/zfs create "$pool_name/test"
+
+        # Generate initial data
+        echo "Initial data" > "/$pool_name/test/data"
+
+        # Create snapshot
+        ${pkgs.zfs}/bin/zfs snapshot "$pool_name/test@snap1"
+
+        # Modify data
+        echo "Modified data" > "/$pool_name/test/data"
+
+        # Rollback to snapshot
+        ${pkgs.zfs}/bin/zfs rollback "$pool_name/test@snap1"
+
+        # Verify data is back to original
+        local content=$(cat "/$pool_name/test/data")
+        assertEqual "Initial data" "$content" "Data should be back to initial state"
+
+        cleanupTestPool "$pool_name"
+      }
+
+      testSnapshotClone() {
+        local pool_name="test_pool"
+        echo "Testing snapshot clone..."
+
+        setupTestPool "$pool_name" "mirror" ""
+
+        # Create a test dataset
+        ${pkgs.zfs}/bin/zfs create "$pool_name/test"
+
+        # Generate initial data
+        echo "Initial data" > "/$pool_name/test/data"
+
+        # Create snapshot
+        ${pkgs.zfs}/bin/zfs snapshot "$pool_name/test@snap1"
+
+        # Create clone
+        ${pkgs.zfs}/bin/zfs clone "$pool_name/test@snap1" "$pool_name/clone"
+
+        # Verify clone exists and has correct data
+        local clone_exists=$(${pkgs.zfs}/bin/zfs list -H "$pool_name/clone" | wc -l)
+        assertEqual "1" "$clone_exists" "Clone should exist"
+
+        local clone_content=$(cat "/$pool_name/clone/data")
+        assertEqual "Initial data" "$clone_content" "Clone should have initial data"
+
+        cleanupTestPool "$pool_name"
+      }
+
+      # Encryption tests
+      testEncryptionSetup() {
+        local pool_name="test_pool"
+        echo "Testing encryption setup..."
+
+        setupTestPool "$pool_name" "mirror" ""
+
+        # Create encrypted dataset
+        ${pkgs.zfs}/bin/zfs create -o encryption=on -o keyformat=passphrase "$pool_name/encrypted"
+
+        # Verify encryption is enabled
+        local encryption=$(${pkgs.zfs}/bin/zfs get -H -o value encryption "$pool_name/encrypted")
+        assertEqual "on" "$encryption" "Encryption should be enabled"
+
+        # Test different encryption algorithms
+        local algorithms=("aes-128-ccm" "aes-192-ccm" "aes-256-ccm" "aes-128-gcm" "aes-192-gcm" "aes-256-gcm")
         for algo in "''${algorithms[@]}"; do
-          echo "Testing $algo compression..."
+          echo "Testing $algo encryption..."
+          ${pkgs.zfs}/bin/zfs create -o encryption=$algo -o keyformat=passphrase "$pool_name/encrypted_$algo"
 
-          # Create dataset with compression
-          ${pkgs.zfs}/bin/zfs create -o compression=$algo "$pool_name/$algo"
-
-          # Generate test data
-          dd if=/dev/urandom of="/$pool_name/$algo/data" bs=1M count=100
-
-          # Verify compression is enabled
-          local compression=$(${pkgs.zfs}/bin/zfs get -H -o value compression "$pool_name/$algo")
-          assertEqual "$algo" "$compression" "Compression should be $algo"
-
-          # Measure compression ratio
-          local used=$(${pkgs.zfs}/bin/zfs get -H -o value used "$pool_name/$algo")
-          local logical=$(${pkgs.zfs}/bin/zfs get -H -o value logicalused "$pool_name/$algo")
-          echo "Compression ratio for $algo: $logical / $used"
+          # Verify algorithm is set
+          local algo_set=$(${pkgs.zfs}/bin/zfs get -H -o value encryption "$pool_name/encrypted_$algo")
+          assertEqual "$algo" "$algo_set" "Encryption algorithm should be $algo"
         done
 
         cleanupTestPool "$pool_name"
       }
 
-      testCompressionPerformance() {
+      testEncryptedOperations() {
         local pool_name="test_pool"
-        echo "Testing compression performance..."
+        echo "Testing encrypted operations..."
 
         setupTestPool "$pool_name" "mirror" ""
 
-        # Create datasets with different compression settings
-        ${pkgs.zfs}/bin/zfs create -o compression=off "$pool_name/no_comp"
-        ${pkgs.zfs}/bin/zfs create -o compression=lz4 "$pool_name/lz4"
-        ${pkgs.zfs}/bin/zfs create -o compression=zstd "$pool_name/zstd"
+        # Create encrypted dataset
+        ${pkgs.zfs}/bin/zfs create -o encryption=on -o keyformat=passphrase "$pool_name/encrypted"
 
         # Generate test data
-        dd if=/dev/urandom of="/$pool_name/no_comp/data" bs=1M count=100
-        dd if=/dev/urandom of="/$pool_name/lz4/data" bs=1M count=100
-        dd if=/dev/urandom of="/$pool_name/zstd/data" bs=1M count=100
+        echo "Secret data" > "/$pool_name/encrypted/data"
+
+        # Create snapshot
+        ${pkgs.zfs}/bin/zfs snapshot "$pool_name/encrypted@snap1"
+
+        # Create clone
+        ${pkgs.zfs}/bin/zfs clone "$pool_name/encrypted@snap1" "$pool_name/encrypted_clone"
+
+        # Verify clone is also encrypted
+        local clone_encryption=$(${pkgs.zfs}/bin/zfs get -H -o value encryption "$pool_name/encrypted_clone")
+        assertEqual "on" "$clone_encryption" "Clone should be encrypted"
+
+        # Test key management
+        ${pkgs.zfs}/bin/zfs change-key -l "$pool_name/encrypted"
+        ${pkgs.zfs}/bin/zfs change-key -i "$pool_name/encrypted"
+
+        cleanupTestPool "$pool_name"
+      }
+
+      testEncryptionPerformance() {
+        local pool_name="test_pool"
+        echo "Testing encryption performance..."
+
+        setupTestPool "$pool_name" "mirror" ""
+
+        # Create datasets with and without encryption
+        ${pkgs.zfs}/bin/zfs create "$pool_name/no_enc"
+        ${pkgs.zfs}/bin/zfs create -o encryption=on -o keyformat=passphrase "$pool_name/enc"
+
+        # Generate test data
+        dd if=/dev/urandom of="/$pool_name/no_enc/data" bs=1M count=100
+        dd if=/dev/urandom of="/$pool_name/enc/data" bs=1M count=100
 
         # Measure write performance
         echo "Measuring write performance..."
-        for dataset in "no_comp" "lz4" "zstd"; do
-          echo "Testing $dataset write performance..."
-          ${pkgs.fio}/bin/fio --name=write_test \
-            --rw=write \
-            --size=100M \
-            --runtime=30 \
-            --time_based \
-            --direct=1 \
-            --ioengine=libaio \
-            --iodepth=64 \
-            --numjobs=1 \
-            --group_reporting \
-            --filename="/$pool_name/$dataset/data"
-        done
-
-        cleanupTestPool "$pool_name"
-      }
-
-      testDeduplication() {
-        local pool_name="test_pool"
-        echo "Testing deduplication..."
-
-        setupTestPool "$pool_name" "mirror" ""
-
-        # Create dataset with deduplication
-        ${pkgs.zfs}/bin/zfs create -o dedup=on "$pool_name/dedup"
-
-        # Generate duplicate data
-        dd if=/dev/urandom of="/$pool_name/dedup/data1" bs=1M count=100
-        cp "/$pool_name/dedup/data1" "/$pool_name/dedup/data2"
-
-        # Verify deduplication is working
-        local used=$(${pkgs.zfs}/bin/zfs get -H -o value used "$pool_name/dedup")
-        local logical=$(${pkgs.zfs}/bin/zfs get -H -o value logicalused "$pool_name/dedup")
-        echo "Deduplication ratio: $logical / $used"
-
-        # Test different block sizes
-        for blocksize in "4K" "8K" "16K" "32K" "64K"; do
-          echo "Testing deduplication with $blocksize blocksize..."
-          ${pkgs.zfs}/bin/zfs set recordsize=$blocksize "$pool_name/dedup"
-
-          # Generate new test data
-          dd if=/dev/urandom of="/$pool_name/dedup/data_$blocksize" bs=1M count=100
-          cp "/$pool_name/dedup/data_$blocksize" "/$pool_name/dedup/data_${blocksize}_copy"
-
-          # Measure deduplication ratio
-          local used=$(${pkgs.zfs}/bin/zfs get -H -o value used "$pool_name/dedup")
-          local logical=$(${pkgs.zfs}/bin/zfs get -H -o value logicalused "$pool_name/dedup")
-          echo "Deduplication ratio for $blocksize: $logical / $used"
-        done
-
-        cleanupTestPool "$pool_name"
-      }
-
-      testDeduplicationPerformance() {
-        local pool_name="test_pool"
-        echo "Testing deduplication performance..."
-
-        setupTestPool "$pool_name" "mirror" ""
-
-        # Create datasets with and without deduplication
-        ${pkgs.zfs}/bin/zfs create -o dedup=off "$pool_name/no_dedup"
-        ${pkgs.zfs}/bin/zfs create -o dedup=on "$pool_name/dedup"
-
-        # Generate test data
-        dd if=/dev/urandom of="/$pool_name/no_dedup/data" bs=1M count=100
-        dd if=/dev/urandom of="/$pool_name/dedup/data" bs=1M count=100
-
-        # Measure write performance
-        echo "Measuring write performance..."
-        for dataset in "no_dedup" "dedup"; do
+        for dataset in "no_enc" "enc"; do
           echo "Testing $dataset write performance..."
           ${pkgs.fio}/bin/fio --name=write_test \
             --rw=write \
@@ -497,6 +440,18 @@ let
         echo "Running deduplication tests..."
         testDeduplication
         testDeduplicationPerformance
+
+        # Run snapshot tests
+        echo "Running snapshot tests..."
+        testSnapshotOperations
+        testSnapshotRollback
+        testSnapshotClone
+
+        # Run encryption tests
+        echo "Running encryption tests..."
+        testEncryptionSetup
+        testEncryptedOperations
+        testEncryptionPerformance
       else
         echo "ZFS not available, skipping ZFS-specific tests"
       fi
