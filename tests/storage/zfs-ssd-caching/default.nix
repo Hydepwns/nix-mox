@@ -12,11 +12,15 @@ let
   # Create a shell script that sources the test utilities
   testUtilsScript = pkgs.writeScript "test-utils.sh" ''
     #!/bin/sh
-    set -e
+    set -ex  # Add -x for debugging
+
+    echo "Loading test utilities..."
 
     # Test assertion function
     assertEqual() {
+      echo "Running assertEqual: $1 vs $2"
       if [ "$1" = "$2" ]; then
+        echo "Assertion passed"
         return 0
       else
         echo "Assertion failed: $3"
@@ -28,6 +32,7 @@ let
 
     # Test logging function
     testLogging() {
+      echo "Running testLogging: $1 $2"
       local level="$1"
       local message="$2"
       local expected="$3"
@@ -40,6 +45,7 @@ let
 
     # Test retry mechanism
     testRetry() {
+      echo "Running testRetry: $1 $2 $3 $4"
       local maxRetries="$1"
       local retryDelay="$2"
       local operation="$3"
@@ -59,6 +65,7 @@ let
 
     # Test configuration validation
     testConfigValidation() {
+      echo "Running testConfigValidation: $1 $2"
       local config="$1"
       local expectedError="$2"
       if [ -z "$config" ]; then
@@ -67,25 +74,34 @@ let
       fi
       return 0
     }
+
+    echo "Test utilities loaded successfully"
   '';
 
   # Create test scripts
   unitTestsScript = pkgs.writeScript "unit-tests.sh" ''
     #!/bin/sh
-    set -e
+    set -ex  # Add -x for debugging
+    echo "Starting unit tests..."
+
+    echo "Sourcing test utilities..."
     source ./test-utils.sh
+    echo "Test utilities sourced successfully"
 
     echo "Running unit tests..."
 
     # Test logging
+    echo "Testing logging..."
     testLogging "INFO" "Test message" "[INFO] Test message"
     testLogging "ERROR" "Error message" "[ERROR] Error message"
 
     # Test retry mechanism
+    echo "Testing retry mechanism..."
     testRetry 3 1 "true" "true"
     testRetry 3 1 "false" "false"
 
     # Test configuration validation
+    echo "Testing configuration validation..."
     testConfigValidation "" "Config is required"
     testConfigValidation "valid" ""
 
@@ -94,8 +110,12 @@ let
 
   integrationTestsScript = pkgs.writeScript "integration-tests.sh" ''
     #!/bin/sh
-    set -e
+    set -ex  # Add -x for debugging
+    echo "Starting integration tests..."
+
+    echo "Sourcing test utilities..."
     source ./test-utils.sh
+    echo "Test utilities sourced successfully"
 
     echo "Running integration tests..."
 
@@ -112,8 +132,12 @@ let
 
   performanceTestsScript = pkgs.writeScript "performance-tests.sh" ''
     #!/bin/sh
-    set -e
+    set -ex  # Add -x for debugging
+    echo "Starting performance tests..."
+
+    echo "Sourcing test utilities..."
     source ./test-utils.sh
+    echo "Test utilities sourced successfully"
 
     echo "Running performance tests..."
 
@@ -132,24 +156,34 @@ pkgs.stdenv.mkDerivation {
   ] ++ platformDeps;
 
   buildPhase = ''
+    echo "Starting build phase..."
+
     # Copy test utilities script
+    echo "Copying test utilities script..."
     cp ${testUtilsScript} ./test-utils.sh
     chmod +x ./test-utils.sh
+    echo "Test utilities script copied and made executable"
 
     # Copy test scripts
+    echo "Copying test scripts..."
     cp ${unitTestsScript} ./unit-tests.sh
     cp ${integrationTestsScript} ./integration-tests.sh
     cp ${performanceTestsScript} ./performance-tests.sh
     chmod +x ./unit-tests.sh ./integration-tests.sh ./performance-tests.sh
+    echo "Test scripts copied and made executable"
 
     # Run all test suites
+    echo "Running test suites..."
     ./unit-tests.sh
     ./integration-tests.sh
     ./performance-tests.sh
+    echo "All test suites completed"
   '';
 
   installPhase = ''
+    echo "Starting install phase..."
     mkdir -p $out/bin
     cp -r * $out/bin/
+    echo "Install phase completed"
   '';
 }
