@@ -49,7 +49,7 @@
           helpers = import ./lib/helpers.nix { inherit pkgs; };
           linuxPackages = import ./packages/linux { inherit pkgs helpers config; };
           windowsPackages = import ./packages/windows { inherit pkgs helpers config; };
-          devShell = import ./shells/default.nix { inherit pkgs; };
+          devShell = import ./build/shells/default.nix { inherit pkgs; };
           # Filter out null packages
           allPackages = let
             all = linuxPackages // windowsPackages;
