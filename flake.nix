@@ -51,7 +51,10 @@
           windowsPackages = import ./packages/windows { inherit pkgs helpers config; };
           devShell = import ./shells/default.nix { inherit pkgs; };
           # Filter out null packages
-          allPackages = builtins.filterAttrs (name: value: value != null) (linuxPackages // windowsPackages);
+          allPackages = let
+            all = linuxPackages // windowsPackages;
+            nullNames = builtins.filter (name: all.${name} == null) (builtins.attrNames all);
+          in builtins.removeAttrs all nullNames;
         in
         {
           inherit overlays;
@@ -67,7 +70,11 @@
           };
           formatter = pkgs.nixpkgs-fmt;
           checks = {
-            zfs-ssd-caching = pkgs.callPackage ./tests/storage/zfs-ssd-caching { };
+            # Only include ZFS tests on Linux systems
+            zfs-ssd-caching = if pkgs.stdenv.isLinux then
+              pkgs.callPackage ./tests/storage/zfs-ssd-caching { }
+            else
+              pkgs.runCommand "zfs-ssd-caching-skip" {} "echo 'Skipping ZFS tests on non-Linux system' > $out";
             test-windows-gaming-template = pkgs.stdenv.mkDerivation {
               name = "test-windows-gaming-template";
               src = self;
