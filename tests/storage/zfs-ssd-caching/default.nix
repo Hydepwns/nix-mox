@@ -211,6 +211,143 @@ let
         cleanupTestPool "$pool_name"
       }
 
+      # Compression tests
+      testCompressionAlgorithms() {
+        local pool_name="test_pool"
+        echo "Testing compression algorithms..."
+
+        setupTestPool "$pool_name" "mirror" ""
+
+        # Test different compression algorithms
+        local algorithms=("lz4" "zstd" "gzip")
+        for algo in "''${algorithms[@]}"; do
+          echo "Testing $algo compression..."
+
+          # Create dataset with compression
+          ${pkgs.zfs}/bin/zfs create -o compression=$algo "$pool_name/$algo"
+
+          # Generate test data
+          dd if=/dev/urandom of="/$pool_name/$algo/data" bs=1M count=100
+
+          # Verify compression is enabled
+          local compression=$(${pkgs.zfs}/bin/zfs get -H -o value compression "$pool_name/$algo")
+          assertEqual "$algo" "$compression" "Compression should be $algo"
+
+          # Measure compression ratio
+          local used=$(${pkgs.zfs}/bin/zfs get -H -o value used "$pool_name/$algo")
+          local logical=$(${pkgs.zfs}/bin/zfs get -H -o value logicalused "$pool_name/$algo")
+          echo "Compression ratio for $algo: $logical / $used"
+        done
+
+        cleanupTestPool "$pool_name"
+      }
+
+      testCompressionPerformance() {
+        local pool_name="test_pool"
+        echo "Testing compression performance..."
+
+        setupTestPool "$pool_name" "mirror" ""
+
+        # Create datasets with different compression settings
+        ${pkgs.zfs}/bin/zfs create -o compression=off "$pool_name/no_comp"
+        ${pkgs.zfs}/bin/zfs create -o compression=lz4 "$pool_name/lz4"
+        ${pkgs.zfs}/bin/zfs create -o compression=zstd "$pool_name/zstd"
+
+        # Generate test data
+        dd if=/dev/urandom of="/$pool_name/no_comp/data" bs=1M count=100
+        dd if=/dev/urandom of="/$pool_name/lz4/data" bs=1M count=100
+        dd if=/dev/urandom of="/$pool_name/zstd/data" bs=1M count=100
+
+        # Measure write performance
+        echo "Measuring write performance..."
+        for dataset in "no_comp" "lz4" "zstd"; do
+          echo "Testing $dataset write performance..."
+          ${pkgs.fio}/bin/fio --name=write_test \
+            --rw=write \
+            --size=100M \
+            --runtime=30 \
+            --time_based \
+            --direct=1 \
+            --ioengine=libaio \
+            --iodepth=64 \
+            --numjobs=1 \
+            --group_reporting \
+            --filename="/$pool_name/$dataset/data"
+        done
+
+        cleanupTestPool "$pool_name"
+      }
+
+      testDeduplication() {
+        local pool_name="test_pool"
+        echo "Testing deduplication..."
+
+        setupTestPool "$pool_name" "mirror" ""
+
+        # Create dataset with deduplication
+        ${pkgs.zfs}/bin/zfs create -o dedup=on "$pool_name/dedup"
+
+        # Generate duplicate data
+        dd if=/dev/urandom of="/$pool_name/dedup/data1" bs=1M count=100
+        cp "/$pool_name/dedup/data1" "/$pool_name/dedup/data2"
+
+        # Verify deduplication is working
+        local used=$(${pkgs.zfs}/bin/zfs get -H -o value used "$pool_name/dedup")
+        local logical=$(${pkgs.zfs}/bin/zfs get -H -o value logicalused "$pool_name/dedup")
+        echo "Deduplication ratio: $logical / $used"
+
+        # Test different block sizes
+        for blocksize in "4K" "8K" "16K" "32K" "64K"; do
+          echo "Testing deduplication with $blocksize blocksize..."
+          ${pkgs.zfs}/bin/zfs set recordsize=$blocksize "$pool_name/dedup"
+
+          # Generate new test data
+          dd if=/dev/urandom of="/$pool_name/dedup/data_$blocksize" bs=1M count=100
+          cp "/$pool_name/dedup/data_$blocksize" "/$pool_name/dedup/data_${blocksize}_copy"
+
+          # Measure deduplication ratio
+          local used=$(${pkgs.zfs}/bin/zfs get -H -o value used "$pool_name/dedup")
+          local logical=$(${pkgs.zfs}/bin/zfs get -H -o value logicalused "$pool_name/dedup")
+          echo "Deduplication ratio for $blocksize: $logical / $used"
+        done
+
+        cleanupTestPool "$pool_name"
+      }
+
+      testDeduplicationPerformance() {
+        local pool_name="test_pool"
+        echo "Testing deduplication performance..."
+
+        setupTestPool "$pool_name" "mirror" ""
+
+        # Create datasets with and without deduplication
+        ${pkgs.zfs}/bin/zfs create -o dedup=off "$pool_name/no_dedup"
+        ${pkgs.zfs}/bin/zfs create -o dedup=on "$pool_name/dedup"
+
+        # Generate test data
+        dd if=/dev/urandom of="/$pool_name/no_dedup/data" bs=1M count=100
+        dd if=/dev/urandom of="/$pool_name/dedup/data" bs=1M count=100
+
+        # Measure write performance
+        echo "Measuring write performance..."
+        for dataset in "no_dedup" "dedup"; do
+          echo "Testing $dataset write performance..."
+          ${pkgs.fio}/bin/fio --name=write_test \
+            --rw=write \
+            --size=100M \
+            --runtime=30 \
+            --time_based \
+            --direct=1 \
+            --ioengine=libaio \
+            --iodepth=64 \
+            --numjobs=1 \
+            --group_reporting \
+            --filename="/$pool_name/$dataset/data"
+        done
+
+        cleanupTestPool "$pool_name"
+      }
+
       # Performance test utilities
       runFioTest() {
         local test_name=$1
@@ -350,6 +487,16 @@ let
         testSpecialVDevConfiguration
         testCacheWarming
         testDatasetConfiguration
+
+        # Run compression tests
+        echo "Running compression tests..."
+        testCompressionAlgorithms
+        testCompressionPerformance
+
+        # Run deduplication tests
+        echo "Running deduplication tests..."
+        testDeduplication
+        testDeduplicationPerformance
       else
         echo "ZFS not available, skipping ZFS-specific tests"
       fi
