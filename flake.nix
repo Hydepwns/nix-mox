@@ -41,10 +41,11 @@
             default = devShell.default;
             development = devShell.development;
             testing = devShell.testing;
-            zfs = devShell.zfs;
             services = devShell.services;
             monitoring = devShell.monitoring;
-          };
+          } // (if pkgs.stdenv.isLinux then {
+            zfs = devShell.zfs;
+          } else {});
           formatter = pkgs.nixpkgs-fmt;
         }
       );
