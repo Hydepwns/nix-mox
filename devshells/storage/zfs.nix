@@ -13,19 +13,14 @@ pkgs.mkShell {
     pkgs.ripgrep
 
     # ZFS and Linux-only tools
-  ] ++ (if pkgs.stdenv.isLinux then [
+  ] ++ (if pkgs.stdenv.isLinux && pkgs.system == "x86_64-linux" then [
     pkgs.zfs           # ZFS utilities
-    pkgs.zfs-dkms      # ZFS kernel modules
-    pkgs.zfs-tools     # Additional ZFS tools
-    pkgs.zfs-auto-snapshot # Automatic ZFS snapshots
-    pkgs.zfs-snap-mgmt # ZFS snapshot management
-    pkgs.zfs-snap-diff # ZFS snapshot diff tool
-    pkgs.zfs-stats     # ZFS statistics
     pkgs.fio           # Flexible I/O tester
     pkgs.iozone        # Filesystem benchmark
     pkgs.bonnie        # Filesystem benchmark
     pkgs.hdparm        # Hard disk parameters
     pkgs.smartmontools # S.M.A.R.T. monitoring
+    pkgs.zfs-dkms     # ZFS kernel modules (x86_64-linux only)
   ] else []);
 
   shellHook = ''
@@ -84,14 +79,14 @@ pkgs.mkShell {
     echo "                    [ZFS Pool]"
     echo "                        ↑"
     echo "                        |"
-    echo "        +---------------+---------------+
-    echo "        ↓               ↓               ↓
-    echo "  [Datasets]     [Snapshots]      [Clones]
-    echo "        ↑               ↑               ↑
-    echo "        |               |               |
-    echo "  [Properties]    [Retention]     [Deduplication]
-    echo "        ↑               ↑               ↑
-    echo "        |               |               |
+    echo "        +---------------+---------------+"
+    echo "        ↓               ↓               ↓"
+    echo "  [Datasets]     [Snapshots]      [Clones]"
+    echo "        ↑               ↑               ↑"
+    echo "        |               |               |"
+    echo "  [Properties]    [Retention]     [Deduplication]"
+    echo "        ↑               ↑               ↑"
+    echo "        |               |               |"
     echo "  [Compression]   [Replication]    [Encryption]"
     echo ""
     echo "📚 Configuration Examples"
