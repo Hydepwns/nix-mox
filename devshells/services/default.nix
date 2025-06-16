@@ -42,7 +42,6 @@ pkgs.mkShell {
     pkgs.siege         # HTTP load testing
     pkgs.wrk           # HTTP benchmarking
     pkgs.k6            # Load testing
-    pkgs.insomnia      # API testing
     pkgs.http-prompt   # Interactive HTTP client
 
     # Service debugging tools
@@ -56,10 +55,8 @@ pkgs.mkShell {
   ] ++ (if pkgs.stdenv.isLinux then [
     # Linux-specific packages
     pkgs.systemd        # System and service manager
-    pkgs.supervisord    # Process control system
     pkgs.apacheHttpd    # Apache benchmark
     pkgs.linuxPackages.perf  # Performance analysis
-    pkgs.linuxPackages.ftrace  # Function tracer
     pkgs.kubernetes     # Container orchestration
     pkgs.kubectl       # Kubernetes CLI
     pkgs.k3s           # Lightweight Kubernetes
@@ -69,6 +66,8 @@ pkgs.mkShell {
     pkgs.ltrace        # Library call tracer
     pkgs.valgrind      # Memory debugging
     pkgs.bpftrace      # BPF-based tracing
+  ] else []) ++ (if pkgs.system == "x86_64-linux" || pkgs.system == "x86_64-darwin" || pkgs.system == "aarch64-darwin" then [
+    pkgs.insomnia      # API testing
   ] else []);
 
   shellHook = let
