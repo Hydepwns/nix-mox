@@ -27,19 +27,6 @@
   outputs = { self, nixpkgs, flake-utils, ... }:
     let
       config = import ./config/default.nix;
-
-      nixosModules = {
-        nix-mox = import ./config/modules/core;
-        templates = import ./config/modules/templates;
-        services = import ./config/modules/services;
-        storage = import ./config/modules/storage;
-      };
-
-      overlays = {
-        default = final: prev: {
-          nix-mox = self.packages.${prev.system}.nix-mox;
-        };
-      };
     in
       flake-utils.lib.eachDefaultSystem (system:
         let
@@ -47,19 +34,9 @@
             system = system;
             config.allowUnfree = true;
           };
-          helpers = import ./lib/helpers.nix { inherit pkgs; };
-          linuxPackages = if pkgs.stdenv.isLinux then import ./config/modules/packages/linux { inherit pkgs helpers config; } else {};
-          windowsPackages = import ./config/modules/packages/windows { inherit pkgs helpers config; };
           devShell = import ./devshells/default.nix { inherit pkgs; };
-          # Filter out null packages
-          allPackages = let
-            all = linuxPackages // windowsPackages;
-            nullNames = builtins.filter (name: all.${name} == null) (builtins.attrNames all);
-          in builtins.removeAttrs all nullNames;
         in
         {
-          inherit overlays;
-          inherit nixosModules;
           devShells = {
             default = devShell.default;
             development = devShell.development;
@@ -68,37 +45,7 @@
             services = devShell.services;
             monitoring = devShell.monitoring;
           };
-          packages = allPackages // {
-            all = pkgs.symlinkJoin {
-              name = "all";
-              paths = builtins.attrValues allPackages;
-            };
-          };
           formatter = pkgs.nixpkgs-fmt;
-          checks = {
-            # Only include ZFS tests on Linux systems
-            zfs-ssd-caching = if pkgs.stdenv.isLinux then
-              pkgs.callPackage ./tests/storage/zfs-ssd-caching { }
-            else
-              pkgs.runCommand "zfs-ssd-caching-skip" {} "echo 'Skipping ZFS tests on non-Linux system' > $out";
-            test-windows-gaming-template = pkgs.stdenv.mkDerivation {
-              name = "test-windows-gaming-template";
-              src = self;
-              nativeBuildInputs = [ pkgs.nushell ];
-              buildPhase = ''
-                # Test that the script exists and is executable
-                test -f ${windowsPackages.install-steam-rust}/bin/install-steam-rust.nu
-                test -x ${windowsPackages.install-steam-rust}/bin/install-steam-rust.nu
-              '';
-              installPhase = ''
-                mkdir -p $out
-                touch $out/success
-              '';
-            };
-          };
         }
-      ) // {
-        nixosModules = nixosModules;
-        overlays.default = overlays.default;
-      };
+      );
 }
