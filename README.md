@@ -15,6 +15,7 @@
   - [Scripts](#scripts)
   - [Logging](#logging)
 - [Development](#development)
+  - [Development Shells](#development-shells)
   - [Script Development](#script-development)
   - [Testing](#testing)
   - [Architecture](#architecture)
@@ -57,6 +58,21 @@ Before installing nix-mox, ensure you have the following:
   ```bash
   sh <(curl -L https://nixos.org/nix/install) --daemon
   ```
+
+  > **macOS Troubleshooting:**
+  >
+  > - If you have previously installed Nix, you may need to clean up remnants before reinstalling. Follow the official [Nix uninstall guide](https://nixos.org/manual/nix/stable/installation/uninstall.html) to remove old files and users. For example, run:
+  >
+  > ```bash
+  > # Remove old Nix files
+  > sudo rm -rf /nix
+  > sudo rm -rf /etc/nix
+  > sudo rm -rf /var/root/.nix-profile
+  > ```
+  >
+  > - After installation, you must **restart your terminal** (or run `source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh`) to make Nix commands available.
+  > - If you see errors like `command not found: nix-shell` after install, your shell may not be loading the Nix profile. Ensure your shell config (e.g., `.zshrc`, `.bashrc`) includes the Nix profile snippet added by the installer.
+  > - For more help, see the [Nix on macOS troubleshooting page](https://nixos.org/manual/nix/stable/installation/#sect-macos-troubleshooting)
 
 - **Nushell**: Required for running automation scripts and tests
 
@@ -102,6 +118,37 @@ nix profile install github:hydepwns/nix-mox
 ```
 
 ## Usage
+
+### Development Shells
+
+nix-mox provides specialized development shells for different purposes:
+
+```bash
+# Default shell with basic tools
+nix develop
+
+# Enhanced development environment
+nix develop .#development
+
+# Testing environment with Elixir and test tools
+nix develop .#testing
+
+# Service development and management
+nix develop .#services
+
+# Monitoring and observability
+nix develop .#monitoring
+
+# ZFS development and testing
+nix develop .#zfs
+```
+
+Each shell comes with its own set of tools and helpful documentation. For example, the testing shell includes:
+
+- Elixir and Erlang for running tests
+- Test summarization tools
+- BATS for shell script testing
+- Code quality tools
 
 ### Command Line Interface
 
@@ -168,6 +215,24 @@ nix-mox --script update --debug
 
 ## Development
 
+### devshells
+
+nix-mox provides several specialized development shells:
+
+- **default**: Basic development environment with essential tools
+- **development**: Enhanced development environment with additional tools
+- **testing**: Testing environment with Elixir and test tools
+- **services**: Service development and management tools
+- **monitoring**: Monitoring and observability tools
+- **zfs**: ZFS development and testing tools
+
+Each shell includes:
+
+- Platform-specific tools
+- Development utilities
+- Documentation and examples
+- Helpful shell hooks
+
 ### Script Development
 
 See [Script Development Guide](./docs/guides/scripting.md) for detailed information about:
@@ -179,12 +244,24 @@ See [Script Development Guide](./docs/guides/scripting.md) for detailed informat
 
 ### Testing
 
-See [Testing Guide](./docs/guides/testing.md) for information about:
+The testing environment includes:
 
-- Test framework
-- Writing tests
-- Running tests
-- Best practices
+- Elixir and Erlang for running tests
+- Test summarization tools
+- BATS for shell script testing
+- Code quality tools
+
+To run tests:
+
+```bash
+# Enter the testing shell
+nix develop .#testing
+
+# Run tests with summarization
+./tests/summarize-tests.sh
+```
+
+See [Testing Guide](./docs/guides/testing.md) for more information.
 
 ### Architecture
 
@@ -201,6 +278,13 @@ See [Script Architecture](./docs/architecture/scripts.md) for details about:
 nix-mox/
 ├── .github/           # GitHub workflows and templates
 ├── config/           # Configuration files
+├── devshells/        # Development shells
+│   ├── default.nix   # Default shell configuration
+│   ├── development/  # Development environment
+│   ├── testing/      # Testing environment
+│   ├── services/     # Service development
+│   ├── monitoring/   # Monitoring tools
+│   └── storage/      # Storage tools
 ├── docs/             # Documentation
 │   ├── guides/      # User guides
 │   ├── api/         # API documentation
@@ -220,7 +304,6 @@ nix-mox/
 │   ├── lib/         # Script utilities
 │   ├── linux/       # Linux scripts
 │   └── windows/     # Windows scripts
-├── shells/           # Development shells
 ├── templates/        # Templates
 │   ├── nixos/       # NixOS templates
 │   ├── windows/     # Windows templates
@@ -239,11 +322,15 @@ nix-mox/
 git clone https://github.com/hydepwns/nix-mox.git
 cd nix-mox
 
-# Explore available tools
+# Explore available shells
 nix flake show
 
-# Run a script
-nix run .#proxmox-update
+# Enter development shell
+nix develop .#development
+
+# Run tests
+nix develop .#testing
+./tests/summarize-tests.sh
 ```
 
 ## Documentation
