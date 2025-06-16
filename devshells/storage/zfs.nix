@@ -20,7 +20,6 @@ pkgs.mkShell {
     pkgs.bonnie        # Filesystem benchmark
     pkgs.hdparm        # Hard disk parameters
     pkgs.smartmontools # S.M.A.R.T. monitoring
-    pkgs.zfs-dkms     # ZFS kernel modules (x86_64-linux only)
   ] else []);
 
   shellHook = ''
