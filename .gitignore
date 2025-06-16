@@ -3,4 +3,5 @@ result
 .envrc
 .DS_Store
 *.swp
-*.logtmp/
+*.log
+tmp/

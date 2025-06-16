@@ -17,10 +17,12 @@
     extra-substituters = [
       "https://hydepwns.cachix.org"
       "https://nix-mox.cachix.org"
+      "https://cache.nixos.org"
     ];
     extra-trusted-public-keys = [
       "hydepwns.cachix.org-1:xg8huKdwzBkLdkq5eCKenadhCROHIICGI9H6y3simJU="
       "nix-mox.cachix.org-1:MVJZxC7ZyRFAxVsxDuq0nmMRxlTIt5nFFm4Ur10ZCI4="
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
     ];
   };
 
