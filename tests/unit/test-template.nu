@@ -1,50 +1,45 @@
 # Test template for nix-mox components
+# This file serves as a template for creating new test files
+# Copy this file and modify it for your specific component tests
 
 use ../lib/test-utils.nu *
 
 def main [] {
     print $"Running tests for component: ($env.COMPONENT_NAME)"
 
-    # Unit Tests
-    print "Running unit tests..."
-    run_unit_tests
+    # Run all test suites
+    let unit_results = run_unit_tests
+    let integration_results = run_integration_tests
 
-    # Integration Tests
-    print "Running integration tests..."
-    run_integration_tests
-
-    # Performance Tests
-    print "Running performance tests..."
-    run_performance_tests
-
-    print "All tests completed successfully"
+    # Return overall test status
+    $unit_results and $integration_results
 }
 
-# Unit test runner
+# Unit test suite
 def run_unit_tests [] {
-    # Add your unit tests here
-    test_logging "INFO" "Unit test message" "[INFO] Unit test message"
-    test_config_validation "test-config" "Configuration validation failed"
+    print "Running unit tests..."
+
+    # Example unit tests
+    let test1 = test_logging "INFO" "Unit test message" "[INFO] Unit test message"
+    let test2 = test_config_validation "test-config" "Configuration validation failed"
+
+    # Return true if all tests passed
+    $test1 and $test2
 }
 
-# Integration test runner
+# Integration test suite
 def run_integration_tests [] {
-    # Add your integration tests here
-    test_retry 3 1 { true } true
-    test_logging "ERROR" "Integration test error" "[ERROR] Integration test error"
+    print "Running integration tests..."
+
+    # Example integration tests
+    let test1 = test_retry 3 1 { true } true
+    let test2 = test_logging "ERROR" "Integration test error" "[ERROR] Integration test error"
+
+    # Return true if all tests passed
+    $test1 and $test2
 }
 
-# Performance test runner
-def run_performance_tests [] {
-    # Add your performance tests here
-    test_performance {
-        for i in 1..10 {
-            test_logging "INFO" $"Performance test ($i)" $"[INFO] Performance test ($i)"
-        }
-    } 5
-}
-
+# Run tests if this file is executed directly
 if ($env.NU_TEST? == "true") {
     main
 }
-main

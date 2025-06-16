@@ -93,5 +93,6 @@ def main [] {
 # Run tests if this file is executed directly
 if ($env.NU_TEST? == "true") {
     main
+} else {
+    main
 }
-main

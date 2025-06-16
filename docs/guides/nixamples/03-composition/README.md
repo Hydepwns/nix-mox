@@ -1,6 +1,6 @@
 # Template Composition
 
-This example demonstrates how to use composite templates to create a complete web application stack.
+Create complete web application stacks by combining templates.
 
 ```mermaid
 graph TD
@@ -12,10 +12,6 @@ graph TD
     C --> G[PostgreSQL]
     D --> H[Redis]
     E --> I[Prometheus]
-    B --> J[SSL]
-    C --> K[Backups]
-    D --> L[Persistence]
-    E --> M[Alerts]
 ```
 
 ## Configuration
@@ -42,29 +38,23 @@ graph TD
         dbType = "postgresql";
         enableBackups = true;
         backupSchedule = "0 0 * * *";
-        backupRetention = "7d";
       };
       cache-service = {
         cacheType = "redis";
         persistence = true;
-        maxMemory = "1gb";
       };
       monitoring-stack = {
         enablePrometheus = true;
         enableGrafana = true;
-        alertRules = {
-          highCpu = "cpu_usage > 80%";
-          highMemory = "memory_usage > 90%";
-        };
       };
     };
   };
 }
 ```
 
-## Available Stacks
+## Stack Examples
 
-### 1. Basic Web Stack
+### Basic Web Stack
 
 ```nix
 templates = [ "web-stack" ];
@@ -74,7 +64,7 @@ customOptions = {
 };
 ```
 
-### 2. Full Production Stack
+### Production Stack
 
 ```nix
 templates = [ "production-stack" ];
@@ -86,105 +76,68 @@ customOptions = {
 };
 ```
 
-### 3. Development Stack
-
-```nix
-templates = [ "dev-stack" ];
-customOptions = {
-  web-server = { serverType = "nginx"; };
-  database-management = { dbType = "postgresql"; };
-  cache-service = { cacheType = "redis"; };
-};
-```
-
 ## Component Options
 
 ### Web Server
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `serverType` | string | "nginx" | Web server to use |
-| `enableSSL` | boolean | false | Enable HTTPS |
-| `virtualHosts` | list | [] | Virtual host configs |
+| `serverType` | string | "nginx" | Web server |
+| `enableSSL` | boolean | false | HTTPS |
+| `virtualHosts` | list | [] | Host configs |
 
 ### Database
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `dbType` | string | "postgresql" | Database system |
-| `enableBackups` | boolean | false | Enable backups |
-| `backupSchedule` | string | "0 0 ** *" | Cron schedule |
-| `backupRetention` | string | "7d" | Retention period |
+| `dbType` | string | "postgresql" | Database |
+| `enableBackups` | boolean | false | Backups |
+| `backupSchedule` | string | "0 0 ** *" | Schedule |
 
 ### Cache
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `cacheType` | string | "redis" | Cache system |
-| `persistence` | boolean | false | Enable persistence |
-| `maxMemory` | string | "1gb" | Max memory usage |
+| `persistence` | boolean | false | Persistence |
+| `maxMemory` | string | "1gb" | Memory limit |
 
 ### Monitoring
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `enablePrometheus` | boolean | false | Enable Prometheus |
-| `enableGrafana` | boolean | false | Enable Grafana |
-| `alertRules` | object | {} | Alert rules |
+| `enablePrometheus` | boolean | false | Prometheus |
+| `enableGrafana` | boolean | false | Grafana |
+| `alertRules` | object | {} | Alerts |
 
-## Stack Features
+## Features
 
-### High Availability
-
-- Load balancing
-- Database replication
-- Cache clustering
-- Monitoring redundancy
-
-### Security
-
-- SSL/TLS encryption
-- Database encryption
-- Cache authentication
-- Monitoring access control
-
-### Performance
-
-- Connection pooling
-- Query optimization
-- Cache strategies
-- Resource monitoring
-
-## Expected Outcome
-
-After applying this configuration:
-
-- A complete web application stack will be deployed
-- All components will be configured to work together
-- Monitoring and backups will be set up
-- High availability features will be enabled
+- High availability: Load balancing, replication
+- Security: SSL/TLS, encryption, auth
+- Performance: Connection pooling, caching
+- Monitoring: Metrics, alerts, dashboards
 
 ## Verification
 
-1. Check web server:
+1. Web server:
 
    ```bash
    curl -v https://app.example.com
    ```
 
-2. Test database:
+2. Database:
 
    ```bash
    psql -h localhost -U postgres -d app
    ```
 
-3. Verify cache:
+3. Cache:
 
    ```bash
    redis-cli ping
    ```
 
-4. Check monitoring:
+4. Monitoring:
 
    ```bash
    curl localhost:9090/metrics
@@ -192,6 +145,6 @@ After applying this configuration:
 
 ## Next Steps
 
-- Try [Template Inheritance](../04-inheritance) for secure configurations
-- Learn about [Template Variables](../05-variables) for dynamic settings
-- Explore [Template Overrides](../06-overrides) for custom configurations
+- [Template Inheritance](../04-inheritance) for security
+- [Template Variables](../05-variables) for config
+- [Template Overrides](../06-overrides) for custom

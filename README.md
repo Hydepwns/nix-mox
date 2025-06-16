@@ -11,7 +11,13 @@
   - [Optional Dependencies](#optional-dependencies)
   - [Installation Methods](#installation-methods)
 - [Usage](#usage)
+  - [Command Line Interface](#command-line-interface)
+  - [Scripts](#scripts)
+  - [Logging](#logging)
 - [Development](#development)
+  - [Script Development](#script-development)
+  - [Testing](#testing)
+  - [Architecture](#architecture)
 
 ## Overview
 
@@ -33,6 +39,12 @@ nix-mox is a comprehensive toolkit for managing Proxmox environments, NixOS work
   - System configuration modules
   - Development environment setup
   - Package management tools
+
+- 📝 **Enhanced Scripting**
+  - Platform-specific automation
+  - Comprehensive logging
+  - Error handling
+  - Testing framework
 
 ## Installation
 
@@ -91,157 +103,97 @@ nix profile install github:hydepwns/nix-mox
 
 ## Usage
 
-### Quick Start
+### Command Line Interface
 
-1. Install nix-mox using one of the methods above
-2. Configure your environment:
+nix-mox provides a powerful command-line interface:
 
-   ```bash
-   nix-mox configure
-   ```
+```bash
+nix-mox [options] [script]
 
-3. Start using the tools:
+Options:
+  -h, --help           Show help message
+  --dry-run           Show what would be done without making changes
+  --debug             Enable debug output
+  --platform <os>     Specify platform (auto, linux, darwin)
+  --script <name>     Run specific script (install, update, zfs-snapshot)
+  --log <file>        Log output to file
+```
 
-   ```bash
-   nix-mox --help
-   ```
+### Scripts
 
-### Common Tasks
+#### Package Installation
 
-- Create a new Proxmox template:
+```bash
+# Basic installation
+nix-mox --script install
 
-  ```bash
-  nix-mox template create
-  ```
+# Platform-specific package installation
+nix-mox --script install --platform linux
 
-- Set up a Windows gaming VM:
+# Package installation with logging
+nix-mox --script install --log install.log
+```
 
-  ```bash
-  nix-mox gaming setup
-  ```
+#### Package Updates
 
-- Manage ZFS snapshots:
+```bash
+# Update all packages
+nix-mox --script update
 
-  ```bash
-  nix-mox zfs snapshot
-  ```
+# Update with debug output
+nix-mox --script update --debug
+```
+
+#### ZFS Snapshot Management
+
+```bash
+# Create snapshots
+nix-mox --script zfs-snapshot
+
+# Dry run snapshot creation (no changes made)
+nix-mox --script zfs-snapshot --dry-run
+```
+
+### Logging
+
+nix-mox provides comprehensive logging capabilities:
+
+```bash
+# Log to file
+nix-mox --script install --log install.log
+
+# Enable debug output (more verbose output)
+nix-mox --script update --debug
+```
 
 ## Development
 
-### Setup
+### Script Development
 
-1. Clone the repository:
+See [Script Development Guide](./docs/guides/scripting.md) for detailed information about:
 
-   ```bash
-   git clone https://github.com/hydepwns/nix-mox.git
-   cd nix-mox
-   ```
-
-2. Enter the development shell:
-
-   ```bash
-   nix develop
-   ```
+- Script structure
+- Common utilities
+- Platform support
+- Best practices
 
 ### Testing
 
-Run the test suite using Nushell:
+See [Testing Guide](./docs/guides/testing.md) for information about:
 
-```bash
-nu scripts/core/run-tests.nu
-```
+- Test framework
+- Writing tests
+- Running tests
+- Best practices
 
-### Building
+### Architecture
 
-Build all packages:
+See [Script Architecture](./docs/architecture/scripts.md) for details about:
 
-```bash
-nix build
-```
-
-Build specific packages:
-
-```bash
-nix build .#package-name
-```
-
-### Code Style
-
-Format Nix code:
-
-```bash
-nix fmt
-```
-
-## 🚀 Quick Start
-
-```bash
-# Clone & enter
-git clone https://github.com/hydepwns/nix-mox.git
-cd nix-mox
-
-# Explore available tools
-nix flake show
-
-# Run a script
-nix run .#proxmox-update
-```
-
-## Core Features
-
-- Proxmox maintenance scripts
-- NixOS system updates
-- System-wide module integration
-
-- Windows VM Tools
-- Automated Steam/Rust setup
-- Scheduled task integration
-- Gaming VM optimization
-
-- Templates
-- NixOS LXC containers
-- Full VM deployments
-- ZFS/Docker/Monitoring
-
-- Development
-- `nix develop` environment
-- Nushell test suite
-- CI/CD pipeline
-
-## 📚 Documentation
-
-- [**USAGE.md**](./docs/USAGE.md) - Installation & usage
-- [**ARCHITECTURE.md**](./docs/ARCHITECTURE.md) - System design
-- [**ROADMAP.md**](./docs/ROADMAP.md) - Future plans
-
-## 🎯 Examples
-
-Check out our comprehensive examples in [**nixamples**](./docs/nixamples/):
-
-```mermaid
-graph TD
-    A[Examples] --> B[Basic Usage]
-    A --> C[Custom Options]
-    A --> D[Composition]
-    A --> E[Inheritance]
-    A --> F[Variables]
-    A --> G[Overrides]
-    B --> H[Quick Start]
-    C --> I[Configuration]
-    D --> J[Stacks]
-    E --> K[Security]
-    F --> L[Dynamic]
-    G --> M[Custom]
-```
-
-### Quick Links
-
-- [Basic Usage](./docs/nixamples/01-basic-usage/) - Get started quickly
-- [Custom Options](./docs/nixamples/02-custom-options/) - Configure your setup
-- [Template Composition](./docs/nixamples/03-composition/) - Build complex stacks
-- [Template Inheritance](./docs/nixamples/04-inheritance/) - Extend templates
-- [Template Variables](./docs/nixamples/05-variables/) - Dynamic configuration
-- [Template Overrides](./docs/nixamples/06-overrides/) - Customize templates
+- Core components
+- Script types
+- Error handling
+- Logging system
 
 ## Project Structure
 
@@ -279,3 +231,26 @@ nix-mox/
     ├── integration/ # Integration tests
     └── unit/        # Unit tests
 ```
+
+## Quick Start
+
+```bash
+# Clone & enter
+git clone https://github.com/hydepwns/nix-mox.git
+cd nix-mox
+
+# Explore available tools
+nix flake show
+
+# Run a script
+nix run .#proxmox-update
+```
+
+## Documentation
+
+- [**USAGE.md**](./docs/USAGE.md) - Installation & usage
+- [**ARCHITECTURE.md**](./docs/ARCHITECTURE.md) - System design
+- [**ROADMAP.md**](./docs/ROADMAP.md) - Future plans
+- [**Script Development Guide**](./docs/guides/scripting.md) - Script development
+- [**Testing Guide**](./docs/guides/testing.md) - Testing framework
+- [**Script Architecture**](./docs/architecture/scripts.md) - Script system design

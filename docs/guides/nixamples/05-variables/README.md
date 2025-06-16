@@ -1,6 +1,6 @@
 # Template Variables
 
-This example demonstrates how to use template variables for dynamic configuration values that can be referenced throughout your templates.
+Use variables for dynamic configuration values in templates.
 
 ```mermaid
 graph TD
@@ -14,9 +14,6 @@ graph TD
     F --> I[Environment]
     F --> J[Secrets]
     F --> K[Paths]
-    I --> L[@env@]
-    J --> M[@secret@]
-    K --> N[@path@]
 ```
 
 ## Configuration
@@ -32,23 +29,23 @@ graph TD
       admin_user = "site-admin";
       domain = "mycoolsite.com";
       
-      # Environment-specific
+      # Environment
       environment = "production";
       debug_mode = false;
       
-      # Paths and URLs
+      # Paths
       app_root = "/var/www/app";
       api_url = "https://api.${domain}";
       
-      # Secrets (referenced from external source)
+      # Secrets
       db_password = "@secret:database/password@";
       api_key = "@secret:api/key@";
       
-      # Dynamic values
+      # Dynamic
       timestamp = "@timestamp@";
       hostname = "@hostname@";
       
-      # Lists and objects
+      # Lists
       allowed_ips = ["10.0.0.0/8" "192.168.0.0/16"];
       feature_flags = {
         enable_cache = true;
@@ -61,7 +58,7 @@ graph TD
 
 ## Variable Types
 
-### 1. Basic Variables
+### Basic
 
 ```nix
 templateVariables = {
@@ -70,7 +67,7 @@ templateVariables = {
 };
 ```
 
-### 2. Environment Variables
+### Environment
 
 ```nix
 templateVariables = {
@@ -80,17 +77,7 @@ templateVariables = {
 };
 ```
 
-### 3. Path Variables
-
-```nix
-templateVariables = {
-  app_root = "/var/www/app";
-  log_path = "/var/log/app";
-  config_path = "/etc/app";
-};
-```
-
-### 4. Secret Variables
+### Secrets
 
 ```nix
 templateVariables = {
@@ -100,7 +87,7 @@ templateVariables = {
 };
 ```
 
-### 5. Dynamic Variables
+### Dynamic
 
 ```nix
 templateVariables = {
@@ -110,9 +97,9 @@ templateVariables = {
 };
 ```
 
-## Variable Usage
+## Usage Examples
 
-### In Nginx Configuration
+### Nginx Config
 
 ```nginx
 server {
@@ -122,7 +109,6 @@ server {
     location /admin {
         auth_basic "Admin Area";
         auth_basic_user_file /etc/nginx/.htpasswd;
-        # @admin_user@ will be replaced with "site-admin"
     }
     
     location /api {
@@ -132,7 +118,7 @@ server {
 }
 ```
 
-### In Environment Files
+### Environment File
 
 ```env
 APP_ENV=@environment@
@@ -141,7 +127,7 @@ DB_PASSWORD=@db_password@
 API_KEY=@api_key@
 ```
 
-### In Shell Scripts
+### Shell Script
 
 ```bash
 #!/bin/bash
@@ -150,18 +136,18 @@ echo "Environment: @environment@"
 echo "Timestamp: @timestamp@"
 ```
 
-## Variable Resolution
+## Resolution
 
-1. Variables are defined in `templateVariables`
-2. They are processed before template deployment
-3. All instances of `@variable_name@` are replaced
-4. Undefined variables cause an error
-5. Secret variables are resolved from external sources
-6. Dynamic variables are generated at runtime
+1. Define in `templateVariables`
+2. Process before deployment
+3. Replace `@variable_name@`
+4. Error on undefined
+5. Resolve secrets
+6. Generate dynamic
 
-## Use Cases
+## Examples
 
-### 1. Multi-Environment Deployment
+### Multi-Environment
 
 ```nix
 templateVariables = {
@@ -171,7 +157,7 @@ templateVariables = {
 };
 ```
 
-### 2. Secure Configuration
+### Secure Config
 
 ```nix
 templateVariables = {
@@ -181,40 +167,21 @@ templateVariables = {
 };
 ```
 
-### 3. Dynamic Paths
-
-```nix
-templateVariables = {
-  app_root = "/var/www/${environment}/app";
-  log_path = "/var/log/${environment}/app";
-  config_path = "/etc/${environment}/app";
-};
-```
-
-## Expected Outcome
-
-After applying this configuration:
-
-- All `@variable_name@` references will be replaced
-- Secret variables will be securely resolved
-- Dynamic variables will be generated
-- Environment-specific values will be set
-
 ## Verification
 
-1. Check variable substitution:
+1. Check substitution:
 
    ```bash
    grep -r "@variable_name@" /etc/nginx/
    ```
 
-2. Verify secret resolution:
+2. Verify secrets:
 
    ```bash
    echo $DB_PASSWORD
    ```
 
-3. Test dynamic variables:
+3. Test dynamic:
 
    ```bash
    echo $HOSTNAME
@@ -223,6 +190,6 @@ After applying this configuration:
 
 ## Next Steps
 
-- Try [Template Overrides](../06-overrides) with variables
-- Learn about [Template Composition](../03-composition) with shared variables
-- Explore [Template Inheritance](../04-inheritance) with variable inheritance
+- [Template Overrides](../06-overrides) with vars
+- [Template Composition](../03-composition) with shared
+- [Template Inheritance](../04-inheritance) with inherit

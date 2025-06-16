@@ -1,0 +1,44 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        nix-channel: [nixos-unstable]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Nix
+      uses: DeterminateSystems/nix-installer-action@main
+
+    - name: Setup Nix cache
+      uses: DeterminateSystems/magic-nix-cache-action@main
+
+    - name: Run tests
+      run: |
+        nix develop --command nu tests/run-tests.nu --coverage --format=json
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: coverage.json
+
+    - name: Check test coverage
+      run: |
+        nix develop --command nu -c "
+          let coverage = (open coverage.json | from json)
+          let pass_rate = $coverage.summary.pass_rate
+          if $pass_rate < 90 {
+            error make { msg: 'Test coverage below 90%' }
+          }
+        "

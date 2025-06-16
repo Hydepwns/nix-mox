@@ -1,6 +1,6 @@
 # Basic Template Usage
 
-This example demonstrates the simplest way to use nix-mox templates - enabling a single template with default settings.
+Simple example of using nix-mox templates with default settings.
 
 ```mermaid
 graph TD
@@ -8,9 +8,6 @@ graph TD
     B --> C[Select Template]
     C --> D[Apply Configuration]
     D --> E[Web Server Running]
-    D --> F[Verify Setup]
-    F --> G[Check Status]
-    F --> H[Test Access]
 ```
 
 ## Configuration
@@ -25,55 +22,28 @@ graph TD
 }
 ```
 
-## What This Does
-
-1. Enables the nix-mox template service
-2. Activates the `web-server` template with default settings
-3. Creates a basic web server configuration
-
-## Practical Use Case
-
-### Quick Development Server
-
-This basic setup is perfect for:
-
-- Local development environments
-- Testing new web applications
-- Learning web server configuration
-- Prototyping new features
-
-### Default Configuration
-
-The template provides:
+## Features
 
 - Nginx web server
 - Default virtual host
 - Basic security settings
 - Standard logging
 
-## Expected Outcome
+## Verification
 
-After applying this configuration:
-
-- A web server will be installed and configured
-- Default settings will be used for all options
-- The service will start automatically
-
-## Verification Steps
-
-1. Check service status:
+1. Check service:
 
    ```bash
    systemctl status nginx
    ```
 
-2. Test web access:
+2. Test access:
 
    ```bash
    curl http://localhost
    ```
 
-3. Verify configuration:
+3. Verify config:
 
    ```bash
    nginx -t
@@ -83,15 +53,15 @@ After applying this configuration:
 
 | Issue | Check | Solution |
 |-------|-------|----------|
-| Service won't start | `systemctl status nginx` | Check logs in `/var/log/nginx/error.log` |
-| Can't access site | `curl -v localhost` | Verify firewall settings |
-| Config errors | `nginx -t` | Review syntax in `/etc/nginx/nginx.conf` |
+| Service won't start | `systemctl status nginx` | Check `/var/log/nginx/error.log` |
+| Can't access site | `curl -v localhost` | Check firewall settings |
+| Config errors | `nginx -t` | Review `/etc/nginx/nginx.conf` |
 
 ## Next Steps
 
-- Try [Custom Options](../02-custom-options) to configure the template
-- Learn about [Template Composition](../03-composition) for more complex setups
-- Explore [Template Variables](../05-variables) for dynamic configuration
+- [Custom Options](../02-custom-options) for configuration
+- [Template Composition](../03-composition) for complex setups
+- [Template Variables](../05-variables) for dynamic config
 
 ## Common Questions
 

@@ -1,27 +1,12 @@
 # Advanced Configuration Guide
 
-Terse guide for advanced networking, storage, security, and monitoring in NixOS + Proxmox.
-
 ## Network Architecture
 
 ```mermaid
 graph TD
-    A[Proxmox Host] --> B[vmbr0]
-    A --> C[vmbr1]
-    A --> D[vmbr2]
-    
-    B --> B1[NixOS VMs]
-    B --> B2[Trusted Containers]
-    
-    C --> C1[Windows VMs]
-    C --> C2[Untrusted Systems]
-    
-    D --> D1[Management]
-    D --> D2[OOB Access]
-    
-    B1 --> E[Internet]
-    C1 --> E
-    D1 --> E
+    A[Proxmox Host] --> B[vmbr0: NixOS/Trusted]
+    A --> C[vmbr1: Windows/Untrusted]
+    A --> D[vmbr2: Management]
 ```
 
 ## Storage Configuration
@@ -30,18 +15,13 @@ graph TD
 flowchart TD
     A[Proxmox Host] --> B[virtio-fs]
     B --> C[NixOS Guest]
-    
     A --> D[/mnt/host/windows-share]
     C --> E[/mnt/guest/win-mount]
-    
-    D --> F[Shared Files]
-    E --> F
 ```
 
-### Shared Storage Setup
+### Shared Storage
 
 ```nix
-# configuration.nix
 virtualisation.sharedDirectories = {
   win-share = {
     source = "/mnt/host/windows-share";
@@ -54,21 +34,12 @@ virtualisation.sharedDirectories = {
 
 ```mermaid
 graph TD
-    A[Security Measures] --> B[Read-only Root]
+    A[Security] --> B[Read-only Root]
     A --> C[Non-root Services]
     A --> D[SBOM]
-    
-    B --> B1[Immutable System]
-    B --> B2[Secure Boot]
-    
-    C --> C1[Service Isolation]
-    C --> C2[Privilege Limits]
-    
-    D --> D1[Dependency Audit]
-    D --> D2[Supply Chain]
 ```
 
-### Security Configurations
+### Security Config
 
 ```nix
 # Read-only root
@@ -91,17 +62,8 @@ nix store make-content-addressable /nix/store/...-nginx-* --rewrite-outputs > sb
 flowchart TD
     A[System State] --> B[Logging]
     A --> C[Updates]
-    
-    B --> B1[Journald]
-    B --> B2[Syslog]
-    
-    C --> C1[Auto Upgrade]
-    C --> C2[Manual Update]
-    
-    B1 --> D[Central Logs]
-    B2 --> D
-    C1 --> E[System State]
-    C2 --> E
+    B --> D[Central Logs]
+    C --> E[System State]
 ```
 
 ### Monitoring Setup
@@ -125,38 +87,20 @@ system.autoUpgrade = {
 
 ```mermaid
 graph TD
-    A[Configuration] --> B[Build]
+    A[Config] --> B[Build]
     B --> C{Update Type}
-    
-    C -->|Auto| D[Schedule]
-    C -->|Manual| E[Trigger]
-    
-    D --> F[Apply]
-    E --> F
-    
-    F --> G[New State]
-    G --> H[Verify]
-    H --> I[Rollback if needed]
+    C -->|Auto/Manual| D[Apply]
+    D --> E[New State]
+    E --> F[Verify]
+    F --> G[Rollback if needed]
 ```
 
 ## Resource Isolation
 
 ```mermaid
 graph TD
-    A[System Resources] --> B[CPU]
-    A --> C[Memory]
-    A --> D[Storage]
-    A --> E[Network]
-    
-    B --> B1[Quotas]
-    B --> B2[Priorities]
-    
-    C --> C1[Limits]
-    C --> C2[Reservations]
-    
-    D --> D1[Quotas]
-    D --> D2[Snapshots]
-    
-    E --> E1[Bandwidth]
-    E --> E2[Firewall]
+    A[Resources] --> B[CPU: Quotas/Priorities]
+    A --> C[Memory: Limits/Reservations]
+    A --> D[Storage: Quotas/Snapshots]
+    A --> E[Network: Bandwidth/Firewall]
 ```

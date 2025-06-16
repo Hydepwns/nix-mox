@@ -29,27 +29,28 @@
       config = import ./config/default.nix;
 
       nixosModules = {
-        nix-mox = import ./modules/core/nix-mox.nix;
-        templates = import ./modules/core/templates.nix;
-        infisical = import ./modules/services/infisical.nix;
-        tailscale = import ./modules/services/tailscale.nix;
-        zfs-auto-snapshot = import ./modules/storage/zfs-auto-snapshot.nix;
-        error-handling = import ./modules/storage/error-handling.nix;
+        nix-mox = import ./config/modules/core;
+        templates = import ./config/modules/templates;
+        services = import ./config/modules/services;
+        storage = import ./config/modules/storage;
       };
 
       overlays = {
         default = final: prev: {
-          nix-mox = self.packages.${prev.system};
+          nix-mox = self.packages.${prev.system}.nix-mox;
         };
       };
     in
       flake-utils.lib.eachDefaultSystem (system:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
+          pkgs = import nixpkgs {
+            system = system;
+            config.allowUnfree = true;
+          };
           helpers = import ./lib/helpers.nix { inherit pkgs; };
-          linuxPackages = import ./packages/linux { inherit pkgs helpers config; };
-          windowsPackages = import ./packages/windows { inherit pkgs helpers config; };
-          devShell = import ./build/shells/default.nix { inherit pkgs; };
+          linuxPackages = if pkgs.stdenv.isLinux then import ./config/modules/packages/linux { inherit pkgs helpers config; } else {};
+          windowsPackages = import ./config/modules/packages/windows { inherit pkgs helpers config; };
+          devShell = import ./devshells/default.nix { inherit pkgs; };
           # Filter out null packages
           allPackages = let
             all = linuxPackages // windowsPackages;
@@ -60,7 +61,12 @@
           inherit overlays;
           inherit nixosModules;
           devShells = {
-            default = devShell;
+            default = devShell.default;
+            development = devShell.development;
+            testing = devShell.testing;
+            zfs = devShell.zfs;
+            services = devShell.services;
+            monitoring = devShell.monitoring;
           };
           packages = allPackages // {
             all = pkgs.symlinkJoin {

@@ -1,6 +1,6 @@
 # Template Inheritance
 
-This example shows how templates can inherit from and extend base templates, using the `secure-web-server` template that builds upon `web-server`.
+Extend base templates with additional features using inheritance.
 
 ```mermaid
 graph TD
@@ -12,11 +12,6 @@ graph TD
     D --> G[Firewall]
     D --> H[WAF]
     D --> I[Auth]
-    E --> J[Cert Management]
-    F --> K[Security Headers]
-    G --> L[Rate Limiting]
-    H --> M[OWASP Rules]
-    I --> N[2FA]
 ```
 
 ## Configuration
@@ -28,22 +23,16 @@ graph TD
     enable = true;
     templates = [ "secure-web-server" ];
     customOptions = {
-      # The secure-web-server template inherits from web-server,
-      # so we can still customize web-server options
       web-server = {
         serverType = "nginx";
-        virtualHosts = [
-          {
-            name = "secure-site";
-            domain = "secure.example.com";
-            root = "/var/www/secure";
-            # Inherited options can be overridden
-            enableProxy = true;
-            proxyPass = "http://localhost:3000";
-          }
-        ];
+        virtualHosts = [{
+          name = "secure-site";
+          domain = "secure.example.com";
+          root = "/var/www/secure";
+          enableProxy = true;
+          proxyPass = "http://localhost:3000";
+        }];
       };
-      # We can also override the defaults from the child template
       secure-web-server = {
         enableSSL = true;
         securityLevel = "high";
@@ -68,7 +57,7 @@ graph TD
 
 ## Security Features
 
-### 1. SSL/TLS Configuration
+### SSL/TLS
 
 ```nix
 sslConfig = {
@@ -76,164 +65,116 @@ sslConfig = {
   ciphers = "HIGH:!aNULL:!MD5";
   enableOCSP = true;
   enableHSTS = true;
-  hstsMaxAge = "31536000";
 };
 ```
 
-### 2. Web Application Firewall
+### WAF
 
 ```nix
 wafConfig = {
   rules = "owasp";
   mode = "block";
-  exclusions = [
-    "/api/health"
-    "/metrics"
-  ];
+  exclusions = ["/api/health" "/metrics"];
 };
 ```
 
-### 3. Authentication
+### Auth
 
 ```nix
 authConfig = {
   enable2FA = true;
   authType = "oauth2";
   providers = ["google" "github"];
-  sessionTimeout = "1h";
 };
 ```
 
-## Available Options
+## Options
 
-### Base Template (web-server)
+### Base Template
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `serverType` | string | "nginx" | Web server to use |
-| `virtualHosts` | list | [] | Virtual host configurations |
+| `serverType` | string | "nginx" | Web server |
+| `virtualHosts` | list | [] | Host configs |
 
 ### Secure Template
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `enableSSL` | boolean | true | Enable HTTPS (always true) |
-| `securityLevel` | string | "high" | Security configuration level |
-| `enableWAF` | boolean | true | Enable Web Application Firewall |
-| `enable2FA` | boolean | false | Enable two-factor authentication |
-| `rateLimit` | object | - | Rate limiting configuration |
-| `securityHeaders` | object | - | Security headers configuration |
+| `enableSSL` | boolean | true | HTTPS |
+| `securityLevel` | string | "high" | Security level |
+| `enableWAF` | boolean | true | WAF |
+| `enable2FA` | boolean | false | 2FA |
+| `rateLimit` | object | - | Rate limit |
+| `securityHeaders` | object | - | Headers |
 
 ## Security Levels
 
-### High Security
+### High
 
 ```nix
 securityLevel = "high";
-# Enables:
-# - Strict SSL/TLS
-# - WAF with OWASP rules
-# - Rate limiting
-# - Security headers
-# - 2FA
+# SSL/TLS, WAF, Rate limit, Headers, 2FA
 ```
 
-### Medium Security
+### Medium
 
 ```nix
 securityLevel = "medium";
-# Enables:
-# - Standard SSL/TLS
-# - Basic WAF rules
-# - Rate limiting
-# - Basic security headers
+# SSL/TLS, Basic WAF, Rate limit, Headers
 ```
 
-### Low Security
+### Low
 
 ```nix
 securityLevel = "low";
-# Enables:
-# - Basic SSL/TLS
-# - No WAF
-# - No rate limiting
-# - Minimal security headers
+# Basic SSL/TLS, Headers
 ```
 
-## Use Cases
+## Examples
 
-### 1. E-commerce Site
+### E-commerce
 
 ```nix
 secure-web-server = {
   securityLevel = "high";
   enableWAF = true;
   enable2FA = true;
-  rateLimit = {
-    enable = true;
-    requests = 1000;
-    period = "1m";
-  };
+  rateLimit = { enable = true; requests = 1000; };
 };
 ```
 
-### 2. API Gateway
+### API Gateway
 
 ```nix
 secure-web-server = {
   securityLevel = "high";
   enableWAF = true;
-  rateLimit = {
-    enable = true;
-    requests = 10000;
-    period = "1m";
-  };
+  rateLimit = { enable = true; requests = 10000; };
 };
 ```
-
-### 3. Internal Application
-
-```nix
-secure-web-server = {
-  securityLevel = "medium";
-  enable2FA = true;
-  securityHeaders = {
-    enableHSTS = true;
-    enableCSP = true;
-  };
-};
-```
-
-## Expected Outcome
-
-After applying this configuration:
-
-- A secure web server will be deployed
-- All security features will be enabled
-- The virtual host will be configured with SSL
-- Additional security measures will be in place
 
 ## Verification
 
-1. Check SSL configuration:
+1. SSL:
 
    ```bash
    curl -v https://secure.example.com
    ```
 
-2. Test WAF:
+2. WAF:
 
    ```bash
    curl -v "https://secure.example.com/?exec=/bin/bash"
    ```
 
-3. Verify rate limiting:
+3. Rate limit:
 
    ```bash
    ab -n 200 -c 10 https://secure.example.com/
    ```
 
-4. Check security headers:
+4. Headers:
 
    ```bash
    curl -I https://secure.example.com
@@ -241,6 +182,6 @@ After applying this configuration:
 
 ## Next Steps
 
-- Try [Template Variables](../05-variables) for dynamic security settings
-- Learn about [Template Overrides](../06-overrides) for custom security rules
-- Explore [Template Composition](../03-composition) for complete secure stacks
+- [Template Variables](../05-variables) for config
+- [Template Overrides](../06-overrides) for rules
+- [Template Composition](../03-composition) for stacks

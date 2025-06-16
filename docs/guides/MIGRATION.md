@@ -1,87 +1,77 @@
 # Migration Guide
 
-This guide is for users migrating from an older version of `nix-mox` to the current version.
-
 ## Key Changes
 
-- **Centralized Configuration**: All template settings are now managed under `services.nix-mox.templates` in your `configuration.nix`.
-- **No More Manual Scripts**: You no longer need to manually run installation scripts for templates.
-- **Rich Customization**: New features like `customOptions`, `templateVariables`, `templateOverrides`, composition, and inheritance provide powerful ways to tailor templates.
+- **Centralized Config**: All template settings under `services.nix-mox.templates`
+- **No Manual Scripts**: Automatic template installation
+- **Rich Customization**: `customOptions`, `templateVariables`, `templateOverrides`, composition, inheritance
 
 ## Migration Steps
 
-### 1. Update Your Flake Input
+### 1. Update Flake Input
 
-Ensure your `flake.nix` is pointing to the latest version of `nix-mox`.
+Ensure `flake.nix` points to latest version.
 
-### 2. Move to the `templates` Module
+### 2. Move to `templates` Module
 
-**Old method (example):** Manually running an install script.
+**Old:**
 
 ```bash
 ./templates/web-server/install.sh
 ```
 
-**New method:**
-Enable the template in your `configuration.nix`.
+**New:**
 
 ```nix
-# in configuration.nix
 services.nix-mox.templates = {
   enable = true;
   templates = [ "web-server" ];
 };
 ```
 
-### 3. Convert Configuration to `customOptions`
+### 3. Convert to `customOptions`
 
-**Old method:** Editing a config file inside `templates/web-server/`.
+**Old:**
 
 ```nginx
-# inside templates/web-server/nginx.conf
+# templates/web-server/nginx.conf
 listen 8080;
 ```
 
-**New method:** Use the structured options for that template.
+**New:**
 
 ```nix
-# in configuration.nix
 services.nix-mox.templates.customOptions = {
   web-server = {
-    port = 8080; # Fictional example, check template for actual options
+    port = 8080;
   };
 };
 ```
 
-### 4. Use `templateVariables` for Dynamic Values
+### 4. Use `templateVariables`
 
-**Old method:**
+**Old:**
 
 ```bash
 sed -i 's/USER/admin/g' some-template-file.conf
 ```
 
-**New method:**
+**New:**
 
 ```nix
-# in configuration.nix
 services.nix-mox.templates.templateVariables = {
   user = "admin";
 };
-
-# In the template file: "Hello, @user@"
+# Template: "Hello, @user@"
 ```
 
-### 5. Use `templateOverrides` for Deep Customization
+### 5. Use `templateOverrides`
 
-**Old method:**
-Maintaining your own copy of the `web-server` template.
+**Old:** Maintain template copy
 
-**New method:**
-Point to a directory containing only the files you need to change.
+**New:**
 
 ```nix
-# in configuration.nix
 services.nix-mox.templates.templateOverrides = {
   "web-server" = ./my-custom-web-server-files;
 };

@@ -1,26 +1,12 @@
 # NixOS on Proxmox Guide
 
-Terse guide for deploying NixOS on Proxmox via LXC, VM, or distroless containers.
-
 ## Deployment Options
 
 ```mermaid
 graph TD
-    A[NixOS on Proxmox] --> B[LXC Container]
-    A --> C[VM]
-    A --> D[Distroless]
-    
-    B --> B1[Lightweight]
-    B --> B2[Fast Boot]
-    B --> B3[Resource Efficient]
-    
-    C --> C1[Full VM]
-    C --> C2[Declarative]
-    C --> C3[Remote Updates]
-    
-    D --> D1[Minimal]
-    D --> D2[Secure]
-    D --> D3[OCI Compatible]
+    A[NixOS on Proxmox] --> B[LXC: Lightweight/Fast]
+    A --> C[VM: Full/Declarative]
+    A --> D[Distroless: Minimal/Secure]
 ```
 
 ## LXC Container Setup
@@ -29,19 +15,12 @@ graph TD
 flowchart TD
     A[Download Image] --> B[Upload to Proxmox]
     B --> C[Create Container]
-    C --> D[Configure]
-    D --> E[Start Services]
-    
-    A --> A1[Hydra]
-    B --> B1[Local Storage]
-    C --> C1[pct create]
-    D --> D1[SSH Keys]
+    C --> D[Configure & Start]
 ```
 
 ### Quick Setup
 
 ```bash
-# Create container
 pct create <VMID> local:vztmpl/nixos-*.tar.xz \
   --ostype unmanaged \
   --features nesting=1 \
@@ -52,22 +31,13 @@ pct create <VMID> local:vztmpl/nixos-*.tar.xz \
 
 ```mermaid
 flowchart TD
-    A[Prepare Config] --> B[Build Image]
-    B --> C[Upload to Proxmox]
-    C --> D[Create VM]
-    D --> E[Restore Image]
-    
-    A --> A1[QEMU Guest Agent]
-    B --> B1[nixos-generate]
-    C --> C1[vzdump]
-    D --> D1[Detach Disk]
-    E --> E1[qmrestore]
+    A[Config] --> B[Build Image]
+    B --> C[Upload & Deploy]
 ```
 
 ### Configuration
 
 ```nix
-# configuration.nix
 { config, ... }: {
   imports = [ <nixpkgs/nixos/modules/profiles/qemu-guest.nix> ];
   services.qemuGuest.enable = true;
@@ -91,20 +61,14 @@ nixos-rebuild switch --flake .#myVmName --target-host root@vm-ip
 
 ```mermaid
 graph TD
-    A[Build Image] --> B[Runtime Dependencies]
-    A --> C[Build Dependencies]
-    
-    B --> D[Final Image]
-    C --> E[Build Environment]
-    
-    D --> F[Deploy]
-    E --> G[Build Process]
+    A[Build] --> B[Runtime]
+    A --> C[Build Env]
+    B --> D[Deploy]
 ```
 
 ### Minimal Example
 
 ```nix
-# Minimal nginx container
 pkgs.dockerTools.buildImage {
   name = "distroless-app";
   config = { 
@@ -113,23 +77,9 @@ pkgs.dockerTools.buildImage {
 }
 ```
 
-### Multi-stage Build
-
-```nix
-# Multi-stage container build
-let
-  buildEnv = pkgs.buildEnv { ... };
-  runtimeEnv = pkgs.runtimeOnlyDependencies buildEnv;
-in
-pkgs.dockerTools.buildImage {
-  copyToRoot = runtimeEnv;
-}
-```
-
 ### Flake Configuration
 
 ```nix
-# flake.nix
 {
   outputs = { nixpkgs, ... }: {
     nixosConfigurations.my-container = nixpkgs.lib.nixosSystem {
@@ -148,32 +98,16 @@ pkgs.dockerTools.buildImage {
 
 ```mermaid
 flowchart TD
-    A[Local Changes] --> B[Build]
-    B --> C{Deployment Type}
-    
-    C -->|LXC| D[Container Update]
-    C -->|VM| E[VM Update]
-    C -->|Distroless| F[Image Update]
-    
-    D --> G[Apply Changes]
-    E --> G
-    F --> G
+    A[Changes] --> B[Build]
+    B --> C{Type}
+    C -->|LXC/VM/Distroless| D[Deploy]
 ```
 
 ## Resource Allocation
 
 ```mermaid
 graph TD
-    A[Resource Planning] --> B[CPU]
-    A --> C[Memory]
-    A --> D[Storage]
-    
-    B --> B1[LXC: Shared]
-    B --> B2[VM: Dedicated]
-    
-    C --> C1[LXC: Flexible]
-    C --> C2[VM: Fixed]
-    
-    D --> D1[LXC: Thin]
-    D --> D2[VM: Thick]
+    A[Resources] --> B[CPU: Shared/Dedicated]
+    A --> C[Memory: Flexible/Fixed]
+    A --> D[Storage: Thin/Thick]
 ```
