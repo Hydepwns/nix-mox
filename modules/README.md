@@ -37,7 +37,7 @@ Each directory contains an `index.nix` file that exposes its modules. To use a m
 }
 ```
 
-2. Or import specific modules directly:
+1. Or import specific modules directly:
 
 ```nix
 {

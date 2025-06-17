@@ -19,6 +19,12 @@ pkgs.mkShell {
     pkgs.vulkan-loader-lunarg
     pkgs.vulkan-extension-layer-lunarg
     pkgs.vulkan-utility-libraries-lunarg
+    # League of Legends specific dependencies
+    pkgs.winetricks
+    pkgs.dxvk
+    pkgs.vkd3d
+    pkgs.wine64
+    pkgs.wineWowPackages.stable
   ];
 
   shellHook = ''
@@ -33,6 +39,7 @@ pkgs.mkShell {
     echo "wine: (v${pkgs.wine.version})"
     echo "    Commands:"
     echo "    - wine                          # Run Windows applications"
+    echo "    - winetricks                    # Configure Wine"
     echo ""
     echo "lutris: (v${pkgs.lutris.version})"
     echo "    Commands:"
@@ -53,6 +60,18 @@ pkgs.mkShell {
     echo "vulkan-tools: (v${pkgs.vulkan-tools.version})"
     echo "    Commands:"
     echo "    - vulkaninfo                    # Display Vulkan information"
+    echo ""
+    echo "🎮 League of Legends Setup"
+    echo "------------------------"
+    echo "1. Install League of Legends through Lutris"
+    echo "2. Recommended Wine configuration:"
+    echo "   - Use DXVK for DirectX 11 support"
+    echo "   - Enable VKD3D for DirectX 12 support"
+    echo "   - Use GameMode for performance optimization"
+    echo "3. Performance tips:"
+    echo "   - Run with MangoHud for FPS monitoring"
+    echo "   - Use GameMode for CPU/GPU optimization"
+    echo "   - Enable DXVK for better DirectX performance"
     echo ""
     echo "For more information, see docs/."
   '';

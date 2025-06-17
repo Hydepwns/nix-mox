@@ -114,3 +114,31 @@ See `nixamples` directory for:
 - Template Inheritance
 - Template Variables
 - Template Overrides
+
+## Gaming and Windows Games
+
+For a full guide to gaming setup, including League of Legends and other Windows games, see:
+
+- [Gaming Setup Guide](./gaming/README.md)
+
+This guide covers:
+
+- Entering the gaming shell
+- Installing and configuring Lutris, Wine, and dependencies
+- League of Legends setup and troubleshooting
+- Performance optimization tips
+
+### Quick Wine and League of Legends Setup Scripts
+
+From the gaming shell (`nix develop .#gaming`), you can use these helper scripts:
+
+```bash
+# General Wine gaming configuration
+nix run .#configure-wine
+
+# League of Legends-specific Wine prefix setup
+bash devshells/gaming/scripts/configure-league.sh
+```
+
+- `configure-wine` sets up a general Wine prefix with optimal settings for gaming.
+- `configure-league.sh` creates a dedicated Wine prefix for League of Legends with all required components.

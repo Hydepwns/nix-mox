@@ -49,6 +49,7 @@
             testing = devShell.testing;
             services = devShell.services;
             monitoring = devShell.monitoring;
+            gaming = devShell.gaming;
           } // (if pkgs.stdenv.isLinux then {
             zfs = devShell.zfs;
           } else {});

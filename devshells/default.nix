@@ -7,6 +7,7 @@
   zfs = import ./storage/zfs.nix { inherit pkgs; };
   services = import ./services/default.nix { inherit pkgs; };
   monitoring = import ./monitoring/default.nix { inherit pkgs; };
+  gaming = import ./gaming/default.nix { inherit pkgs; };
 
   # Default shell (inline mkShell definition)
   default = pkgs.mkShell {
