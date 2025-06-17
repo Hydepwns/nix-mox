@@ -249,10 +249,10 @@ See [Script Development Guide](./docs/guides/scripting.md) for detailed informat
 
 The testing environment includes:
 
-- Elixir and Erlang for running tests
-- Test summarization tools
-- BATS for shell script testing
-- Code quality tools
+- Nushell Tests (unit, integration, performance)
+- NixOS Module Tests
+- Build Verification
+- Code Quality Checks
 
 To run tests:
 
@@ -261,7 +261,7 @@ To run tests:
 nix develop .#testing
 
 # Run tests with summarization
-./tests/summarize-tests.sh
+./modules/scripts/testing/summarize-tests.sh
 ```
 
 See [Testing Guide](./docs/guides/testing.md) for more information.
@@ -297,25 +297,23 @@ nix-mox/
 ├── modules/          # NixOS modules
 │   ├── core/        # Core functionality
 │   ├── services/    # Service-specific modules
-│   └── storage/     # Storage-related modules
+│   ├── storage/     # Storage-related modules
+│   └── scripts/     # Platform-specific scripts
+│       ├── testing/ # Testing infrastructure
+│       │   ├── fixtures/    # Test fixtures
+│       │   ├── integration/ # Integration tests
+│       │   ├── lib/        # Test utilities
+│       │   ├── storage/    # Storage tests
+│       │   └── unit/       # Unit tests
+│       ├── linux/   # Linux scripts
+│       └── windows/ # Windows scripts
 ├── packages/         # Package definitions
 │   ├── linux/       # Linux packages
 │   └── windows/     # Windows packages
-├── scripts/          # Scripts
-│   ├── core/        # Core scripts
-│   ├── handlers/    # Event handlers
-│   ├── lib/         # Script utilities
-│   ├── linux/       # Linux scripts
-│   └── windows/     # Windows scripts
-├── templates/        # Templates
-│   ├── nixos/       # NixOS templates
-│   ├── windows/     # Windows templates
-│   └── common/      # Shared template components
-└── tests/            # Tests
-    ├── linux/       # Linux-specific tests
-    ├── windows/     # Windows-specific tests
-    ├── integration/ # Integration tests
-    └── unit/        # Unit tests
+└── templates/        # Templates
+    ├── nixos/       # NixOS templates
+    ├── windows/     # Windows templates
+    └── common/      # Shared template components
 ```
 
 ## Quick Start
@@ -333,7 +331,7 @@ nix develop .#development
 
 # Run tests
 nix develop .#testing
-./tests/summarize-tests.sh
+./modules/scripts/testing/summarize-tests.sh
 ```
 
 ## Documentation

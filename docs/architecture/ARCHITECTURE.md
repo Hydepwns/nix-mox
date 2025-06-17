@@ -121,9 +121,18 @@ graph TD
 
 ## Testing Infrastructure
 
-- Nushell Tests (unit, integration, performance)
-- NixOS Module Tests
-- Build Verification
-- Code Quality Checks
+The testing infrastructure is organized under `modules/scripts/testing/` and includes:
+
+- **Unit Tests** (`unit/`): Individual component testing
+- **Integration Tests** (`integration/`): End-to-end system testing
+- **Performance Tests** (`integration/performance-tests.nu`): System performance validation
+- **Test Fixtures** (`fixtures/`): Test data and mock configurations
+- **Test Utilities** (`lib/`): Common testing functions and helpers
+- **Storage Tests** (`storage/`): ZFS and storage-specific tests
+
+Test execution is managed through:
+
+- `run-tests.nu`: Main test runner
+- `summarize-tests.sh`: Test results aggregation and reporting
 
 For more details, see the [Testing Guide](./docs/testing.md).
