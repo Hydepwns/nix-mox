@@ -67,14 +67,14 @@ in
       # Write _common.nu to a temp file
       common_sh=$(mktemp)
       cat > "$common_sh" <<'EOF'
-${commonSh}
-EOF
+      ${commonSh}
+      EOF
 
       # Source common functions
       source "$common_sh"
 
       # Main uninstall logic
-${uninstallSh}
+      ${uninstallSh}
     '';
     meta = {
       description = "Legacy/compat uninstall logic for nix-mox scripts.";
