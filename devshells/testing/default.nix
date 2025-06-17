@@ -12,152 +12,158 @@ pkgs.mkShell {
     pkgs.fd
     pkgs.ripgrep
 
-    # Elixir and Erlang
-    pkgs.elixir
-    pkgs.erlang
+    # Testing tools
+    pkgs.bats           # Bash Automated Testing System
+    pkgs.shellspec      # Shell script testing framework
+    pkgs.shunit2        # Shell unit testing framework
+    pkgs.bash           # Bash shell for testing
+    pkgs.zsh            # Zsh shell for testing
+    pkgs.fish           # Fish shell for testing
+    pkgs.nushell        # Nushell for testing
+    pkgs.python3        # Python for testing
+    pkgs.python3Packages.pytest  # Python testing framework
+    pkgs.python3Packages.coverage # Python code coverage
+    pkgs.mypy           # Python type checking
+    pkgs.black          # Python code formatter
+    pkgs.python3Packages.flake8  # Python linter
+    pkgs.nodejs         # Node.js for testing
+    pkgs.nodePackages.mocha # JavaScript testing framework
+    pkgs.typescript     # TypeScript for testing
+    pkgs.eslint         # JavaScript linter
+    pkgs.prettier       # JavaScript formatter
 
     # Testing frameworks
-    pkgs.bats          # Bash Automated Testing System
-    pkgs.shellspec     # Shell testing framework
-    pkgs.shunit2       # Shell unit testing framework
-    pkgs.bash_unit     # Bash unit testing
+    pkgs.elixir         # Elixir for testing
+    pkgs.erlang         # Erlang runtime
+    pkgs.rebar3         # Erlang build tool
+    pkgs.hex            # Elixir package manager
+    pkgs.ex_doc         # Documentation generator
 
     # Code quality tools
-    pkgs.shellcheck    # Shell script analysis
-    pkgs.bashate       # Bash script style checker
+    pkgs.shellcheck     # Shell script analysis
+    pkgs.bashate        # Bash script style checker
 
     # Debugging tools
     # Only include bashdb on Linux
     # pkgs.bashdb        # Bash debugger (Linux only)
     pkgs.bash-completion # Bash completion
-    pkgs.bash-preexec  # Bash preexec hook
+    pkgs.bash-preexec   # Bash preexec hook
 
     # Test data generation
-    pkgs.fakeroot      # Fake root privileges
+    pkgs.fakeroot       # Fake root privileges
     # pkgs.fakechroot    # Fake chroot (Linux only)
 
     # Test reporting
-    pkgs.jq            # JSON processor
-    pkgs.yq            # YAML processor
-    pkgs.xmlstarlet    # XML processor
+    pkgs.jq             # JSON processor
+    pkgs.yq             # YAML processor
+    pkgs.xmlstarlet     # XML processor
     pkgs.html-xml-utils # HTML/XML utilities
   ];
 
   shellHook = ''
-    echo "Welcome to the nix-mox testing shell!"
-    echo "Available tools:"
-    echo "  - Base tools (from default shell)"
-    echo "  - Elixir and Erlang"
+    # Function to show help menu
+    show_help() {
+      echo "Welcome to the nix-mox testing shell!"
+      echo ""
+      echo "🔧 Testing Tools"
+      echo "----------------"
+      echo "bats: (v${pkgs.bats.version})"
+      echo "    Commands:"
+      echo "    - bats tests/                   # Run all tests"
+      echo "    - bats -t test.bats            # Run specific test"
+      echo "    Dependencies:"
+      echo "    - Requires: bash"
+      echo ""
+      echo "shellspec: (v${pkgs.shellspec.version})"
+      echo "    Commands:"
+      echo "    - shellspec                     # Run all specs"
+      echo "    - shellspec --format documentation"
+      echo "    Configuration:"
+      echo "    - .shellspec"
+      echo ""
+      echo "shunit2: (v${pkgs.shunit2.version})"
+      echo "    Commands:"
+      echo "    - ./test.sh                     # Run shell unit tests"
+      echo "    - shunit2 test.sh              # Run with shunit2"
+      echo ""
+      echo "Python Testing:"
+      echo "pytest: (v${pkgs.python3Packages.pytest.version})"
+      echo "    Commands:"
+      echo "    - pytest                        # Run all tests"
+      echo "    - pytest -v                     # Verbose output"
+      echo "    - pytest --cov                  # With coverage"
+      echo ""
+      echo "coverage: (v${pkgs.python3Packages.coverage.version})"
+      echo "    Commands:"
+      echo "    - coverage run -m pytest        # Run tests with coverage"
+      echo "    - coverage report               # Show coverage report"
+      echo ""
+      echo "mypy: (v${pkgs.mypy.version})"
+      echo "    Commands:"
+      echo "    - mypy .                        # Type check"
+      echo "    - mypy --strict .              # Strict type checking"
+      echo ""
+      echo "black: (v${pkgs.black.version})"
+      echo "    Commands:"
+      echo "    - black .                       # Format Python code"
+      echo "    - black --check .              # Check formatting"
+      echo ""
+      echo "flake8: (v${pkgs.python3Packages.flake8.version})"
+      echo "    Commands:"
+      echo "    - flake8 .                      # Lint Python code"
+      echo "    - flake8 --max-line-length=100"
+      echo ""
+      echo "JavaScript Testing:"
+      echo "jest: (v${pkgs.nodePackages.mocha.version})"
+      echo "    Commands:"
+      echo "    - jest                          # Run all tests"
+      echo "    - jest --watch                  # Watch mode"
+      echo "    - jest --coverage               # With coverage"
+      echo ""
+      echo "typescript: (v${pkgs.typescript.version})"
+      echo "    Commands:"
+      echo "    - tsc --noEmit                  # Type check"
+      echo "    - tsc --watch                   # Watch mode"
+      echo ""
+      echo "eslint: (v${pkgs.eslint.version})"
+      echo "    Commands:"
+      echo "    - eslint .                      # Lint JavaScript"
+      echo "    - eslint --fix .               # Fix issues"
+      echo ""
+      echo "prettier: (v${pkgs.prettier.version})"
+      echo "    Commands:"
+      echo "    - prettier --write .            # Format code"
+      echo "    - prettier --check .           # Check formatting"
+      echo ""
+      echo "📝 Quick Start"
+      echo "------------"
+      echo "1. Run shell tests:"
+      echo "   bats tests/                     # Run BATS tests"
+      echo "   shellspec                       # Run ShellSpec tests"
+      echo "   ./test.sh                       # Run shunit2 tests"
+      echo ""
+      echo "2. Run Python tests:"
+      echo "   pytest                          # Run all tests"
+      echo "   coverage run -m pytest          # With coverage"
+      echo "   mypy .                          # Type check"
+      echo ""
+      echo "3. Run JavaScript tests:"
+      echo "   jest                            # Run all tests"
+      echo "   tsc --noEmit                    # Type check"
+      echo "   eslint .                        # Lint code"
+      echo ""
+      echo "For more information, see docs/."
+    }
+
+    # Show initial help menu
+    show_help
+
+    # Add help command to shell
     echo ""
-    echo "🔧 Testing Tools"
-    echo "--------------"
-    echo "1. Run Tests with Summarization:"
-    echo "   # Run tests with summarize-tests.sh"
-    echo "   ./tests/summarize-tests.sh"
+    echo "💡 Tip: Type 'help' to show this menu again"
+    echo "💡 Tip: Type 'which-shell' to see which shell you're in"
     echo ""
-    echo "2. BATS (Bash Automated Testing):"
-    echo "   # Run all tests"
-    echo "   bats tests/"
-    echo ""
-    echo "   # Run specific test"
-    echo "   bats tests/my_test.bats"
-    echo ""
-    echo "3. ShellSpec:"
-    echo "   # Run all specs"
-    echo "   shellspec"
-    echo ""
-    echo "   # Run specific spec"
-    echo "   shellspec spec/my_spec.sh"
-    echo ""
-    echo "4. Code Quality:"
-    echo "   # Run shellcheck"
-    echo "   shellcheck scripts/*.sh"
-    echo ""
-    echo "   # Run bashate"
-    echo "   bashate scripts/*.sh"
-    echo ""
-    echo "📝 Testing Patterns"
-    echo "-----------------"
-    echo "1. Test Development:"
-    echo "   [Write] -> [Run] -> [Debug] -> [Refine]"
-    echo "   [Test] -> [Execute] -> [Analyze] -> [Improve]"
-    echo ""
-    echo "2. Test Execution:"
-    echo "   [Unit] -> [Integration] -> [System] -> [Acceptance]"
-    echo "   [Component] -> [Interface] -> [End-to-end] -> [User]"
-    echo ""
-    echo "3. Test Reporting:"
-    echo "   [Results] -> [Analysis] -> [Documentation] -> [Action]"
-    echo "   [Data] -> [Metrics] -> [Reports] -> [Improvements]"
-    echo ""
-    echo "🔍 Testing Architecture"
-    echo "---------------------"
-    echo "                    [Test Suite]"
-    echo "                        ↑"
-    echo "                        |"
-    echo "        +---------------+---------------+"
-    echo "        ↓               ↓               ↓"
-    echo "  [Unit Tests]    [Integration]    [System Tests]"
-    echo "        ↑               ↑               ↑"
-    echo "        |               |               |"
-    echo "  [Components]    [Interfaces]     [End-to-End]"
-    echo "        ↑               ↑               ↑"
-    echo "        |               |               |"
-    echo "  [Functions]     [Services]       [Workflows]"
-    echo ""
-    echo "📚 Configuration Examples"
-    echo "----------------------"
-    echo "1. Running Tests with Summarization:"
-    echo "   # Make sure the script is executable"
-    echo "   chmod +x tests/summarize-tests.sh"
-    echo ""
-    echo "   # Run tests with summarization"
-    echo "   ./tests/summarize-tests.sh"
-    echo ""
-    echo "2. BATS Test Example (test_example.bats):"
-    echo "   #!/usr/bin/env bats"
-    echo ""
-    echo "   @test 'addition using bc' {"
-    echo "     result='$(echo 2+2 | bc)'"
-    echo "     [ '$result' -eq 4 ]"
-    echo "   }"
-    echo ""
-    echo "   @test 'addition using dc' {"
-    echo "     result='$(echo 2 2+p | dc)'"
-    echo "     [ '$result' -eq 4 ]"
-    echo "   }"
-    echo ""
-    echo "3. Test Data Generation:"
-    echo "   # Create test environment"
-    echo "   fakeroot bash -c '"
-    echo "     mkdir -p /test/dir"
-    echo "     chown nobody:nogroup /test/dir"
-    echo "   '"
-    echo ""
-    echo "4. Test Reporting:"
-    echo "   # Generate JUnit XML"
-    echo "   bats --formatter junit tests/ > test-results.xml"
-    echo ""
-    echo "   # Generate HTML report"
-    echo "   bats --formatter tap tests/ | tap2junit > test-results.xml"
-    echo "   junit2html test-results.xml test-report.html"
-    echo ""
-    echo "5. Continuous Integration:"
-    echo "   # GitHub Actions workflow"
-    echo "   name: Tests"
-    echo "   on: [push, pull_request]"
-    echo "   jobs:"
-    echo "     test:"
-    echo "       runs-on: ubuntu-latest"
-    echo "       steps:"
-    echo "         - uses: actions/checkout@v3"
-    echo "         - uses: DeterminateSystems/nix-installer-action@main"
-    echo "         - uses: DeterminateSystems/magic-nix-cache-action@main"
-    echo "         - run: ./tests/summarize-tests.sh"
-    echo "         - run: bats tests/"
-    echo "         - run: shellspec"
-    echo "         - run: shellcheck scripts/*.sh"
-    echo ""
-    echo "For more information, see the testing documentation."
+    alias help='show_help'
+    alias which-shell='echo "You are in the nix-mox testing shell"'
   '';
 }

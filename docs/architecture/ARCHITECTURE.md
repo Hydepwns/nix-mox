@@ -85,19 +85,20 @@ flowchart TD
 ```mermaid
 graph TD
     A[Flake.nix] --> B[Packages]
-    A --> C[Apps]
-    A --> D[DevShell]
-    A --> E[NixOS Modules]
+    A --> C[DevShells]
+    A --> D[NixOS Modules]
     
     B --> B1[proxmox-update]
     B --> B2[vzdump-backup]
     B --> B3[zfs-snapshot]
-    B --> B4[nixos-flake-update]
     
-    D --> D1[Nushell]
-    D --> D2[Git]
-    D --> D3[Nix]
-    D --> D4[Development Tools]
+    C --> C1[default]
+    C --> C2[development]
+    C --> C3[testing]
+    C --> C4[services]
+    C --> C5[monitoring]
+    C --> C6[zfs]
+    C --> C7[gaming]
 ```
 
 ### Module Integration

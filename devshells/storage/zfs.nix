@@ -12,124 +12,145 @@ pkgs.mkShell {
     pkgs.fd
     pkgs.ripgrep
 
-    # ZFS and Linux-only tools
-  ] ++ (if pkgs.stdenv.isLinux && pkgs.system == "x86_64-linux" then [
-    pkgs.zfs           # ZFS utilities
-    pkgs.fio           # Flexible I/O tester
-    pkgs.iozone        # Filesystem benchmark
-    pkgs.bonnie        # Filesystem benchmark
+    # ZFS tools
+    pkgs.zfs              # ZFS utilities
+    pkgs.zfsUnstable      # Latest ZFS features
+    pkgs.zfs-auto-snapshot # Automatic snapshots
+    pkgs.zfs-snap-diff    # Snapshot diff tool
+    pkgs.zfs-diff         # ZFS diff tool
+    pkgs.zfs-snapshot     # Snapshot management
+    pkgs.zfs-prune-snapshots # Snapshot pruning
+    pkgs.zfs-stats        # ZFS statistics
+    pkgs.zfs-dkms         # ZFS kernel module
+    pkgs.zfs-kernel       # ZFS kernel module
+    pkgs.zfs-test         # ZFS test suite
+    pkgs.zfs-docs         # ZFS documentation
+    pkgs.zfs-scripts      # ZFS scripts
+    pkgs.zfs-utils        # ZFS utilities
+    pkgs.zfs-dkms-unstable # Latest ZFS kernel module
+    pkgs.zfs-kernel-unstable # Latest ZFS kernel module
+    pkgs.zfs-test-unstable # Latest ZFS test suite
+    pkgs.zfs-docs-unstable # Latest ZFS documentation
+
+    # Storage testing tools
+    pkgs.fio            # I/O performance testing
+    pkgs.smartmontools  # SMART monitoring
     pkgs.hdparm        # Hard disk parameters
-    pkgs.smartmontools # S.M.A.R.T. monitoring
-  ] else []);
+    pkgs.nvme-cli      # NVMe management
+    pkgs.lsscsi        # SCSI device listing
+    pkgs.sdparm        # SCSI disk parameters
+    pkgs.hdparm        # ATA/IDE disk parameters
+    pkgs.sg3_utils     # SCSI generic utilities
+  ];
 
   shellHook = ''
-    echo "Welcome to the nix-mox ZFS development shell!"
-    echo "Available tools:"
-    echo "  - Base tools (from default shell)"
+    # Function to show help menu
+    show_help() {
+      echo "Welcome to the nix-mox ZFS shell!"
+      echo ""
+      echo "🔧 ZFS Tools"
+      echo "-----------"
+      echo "zfs: (v${pkgs.zfs.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zpool list                    # List pools"
+      echo "    - zfs list                      # List datasets"
+      echo "    - zfs snapshot                  # Create snapshot"
+      echo "    Dependencies:"
+      echo "    - Requires: Linux kernel"
+      echo ""
+      echo "zfs-auto-snapshot: (v${pkgs.zfs-auto-snapshot.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zfs-auto-snapshot             # Create snapshots"
+      echo "    - zfs-auto-snapshot --help      # Show help"
+      echo "    Configuration:"
+      echo "    - /etc/cron.d/zfs-auto-snapshot"
+      echo ""
+      echo "zfs-snap-diff: (v${pkgs.zfs-snap-diff.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zfs-snap-diff                 # Show differences"
+      echo "    - zfs-snap-diff --help          # Show help"
+      echo ""
+      echo "zfs-diff: (v${pkgs.zfs-diff.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zfs-diff                      # Show differences"
+      echo "    - zfs-diff --help               # Show help"
+      echo ""
+      echo "zfs-snapshot: (v${pkgs.zfs-snapshot.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zfs-snapshot                  # Create snapshot"
+      echo "    - zfs-snapshot --help           # Show help"
+      echo ""
+      echo "zfs-prune-snapshots: (v${pkgs.zfs-prune-snapshots.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zfs-prune-snapshots           # Prune snapshots"
+      echo "    - zfs-prune-snapshots --help    # Show help"
+      echo ""
+      echo "zfs-stats: (v${pkgs.zfs-stats.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zfs-stats                     # Show statistics"
+      echo "    - zfs-stats --help              # Show help"
+      echo ""
+      echo "zfs-tools: (v${pkgs.zfs-tools.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zfs-tools                     # Show tools"
+      echo "    - zfs-tools --help              # Show help"
+      echo ""
+      echo "zfs-dkms: (v${pkgs.zfs-dkms.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zfs-dkms                      # Show DKMS status"
+      echo "    - zfs-dkms --help               # Show help"
+      echo ""
+      echo "zfs-kernel: (v${pkgs.zfs-kernel.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zfs-kernel                    # Show kernel status"
+      echo "    - zfs-kernel --help             # Show help"
+      echo ""
+      echo "zfs-test: (v${pkgs.zfs-test.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zfs-test                      # Run tests"
+      echo "    - zfs-test --help               # Show help"
+      echo ""
+      echo "zfs-docs: (v${pkgs.zfs-docs.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zfs-docs                      # Show documentation"
+      echo "    - zfs-docs --help               # Show help"
+      echo ""
+      echo "zfs-scripts: (v${pkgs.zfs-scripts.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zfs-scripts                   # Show scripts"
+      echo "    - zfs-scripts --help            # Show help"
+      echo ""
+      echo "zfs-utils: (v${pkgs.zfs-utils.version}) [🐧 Linux only]"
+      echo "    Commands:"
+      echo "    - zfs-utils                     # Show utilities"
+      echo "    - zfs-utils --help              # Show help"
+      echo ""
+      echo "📝 Quick Start"
+      echo "------------"
+      echo "1. List pools and datasets:"
+      echo "   zpool list                      # List pools"
+      echo "   zfs list                        # List datasets"
+      echo ""
+      echo "2. Create and manage snapshots:"
+      echo "   zfs snapshot                    # Create snapshot"
+      echo "   zfs-snap-diff                   # Show differences"
+      echo ""
+      echo "3. Prune old snapshots:"
+      echo "   zfs-prune-snapshots             # Prune snapshots"
+      echo "   zfs-stats                       # Show statistics"
+      echo ""
+      echo "For more information, see docs/."
+    }
+
+    # Show initial help menu
+    show_help
+
+    # Add help command to shell
     echo ""
-    echo "🔧 ZFS Management"
-    echo "---------------"
-    echo "1. Pool Management:"
-    echo "   # List pools"
-    echo "   zpool list"
+    echo "💡 Tip: Type 'help' to show this menu again"
+    echo "💡 Tip: Type 'which-shell' to see which shell you're in"
     echo ""
-    echo "   # Create pool"
-    echo "   zpool create mypool /dev/sdb"
-    echo ""
-    echo "   # Check pool status"
-    echo "   zpool status mypool"
-    echo ""
-    echo "2. Dataset Management:"
-    echo "   # List datasets"
-    echo "   zfs list"
-    echo ""
-    echo "   # Create dataset"
-    echo "   zfs create mypool/mydataset"
-    echo ""
-    echo "   # Set properties"
-    echo "   zfs set compression=lz4 mypool/mydataset"
-    echo ""
-    echo "3. Snapshot Management:"
-    echo "   # Create snapshot"
-    echo "   zfs snapshot mypool/mydataset@snap1"
-    echo ""
-    echo "   # List snapshots"
-    echo "   zfs list -t snapshot"
-    echo ""
-    echo "   # Rollback to snapshot"
-    echo "   zfs rollback mypool/mydataset@snap1"
-    echo ""
-    echo "📝 Storage Patterns"
-    echo "-----------------"
-    echo "1. Pool Creation:"
-    echo "   [Disks] -> [RAID] -> [Pool] -> [Datasets]"
-    echo "   [Raw] -> [Redundancy] -> [Storage] -> [Organization]"
-    echo ""
-    echo "2. Snapshot Strategy:"
-    echo "   [Dataset] -> [Snapshot] -> [Retention] -> [Cleanup]"
-    echo "   [Data] -> [Point-in-time] -> [Policy] -> [Maintenance]"
-    echo ""
-    echo "3. Performance Tuning:"
-    echo "   [Benchmark] -> [Analyze] -> [Tune] -> [Verify]"
-    echo "   [Test] -> [Metrics] -> [Optimize] -> [Validate]"
-    echo ""
-    echo "🔍 ZFS Architecture"
-    echo "-----------------"
-    echo "                    [ZFS Pool]"
-    echo "                        ↑"
-    echo "                        |"
-    echo "        +---------------+---------------+"
-    echo "        ↓               ↓               ↓"
-    echo "  [Datasets]     [Snapshots]      [Clones]"
-    echo "        ↑               ↑               ↑"
-    echo "        |               |               |"
-    echo "  [Properties]    [Retention]     [Deduplication]"
-    echo "        ↑               ↑               ↑"
-    echo "        |               |               |"
-    echo "  [Compression]   [Replication]    [Encryption]"
-    echo ""
-    echo "📚 Configuration Examples"
-    echo "----------------------"
-    echo "1. ZFS Pool Creation:"
-    echo "   # Mirror"
-    echo "   zpool create mypool mirror /dev/sdb /dev/sdc"
-    echo ""
-    echo "   # RAID-Z"
-    echo "   zpool create mypool raidz /dev/sdb /dev/sdc /dev/sdd"
-    echo ""
-    echo "   # RAID-Z2"
-    echo "   zpool create mypool raidz2 /dev/sdb /dev/sdc /dev/sdd /dev/sde"
-    echo ""
-    echo "2. Dataset Properties:"
-    echo "   # Enable compression"
-    echo "   zfs set compression=lz4 mypool/mydataset"
-    echo ""
-    echo "   # Set quota"
-    echo "   zfs set quota=100G mypool/mydataset"
-    echo ""
-    echo "   # Enable deduplication"
-    echo "   zfs set dedup=on mypool/mydataset"
-    echo ""
-    echo "3. Snapshot Management:"
-    echo "   # Create snapshot"
-    echo "   zfs snapshot -r mypool/mydataset@daily-$(date +%Y%m%d)"
-    echo ""
-    echo "   # List snapshots"
-    echo "   zfs list -t snapshot -o name,creation,used"
-    echo ""
-    echo "   # Destroy old snapshots"
-    echo "   zfs list -H -t snapshot -o name | grep 'daily-' | head -n -7 | xargs -n 1 zfs destroy"
-    echo ""
-    echo "4. Performance Testing:"
-    echo "   # Random I/O"
-    echo "   fio --name=randwrite --ioengine=libaio --iodepth=1 --rw=randwrite --bs=4k --direct=1 --size=1G"
-    echo ""
-    echo "   # Sequential I/O"
-    echo "   fio --name=seqwrite --ioengine=libaio --iodepth=1 --rw=write --bs=128k --direct=1 --size=1G"
-    echo ""
-    echo "   # Mixed I/O"
-    echo "   fio --name=mixed --ioengine=libaio --iodepth=32 --rw=randrw --bs=4k --direct=1 --size=1G"
-    echo ""
-    echo "For more information, see the storage documentation."
+    alias help='show_help'
+    alias which-shell='echo "You are in the nix-mox ZFS shell"'
   '';
 }

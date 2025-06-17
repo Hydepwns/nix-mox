@@ -12,13 +12,18 @@
 2. Using Nix Flake:
 
    ```bash
-   # Run scripts
-   nix run .#proxmox-update
-   nix run .#zfs-snapshot
-   nix run .#nixos-flake-update
+   # Install the default package (proxmox-update)
+   nix profile install .
 
-   # Install scripts
+   # Or install specific packages
    nix profile install .#proxmox-update
+   nix profile install .#vzdump-backup
+   nix profile install .#zfs-snapshot
+
+   # Run scripts directly
+   nix run .#proxmox-update
+   nix run .#vzdump-backup
+   nix run .#zfs-snapshot
    ```
 
 3. Manual Install:
@@ -26,6 +31,14 @@
    ```bash
    sudo nu scripts/linux/install.nu
    ```
+
+## Available Packages
+
+The following packages are available on Linux systems:
+
+- **proxmox-update**: Update and upgrade Proxmox host packages safely
+- **vzdump-backup**: Backup Proxmox VMs and containers using vzdump
+- **zfs-snapshot**: Create and manage ZFS snapshots with automatic pruning
 
 ## Module Integration
 
@@ -48,7 +61,7 @@
 
 ## Components
 
-- **Scripts**: proxmox-update, vzdump-backup, zfs-snapshot, nixos-flake-update
+- **Scripts**: proxmox-update, vzdump-backup, zfs-snapshot
 - **Templates**: Containers, VMs, Monitoring, Storage
 - **Modules**: Common, ZFS, Infisical, Tailscale
 
@@ -70,8 +83,15 @@ services.nix-mox.templates = {
 ## Development
 
 ```bash
-# Enter environment
+# Enter development environment
 nix develop
+
+# Enter specific development shells
+nix develop .#development
+nix develop .#testing
+nix develop .#services
+nix develop .#monitoring
+nix develop .#zfs  # Linux only
 
 # Run tests
 nu scripts/run-tests.nu

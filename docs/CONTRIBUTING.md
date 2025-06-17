@@ -11,8 +11,24 @@
 2. Enter development environment:
 
    ```bash
+   # Default development environment
    nix develop
+
+   # Or use specific development shells
+   nix develop .#development  # For general development
+   nix develop .#testing     # For testing
+   nix develop .#services    # For service development
+   nix develop .#monitoring  # For monitoring tools
+   nix develop .#zfs         # For ZFS-related development (Linux only)
    ```
+
+## Package Structure
+
+The project provides the following packages (Linux only):
+
+- **proxmox-update**: Update and upgrade Proxmox host packages safely
+- **vzdump-backup**: Backup Proxmox VMs and containers using vzdump
+- **zfs-snapshot**: Create and manage ZFS snapshots with automatic pruning
 
 ## Guidelines
 
@@ -20,6 +36,7 @@
 - Follow existing code style
 - Add comments for complex logic
 - Keep functions focused
+- Ensure Linux-specific packages are properly guarded
 
 ## Testing
 

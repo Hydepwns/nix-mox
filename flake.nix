@@ -37,6 +37,7 @@
             config.allowUnfree = true;
           };
           devShell = import ./devshells/default.nix { inherit pkgs; };
+          linuxPackages = import ./modules/packages/linux/default.nix { inherit pkgs; };
         in
         {
           devShells = {
@@ -49,6 +50,12 @@
             zfs = devShell.zfs;
           } else {});
           formatter = pkgs.nixpkgs-fmt;
+          packages = if pkgs.stdenv.isLinux then {
+            proxmox-update = linuxPackages.proxmox-update;
+            vzdump-backup = linuxPackages.vzdump-backup;
+            zfs-snapshot = linuxPackages.zfs-snapshot;
+            default = linuxPackages.proxmox-update; # Set proxmox-update as the default package
+          } else {};
         }
       );
 }

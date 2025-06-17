@@ -141,6 +141,9 @@ nix develop .#monitoring
 
 # ZFS development and testing
 nix develop .#zfs
+
+# Gaming environment with Steam, Wine, and more
+nix develop .#gaming
 ```
 
 Each shell comes with its own set of tools and helpful documentation. For example, the testing shell includes:

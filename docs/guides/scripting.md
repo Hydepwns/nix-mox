@@ -23,6 +23,158 @@ def main [] {
 main
 ```
 
+## Package Scripts
+
+### Proxmox Update Script
+
+```nushell
+#!/usr/bin/env nu
+
+use lib/common.nu *
+
+export-env {
+    $env.SCRIPT_NAME = "proxmox-update"
+    $env.SCRIPT_VERSION = "1.0.0"
+    $env.LOGFILE = "/var/log/proxmox-update.log"
+}
+
+def main [] {
+    try {
+        check_root
+        log_info "Starting Proxmox update..."
+        
+        # Update package lists
+        apt update | append-to-log $env.LOGFILE
+        
+        # Perform distribution upgrade
+        apt -y dist-upgrade | append-to-log $env.LOGFILE
+        
+        # Remove unused packages
+        apt -y autoremove | append-to-log $env.LOGFILE
+        
+        # Run Proxmox updates
+        pveupdate | append-to-log $env.LOGFILE
+        pveupgrade | append-to-log $env.LOGFILE
+        
+        log_success "Proxmox update complete"
+    } catch {
+        handle_error $"Update failed: ($env.LAST_ERROR)"
+    }
+}
+
+main
+```
+
+### VZDump Backup Script
+
+```nushell
+#!/usr/bin/env nu
+
+use lib/common.nu *
+
+export-env {
+    $env.SCRIPT_NAME = "vzdump-backup"
+    $env.SCRIPT_VERSION = "1.0.0"
+    $env.LOGFILE = "/var/log/vzdump-backup.log"
+    $env.STORAGE = "backup"
+}
+
+def backup_items [list_cmd: string, item_type: string] {
+    let ids = (do { nu -c $list_cmd } | complete | get stdout | lines | skip 1 | split column " " | get column1)
+    
+    for id in $ids {
+        log_info $"Backing up ($item_type) ($id)..."
+        try {
+            vzdump $id --storage $env.STORAGE --mode snapshot --compress zstd
+            log_success $"Backed up ($item_type) ($id)"
+        } catch {
+            log_error $"Failed to back up ($item_type) ($id)"
+        }
+    }
+}
+
+def main [] {
+    try {
+        check_root
+        log_info "Starting Proxmox backup..."
+        
+        # Backup VMs
+        backup_items "qm list" "VM"
+        
+        # Backup containers
+        backup_items "pct list" "CT"
+        
+        log_success "Backup complete"
+    } catch {
+        handle_error $"Backup failed: ($env.LAST_ERROR)"
+    }
+}
+
+main
+```
+
+### ZFS Snapshot Script
+
+```nushell
+#!/usr/bin/env nu
+
+use lib/common.nu *
+
+export-env {
+    $env.SCRIPT_NAME = "zfs-snapshot"
+    $env.SCRIPT_VERSION = "1.0.0"
+    $env.LOGFILE = "/var/log/zfs-snapshot.log"
+    $env.RETENTION_DAYS = 7
+}
+
+def create_snapshot [pool: string] {
+    let timestamp = (date now | format date '%Y%m%d-%H%M%S')
+    let snap_name = $"($pool)@snap-($timestamp)"
+    
+    try {
+        zfs snapshot -r $snap_name
+        log_success $"Created snapshot ($snap_name)"
+    } catch {
+        log_error $"Failed to create snapshot ($snap_name)"
+    }
+}
+
+def prune_snapshots [pool: string] {
+    let cutoff = ((date now) - ($env.RETENTION_DAYS * 24hr))
+    let old_snaps = (zfs list -H -t snapshot -o name,creation | lines | split column " " | where {|x| $x.creation < $cutoff})
+    
+    for snap in $old_snaps {
+        try {
+            zfs destroy $snap.name
+            log_success $"Pruned snapshot ($snap.name)"
+        } catch {
+            log_error $"Failed to prune snapshot ($snap.name)"
+        }
+    }
+}
+
+def main [] {
+    try {
+        check_root
+        log_info "Starting ZFS snapshot management..."
+        
+        # Get list of pools
+        let pools = (zfs list -H -o name | lines)
+        
+        for pool in $pools {
+            create_snapshot $pool
+            prune_snapshots $pool
+        }
+        
+        log_success "ZFS snapshot management complete"
+    } catch {
+        handle_error $"ZFS snapshot management failed: ($env.LAST_ERROR)"
+    }
+}
+
+main
+```
+
 ## Core Utilities
 
 ### Error Handling
@@ -68,35 +220,6 @@ def detect_platform [] {
 }
 ```
 
-## Platform Support
-
-### Linux/macOS
-
-```nushell
-def linux_setup [] {
-    check_command "nix-channel"
-    check_command "nix-env"
-    try {
-        # Implementation
-    } catch {
-        handle_error $"Linux setup failed: ($env.LAST_ERROR)"
-    }
-}
-```
-
-### Windows
-
-```nushell
-def windows_setup [] {
-    check_command "steam"
-    try {
-        # Implementation
-    } catch {
-        handle_error $"Windows setup failed: ($env.LAST_ERROR)"
-    }
-}
-```
-
 ## Best Practices
 
 1. Error Handling
@@ -122,70 +245,7 @@ def windows_setup [] {
    - Use clear names
    - Include documentation
    - Follow consistent style
-
-## Example Script
-
-```nushell
-#!/usr/bin/env nu
-
-use lib/common.nu *
-
-export-env {
-    $env.SCRIPT_NAME = "platform-setup"
-    $env.SCRIPT_VERSION = "1.0.0"
-}
-
-def check_prerequisites [] {
-    let platform = detect_platform
-    match $platform {
-        "linux" | "darwin" => {
-            check_command "nix-channel"
-            check_command "nix-env"
-        }
-        "windows" => {
-            check_command "steam"
-        }
-        _ => handle_error $"Unsupported platform: ($platform)"
-    }
-}
-
-def platform_setup [] {
-    let platform = detect_platform
-    match $platform {
-        "linux" | "darwin" => {
-            try {
-                nix-channel --update
-                nix-env -u '*'
-                log_success "Nix packages updated"
-            } catch {
-                handle_error $"Failed to update Nix packages: ($env.LAST_ERROR)"
-            }
-        }
-        "windows" => {
-            try {
-                # Windows-specific setup
-                log_success "Windows setup completed"
-            } catch {
-                handle_error $"Windows setup failed: ($env.LAST_ERROR)"
-            }
-        }
-        _ => handle_error $"Unsupported platform: ($platform)"
-    }
-}
-
-def main [] {
-    try {
-        log_info "Starting platform setup..."
-        check_prerequisites
-        platform_setup
-        log_success "Platform setup completed"
-    } catch {
-        handle_error $"Platform setup failed: ($env.LAST_ERROR)"
-    }
-}
-
-main
-```
+   - Guard platform-specific code
 
 ## Debugging
 

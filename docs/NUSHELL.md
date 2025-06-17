@@ -10,6 +10,14 @@ Guide for nix-mox's Nushell automation scripts.
 - Process management
 - Error handling
 
+## Package Scripts
+
+The project includes the following Nushell scripts (Linux only):
+
+- **proxmox-update.nu**: Updates Proxmox VE packages
+- **vzdump-backup.nu**: Creates backups of Proxmox VMs and containers
+- **zfs-snapshot.nu**: Manages ZFS snapshots with automatic pruning
+
 ## Usage
 
 ```nushell
@@ -53,6 +61,23 @@ run_script "scripts/install.sh" --verbose
 run_with_retry "scripts/install.sh" --force
 ```
 
+## Script Organization
+
+Scripts are organized by platform and functionality:
+
+```
+scripts/
+├── linux/
+│   ├── proxmox-update.nu
+│   ├── vzdump-backup.nu
+│   └── zfs-snapshot.nu
+├── windows/
+│   └── ...
+└── lib/
+    ├── common.nu
+    └── platform.nu
+```
+
 ## Dependencies
 
 - Nushell 0.80.0+
@@ -66,3 +91,4 @@ run_with_retry "scripts/install.sh" --force
 - Handle errors properly
 - Write tests
 - Update documentation
+- Ensure platform-specific code is properly guarded
