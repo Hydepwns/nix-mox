@@ -19,6 +19,7 @@
   - [Script Development](#script-development)
   - [Testing](#testing)
   - [Architecture](#architecture)
+- [Hardware & Driver Support](#hardware-and-driver-support)
 
 ## Overview
 
@@ -358,3 +359,4 @@ nix develop .#testing
 - [**Testing Guide**](./docs/guides/testing.md) - Testing framework
 - [**Script Architecture**](./docs/architecture/scripts.md) - Script system design
 - [**Gaming Setup Guide**](./docs/gaming/README.md) - Linux & Windows gaming, League of Legends, Wine/Lutris
+- [**Hardware Drivers Guide**](./docs/guides/drivers.md) - configuring NVIDIA, AMD, and Intel drivers

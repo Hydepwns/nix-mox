@@ -85,5 +85,12 @@ in
     wantedBy = [ "timers.target" ]; # Ensures the timer is started on boot
   };
 
+  # --- NVIDIA and OpenGL Support ---
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.opengl.enable = true;
+  hardware.opengl.driSupport = true;
+  hardware.opengl.driSupport32Bit = true;
+  hardware.pulseaudio.support32Bit = true;
+
   system.stateVersion = "24.05";
-} 
+}

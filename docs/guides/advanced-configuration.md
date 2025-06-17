@@ -117,6 +117,8 @@ graph TD
 
 ### Performance Tuning
 
+> **Note:** NVIDIA and OpenGL settings are now enabled by default in the NixOS VM template for maximum compatibility. You do not need to add these manually unless you wish to override them.
+
 ```nix
 { config, ... }: {
   services.xserver.videoDrivers = [ "nvidia" ];
@@ -126,3 +128,5 @@ graph TD
   hardware.pulseaudio.support32Bit = true;
 }
 ```
+
+> **See also:** [Hardware Drivers Guide](./drivers.md) for detailed driver setup and troubleshooting.

@@ -232,3 +232,5 @@ bash devshells/gaming/scripts/configure-league.sh
 - [DXVK GitHub](https://github.com/doitsujin/dxvk)
 - [MangoHud GitHub](https://github.com/flightlessmango/MangoHud)
 - [GameMode GitHub](https://github.com/FeralInteractive/gamemode)
+
+> **See also:** [Hardware Drivers Guide](../guides/drivers.md) for GPU and driver setup for gaming.
