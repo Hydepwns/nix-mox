@@ -216,6 +216,21 @@ nix-mox --script install --log install.log
 nix-mox --script update --debug
 ```
 
+### Gaming Shell & Windows Games
+
+nix-mox now includes a dedicated gaming shell for Linux gaming and Windows games (like League of Legends) via Wine and Lutris:
+
+```bash
+# Enter the gaming shell
+nix develop .#gaming
+```
+
+- Includes Steam, Wine, Lutris, MangoHud, GameMode, DXVK, VKD3D, and more
+- Helper scripts for Wine and League of Legends setup:
+  - `nix run .#configure-wine` (general Wine gaming config)
+  - `bash devshells/gaming/scripts/configure-league.sh` (League-specific setup)
+- See [Gaming Setup Guide](./docs/gaming/README.md) for full instructions, troubleshooting, and optimization tips
+
 ## Development
 
 ### devshells
@@ -342,3 +357,4 @@ nix develop .#testing
 - [**Script Development Guide**](./docs/guides/scripting.md) - Script development
 - [**Testing Guide**](./docs/guides/testing.md) - Testing framework
 - [**Script Architecture**](./docs/architecture/scripts.md) - Script system design
+- [**Gaming Setup Guide**](./docs/gaming/README.md) - Linux & Windows gaming, League of Legends, Wine/Lutris

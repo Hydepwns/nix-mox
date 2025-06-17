@@ -8,6 +8,10 @@ High-level overview of the Proxmox + NixOS + Windows setup architecture.
 - Windows VM with Steam/Rust
 - LXC/VM Templates
 - Development Tools
+- **Linux & Windows Gaming Shell**
+  - Gaming shell with Steam, Wine, Lutris, MangoHud, GameMode, DXVK, VKD3D
+  - Helper scripts for Wine and League of Legends setup
+  - League of Legends and other Windows games via Wine/Lutris
 
 ## System Architecture
 
@@ -99,6 +103,8 @@ graph TD
     C --> C5[monitoring]
     C --> C6[zfs]
     C --> C7[gaming]
+    C7 --> C7a[League of Legends Helper]
+    C7 --> C7b[Wine Config Helper]
 ```
 
 ### Module Integration

@@ -100,6 +100,17 @@ def update_steam_rust [] {
 def optimize_game_performance [] {
     # Optimization logic
 }
+
+# Wine and League of Legends setup
+def configure_wine [] {
+    # General Wine gaming configuration
+    # Sets up a Wine prefix with optimal settings for gaming
+}
+
+def configure_league [] {
+    # League of Legends-specific Wine prefix setup
+    # Creates a dedicated Wine prefix for League of Legends with all required components
+}
 ```
 
 ## Error Handling
