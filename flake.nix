@@ -49,8 +49,10 @@
             testing = devShell.testing;
             services = devShell.services;
             monitoring = devShell.monitoring;
+          } // (if pkgs.stdenv.isLinux && pkgs.system == "x86_64-linux" then {
             gaming = devShell.gaming;
-          } // (if pkgs.stdenv.isLinux then {
+            zfs = devShell.zfs;
+          } else if pkgs.stdenv.isLinux then {
             zfs = devShell.zfs;
           } else {});
           formatter = pkgs.nixpkgs-fmt;
