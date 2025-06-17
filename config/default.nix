@@ -6,9 +6,9 @@
 
     # Default paths
     paths = {
-      templates = ./templates;
-      scripts = ./scripts;
-      tests = ./tests;
+      templates = ../modules/templates;
+      scripts = ../modules/scripts;
+      tests = ../modules/scripts/testing;
     };
 
     # Default settings
