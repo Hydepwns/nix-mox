@@ -141,19 +141,19 @@ export def run_test [test_file: string] {
     print $"($env.GREEN)Running test: ($test_name)($env.NC)"
 
     let start_time = (date now | into int)
-    
+
     try {
         nu --env TEST_TEMP_DIR=$env.TEST_TEMP_DIR $test_file
         let end_time = (date now | into int)
         let duration = (($end_time - $start_time) | into float) / 1000000000
-        
+
         print $"($env.GREEN)✓ Test passed: ($test_name) - ($duration)s($env.NC)"
         track_test $test_name "unit" "passed" $duration
         true
     } catch {
         let end_time = (date now | into int)
         let duration = (($end_time - $start_time) | into float) / 1000000000
-        
+
         print $"($env.RED)✗ Test failed: ($test_name) - ($duration)s($env.NC)"
         print $"($env.RED)Error: ($env.LAST_ERROR)($env.NC)"
         track_test $test_name "unit" "failed" $duration
@@ -197,7 +197,7 @@ export def run_tests [test_dir: string, category: string = "unit"] {
 
 export def run_unit_tests [] {
     print $"($env.GREEN)Running unit tests...($env.NC)"
-    run_tests $env.UNIT_TEST_DIR "unit"
+    nu modules/scripts/testing/unit/unit-tests.nu
 }
 
 export def run_integration_tests [] {

@@ -62,20 +62,20 @@ def parse_args [args: list, config: record] {
         # If specific test types are requested, disable others
         let test_flags = ["--unit", "--integration", "--storage", "--performance"]
         let has_specific_tests = ($args | any { |arg| $test_flags | any { |flag| $arg == $flag } })
-        
+
         let config = if $has_specific_tests {
             $config | upsert run_unit_tests ($args | any { |arg| $arg == "--unit" }) | upsert run_integration_tests ($args | any { |arg| $arg == "--integration" }) | upsert run_storage_tests ($args | any { |arg| $arg == "--storage" }) | upsert run_performance_tests ($args | any { |arg| $arg == "--performance" })
         } else {
             $config
         }
-        
+
         # Only disable coverage if --no-coverage is explicitly passed
         let config = if ($args | any { |arg| $arg == "--no-coverage" }) {
             $config | upsert generate_coverage false
         } else {
             $config | upsert generate_coverage true
         }
-        
+
         let format_args = ($args | where { |arg| $arg | str starts-with "--format=" })
         let config = if ($format_args | length) > 0 {
             let format_arg = ($format_args | get 0)
@@ -83,7 +83,7 @@ def parse_args [args: list, config: record] {
         } else {
             $config
         }
-        
+
         $config
     } else {
         $config
@@ -94,7 +94,7 @@ def parse_args [args: list, config: record] {
 def main [args: list] {
     # Set up the test temp directory globally
     $env.TEST_TEMP_DIR = "coverage-tmp"
-    
+
     let config = setup_test_config
     let config = parse_args $args $config
     run_all_test_suites $config

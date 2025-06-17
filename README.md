@@ -140,19 +140,27 @@ nix develop .#services
 # Monitoring and observability
 nix develop .#monitoring
 
-# ZFS development and testing
+# ZFS development and testing (Linux only)
 nix develop .#zfs
 
-# Gaming environment with Steam, Wine, and more
+# Gaming environment with Steam, Wine, and more (Linux only)
 nix develop .#gaming
+
+# macOS development environment (macOS only)
+nix develop .#macos
 ```
 
-Each shell comes with its own set of tools and helpful documentation. For example, the testing shell includes:
+Each shell comes with its own set of tools and helpful documentation. For example:
 
-- Elixir and Erlang for running tests
-- Test summarization tools
-- BATS for shell script testing
-- Code quality tools
+- The testing shell includes Elixir, Erlang, and test tools
+- The gaming shell includes Steam, Wine, and gaming utilities
+- The development and macOS shells include:
+  - Core development tools (git, nix, nixpkgs-fmt)
+  - code-cursor editor for AI-powered code navigation and editing
+  - macOS-specific frameworks (macOS shell)
+  - Common development tools (vscode, jq, yq, curl)
+  - Terminal tools (tmux, zsh, oh-my-zsh)
+  - System monitoring tools (htop)
 
 ### Command Line Interface
 

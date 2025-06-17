@@ -12,6 +12,12 @@ High-level overview of the Proxmox + NixOS + Windows setup architecture.
   - Gaming shell with Steam, Wine, Lutris, MangoHud, GameMode, DXVK, VKD3D
   - Helper scripts for Wine and League of Legends setup
   - League of Legends and other Windows games via Wine/Lutris
+- **macOS Development Shell**
+  - Core development tools (git, nix, nixpkgs-fmt)
+  - macOS-specific frameworks (CoreServices, Foundation)
+  - Development tools (vscode, jq, yq, curl)
+  - Terminal tools (tmux, zsh, oh-my-zsh)
+  - System monitoring tools (htop)
 
 ## System Architecture
 
@@ -103,8 +109,11 @@ graph TD
     C --> C5[monitoring]
     C --> C6[zfs]
     C --> C7[gaming]
+    C --> C8[macos]
     C7 --> C7a[League of Legends Helper]
     C7 --> C7b[Wine Config Helper]
+    C8 --> C8a[macOS Frameworks]
+    C8 --> C8b[Development Tools]
 ```
 
 ### Module Integration

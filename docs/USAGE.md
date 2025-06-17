@@ -94,6 +94,7 @@ nix develop .#testing
 nix develop .#services
 nix develop .#monitoring
 nix develop .#zfs  # Linux only
+nix develop .#macos  # macOS only
 
 # Run tests
 nu scripts/run-tests.nu
@@ -103,6 +104,27 @@ git checkout -b feature/your-feature
 git commit -m "feat: your feature"
 git push origin feature/your-feature
 ```
+
+## macOS Development
+
+For macOS users, a dedicated development shell is available with tools and configurations optimized for macOS development:
+
+```bash
+# Enter macOS development shell
+nix develop .#macos
+```
+
+The macOS shell includes:
+
+- Core development tools (git, nix, nixpkgs-fmt)
+- macOS-specific frameworks (CoreServices, Foundation)
+- Development tools (vscode, jq, yq, curl)
+- Terminal tools (tmux, zsh, oh-my-zsh)
+- System monitoring tools (htop)
+
+For detailed information about the macOS development shell, see:
+
+- [macOS Shell Guide](./guides/macos-shell.md)
 
 ## Examples
 

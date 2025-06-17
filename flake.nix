@@ -29,18 +29,24 @@
   outputs = { self, nixpkgs, flake-utils, ... }:
     let
       config = import ./config/default.nix;
+      supportedSystems = [ "aarch64-darwin" "x86_64-darwin" "x86_64-linux" "aarch64-linux" ];
     in
-      flake-utils.lib.eachDefaultSystem (system:
+      flake-utils.lib.eachSystem supportedSystems (system:
         let
           pkgs = import nixpkgs {
-            system = system;
+            inherit system;
             config.allowUnfree = true;
+            config.darwinConfig = if pkgs.stdenv.isDarwin then {
+              system = system;
+            } else {};
           };
           devShell = import ./devshells/default.nix { inherit pkgs; };
-          linuxPackages = import ./modules/packages/linux/default.nix {
-            inherit pkgs config;
-            helpers = import ./modules/packages/error-handling/helpers.nix { inherit pkgs; };
-          };
+          linuxPackages = if pkgs.stdenv.isLinux then
+            import ./modules/packages/linux/default.nix {
+              inherit pkgs config;
+              helpers = import ./modules/packages/error-handling/helpers.nix { inherit pkgs; };
+            }
+          else {};
         in
         {
           devShells = {
@@ -54,6 +60,8 @@
             zfs = devShell.zfs;
           } else if pkgs.stdenv.isLinux then {
             zfs = devShell.zfs;
+          } else if pkgs.stdenv.isDarwin then {
+            macos = devShell.macos;
           } else {});
           formatter = pkgs.nixpkgs-fmt;
           packages = if pkgs.stdenv.isLinux then {
@@ -61,7 +69,7 @@
             vzdump-backup = linuxPackages.vzdump-backup;
             zfs-snapshot = linuxPackages.zfs-snapshot;
             nixos-flake-update = linuxPackages.nixos-flake-update;
-            default = linuxPackages.proxmox-update; # Set proxmox-update as the default package
+            default = linuxPackages.proxmox-update;
           } else {};
         }
       );

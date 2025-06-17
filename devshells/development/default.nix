@@ -24,6 +24,7 @@ pkgs.mkShell {
     pkgs.duf           # Disk usage
     pkgs.htop          # Process viewer
     pkgs.jq            # JSON processor
+    pkgs.code-cursor   # Add code-cursor editor
   ];
 
   shellHook = ''
@@ -102,6 +103,10 @@ pkgs.mkShell {
       echo "    Commands:"
       echo "    - jq '.' file.json            # Pretty print JSON"
       echo "    - jq '.key' file.json         # Extract value"
+      echo ""
+      echo "code-cursor: (v${pkgs.code-cursor.version})"
+      echo "    Commands:"
+      echo "    - code-cursor .                 # Launch code-cursor editor"
       echo ""
       echo "📝 Quick Start"
       echo "------------"

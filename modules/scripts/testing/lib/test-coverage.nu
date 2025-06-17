@@ -3,7 +3,6 @@
 
 use ../../common.nu *
 use ./coverage-core.nu *
-use ./test-utils.nu *
 
 # --- Coverage Reporting ---
 export def generate_coverage_report [] {
