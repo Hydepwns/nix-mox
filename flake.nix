@@ -37,7 +37,10 @@
             config.allowUnfree = true;
           };
           devShell = import ./devshells/default.nix { inherit pkgs; };
-          linuxPackages = import ./modules/packages/linux/default.nix { inherit pkgs; };
+          linuxPackages = import ./modules/packages/linux/default.nix {
+            inherit pkgs config;
+            helpers = import ./modules/packages/error-handling/helpers.nix { inherit pkgs; };
+          };
         in
         {
           devShells = {

@@ -2,16 +2,22 @@
 
 set -euo pipefail
 
-# Determine the directory where the script is located
-SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Source common functions (now a bash file)
-source "$SCRIPTS_DIR/linux/_common.sh"
-
 # Default values
 VERBOSE=false
 FORCE=false
 LOG_FILE="/var/log/nix-mox/uninstall.log"
+
+# Logging function
+log() {
+    local level="$1"
+    local message="$2"
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    if [[ "$level" == "debug" && "$VERBOSE" != "true" ]]; then
+        return
+    fi
+    echo "[$timestamp] [$level] $message" | tee -a "$LOG_FILE"
+}
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -40,12 +46,19 @@ uninstall() {
     log "info" "Starting nix-mox uninstallation..."
 
     # Check if running as root
-    check_root
+    if [[ $EUID -ne 0 ]]; then
+        log "error" "This script must be run as root"
+        exit 1
+    fi
 
     # Remove installed files
     log "info" "Removing installed files..."
-    rm -f /usr/local/bin/nix-mox
-    rm -f /usr/local/bin/nix-mox-uninstall
+    if [[ "$FORCE" == "true" ]]; then
+        rm -f /usr/local/bin/nix-mox
+        rm -f /usr/local/bin/nix-mox-uninstall
+    else
+        log "warn" "Use --force to remove installed files"
+    fi
 
     # Remove configuration files
     log "info" "Removing configuration files..."

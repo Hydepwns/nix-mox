@@ -30,7 +30,10 @@ let
         pkg;
 
     # File operations
-    readScript = path: builtins.readFile path;
+    readScript = path: builtins.readFile (pkgs.lib.cleanSourceWith {
+      src = pkgs.lib.cleanSource ./.;
+      filter = path: type: builtins.baseNameOf path == builtins.baseNameOf path;
+    } + "/${path}");
 
     # Expose platform detection functions
     inherit isLinux isDarwin;

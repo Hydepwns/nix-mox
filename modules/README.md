@@ -12,7 +12,13 @@ modules/
 ├── storage/             # Storage-related modules
 ├── templates/           # Template-related modules
 ├── security/            # Security-related modules
-└── monitoring/          # Monitoring and observability
+├── monitoring/          # Monitoring and observability
+├── packages/            # Package-specific modules
+│   ├── linux/          # Linux-specific packages and scripts
+│   └── darwin/         # macOS-specific packages and scripts
+└── scripts/            # Platform-specific scripts
+    ├── linux/          # Linux-specific scripts
+    └── windows/         # Windows-specific scripts
 ```
 
 ## Using Modules
@@ -77,6 +83,12 @@ Example of adding a new service module:
 - **security/**: Security-related modules for encryption and access control
 - **monitoring/**: Monitoring and observability modules
 - **gaming/**: Gaming-specific modules for Steam, Wine, and performance tuning
+- **packages/**: Platform-specific package modules
+  - **linux/**: Linux-specific packages and scripts
+  - **darwin/**: macOS-specific packages and scripts
+- **scripts/**: Platform-specific scripts
+  - **linux/**: Linux-specific scripts (e.g., backup, update, and maintenance scripts)
+  - **darwin/**: macOS-specific scripts
 
 Each category has its own README.md with more specific information about its contents and usage.
 
@@ -99,3 +111,16 @@ To use gaming modules in your configuration:
 - **steam.nix**: Configuration for Steam installation and updates
 - **wine.nix**: Configuration for Wine and Windows compatibility
 - **performance.nix**: Performance tuning for gaming VMs
+
+## Platform-Specific Scripts
+
+The `scripts/` directory contains platform-specific scripts that are used by the package modules. These scripts are organized by platform:
+
+- **linux/**: Contains scripts for Linux systems, including:
+  - Backup and maintenance scripts
+  - System update scripts
+  - ZFS management scripts
+  - Installation and uninstallation scripts
+- **darwin/**: Contains scripts for macOS systems
+
+These scripts are referenced by their respective package modules in the `packages/` directory.

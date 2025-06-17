@@ -25,18 +25,20 @@ let
   ];
 
   # Linux-specific packages
-  linuxPackages = lib.optionals isLinux [
-    pkgs.node-exporter
-    pkgs.cadvisor
-    pkgs.alertmanager
-    pkgs.blackbox-exporter
-    pkgs.snmp-exporter
-    pkgs.pushgateway
-    pkgs.jaeger
-    pkgs.functionbeat
-    pkgs.journalbeat
-    pkgs.winlogbeat
-  ];
+  linuxPackages = lib.optionals isLinux (
+    lib.filter (pkg: pkg != null) [
+      pkgs.alertmanager or null
+      pkgs.blackbox-exporter or null
+      pkgs.snmp-exporter or null
+      pkgs.pushgateway or null
+      pkgs.jaeger or null
+      pkgs.functionbeat or null
+      pkgs.journalbeat or null
+      pkgs.winlogbeat or null
+      pkgs.node-exporter or null
+      pkgs.cadvisor or null
+    ]
+  );
 
   # Darwin-specific packages (disabled)
   darwinPackages = [];
@@ -93,16 +95,23 @@ pkgs.mkShell {
       echo "    - /etc/logstash/logstash.yml"
       echo ""
       ${if isLinux then ''
+      ${if !isAarch64 then ''
+      ${if pkgs ? node-exporter then ''
       echo "node-exporter: (v${pkgs.node-exporter.version})"
       echo "    Commands:"
       echo "    - node_exporter                # Start node exporter"
       echo "    - node_exporter --web.listen-address=:9100"
       echo ""
+      '' else ""}
+      ${if pkgs ? cadvisor then ''
       echo "cadvisor: (v${pkgs.cadvisor.version})"
       echo "    Commands:"
       echo "    - cadvisor                     # Start cAdvisor"
       echo "    - cadvisor -port 8080          # Specify port"
       echo ""
+      '' else ""}
+      '' else ""}
+      ${if pkgs ? alertmanager then ''
       echo "alertmanager: (v${pkgs.alertmanager.version})"
       echo "    Commands:"
       echo "    - alertmanager                 # Start Alertmanager"
@@ -110,26 +119,36 @@ pkgs.mkShell {
       echo "    Configuration:"
       echo "    - /etc/alertmanager/alertmanager.yml"
       echo ""
+      '' else ""}
+      ${if pkgs ? blackbox-exporter then ''
       echo "blackbox-exporter: (v${pkgs.blackbox-exporter.version})"
       echo "    Commands:"
       echo "    - blackbox_exporter            # Start exporter"
       echo "    - blackbox_exporter --config.file=blackbox.yml"
       echo ""
+      '' else ""}
+      ${if pkgs ? snmp-exporter then ''
       echo "snmp-exporter: (v${pkgs.snmp-exporter.version})"
       echo "    Commands:"
       echo "    - snmp_exporter                # Start exporter"
       echo "    - snmp_exporter --config.file=snmp.yml"
       echo ""
+      '' else ""}
+      ${if pkgs ? pushgateway then ''
       echo "pushgateway: (v${pkgs.pushgateway.version})"
       echo "    Commands:"
       echo "    - pushgateway                  # Start Pushgateway"
       echo "    - pushgateway --web.listen-address=:9091"
       echo ""
+      '' else ""}
+      ${if pkgs ? jaeger then ''
       echo "jaeger: (v${pkgs.jaeger.version})"
       echo "    Commands:"
       echo "    - jaeger-all-in-one            # Start Jaeger"
       echo "    - jaeger-query                 # Query traces"
       echo ""
+      '' else ""}
+      ${if pkgs ? functionbeat then ''
       echo "functionbeat: (v${pkgs.functionbeat.version})"
       echo "    Commands:"
       echo "    - functionbeat                 # Start Functionbeat"
@@ -137,6 +156,8 @@ pkgs.mkShell {
       echo "    Configuration:"
       echo "    - /etc/functionbeat/functionbeat.yml"
       echo ""
+      '' else ""}
+      ${if pkgs ? journalbeat then ''
       echo "journalbeat: (v${pkgs.journalbeat.version})"
       echo "    Commands:"
       echo "    - journalbeat                  # Start Journalbeat"
@@ -144,6 +165,8 @@ pkgs.mkShell {
       echo "    Configuration:"
       echo "    - /etc/journalbeat/journalbeat.yml"
       echo ""
+      '' else ""}
+      ${if pkgs ? winlogbeat then ''
       echo "winlogbeat: (v${pkgs.winlogbeat.version})"
       echo "    Commands:"
       echo "    - winlogbeat                   # Start Winlogbeat"
@@ -151,6 +174,7 @@ pkgs.mkShell {
       echo "    Configuration:"
       echo "    - /etc/winlogbeat/winlogbeat.yml"
       echo ""
+      '' else ""}
       '' else ""}
       echo "📝 Quick Start"
       echo "------------"

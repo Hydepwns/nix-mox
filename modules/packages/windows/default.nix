@@ -8,14 +8,14 @@ in
     destination = "/bin/install-steam-rust.nu";
     text = ''
       #!${pkgs.nushell}/bin/nu
-      ${readScript ./scripts/windows/install-steam-rust.nu}
+      ${readScript "scripts/windows/install-steam-rust.nu"}
     '';
     executable = true;
   } else null;
 
   windows-automation-assets-sources = if isDarwin pkgs.system then pkgs.stdenv.mkDerivation {
     name = "windows-automation-assets-sources";
-    src = ./scripts/windows;
+    src = ./../../scripts/windows;
     installPhase = ''
       mkdir -p $out
       cp $src/install-steam-rust.nu $out/

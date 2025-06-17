@@ -5,8 +5,8 @@ let
 in
 {
   imports = [
-    ./templates.nix
-    ./error-handling.nix
+    ./templates/index.nix
+    ./error-handling/index.nix
   ];
 
   options.services.nix-mox = {
@@ -47,4 +47,4 @@ in
       };
     };
   };
-} 
+}
