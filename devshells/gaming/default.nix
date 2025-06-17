@@ -13,12 +13,6 @@ pkgs.mkShell {
     pkgs.vulkan-loader
     pkgs.vulkan-extension-layer
     pkgs.vulkan-utility-libraries
-    pkgs.vulkan-tools-lunarg
-    pkgs.vulkan-validation-layers-lunarg
-    pkgs.vulkan-headers-lunarg
-    pkgs.vulkan-loader-lunarg
-    pkgs.vulkan-extension-layer-lunarg
-    pkgs.vulkan-utility-libraries-lunarg
     # League of Legends specific dependencies
     pkgs.winetricks
     pkgs.dxvk
@@ -32,7 +26,7 @@ pkgs.mkShell {
     echo ""
     echo "🔧 Gaming Tools"
     echo "----------------"
-    echo "steam: (v${pkgs.steam.version})"
+    echo "steam:"
     echo "    Commands:"
     echo "    - steam                         # Start Steam"
     echo ""
