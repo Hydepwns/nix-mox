@@ -187,3 +187,45 @@ git add .
 nu scripts/core/run-tests.nu
 git commit -m "Passing tests"
 ```
+
+## Gaming Tests
+
+### Game Performance Test
+
+```nushell
+def test_game_performance [] {
+    setup_test_env
+    
+    try {
+        let result = (optimize_game_performance)
+        assert_true $result "Game performance optimization failed"
+        cleanup_test_env
+        true
+    } catch {
+        cleanup_test_env
+        false
+    }
+}
+
+test_game_performance
+```
+
+### Steam/Rust Update Test
+
+```nushell
+def test_steam_rust_update [] {
+    setup_test_env
+    
+    try {
+        let result = (update_steam_rust)
+        assert_true $result "Steam/Rust update failed"
+        cleanup_test_env
+        true
+    } catch {
+        cleanup_test_env
+        false
+    }
+}
+
+test_steam_rust_update
+```

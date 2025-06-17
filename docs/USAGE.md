@@ -39,6 +39,8 @@ The following packages are available on Linux systems:
 - **proxmox-update**: Update and upgrade Proxmox host packages safely
 - **vzdump-backup**: Backup Proxmox VMs and containers using vzdump
 - **zfs-snapshot**: Create and manage ZFS snapshots with automatic pruning
+- **steam-rust-update**: Update Steam and Rust games
+- **optimize-game-performance**: Optimize game performance settings
 
 ## Module Integration
 

@@ -76,5 +76,26 @@ Example of adding a new service module:
 - **templates/**: Template configurations for different systems
 - **security/**: Security-related modules for encryption and access control
 - **monitoring/**: Monitoring and observability modules
+- **gaming/**: Gaming-specific modules for Steam, Wine, and performance tuning
 
 Each category has its own README.md with more specific information about its contents and usage.
+
+## Gaming Modules
+
+### Using Gaming Modules
+
+To use gaming modules in your configuration:
+
+```nix
+{
+  imports = [
+    nix-mox.nixosModules.gaming
+  ];
+}
+```
+
+### Available Gaming Modules
+
+- **steam.nix**: Configuration for Steam installation and updates
+- **wine.nix**: Configuration for Wine and Windows compatibility
+- **performance.nix**: Performance tuning for gaming VMs

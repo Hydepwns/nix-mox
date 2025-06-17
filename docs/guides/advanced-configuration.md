@@ -104,3 +104,25 @@ graph TD
     A --> D[Storage: Quotas/Snapshots]
     A --> E[Network: Bandwidth/Firewall]
 ```
+
+## Gaming Advanced Configuration
+
+```mermaid
+graph TD
+    A[Gaming VM] --> B[GPU Passthrough]
+    B --> C[Performance Tuning]
+    C --> D[Game Installation]
+    D --> E[Automated Updates]
+```
+
+### Performance Tuning
+
+```nix
+{ config, ... }: {
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.opengl.enable = true;
+  hardware.opengl.driSupport = true;
+  hardware.opengl.driSupport32Bit = true;
+  hardware.pulseaudio.support32Bit = true;
+}
+```

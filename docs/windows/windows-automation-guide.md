@@ -91,3 +91,23 @@ graph TD
 ```
 
 For full headless installation details, see comments in `../scripts/windows/install-steam-rust.nu`.
+
+## Gaming Automation
+
+```mermaid
+flowchart TD
+    A[Gaming VM] --> B[Install Steam]
+    B --> C[Setup Rust]
+    C --> D[Configure Game Mode]
+    D --> E[Automated Updates]
+```
+
+### Game Mode Configuration
+
+```powershell
+# Enable Game Mode
+reg add "HKLM\SOFTWARE\Microsoft\GameBar" /v "AllowAutoGameMode" /t REG_DWORD /d 1 /f
+
+# Disable Fullscreen Optimizations
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v "C:\Program Files (x86)\Steam\steamapps\common\Rust\RustClient.exe" /t REG_SZ /d "~ DISABLEDXMAXIMIZEDWINDOWEDMODE" /f
+```

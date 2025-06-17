@@ -269,3 +269,57 @@ $env.LOG_FILE = "script.log"
 
 1. Print variables: `print $"Value: ($variable)"`
 2. Check output: `let output = (command | str trim)`
+
+## Gaming Scripts
+
+### Steam/Rust Update Script
+
+```nushell
+#!/usr/bin/env nu
+
+use lib/common.nu *
+
+export-env {
+    $env.SCRIPT_NAME = "steam-rust-update"
+    $env.SCRIPT_VERSION = "1.0.0"
+    $env.LOGFILE = "/var/log/steam-rust-update.log"
+}
+
+def main [] {
+    try {
+        log_info "Starting Steam/Rust update..."
+        # Update logic
+        log_success "Steam/Rust update complete"
+    } catch {
+        handle_error $"Update failed: ($env.LAST_ERROR)"
+    }
+}
+
+main
+```
+
+### Game Performance Optimization Script
+
+```nushell
+#!/usr/bin/env nu
+
+use lib/common.nu *
+
+export-env {
+    $env.SCRIPT_NAME = "optimize-game-performance"
+    $env.SCRIPT_VERSION = "1.0.0"
+    $env.LOGFILE = "/var/log/optimize-game-performance.log"
+}
+
+def main [] {
+    try {
+        log_info "Starting game performance optimization..."
+        # Optimization logic
+        log_success "Game performance optimization complete"
+    } catch {
+        handle_error $"Optimization failed: ($env.LAST_ERROR)"
+    }
+}
+
+main
+```

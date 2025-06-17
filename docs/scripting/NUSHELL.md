@@ -17,6 +17,8 @@ The project includes the following Nushell scripts (Linux only):
 - **proxmox-update.nu**: Updates Proxmox VE packages
 - **vzdump-backup.nu**: Creates backups of Proxmox VMs and containers
 - **zfs-snapshot.nu**: Manages ZFS snapshots with automatic pruning
+- **steam-rust-update.nu**: Updates Steam and Rust games
+- **optimize-game-performance.nu**: Optimizes game performance settings
 
 ## Usage
 
@@ -65,7 +67,7 @@ run_with_retry "scripts/install.sh" --force
 
 Scripts are organized by platform and functionality:
 
-```
+```nushell
 scripts/
 ├── linux/
 │   ├── proxmox-update.nu

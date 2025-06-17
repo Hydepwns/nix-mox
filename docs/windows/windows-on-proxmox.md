@@ -93,3 +93,23 @@ flowchart TD
 ```
 
 For detailed troubleshooting and advanced configuration, see the [Proxmox PCI Passthrough Guide](https://pve.proxmox.com/wiki/Pci_passthrough).
+
+## Gaming Configuration
+
+```mermaid
+graph TD
+    A[Gaming VM] --> B[GPU Passthrough]
+    B --> C[Performance Tuning]
+    C --> D[Game Installation]
+    D --> E[Automated Updates]
+```
+
+### Performance Tuning
+
+```bash
+# Enable Game Mode
+reg add "HKLM\SOFTWARE\Microsoft\GameBar" /v "AllowAutoGameMode" /t REG_DWORD /d 1 /f
+
+# Disable Fullscreen Optimizations
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v "C:\Program Files (x86)\Steam\steamapps\common\Rust\RustClient.exe" /t REG_SZ /d "~ DISABLEDXMAXIMIZEDWINDOWEDMODE" /f
+```

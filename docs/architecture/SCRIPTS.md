@@ -88,6 +88,20 @@ def list_snapshots [] {
 }
 ```
 
+## Gaming Scripts
+
+```nushell
+# Steam/Rust updates
+def update_steam_rust [] {
+    # Update logic
+}
+
+# Game performance optimization
+def optimize_game_performance [] {
+    # Optimization logic
+}
+```
+
 ## Error Handling
 
 ### Error Types
