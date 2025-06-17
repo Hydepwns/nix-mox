@@ -2,7 +2,6 @@
 let
   inherit (helpers) isLinux createShellApp readScript;
   inherit (config.config.meta.platforms) linux;
-  scriptsDir = ./../../scripts/linux;
 in
 {
   vzdump-backup = if isLinux pkgs.system then createShellApp {
@@ -15,7 +14,7 @@ in
       pkgs.coreutils
       pkgs.gawk
     ];
-    text = readScript "${scriptsDir}/vzdump-backup.nu";
+    text = readScript "scripts/linux/vzdump-backup.nu";
     meta = {
       description = "Backup all Proxmox VMs and containers to specified storage.";
       platforms = linux;
@@ -33,7 +32,7 @@ in
       pkgs.gnused
       pkgs.gnutar
     ];
-    text = readScript "${scriptsDir}/zfs-snapshot.nu";
+    text = readScript "scripts/linux/zfs-snapshot.nu";
     meta = {
       description = "Create and prune ZFS snapshots for the specified pool.";
       platforms = linux;
@@ -43,7 +42,7 @@ in
   nixos-flake-update = if isLinux pkgs.system then createShellApp {
     name = "nixos-flake-update";
     runtimeInputs = [ pkgs.nix pkgs.bash pkgs.coreutils ];
-    text = readScript "${scriptsDir}/nixos-flake-update.nu";
+    text = readScript "scripts/linux/nixos-flake-update.nu";
     meta = {
       description = "Update flake inputs and rebuild NixOS system.";
       platforms = linux;
@@ -52,12 +51,12 @@ in
 
   install = if isLinux pkgs.system then pkgs.writeScriptBin "nix-mox-install" ''
     #!${pkgs.bash}/bin/bash
-    ${readScript "${scriptsDir}/install.nu"}
+    ${readScript "scripts/linux/install.nu"}
   '' else null;
 
   uninstall = if isLinux pkgs.system then let
-    commonSh = readScript "${scriptsDir}/_common.nu";
-    uninstallSh = readScript "${scriptsDir}/uninstall.nu";
+    commonSh = readScript "scripts/linux/_common.nu";
+    uninstallSh = readScript "scripts/linux/uninstall.nu";
   in createShellApp {
     name = "nix-mox-uninstall";
     runtimeInputs = [ pkgs.bash pkgs.coreutils ];
@@ -86,7 +85,7 @@ ${uninstallSh}
   proxmox-update = if isLinux pkgs.system then createShellApp {
     name = "proxmox-update";
     runtimeInputs = [ pkgs.apt pkgs.bash pkgs.coreutils ];
-    text = readScript "${scriptsDir}/proxmox-update.nu";
+    text = readScript "scripts/linux/proxmox-update.nu";
     meta = {
       description = "Update and upgrade Proxmox host packages safely.";
       platforms = linux;

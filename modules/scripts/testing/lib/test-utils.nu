@@ -1,7 +1,7 @@
 # Test utilities for nix-mox
 # This module provides common functions for testing
 
-use ../../scripts/lib/common.nu *
+use ../../common.nu *
 
 # --- Environment Setup ---
 export-env {

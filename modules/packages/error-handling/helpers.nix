@@ -31,8 +31,8 @@ let
 
     # File operations
     readScript = path: builtins.readFile (pkgs.lib.cleanSourceWith {
-      src = pkgs.lib.cleanSource ./.;
-      filter = path: type: builtins.baseNameOf path == builtins.baseNameOf path;
+      src = pkgs.lib.cleanSource ../..;
+      filter = path: type: true;
     } + "/${path}");
 
     # Expose platform detection functions

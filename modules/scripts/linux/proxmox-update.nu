@@ -5,7 +5,7 @@
 # - Maintains an update log
 # - Is idempotent and safe to re-run
 
-use ../../scripts/lib/common.nu *
+use ../lib/common.nu *
 
 # Script-specific variables
 const LOGFILE = "/var/log/proxmox-update.log"

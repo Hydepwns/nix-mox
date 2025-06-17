@@ -6,7 +6,7 @@
 # - Removes all files and directories listed in the manifest.
 # - Is idempotent and safe to re-run.
 
-use ../../scripts/lib/common.nu *
+use ../lib/common.nu *
 
 # --- Global Variables ---
 const MANIFEST_FILE = "/etc/nix-mox/install_manifest.txt"

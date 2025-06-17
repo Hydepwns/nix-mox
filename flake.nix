@@ -57,6 +57,7 @@
             proxmox-update = linuxPackages.proxmox-update;
             vzdump-backup = linuxPackages.vzdump-backup;
             zfs-snapshot = linuxPackages.zfs-snapshot;
+            nixos-flake-update = linuxPackages.nixos-flake-update;
             default = linuxPackages.proxmox-update; # Set proxmox-update as the default package
           } else {};
         }

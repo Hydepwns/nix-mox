@@ -1,6 +1,7 @@
 # Test coverage reporting for nix-mox
 # This module provides functions for tracking and reporting test coverage
 
+use ../../common.nu *
 use ./test-utils.nu *
 
 # --- Coverage Data Structure ---

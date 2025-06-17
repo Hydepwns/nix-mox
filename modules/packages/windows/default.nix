@@ -15,7 +15,7 @@ in
 
   windows-automation-assets-sources = if isDarwin pkgs.system then pkgs.stdenv.mkDerivation {
     name = "windows-automation-assets-sources";
-    src = ./../../scripts/windows;
+    src = ./../scripts/windows;
     installPhase = ''
       mkdir -p $out
       cp $src/install-steam-rust.nu $out/

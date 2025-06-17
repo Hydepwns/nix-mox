@@ -2,7 +2,8 @@ logMessage() {
     local level="$1"
     local message="$2"
     if [ "@enableLogging@" = "true" ]; then
-        local timestamp=$("@coreutils@/bin/date" '+%Y-%m-%d %H:%M:%S')
+        local timestamp
+        timestamp=$(date '+%Y-%m-%d %H:%M:%S')
         echo "[$timestamp] [$level] $message"
         echo "[$timestamp] [$level] $message" >> "@logFile@"
     fi
@@ -13,4 +14,4 @@ handleError() {
     local errorMessage="$2"
     logMessage "ERROR" "Error $errorCode: $errorMessage"
     exit "$errorCode"
-} 
+}

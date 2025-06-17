@@ -36,17 +36,17 @@ log() {
     local color="$NC"
     local level_idx
     local current_idx
-    
+
     case "$level" in
         ERROR) color="$RED" ;;
         WARN)  color="$YELLOW" ;;
         INFO)  color="$GREEN" ;;
         DEBUG) color="$BLUE" ;;
     esac
-    
+
     level_idx=$(log_level_index "$level")
     current_idx=$(log_level_index "$LOG_LEVEL")
-    
+
     if (( level_idx >= current_idx )); then
         echo -e "$(timestamp) [${color}${level}${NC}] $msg"
     fi
@@ -73,4 +73,4 @@ ensure_dir()   { dir_exists "$1" || mkdir -p "$1"; }
 # Check if running in CI mode
 is_ci_mode() {
     [ "${CI:-}" = "true" ]
-} 
+}
