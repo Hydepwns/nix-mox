@@ -1,6 +1,11 @@
 # Test utilities for nix-mox
 # This module provides common functions for testing
 
+export-env {
+    use ./shared.nu *
+    use ./coverage-core.nu *
+}
+
 use ./shared.nu *
 use ./coverage-core.nu *
 
@@ -38,9 +43,9 @@ export def is_darwin [] {
 # --- Test Environment Management ---
 export def setup_test_env [] {
     print $"($env.GREEN)Setting up test environment...($env.NC)"
-    # Use a fixed coverage directory instead of temp directory
-    $env.TEST_TEMP_DIR = "coverage-tmp"
-    mkdir $env.TEST_TEMP_DIR
+    if not ($env.TEST_TEMP_DIR | path exists) {
+        mkdir $env.TEST_TEMP_DIR
+    }
     print $"($env.GREEN)Test environment ready at: ($env.TEST_TEMP_DIR)($env.NC)"
 }
 
