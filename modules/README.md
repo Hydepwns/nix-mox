@@ -114,13 +114,16 @@ To use gaming modules in your configuration:
 
 ## Platform-Specific Scripts
 
-The `scripts/` directory contains platform-specific scripts that are used by the package modules. These scripts are organized by platform:
+The `scripts/` directory contains platform-specific automation scripts. The main entrypoint is now a bash wrapper for robust CLI usage:
 
-- **linux/**: Contains scripts for Linux systems, including:
-  - Backup and maintenance scripts
-  - System update scripts
-  - ZFS management scripts
-  - Installation and uninstallation scripts
-- **darwin/**: Contains scripts for macOS systems
+```bash
+# Main CLI entrypoint (robust argument passing)
+./modules/scripts/nix-mox --script install --dry-run
+```
 
-These scripts are referenced by their respective package modules in the `packages/` directory.
+- **linux/**: Linux scripts (backup, update, ZFS, install, etc.)
+- **windows/**: Windows scripts
+- **nix-mox**: Bash wrapper (recommended for all CLI usage)
+- **nix-mox.nu**: Nushell automation logic (called by the wrapper)
+
+> The wrapper ensures all arguments are passed correctly to the automation logic, regardless of Nushell version or platform.
