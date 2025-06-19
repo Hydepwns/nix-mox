@@ -1,7 +1,7 @@
 # Test suite for common functions
 
-# Source the common functions
-use ../../modules/scripts/testing/lib/test-common.nu *
+use ./shared.nu *
+use ./coverage-core.nu *
 
 export-env {
     # Set up environment variables

@@ -1,13 +1,8 @@
 # Test coverage reporting for nix-mox
 # This module provides functions for tracking and reporting test coverage
 
-export-env {
-    use ../../modules/scripts/testing/lib/test-common.nu *
-    setup_test_env
-}
-
-use ../../modules/scripts/testing/lib/test-common.nu *
-use ../../modules/scripts/testing/lib/coverage-core.nu *
+use ./shared.nu *
+use ./coverage-core.nu *
 
 # --- Coverage Reporting ---
 export def generate_coverage_report [] {

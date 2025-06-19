@@ -1,6 +1,7 @@
 # Test utilities for nix-mox
 # This module provides common functions for testing
 
+use ./shared.nu *
 use ./coverage-core.nu *
 
 # --- Environment Setup ---

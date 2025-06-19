@@ -2,11 +2,11 @@
 # This file provides file-based coverage tracking
 
 export-env {
-    use ../../modules/scripts/testing/lib/test-common.nu *
+    use ./test-common.nu *
     setup_test_env
 }
 
-use ../../modules/scripts/testing/lib/test-common.nu *
+use ./test-common.nu *
 
 # --- Coverage Tracking ---
 export def track_test [name: string, category: string, status: string, duration: float] {
