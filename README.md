@@ -19,7 +19,6 @@
   - [Script Development](#script-development)
   - [Testing](#testing)
   - [Architecture](#architecture)
-- [Hardware & Driver Support](#hardware-and-driver-support)
 
 ## Overview
 
@@ -184,10 +183,12 @@ Options:
   --log <file>        Log output to file
 
 ### Platform & OS Info
+
 - When running a script, nix-mox now prints detailed OS info (distro, version, kernel) for Linux/NixOS, macOS, or Windows.
 - NixOS is now fully supported and detected as a Linux platform.
 
 ### Error Handling & Logging
+
 - All error handling and logging is robust and platform-aware.
 - Errors are clearly reported, and logs can be written to a file with `--log <file>`.
 

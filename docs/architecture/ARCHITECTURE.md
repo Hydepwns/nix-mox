@@ -156,6 +156,7 @@ Test execution is managed through multiple methods:
 - **Main Runner**: `tests/run-tests.nu`: Comprehensive test orchestration
 
 The testing system provides:
+
 - **Coverage Reporting**: Automatic coverage generation in `TEST_TEMP_DIR`
 - **Cross-platform Support**: Tests run on Linux, macOS, and Windows
 - **Sandbox Compatibility**: Works in Nix build environments

@@ -1,7 +1,7 @@
 #!/usr/bin/env nu
 
 # Main script for nix-mox
-use common.nu *
+use ./lib/common.nu *
 
 # Fallback log_error if not defined
 if (not (scope commands | where name == 'log_error' | is-not-empty)) {
@@ -302,7 +302,7 @@ def main [args: list] {
         show_help
         exit 0
     }
-    
+
     let parsed_args = (parse_args $args)
 
     # Set debug mode

@@ -20,7 +20,7 @@ nix flake check
 
 ## Test Structure
 
-```
+```bash
 tests/
 ├── unit/           # Unit tests
 ├── integration/    # Integration tests
@@ -31,12 +31,14 @@ tests/
 ## Test Categories
 
 ### Unit Tests
+
 - Test individual components in isolation
 - Fast execution
 - Mock external dependencies
 - Located in `tests/unit/`
 
 ### Integration Tests
+
 - Test end-to-end functionality
 - Platform-specific checks
 - Real environment validation
@@ -74,17 +76,20 @@ main
 ## Test Utilities
 
 ### Environment Management
+
 ```nushell
 setup_test_env      # Set up test environment
 cleanup_test_env    # Clean up after tests
 ```
 
 ### Assertions
+
 ```nushell
 assert_equal $expected $actual "Message"
 ```
 
 ### Test Tracking
+
 ```nushell
 track_test "test_name" "category" "status" $duration
 ```
@@ -101,6 +106,7 @@ make test
 ## Continuous Integration
 
 ### GitHub Actions
+
 ```yaml
 name: Tests
 on: [push, pull_request]
@@ -114,6 +120,7 @@ jobs:
 ```
 
 ### Local Development
+
 ```bash
 # Run tests before commit
 make test
@@ -158,4 +165,4 @@ $env.DEBUG = true
 make test
 ```
 
-For more detailed information, see [Testing Documentation](./../scripting/TESTING.md). 
+For more detailed information, see [Testing Documentation](./../scripting/TESTING.md).

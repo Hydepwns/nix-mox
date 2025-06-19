@@ -107,12 +107,14 @@ export_coverage_report "json"
 ## Test Categories
 
 ### Unit Tests (`tests/unit/`)
+
 - Individual component testing
 - Fast execution
 - Isolated functionality
 - Mock external dependencies
 
 ### Integration Tests (`tests/integration/`)
+
 - End-to-end system testing
 - Platform-specific checks
 - Service interaction testing
