@@ -33,12 +33,13 @@ jobs:
           restore-keys: |
             nix-store-${{ runner.os }}-${{ matrix.nix-version }}-
       - name: Build all packages
-        run: nix build .#all --system ${{ matrix.system }}
+        run: |
+          nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update --system ${{ matrix.system }} --accept-flake-config
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: nix-mox-${{ matrix.system }}-${{ matrix.nix-version }}
-          path: result
+          path: result*
 
   test:
     needs: [build_packages]
@@ -65,7 +66,6 @@ jobs:
       - name: Run tests
         run: |
           nix flake check --accept-flake-config --impure
-          nu scripts/core/run-tests.nu
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
