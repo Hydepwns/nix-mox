@@ -4,12 +4,16 @@
 
 export-env {
     use ./lib/test-utils.nu *
+    use ./lib/test-coverage.nu *
+    use ./lib/coverage-core.nu *
+    use ./lib/test-common.nu *
     setup_test_env
 }
 
 use ./lib/test-utils.nu *
 use ./lib/test-coverage.nu *
 use ./lib/coverage-core.nu *
+use ./lib/test-common.nu *
 
 # --- Test Configuration ---
 def setup_test_config [] {

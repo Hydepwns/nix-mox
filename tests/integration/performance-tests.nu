@@ -1,11 +1,6 @@
-export-env {
-    use ../../modules/scripts/testing/lib/test-utils.nu *
-    setup_test_env
-}
-
-use ../../modules/scripts/testing/lib/test-utils.nu *
-use ../../modules/scripts/testing/lib/test-coverage.nu *
-use ../../modules/scripts/testing/lib/coverage-core.nu *
+use ../lib/test-utils.nu *
+use ../lib/test-coverage.nu *
+use ../lib/coverage-core.nu *
 
 export def test_performance_tests [] {
     print "Running ZFS SSD caching performance tests..."

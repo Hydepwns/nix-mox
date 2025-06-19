@@ -1,5 +1,10 @@
 # Test suite for common functions
 
+export-env {
+    use ./shared.nu *
+    use ./coverage-core.nu *
+}
+
 use ./shared.nu *
 use ./coverage-core.nu *
 

@@ -1,6 +1,11 @@
 # Test coverage reporting for nix-mox
 # This module provides functions for tracking and reporting test coverage
 
+export-env {
+    use ./shared.nu *
+    use ./coverage-core.nu *
+}
+
 use ./shared.nu *
 use ./coverage-core.nu *
 
