@@ -13,7 +13,7 @@ export-env {
 
     # Test environment
     $env.LOG_LEVEL = "INFO"
-    $env.PLATFORM = (sys host | get name | str downcase)
+    $env.PLATFORM = (sys host | get hostname | str downcase)
     $env.COMPONENT_NAME = "nix-mox"
     $env.LAST_ERROR = ""
 
