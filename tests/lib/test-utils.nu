@@ -13,7 +13,7 @@ export-env {
 
     # Test environment
     $env.LOG_LEVEL = "INFO"
-    $env.TEST_TEMP_DIR = ($env.TMPDIR | default "coverage-tmp")
+    $env.TEST_TEMP_DIR = (($env.TMPDIR | default "coverage-tmp") + "/nix-mox-tests")
     $env.PLATFORM = (sys host | get hostname | str downcase)
     $env.COMPONENT_NAME = "nix-mox"
     $env.LAST_ERROR = ""
