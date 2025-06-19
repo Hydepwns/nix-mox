@@ -56,8 +56,9 @@ def run_all_test_suites [config: record] {
         ls $env.TEST_TEMP_DIR | get name | each { |f| print $"  ($f)" }
         print "DEBUG: Generating coverage report..."
         generate_coverage_report
-        export_coverage_report $config.export_format | save --force $"coverage.($config.export_format)"
-        print "DEBUG: Coverage report generated"
+        let coverage_path = $"($env.TEST_TEMP_DIR)/coverage.($config.export_format)"
+        export_coverage_report $config.export_format | save --force $coverage_path
+        print $"DEBUG: Coverage report generated at ($coverage_path)"
     } else {
         print "DEBUG: Coverage generation disabled"
     }
@@ -102,7 +103,7 @@ def parse_args [args: list, config: record] {
 # --- Main Runner ---
 def main [args: list] {
     # Set up the test temp directory globally
-    $env.TEST_TEMP_DIR = "coverage-tmp"
+    # $env.TEST_TEMP_DIR = "coverage-tmp"
 
     let config = setup_test_config
     let config = parse_args $args $config

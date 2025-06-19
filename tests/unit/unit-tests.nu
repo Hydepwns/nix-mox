@@ -36,7 +36,7 @@ def main [] {
 
     # Test device detection
     print "Testing device detection..."
-    let os = (sys host | get name)
+    let os = (sys host | get hostname)
     if $os == "Linux" {
         # Linux-specific device checks
         if (ls /dev/nvme0n1 | default [] | length) > 0 {

@@ -17,8 +17,8 @@ def main [] {
 
     # Test monitoring integration
     print "Testing monitoring integration..."
-    let os = (sys host | get name)
-    if $os == "Linux" {
+    let os_info = (sys host | get long_os_version)
+    if ($os_info | str contains "Linux") {
         if (systemctl is-active prometheus-node-exporter | str contains "active") {
             print "Prometheus node exporter is running"
             # Test metrics collection
@@ -31,7 +31,7 @@ def main [] {
             print "Prometheus node exporter is not running, skipping monitoring tests"
         }
     } else {
-        print ("Monitoring integration tests are only supported on Linux (current: " + $os + "), skipping.")
+        print ("Monitoring integration tests are only supported on Linux (current: " + $os_info + "), skipping.")
     }
 
     # Test error handling integration
