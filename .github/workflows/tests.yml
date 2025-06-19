@@ -15,7 +15,7 @@ jobs:
         nix-channel: [nixos-unstable]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@main
@@ -25,18 +25,19 @@ jobs:
 
     - name: Run tests
       run: |
-        nix develop --command nu tests/run-tests.nu --coverage --format=json
+        nix flake check
 
     - name: Upload coverage report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-report
-        path: coverage.json
+        path: coverage-tmp/nix-mox-tests/coverage.json
+        if-no-files-found: ignore
 
     - name: Check test coverage
       run: |
         nix develop --command nu -c "
-          let coverage = (open coverage.json | from json)
+          let coverage = (open coverage-tmp/nix-mox-tests/coverage.json | from json)
           let pass_rate = $coverage.summary.pass_rate
           if $pass_rate < 90 {
             error make { msg: 'Test coverage below 90%' }
