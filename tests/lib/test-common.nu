@@ -1,7 +1,7 @@
 # Test suite for common functions
 
 # Source the common functions
-use ../../common.nu *
+use ../../modules/scripts/testing/lib/test-common.nu *
 
 export-env {
     # Set up environment variables

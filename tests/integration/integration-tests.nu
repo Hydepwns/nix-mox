@@ -1,4 +1,11 @@
-use ../lib/test-utils.nu *
+export-env {
+    use ../../modules/scripts/testing/lib/test-utils.nu *
+    setup_test_env
+}
+
+use ../../modules/scripts/testing/lib/test-utils.nu *
+use ../../modules/scripts/testing/lib/test-coverage.nu *
+use ../../modules/scripts/testing/lib/coverage-core.nu *
 
 def main [] {
     print "Running ZFS SSD caching integration tests..."

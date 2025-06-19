@@ -2,8 +2,14 @@
 # Main test runner for nix-mox
 # This script coordinates all test execution and reporting
 
+export-env {
+    use ./lib/test-utils.nu *
+    setup_test_env
+}
+
 use ./lib/test-utils.nu *
 use ./lib/test-coverage.nu *
+use ./lib/coverage-core.nu *
 
 # --- Test Configuration ---
 def setup_test_config [] {
