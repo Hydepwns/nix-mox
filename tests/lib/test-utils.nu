@@ -19,7 +19,7 @@ export-env {
 
     # Test environment
     $env.LOG_LEVEL = "INFO"
-    $env.TEST_TEMP_DIR = (if ($env.TMPDIR? | default false) { $env.TMPDIR + "/nix-mox-tests" } else { "coverage-tmp/nix-mox-tests" })
+    $env.TEST_TEMP_DIR = (if ($env.TMPDIR? | is-empty) { "coverage-tmp/nix-mox-tests" } else { $env.TMPDIR + "/nix-mox-tests" })
     $env.PLATFORM = (sys host | get hostname | str downcase)
     $env.COMPONENT_NAME = "nix-mox"
     $env.LAST_ERROR = ""

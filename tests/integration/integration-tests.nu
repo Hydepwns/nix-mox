@@ -19,16 +19,21 @@ def main [] {
     print "Testing monitoring integration..."
     let os_info = (sys host | get long_os_version)
     if ($os_info | str contains "Linux") {
-        if (systemctl is-active prometheus-node-exporter | str contains "active") {
-            print "Prometheus node exporter is running"
-            # Test metrics collection
-            if (curl -s http://localhost:9100/metrics | str contains "zfs_") {
-                print "ZFS metrics found"
+        # Check if systemctl is available (not available in Nix build environment)
+        if (which systemctl | length) > 0 {
+            if (systemctl is-active prometheus-node-exporter | str contains "active") {
+                print "Prometheus node exporter is running"
+                # Test metrics collection
+                if (curl -s http://localhost:9100/metrics | str contains "zfs_") {
+                    print "ZFS metrics found"
+                } else {
+                    print "No ZFS metrics found"
+                }
             } else {
-                print "No ZFS metrics found"
+                print "Prometheus node exporter is not running, skipping monitoring tests"
             }
         } else {
-            print "Prometheus node exporter is not running, skipping monitoring tests"
+            print "systemctl not available (likely in Nix build environment), skipping monitoring tests"
         }
     } else {
         print ("Monitoring integration tests are only supported on Linux (current: " + $os_info + "), skipping.")
