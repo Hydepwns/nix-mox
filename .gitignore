@@ -1,7 +1,8 @@
-result
-.direnv/
-.envrc
+coverage.*
 .DS_Store
-*.swp
+.envrc
+.direnv/
 *.log
+*.swp
+result
 tmp/

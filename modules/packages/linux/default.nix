@@ -4,49 +4,62 @@ let
   inherit (config.config.meta.platforms) linux;
 in
 {
-  vzdump-backup = if isLinux pkgs.system then createShellApp {
+  vzdump-backup = if isLinux pkgs.system then pkgs.symlinkJoin {
     name = "vzdump-backup";
-    runtimeInputs = [
-      pkgs.proxmox-backup-client
-      pkgs.qemu
-      pkgs.lxc
-      pkgs.bash
-      pkgs.coreutils
-      pkgs.gawk
-    ];
-    text = readScript "scripts/linux/vzdump-backup.nu";
-    meta = {
-      description = "Backup all Proxmox VMs and containers to specified storage.";
-      platforms = linux;
-    };
+    paths = [ (pkgs.writeScriptBin "vzdump-backup" ''
+      #!${pkgs.nushell}/bin/nu
+      ${readScript "scripts/linux/vzdump-backup.nu"}
+    '') ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/vzdump-backup \
+        --prefix PATH : ${pkgs.lib.makeBinPath [
+          pkgs.proxmox-backup-client
+          pkgs.qemu
+          pkgs.lxc
+          pkgs.bash
+          pkgs.coreutils
+          pkgs.gawk
+        ]}
+    '';
   } else null;
 
-  zfs-snapshot = if isLinux pkgs.system then createShellApp {
+  zfs-snapshot = if isLinux pkgs.system then pkgs.symlinkJoin {
     name = "zfs-snapshot";
-    runtimeInputs = [
-      pkgs.zfs
-      pkgs.bash
-      pkgs.coreutils
-      pkgs.gnugrep
-      pkgs.gawk
-      pkgs.gnused
-      pkgs.gnutar
-    ];
-    text = readScript "scripts/linux/zfs-snapshot.nu";
-    meta = {
-      description = "Create and prune ZFS snapshots for the specified pool.";
-      platforms = linux;
-    };
+    paths = [ (pkgs.writeScriptBin "zfs-snapshot" ''
+      #!${pkgs.nushell}/bin/nu
+      ${readScript "scripts/linux/zfs-snapshot.nu"}
+    '') ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/zfs-snapshot \
+        --prefix PATH : ${pkgs.lib.makeBinPath [
+          pkgs.zfs
+          pkgs.bash
+          pkgs.coreutils
+          pkgs.gnugrep
+          pkgs.gawk
+          pkgs.gnused
+          pkgs.gnutar
+        ]}
+    '';
   } else null;
 
-  nixos-flake-update = if isLinux pkgs.system then createShellApp {
+  nixos-flake-update = if isLinux pkgs.system then pkgs.symlinkJoin {
     name = "nixos-flake-update";
-    runtimeInputs = [ pkgs.nix pkgs.bash pkgs.coreutils ];
-    text = readScript "scripts/linux/nixos-flake-update.nu";
-    meta = {
-      description = "Update flake inputs and rebuild NixOS system.";
-      platforms = linux;
-    };
+    paths = [ (pkgs.writeScriptBin "nixos-flake-update" ''
+      #!${pkgs.nushell}/bin/nu
+      ${readScript "scripts/linux/nixos-flake-update.nu"}
+    '') ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/nixos-flake-update \
+        --prefix PATH : ${pkgs.lib.makeBinPath [
+          pkgs.nix
+          pkgs.bash
+          pkgs.coreutils
+        ]}
+    '';
   } else null;
 
   install = if isLinux pkgs.system then pkgs.writeScriptBin "nix-mox-install" ''
@@ -82,13 +95,10 @@ in
     };
   } else null;
 
-  proxmox-update = if isLinux pkgs.system then createShellApp {
+  proxmox-update = if isLinux pkgs.system then pkgs.writeTextFile {
     name = "proxmox-update";
-    runtimeInputs = [ pkgs.apt pkgs.bash pkgs.coreutils ];
+    destination = "/bin/proxmox-update";
     text = readScript "scripts/linux/proxmox-update.nu";
-    meta = {
-      description = "Update and upgrade Proxmox host packages safely.";
-      platforms = linux;
-    };
+    executable = true;
   } else null;
 }
