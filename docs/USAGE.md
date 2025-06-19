@@ -32,6 +32,76 @@
    sudo nu scripts/linux/install.nu
    ```
 
+## Safe NixOS Configuration
+
+For users setting up NixOS for the first time, nix-mox provides a **Safe Configuration Template** that prevents common display issues and integrates seamlessly with nix-mox tools.
+
+### Quick Setup
+
+```bash
+# Interactive setup (recommended)
+./modules/templates/nixos/safe-configuration/setup.sh
+
+# Or use the template directly
+nix-mox-template-safe-configuration
+```
+
+### Key Features
+
+- **Display Safety**: Explicitly enables display services to prevent CLI lock
+- **nix-mox Integration**: Includes your nix-mox packages and development shells
+- **Gaming Ready**: Steam enabled with proper graphics driver configuration
+- **Development Friendly**: Includes common development tools and aliases
+
+### Manual Configuration
+
+1. **Create configuration directory:**
+
+   ```bash
+   mkdir -p ~/nixos-config
+   cd ~/nixos-config
+   ```
+
+2. **Copy template files from:**
+
+   ```bash
+   cp -r modules/templates/nixos/safe-configuration/* .
+   ```
+
+3. **Generate hardware configuration:**
+
+   ```bash
+   sudo nixos-generate-config --show-hardware-config > hardware-configuration.nix
+   ```
+
+4. **Update configuration and build:**
+
+   ```bash
+   sudo nixos-rebuild switch --flake .#your-hostname
+   ```
+
+### Using nix-mox After Setup
+
+After setting up your NixOS system with the safe template:
+
+```bash
+# Your nix-mox packages are available system-wide
+proxmox-update
+vzdump-backup
+zfs-snapshot
+
+# Access development shells via aliases
+dev-gaming  # Opens gaming development shell
+dev-test    # Opens testing shell
+
+# Or directly
+nix develop github:Hydepwns/nix-mox#gaming
+```
+
+For detailed information about the safe configuration template, see:
+
+- [NixOS on Proxmox Guide](./guides/nixos-on-proxmox.md#safe-configuration-template)
+
 ## Available Packages
 
 The following packages are available on Linux systems:
@@ -64,7 +134,7 @@ The following packages are available on Linux systems:
 ## Components
 
 - **Scripts**: proxmox-update, vzdump-backup, zfs-snapshot
-- **Templates**: Containers, VMs, Monitoring, Storage
+- **Templates**: Containers, VMs, Monitoring, Storage, Safe Configuration
 - **Modules**: Common, ZFS, Infisical, Tailscale
 
 ## Template Configuration
@@ -72,11 +142,17 @@ The following packages are available on Linux systems:
 ```nix
 services.nix-mox.templates = {
   enable = true;
-  templates = [ "web-server" "database-management" ];
+  templates = [ "web-server" "database-management" "safe-configuration" ];
   customOptions = {
     web-server = {
       serverType = "nginx";
       enableSSL = true;
+    };
+    safe-configuration = {
+      hostname = "my-nixos-system";
+      username = "myuser";
+      displayManager = "lightdm";
+      desktopEnvironment = "gnome";
     };
   };
 };

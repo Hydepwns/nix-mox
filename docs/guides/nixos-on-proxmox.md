@@ -9,6 +9,108 @@ graph TD
     A --> D[Distroless: Minimal/Secure]
 ```
 
+## Default Configuration Template
+
+For users who want to avoid common display issues when setting up NixOS, nix-mox provides a **Safe Configuration Template** that ensures proper display services are enabled.
+
+### Quick Start with Safe Template
+
+```bash
+# Use the nix-mox safe configuration template
+nix-mox-template-safe-configuration
+
+# Or run the interactive setup script
+./modules/templates/nixos/safe-configuration/setup.sh
+```
+
+### Key Features
+
+- **Display Safety**: Explicitly enables display services to prevent CLI lock
+- **nix-mox Integration**: Includes your nix-mox packages and development shells
+- **Gaming Ready**: Steam enabled with proper graphics driver configuration
+- **Development Friendly**: Includes common development tools and aliases
+
+### Manual Setup
+
+1. **Create configuration directory:**
+
+   ```bash
+   mkdir -p ~/nixos-config
+   cd ~/nixos-config
+   ```
+
+2. **Copy template files from:**
+
+   ```
+   modules/templates/nixos/safe-configuration/
+   ```
+
+3. **Generate hardware configuration:**
+
+   ```bash
+   sudo nixos-generate-config --show-hardware-config > hardware-configuration.nix
+   ```
+
+4. **Update configuration:**
+   - Change hostname from "hydebox"
+   - Change username from "hyde"
+   - Configure graphics drivers
+   - Set your timezone
+
+5. **Build and switch:**
+
+   ```bash
+   sudo nixos-rebuild switch --flake .#your-hostname
+   ```
+
+### Configuration Options
+
+The safe template supports various customization options:
+
+```nix
+services.nix-mox.templates.customOptions.safe-configuration = {
+  hostname = "my-nixos-system";
+  username = "myuser";
+  timezone = "America/New_York";
+  displayManager = "lightdm";  # lightdm, sddm, gdm
+  desktopEnvironment = "gnome";  # gnome, plasma5, xfce, i3, awesome
+  graphicsDriver = "auto";  # auto, nvidia, amdgpu, intel
+  enableSteam = true;
+  enableDocker = true;
+  enableSSH = true;
+};
+```
+
+### Troubleshooting Display Issues
+
+If you still encounter display problems:
+
+1. **Check logs:**
+
+   ```bash
+   journalctl -b -u display-manager
+   ```
+
+2. **Try different display manager:**
+
+   ```nix
+   services.xserver.displayManager = {
+     sddm.enable = true;  # Instead of lightdm
+   };
+   ```
+
+3. **Use minimal window manager:**
+
+   ```nix
+   services.xserver.windowManager.i3.enable = true;
+   ```
+
+4. **Rollback if needed:**
+
+   ```bash
+   sudo nixos-rebuild switch --rollback
+   ```
+
 ## LXC Container Setup
 
 ```mermaid
