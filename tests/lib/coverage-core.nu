@@ -1,13 +1,6 @@
 # Core coverage logic for nix-mox
 # This file provides file-based coverage tracking
 
-export-env {
-    use ./test-common.nu *
-    setup_test_env
-}
-
-use ./test-common.nu *
-
 # --- Coverage Tracking ---
 export def track_test [name: string, category: string, status: string, duration: float] {
     let coverage_dir = $env.TEST_TEMP_DIR
