@@ -12,7 +12,7 @@ if (not (scope commands | where name == 'log_error' | is-not-empty)) {
 
 # --- Command Line Arguments ---
 def get_flag_value [args: list, flag: string, default: any] {
-    let idx = ($args | find $flag | get 0?)
+    let idx = ($args | enumerate | where item == $flag | get index.0? )
     if ($idx | is-not-empty) and ($args | length) > ($idx + 1) {
         $args | get ($idx + 1)
     } else {
@@ -336,13 +336,15 @@ def main [args: list] {
     run_script $parsed_args.script $parsed_args.dry_run
 }
 
-# Note: Command-line argument passing in Nushell scripts varies by version
-# For now, defaulting to help when no args are provided.
-# In a real implementation, you would need to use the appropriate method 
-# for your Nushell version to capture command-line arguments.
+# Note: This script is called by the bash wrapper (nix-mox) which handles
+# argument passing reliably. The wrapper sets NIXMOX_ARGS as a string of all arguments.
 
-# Default to help if no arguments provided
-main ["--help"]
+# Read arguments from NIXMOX_ARGS environment variable
+let args = (if ($env.NIXMOX_ARGS? | default "") == "" {
+    []
+} else {
+    $env.NIXMOX_ARGS | split row " "
+})
 
-# Test script execution functionality
-main ["--script", "install", "--dry-run"]
+# Call main with parsed arguments
+main $args
