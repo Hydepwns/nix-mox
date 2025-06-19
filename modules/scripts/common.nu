@@ -24,7 +24,7 @@ export def log_debug [message: string] {
 export def detect_platform [] {
     let os = (sys host | get name)
     match $os {
-        "Linux" => { "linux" }
+        "Linux" | "NixOS" => { "linux" }
         "Darwin" => { "darwin" }
         _ => { error make { msg: $"Unsupported platform: ($os)" } }
     }
@@ -80,7 +80,26 @@ export def run_command [command: string, args: list] {
 export def setup_env [] {
     $env.DEBUG = ($env.DEBUG? | default false)
     $env.PLATFORM = detect_platform
-    log_info $"Platform detected: ($env.PLATFORM)"
+}
+
+# --- OS Info ---
+export def print_os_info [] {
+    let platform = ($env.PLATFORM? | default (detect_platform))
+    if $platform == "linux" {
+        let os_release = (if ("/etc/os-release" | path exists) { open "/etc/os-release" | lines | parse "{k}={v}" | reduce -f {} {|row, acc| $acc | upsert $row.k $row.v } } else { {} })
+        let distro = ($os_release.NAME? | default "Unknown Linux")
+        let version = ($os_release.VERSION? | default "Unknown Version")
+        let kernel = (do { ^uname -r } | complete | get stdout | str trim)
+        print $"[INFO] Distro: ($distro) ($version) | Kernel: ($kernel)"
+    } else if $platform == "darwin" {
+        let version = (sw_vers -productVersion | str trim)
+        print $"[INFO] macOS Version: ($version)"
+    } else if $platform == "windows" {
+        let version = (wmic os get Caption,CSDVersion /value | lines | str join " ")
+        print $"[INFO] Windows Version: ($version)"
+    } else {
+        print $"[INFO] Platform: ($platform)"
+    }
 }
 
 # --- Version Management ---
