@@ -156,19 +156,36 @@ Each shell comes with its own set of tools and helpful documentation. For exampl
 
 ### Command Line Interface
 
-nix-mox provides a powerful command-line interface:
+nix-mox provides a powerful command-line interface. The main entrypoint is a Nushell script (`modules/scripts/nix-mox.nu`).
+
+**Usage:**
 
 ```bash
-nix-mox [options] [script]
+# Recommended (Nushell 0.90+)
+nu modules/scripts/nix-mox.nu -- --script install
+
+# Or, if argument passing does not work, see Troubleshooting below
+```
 
 Options:
   -h, --help           Show help message
   --dry-run           Show what would be done without making changes
   --debug             Enable debug output
-  --platform <os>     Specify platform (auto, linux, darwin)
+  --platform <os>     Specify platform (auto, linux, darwin, nixos)
   --script <name>     Run specific script (install, update, zfs-snapshot)
   --log <file>        Log output to file
-```
+
+> **Troubleshooting Nushell Argument Passing:**
+> - Argument passing to Nushell scripts may vary by version. If `--script` and other arguments are not recognized, try running with `nu modules/scripts/nix-mox.nu -- --script install` (note the double dash).
+> - If you see `[ERROR] No script specified`, your Nushell version may not support argument passing to scripts. In this case, see the script comments for how to hardcode arguments for testing.
+
+### Platform & OS Info
+- When running a script, nix-mox now prints detailed OS info (distro, version, kernel) for Linux/NixOS, macOS, or Windows.
+- NixOS is now fully supported and detected as a Linux platform.
+
+### Error Handling & Logging
+- All error handling and logging is robust and platform-aware.
+- Errors are clearly reported, and logs can be written to a file with `--log <file>`.
 
 ### Scripts
 
