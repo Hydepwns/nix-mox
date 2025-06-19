@@ -6,9 +6,55 @@
 tests/
 ├── unit/           # Unit tests
 ├── integration/    # Integration tests
-├── fixtures/       # Test fixtures
-└── lib/           # Test utilities
-    └── test-utils.nu
+├── lib/           # Test utilities and shared functions
+│   ├── test-utils.nu    # Core test utilities
+│   ├── test-coverage.nu # Coverage reporting
+│   ├── coverage-core.nu # Coverage tracking
+│   ├── shared.nu        # Shared test functions
+│   └── test-common.nu   # Common test functions
+└── run-tests.nu   # Main test runner
+```
+
+## Running Tests
+
+### Using Make (Recommended)
+
+```bash
+# Run all tests
+make test
+
+# Run specific test types
+make unit          # Unit tests only
+make integration   # Integration tests only
+
+# Clean up test artifacts
+make clean
+```
+
+### Using Nix Flake (CI/CD)
+
+```bash
+# Run all checks
+nix flake check
+
+# Run specific checks
+nix flake check .#unit        # Unit tests only
+nix flake check .#integration # Integration tests only
+nix flake check .#test-suite  # Full test suite
+```
+
+### Using Nushell Directly
+
+```bash
+# Enter testing shell
+nix develop .#testing
+
+# Run all tests
+nu -c "source tests/run-tests.nu; run []"
+
+# Run specific test types
+nu tests/unit/unit-tests.nu
+nu tests/integration/integration-tests.nu
 ```
 
 ## Writing Tests
@@ -19,147 +65,90 @@ tests/
 #!/usr/bin/env nu
 
 use ../lib/test-utils.nu *
+use ../lib/test-coverage.nu *
+use ../lib/coverage-core.nu *
 
-export-env {
-    $env.TEST_NAME = "test-name"
-}
-
-def test_something [] {
-    setup_test_env
+def main [] {
+    print "Running tests..."
     
-    try {
-        let result = (do_something)
-        assert_equal $expected $result "Test failed"
-        cleanup_test_env
-        true
-    } catch {
-        cleanup_test_env
-        false
-    }
+    # Track test results
+    track_test "test_name" "unit" "passed" 0.1
+    
+    # Your test logic here
+    assert_equal $expected $actual "Test message"
+    
+    print "Tests completed successfully"
 }
 
-test_something
+if ($env.NU_TEST? == "true") {
+    main
+}
+main
 ```
 
-### Assertions
+### Test Utilities
 
 ```nushell
-# Equality assertion
+# Environment setup
+setup_test_env
+cleanup_test_env
+
+# Assertions
 assert_equal $expected $actual "Message"
 
-# Boolean assertions
-assert_true $condition "Message"
-assert_false $condition "Message"
+# Test tracking
+track_test "test_name" "category" "status" $duration
 
-# Error handling assertion
-test_error_handling "error_type" "expected_output"
+# Coverage reporting
+generate_coverage_report
+export_coverage_report "json"
 ```
 
-## Running Tests
+## Test Categories
+
+### Unit Tests (`tests/unit/`)
+- Individual component testing
+- Fast execution
+- Isolated functionality
+- Mock external dependencies
+
+### Integration Tests (`tests/integration/`)
+- End-to-end system testing
+- Platform-specific checks
+- Service interaction testing
+- Real environment validation
+
+## Coverage Reporting
+
+Tests automatically generate coverage reports:
 
 ```bash
-# Run all tests
-nu scripts/core/run-tests.nu
-
-# Run specific tests
-nu scripts/core/run-tests.nu unit
-nu scripts/core/run-tests.nu integration
-
-# Run with debug output
-nu scripts/core/run-tests.nu --debug
-```
-
-## Test Examples
-
-### Unit Test
-
-```nushell
-def test_platform_detection [] {
-    # Test Linux detection
-    $env.OS = "Linux"
-    let platform = (detect_platform)
-    assert_equal "linux" $platform "Linux platform detection failed"
-    
-    # Test macOS detection
-    $env.OS = "Darwin"
-    let platform = (detect_platform)
-    assert_equal "darwin" $platform "macOS platform detection failed"
-}
-```
-
-### Integration Test
-
-```nushell
-def test_install_script [] {
-    setup_test_env
-    
-    try {
-        let result = (nix-mox --script install --dry-run)
-        assert_true $result "Installation test failed"
-        cleanup_test_env
-        true
-    } catch {
-        cleanup_test_env
-        false
-    }
-}
+# Coverage report is generated in TEST_TEMP_DIR
+make test
+# Check coverage.json in coverage-tmp/nix-mox-tests/
 ```
 
 ## Best Practices
 
-1. Test Organization
-   - Keep tests focused
-   - Use descriptive names
+1. **Test Organization**
+   - Use descriptive test names
    - Group related tests
-   - Follow Arrange-Act-Assert
+   - Follow Arrange-Act-Assert pattern
 
-2. Test Data
-   - Use fixtures for setup
+2. **Environment Management**
+   - Always use `setup_test_env` and `cleanup_test_env`
+   - Use `TEST_TEMP_DIR` for temporary files
    - Clean up after tests
-   - Use meaningful data
-   - Avoid hard-coded values
 
-3. Error Handling
+3. **Platform Detection**
+   - Use `sys host | get long_os_version` for OS detection
+   - Skip platform-specific tests appropriately
+   - Test cross-platform compatibility
+
+4. **Error Handling**
    - Test error conditions
    - Verify error messages
-   - Test recovery
-   - Include cleanup
-
-4. Performance
-   - Keep tests fast
-   - Use timeouts
-   - Avoid unnecessary setup
-   - Clean up resources
-
-## Debugging Tests
-
-### Enable Debug Mode
-
-```nushell
-# Set debug environment variable
-$env.DEBUG = true
-
-# Or use command-line flag
-nu scripts/core/run-tests.nu --debug
-```
-
-### Test Retry Mechanism
-
-```nushell
-# Retry flaky tests
-test_retry 3 1 {
-    # Test implementation
-} true
-```
-
-### Performance Testing
-
-```nushell
-# Test performance
-test_performance {
-    # Operation to test
-} 1000  # Maximum duration in milliseconds
-```
+   - Include proper cleanup
 
 ## Continuous Integration
 
@@ -167,25 +156,23 @@ test_performance {
 
 ```yaml
 name: Tests
-
 on: [push, pull_request]
-
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Run tests
-        run: nu scripts/core/run-tests.nu
+        run: nix flake check
 ```
 
 ### Local Development
 
 ```bash
 # Run tests before commit
+make test
 git add .
-nu scripts/core/run-tests.nu
-git commit -m "Passing tests"
+git commit -m "feat: new feature with passing tests"
 ```
 
 ## Gaming Tests

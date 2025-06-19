@@ -40,9 +40,24 @@ The project provides the following packages (Linux only):
 
 ## Testing
 
+Before submitting changes, ensure all tests pass:
+
 ```bash
-nu scripts/core/run-tests.nu
+# Run all tests
+make test
+
+# Run specific test types
+make unit
+make integration
+
+# Run via Nix flake (recommended for CI)
+nix flake check
+
+# Clean up test artifacts
+make clean
 ```
+
+See [Testing Guide](./scripting/TESTING.md) for detailed information.
 
 ## Pull Request Process
 

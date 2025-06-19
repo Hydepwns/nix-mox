@@ -173,7 +173,15 @@ nix develop .#zfs  # Linux only
 nix develop .#macos  # macOS only
 
 # Run tests
-nu scripts/run-tests.nu
+make test              # All tests
+make unit             # Unit tests only
+make integration      # Integration tests only
+make clean            # Clean test artifacts
+
+# Run tests via Nix flake
+nix flake check       # All checks
+nix flake check .#unit        # Unit tests only
+nix flake check .#integration # Integration tests only
 
 # Contribute
 git checkout -b feature/your-feature

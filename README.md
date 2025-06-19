@@ -286,10 +286,10 @@ See [Script Development Guide](./docs/guides/scripting.md) for detailed informat
 
 The testing environment includes:
 
-- Nushell Tests (unit, integration, performance)
-- NixOS Module Tests
-- Build Verification
-- Code Quality Checks
+- **Nushell Tests**: Unit, integration, and performance tests
+- **Nix Flake Checks**: Automated test execution via `nix flake check`
+- **Coverage Reporting**: Test coverage with detailed reporting
+- **Cross-platform Support**: Tests run on Linux, macOS, and Windows
 
 To run tests:
 
@@ -297,8 +297,20 @@ To run tests:
 # Enter the testing shell
 nix develop .#testing
 
-# Run tests with summarization
-./modules/scripts/testing/summarize-tests.sh
+# Run all tests
+make test
+
+# Run specific test types
+make unit          # Unit tests only
+make integration   # Integration tests only
+
+# Run via Nix flake (recommended for CI)
+nix flake check    # All checks
+nix flake check .#unit        # Unit tests only
+nix flake check .#integration # Integration tests only
+
+# Clean up test artifacts
+make clean
 ```
 
 See [Testing Guide](./docs/guides/testing.md) for more information.
@@ -331,17 +343,16 @@ nix-mox/
 │   ├── examples/    # Example configurations
 │   └── development/ # Development documentation
 ├── lib/              # Library code and utilities
+├── tests/             # Test suite
+│   ├── unit/         # Unit tests
+│   ├── integration/  # Integration tests
+│   ├── lib/          # Test utilities and shared functions
+│   └── run-tests.nu  # Main test runner
 ├── modules/          # NixOS modules
 │   ├── core/        # Core functionality
 │   ├── services/    # Service-specific modules
 │   ├── storage/     # Storage-related modules
 │   └── scripts/     # Platform-specific scripts
-│       ├── testing/ # Testing infrastructure
-│       │   ├── fixtures/    # Test fixtures
-│       │   ├── integration/ # Integration tests
-│       │   ├── lib/        # Test utilities
-│       │   ├── storage/    # Storage tests
-│       │   └── unit/       # Unit tests
 │       ├── linux/   # Linux scripts
 │       └── windows/ # Windows scripts
 ├── packages/         # Package definitions
@@ -367,8 +378,9 @@ nix flake show
 nix develop .#development
 
 # Run tests
-nix develop .#testing
-./modules/scripts/testing/summarize-tests.sh
+make test
+# Or use Nix flake checks
+nix flake check
 ```
 
 ## Documentation
