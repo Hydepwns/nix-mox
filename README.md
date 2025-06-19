@@ -156,16 +156,16 @@ Each shell comes with its own set of tools and helpful documentation. For exampl
 
 ### Command Line Interface
 
-nix-mox provides a powerful command-line interface. The main entrypoint is a Nushell script (`modules/scripts/nix-mox.nu`).
+nix-mox provides a powerful command-line interface. The main entrypoint is now a bash wrapper script (`modules/scripts/nix-mox`) that ensures robust argument passing to the Nushell automation script.
 
 **Usage:**
 
 ```bash
-# Recommended (Nushell 0.90+)
-nu modules/scripts/nix-mox.nu -- --script install
-
-# Or, if argument passing does not work, see Troubleshooting below
+# Recommended (works on all systems)
+./modules/scripts/nix-mox --script install --dry-run
 ```
+
+> **Note:** The wrapper script sets up argument passing for all Nushell versions and platforms. You no longer need to worry about double-dash (`--`) or Nushell quirks.
 
 Options:
   -h, --help           Show help message
@@ -174,10 +174,6 @@ Options:
   --platform <os>     Specify platform (auto, linux, darwin, nixos)
   --script <name>     Run specific script (install, update, zfs-snapshot)
   --log <file>        Log output to file
-
-> **Troubleshooting Nushell Argument Passing:**
-> - Argument passing to Nushell scripts may vary by version. If `--script` and other arguments are not recognized, try running with `nu modules/scripts/nix-mox.nu -- --script install` (note the double dash).
-> - If you see `[ERROR] No script specified`, your Nushell version may not support argument passing to scripts. In this case, see the script comments for how to hardcode arguments for testing.
 
 ### Platform & OS Info
 - When running a script, nix-mox now prints detailed OS info (distro, version, kernel) for Linux/NixOS, macOS, or Windows.
@@ -193,33 +189,33 @@ Options:
 
 ```bash
 # Basic installation
-nix-mox --script install
+./modules/scripts/nix-mox --script install
 
 # Platform-specific package installation
-nix-mox --script install --platform linux
+./modules/scripts/nix-mox --script install --platform linux
 
 # Package installation with logging
-nix-mox --script install --log install.log
+./modules/scripts/nix-mox --script install --log install.log
 ```
 
 #### Package Updates
 
 ```bash
 # Update all packages
-nix-mox --script update
+./modules/scripts/nix-mox --script update
 
 # Update with debug output
-nix-mox --script update --debug
+./modules/scripts/nix-mox --script update --debug
 ```
 
 #### ZFS Snapshot Management
 
 ```bash
 # Create snapshots
-nix-mox --script zfs-snapshot
+./modules/scripts/nix-mox --script zfs-snapshot
 
 # Dry run snapshot creation (no changes made)
-nix-mox --script zfs-snapshot --dry-run
+./modules/scripts/nix-mox --script zfs-snapshot --dry-run
 ```
 
 ### Logging
@@ -228,10 +224,10 @@ nix-mox provides comprehensive logging capabilities:
 
 ```bash
 # Log to file
-nix-mox --script install --log install.log
+./modules/scripts/nix-mox --script install --log install.log
 
 # Enable debug output (more verbose output)
-nix-mox --script update --debug
+./modules/scripts/nix-mox --script update --debug
 ```
 
 ### Gaming Shell & Windows Games

@@ -4,21 +4,21 @@ This directory contains all platform-specific and automation scripts for the nix
 
 ## Main Entrypoint
 
-The primary entrypoint for automation is the Nushell script:
+The primary entrypoint for automation is now the bash wrapper script:
 
 ```
-modules/scripts/nix-mox.nu
+modules/scripts/nix-mox
 ```
 
 ### Usage
 
-Run the script with Nushell (recommended Nushell 0.90+):
+Run the script with:
 
 ```bash
-nu modules/scripts/nix-mox.nu -- --script install
+./modules/scripts/nix-mox --script install --dry-run
 ```
 
-> **Note:** Argument passing to Nushell scripts may vary by Nushell version. If you see `[ERROR] No script specified`, your Nushell version may not support argument passing to scripts. See the script comments for how to hardcode arguments for testing.
+> **Note:** The wrapper script ensures robust argument passing for all Nushell versions and platforms. You no longer need to worry about double-dash (`--`) or Nushell quirks.
 
 ### Options
 
@@ -39,12 +39,13 @@ nu modules/scripts/nix-mox.nu -- --script install
 
 ## Directory Structure
 
-- `nix-mox.nu`         — Main automation entrypoint (Nushell)
-- `common.nu`          — Shared utilities and logging
-- `linux/`             — Linux-specific scripts (install, update, zfs, etc.)
-- `windows/`           — Windows-specific scripts
-- `testing/`           — Test infrastructure and helpers
-- `lib/`               — Script libraries and helpers
+- `nix-mox`             — Main automation entrypoint (bash wrapper)
+- `nix-mox.nu`          — Nushell automation logic
+- `common.nu`           — Shared utilities and logging
+- `linux/`              — Linux-specific scripts (install, update, zfs, etc.)
+- `windows/`            — Windows-specific scripts
+- `testing/`            — Test infrastructure and helpers
+- `lib/`                — Script libraries and helpers
 
 ## Script Development
 
@@ -54,19 +55,18 @@ nu modules/scripts/nix-mox.nu -- --script install
 
 ## Troubleshooting
 
-- If arguments are not passed to the script, try using the double dash (`--`) after the script path.
-- For Nushell versions that do not support argument passing, you may need to hardcode arguments in the script for testing.
-- If you see `[ERROR] No script specified`, check your Nushell version and invocation method.
+- If you see `[ERROR] No script specified`, check your invocation method and ensure you are using the wrapper script.
+- For Nushell versions that do not support argument passing, the wrapper script will handle it for you.
 
 ## Example Invocations
 
 ```bash
 # Install (dry run)
-nu modules/scripts/nix-mox.nu -- --script install --dry-run
+./modules/scripts/nix-mox --script install --dry-run
 
 # Update packages
-nu modules/scripts/nix-mox.nu -- --script update
+./modules/scripts/nix-mox --script update
 
 # ZFS snapshot (Linux only)
-nu modules/scripts/nix-mox.nu -- --script zfs-snapshot
+./modules/scripts/nix-mox --script zfs-snapshot
 ``` 
