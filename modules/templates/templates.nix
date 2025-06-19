@@ -75,6 +75,87 @@ let
       };
     };
 
+    safe-configuration = {
+      name = "safe-configuration";
+      description = "Default NixOS configuration template that prevents display issues and integrates with nix-mox tools";
+      scripts = [
+        "flake.nix"
+        "configuration.nix"
+        "home.nix"
+        "README.md"
+      ];
+      dependencies = [
+        "nix"
+        "git"
+        "vim"
+      ];
+      customOptions = {
+        hostname = {
+          type = "string";
+          default = "hydebox";
+          description = "Hostname for the NixOS system";
+        };
+        username = {
+          type = "string";
+          default = "hyde";
+          description = "Username for the primary user";
+        };
+        timezone = {
+          type = "string";
+          default = "America/New_York";
+          description = "Timezone for the system";
+        };
+        displayManager = {
+          type = "enum";
+          values = [ "lightdm" "sddm" "gdm" ];
+          default = "lightdm";
+          description = "Display manager to use";
+        };
+        desktopEnvironment = {
+          type = "enum";
+          values = [ "gnome" "plasma5" "xfce" "i3" "awesome" ];
+          default = "gnome";
+          description = "Desktop environment or window manager to use";
+        };
+        graphicsDriver = {
+          type = "enum";
+          values = [ "auto" "nvidia" "amdgpu" "intel" ];
+          default = "auto";
+          description = "Graphics driver to use";
+        };
+        enableSteam = {
+          type = "bool";
+          default = true;
+          description = "Enable Steam for gaming";
+        };
+        enableDocker = {
+          type = "bool";
+          default = true;
+          description = "Enable Docker containerization";
+        };
+        enableSSH = {
+          type = "bool";
+          default = true;
+          description = "Enable SSH server";
+        };
+        enableFirewall = {
+          type = "bool";
+          default = true;
+          description = "Enable firewall";
+        };
+        gitUserName = {
+          type = "string";
+          default = "Your Name";
+          description = "Git user name";
+        };
+        gitUserEmail = {
+          type = "string";
+          default = "your.email@example.com";
+          description = "Git user email";
+        };
+      };
+    };
+
     containers = {
       name = "containers";
       description = "Container management template with Docker and LXC";
@@ -477,11 +558,18 @@ let
         installPhase = ''
           mkdir -p $out/bin
           mkdir -p $out/share/nix-mox/templates/${name}
-          
+
           # Generate config.json from customOptions for windows-gaming template
           ${lib.optionalString (name == "windows-gaming") ''
             cat > $out/share/nix-mox/templates/${name}/config.json <<EOF
             ${lib.generators.toJSON {} cfg.customOptions.windows-gaming}
+            EOF
+          ''}
+
+          # Generate config.json from customOptions for safe-configuration template
+          ${lib.optionalString (name == "safe-configuration") ''
+            cat > $out/share/nix-mox/templates/${name}/config.json <<EOF
+            ${lib.generators.toJSON {} cfg.customOptions.safe-configuration}
             EOF
           ''}
 
@@ -510,22 +598,22 @@ let
           cat > $out/bin/nix-mox-template-${name} <<EOF
           #!/bin/sh
           set -e
-          
+
           # Source error handling
           . ${pkgs.nix-mox.error-handling}/bin/template-error-handler
-          
+
           # Template configuration
           TEMPLATE_DIR="$out/share/nix-mox/templates/${name}"
           TEMPLATE_NAME="${template.name}"
           TEMPLATE_DESC="${template.description}"
-          
+
           # Check dependencies
           for dep in ${lib.concatStringsSep " " template.dependencies}; do
             if ! command -v \$dep >/dev/null 2>&1; then
               ${lib.getAttr "handleError" pkgs.nix-mox.error-handling} 5 "Dependency \$dep not found"
             fi
           done
-          
+
           # Execute template scripts
           for script in ${lib.concatStringsSep " " template.scripts}; do
             if [ -f "\$TEMPLATE_DIR/\$script" ]; then
@@ -535,10 +623,10 @@ let
               ${lib.getAttr "logMessage" pkgs.nix-mox.error-handling} "WARN" "Script \$script not found"
             fi
           done
-          
+
           ${lib.getAttr "logMessage" pkgs.nix-mox.error-handling} "INFO" "Template ${template.name} completed successfully"
           EOF
-          
+
           chmod +x $out/bin/nix-mox-template-${name}
         '';
       }
@@ -627,4 +715,4 @@ in
     # Add template documentation
     documentation.nixos.extraModuleSources = [ ./../templates ];
   };
-} 
+}
