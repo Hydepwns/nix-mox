@@ -71,6 +71,17 @@
             nixos-flake-update = linuxPackages.nixos-flake-update;
             default = linuxPackages.proxmox-update;
           } else {};
+          checks = {
+            test-suite = pkgs.runCommand "nix-mox-tests" {
+              buildInputs = [ pkgs.nushell ];
+              src = ./.;
+            } ''
+              cd $src
+              export TEST_TEMP_DIR=coverage-tmp
+              nu -c "source tests/run-tests.nu; run []"
+              touch $out
+            '';
+          };
         }
       );
 }
