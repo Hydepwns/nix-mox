@@ -2,17 +2,17 @@
 # This module provides common functions for testing
 
 use ../../common.nu *
+use ./coverage-core.nu *
 
 # --- Environment Setup ---
 export-env {
     # Base directories
-    $env.TEST_DIR = "tests"
+    $env.TEST_DIR = "."
     $env.UNIT_TEST_DIR = $"($env.TEST_DIR)/unit"
     $env.INTEGRATION_TEST_DIR = $"($env.TEST_DIR)/integration"
     $env.FIXTURES_DIR = $"($env.TEST_DIR)/fixtures"
 
     # Test environment
-    $env.TEST_TEMP_DIR = (mktemp -d)
     $env.LOG_LEVEL = "INFO"
     $env.PLATFORM = (sys host | get name | str downcase)
     $env.COMPONENT_NAME = "nix-mox"
@@ -37,6 +37,8 @@ export def is_darwin [] {
 # --- Test Environment Management ---
 export def setup_test_env [] {
     print $"($env.GREEN)Setting up test environment...($env.NC)"
+    # Use a fixed coverage directory instead of temp directory
+    $env.TEST_TEMP_DIR = "coverage-tmp"
     mkdir $env.TEST_TEMP_DIR
     print $"($env.GREEN)Test environment ready at: ($env.TEST_TEMP_DIR)($env.NC)"
 }
@@ -138,31 +140,91 @@ export def run_test [test_file: string] {
     let test_name = ($test_file | path basename)
     print $"($env.GREEN)Running test: ($test_name)($env.NC)"
 
+    let start_time = (date now | into int)
+    
     try {
-        nu $test_file
-        print $"($env.GREEN)✓ Test passed: ($test_name)($env.NC)"
+        nu --env TEST_TEMP_DIR=$env.TEST_TEMP_DIR $test_file
+        let end_time = (date now | into int)
+        let duration = (($end_time - $start_time) | into float) / 1000000000
+        
+        print $"($env.GREEN)✓ Test passed: ($test_name) - ($duration)s($env.NC)"
+        track_test $test_name "unit" "passed" $duration
         true
     } catch {
-        print $"($env.RED)✗ Test failed: ($test_name)($env.NC)"
+        let end_time = (date now | into int)
+        let duration = (($end_time - $start_time) | into float) / 1000000000
+        
+        print $"($env.RED)✗ Test failed: ($test_name) - ($duration)s($env.NC)"
         print $"($env.RED)Error: ($env.LAST_ERROR)($env.NC)"
+        track_test $test_name "unit" "failed" $duration
         false
     }
 }
 
-export def run_tests [test_dir: string] {
+export def run_tests [test_dir: string, category: string = "unit"] {
     let test_files = (ls $test_dir | where { |it| $it.name | str ends-with '.nu' } | get name)
-    let results = ($test_files | each { |file| run_test $file })
+
+    if ($test_files | length) == 0 {
+        print $"($env.YELLOW)No test files found in ($test_dir)($env.NC)"
+        return true
+    }
+
+    let results = ($test_files | each { |file|
+        let test_name = ($file | path basename)
+        let start_time = (date now | into int)
+
+        try {
+            nu $file
+            let end_time = (date now | into int)
+            let duration = (($end_time - $start_time) | into float) / 1000000000
+
+            print $"($env.GREEN)✓ Test passed: ($test_name) - ($duration)s($env.NC)"
+            track_test $test_name $category "passed" $duration
+            true
+        } catch {
+            let end_time = (date now | into int)
+            let duration = (($end_time - $start_time) | into float) / 1000000000
+
+            print $"($env.RED)✗ Test failed: ($test_name) - ($duration)s($env.NC)"
+            print $"($env.RED)Error: ($env.LAST_ERROR)($env.NC)"
+            track_test $test_name $category "failed" $duration
+            false
+        }
+    })
+
     $results | all { |result| $result }
 }
 
 export def run_unit_tests [] {
     print $"($env.GREEN)Running unit tests...($env.NC)"
-    run_tests $env.UNIT_TEST_DIR
+    run_tests $env.UNIT_TEST_DIR "unit"
 }
 
 export def run_integration_tests [] {
     print $"($env.GREEN)Running integration tests...($env.NC)"
-    run_tests $env.INTEGRATION_TEST_DIR
+    run_tests $env.INTEGRATION_TEST_DIR "integration"
+}
+
+export def run_storage_tests [] {
+    print $"($env.GREEN)Running storage tests...($env.NC)"
+    let storage_test_dir = $"($env.TEST_DIR)/storage"
+    if ($storage_test_dir | path exists) {
+        run_tests $storage_test_dir "storage"
+    } else {
+        print $"($env.YELLOW)Storage test directory not found: ($storage_test_dir)($env.NC)"
+        true
+    }
+}
+
+export def run_performance_tests [] {
+    print $"($env.GREEN)Running performance tests...($env.NC)"
+    let performance_test_dir = $"($env.TEST_DIR)/performance"
+    if ($performance_test_dir | path exists) {
+        run_tests $performance_test_dir "performance"
+    } else {
+        print $"($env.YELLOW)Performance test directory not found: ($performance_test_dir)($env.NC)"
+        true
+    }
 }
 
 export def run_all_tests [] {
