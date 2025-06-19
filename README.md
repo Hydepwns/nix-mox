@@ -291,6 +291,7 @@ The testing environment includes:
 - **Nix Flake Checks**: Automated test execution via `nix flake check`
 - **Coverage Reporting**: Test coverage with detailed reporting
 - **Cross-platform Support**: Tests run on Linux, macOS, and Windows
+- **Continuous Integration**: GitHub Actions workflow with multi-platform builds
 
 To run tests:
 
@@ -310,11 +311,23 @@ nix flake check    # All checks
 nix flake check .#unit        # Unit tests only
 nix flake check .#integration # Integration tests only
 
+# Build all packages locally
+nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update
+
 # Clean up test artifacts
 make clean
 ```
 
-See [Testing Guide](./docs/guides/testing.md) for more information.
+#### Continuous Integration
+
+The project uses GitHub Actions for automated testing and building:
+
+- **Multi-platform builds**: Tests on `x86_64-linux` and `aarch64-linux`
+- **Multiple Nix versions**: Ensures compatibility with Nix 2.19.2 and 2.20.1
+- **Package building**: Builds all available packages before running tests
+- **Integrated testing**: Uses `nix flake check` for comprehensive test execution
+
+All tests must pass before merging pull requests. See [Testing Guide](./docs/guides/testing.md) for detailed information.
 
 ### Architecture
 
@@ -391,6 +404,7 @@ nix flake check
 - [**ROADMAP.md**](./docs/ROADMAP.md) - Future plans
 - [**Script Development Guide**](./docs/guides/scripting.md) - Script development
 - [**Testing Guide**](./docs/guides/testing.md) - Testing framework
+- [**CI/CD Guide**](./docs/guides/ci-cd.md) - Continuous integration and deployment
 - [**Script Architecture**](./docs/architecture/scripts.md) - Script system design
 - [**Gaming Setup Guide**](./docs/gaming/README.md) - Linux & Windows gaming, League of Legends, Wine/Lutris
 - [**Hardware Drivers Guide**](./docs/guides/drivers.md) - configuring NVIDIA, AMD, and Intel drivers

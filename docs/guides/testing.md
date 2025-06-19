@@ -107,17 +107,45 @@ make test
 
 ### GitHub Actions
 
+nix-mox uses GitHub Actions for continuous integration with the following workflow:
+
 ```yaml
-name: Tests
-on: [push, pull_request]
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
 jobs:
+  build_packages:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        system: [x86_64-linux, aarch64-linux]
+        nix-version: ['2.19.2', '2.20.1']
+    steps:
+      - name: Build all packages
+        run: |
+          nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update --system ${{ matrix.system }} --accept-flake-config
+
   test:
+    needs: [build_packages]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - name: Run tests
-        run: nix flake check
+        run: nix flake check --accept-flake-config --impure
 ```
+
+**Key Features:**
+
+- **Multi-platform builds**: Tests on both `x86_64-linux` and `aarch64-linux`
+- **Multiple Nix versions**: Ensures compatibility with Nix 2.19.2 and 2.20.1
+- **Package building**: Builds all available packages (`proxmox-update`, `vzdump-backup`, `zfs-snapshot`, `nixos-flake-update`)
+- **Integrated testing**: Uses `nix flake check` to run the integrated test suite
+- **Caching**: Leverages Cachix for faster builds and Nix store caching
 
 ### Local Development
 

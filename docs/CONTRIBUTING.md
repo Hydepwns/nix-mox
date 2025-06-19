@@ -29,6 +29,7 @@ The project provides the following packages (Linux only):
 - **proxmox-update**: Update and upgrade Proxmox host packages safely
 - **vzdump-backup**: Backup Proxmox VMs and containers using vzdump
 - **zfs-snapshot**: Create and manage ZFS snapshots with automatic pruning
+- **nixos-flake-update**: Update NixOS flake inputs and system
 
 ## Guidelines
 
@@ -53,18 +54,30 @@ make integration
 # Run via Nix flake (recommended for CI)
 nix flake check
 
+# Build all packages locally
+nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update
+
 # Clean up test artifacts
 make clean
 ```
 
-See [Testing Guide](./scripting/TESTING.md) for detailed information.
+### Continuous Integration
+
+The project uses GitHub Actions for CI/CD with the following workflow:
+
+1. **Package Building**: Builds all packages on multiple platforms (`x86_64-linux`, `aarch64-linux`)
+2. **Testing**: Runs the integrated test suite using `nix flake check`
+3. **Multi-version Testing**: Tests against multiple Nix versions (2.19.2, 2.20.1)
+
+All tests must pass before merging pull requests. See [Testing Guide](./guides/testing.md) for detailed information.
 
 ## Pull Request Process
 
 1. Fork and create feature branch
 2. Make changes
-3. Run tests
-4. Submit PR
+3. Run tests locally
+4. Ensure CI passes
+5. Submit PR
 
 ## Commit Messages
 
