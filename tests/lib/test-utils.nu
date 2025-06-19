@@ -42,6 +42,7 @@ export def is_darwin [] {
 
 # --- Test Environment Management ---
 export def setup_test_env [] {
+    print $"DEBUG: TEST_TEMP_DIR is ($env.TEST_TEMP_DIR)"
     print $"($env.GREEN)Setting up test environment...($env.NC)"
     if not ($env.TEST_TEMP_DIR | path exists) {
         mkdir $env.TEST_TEMP_DIR
