@@ -136,18 +136,29 @@ graph TD
 
 ## Testing Infrastructure
 
-The testing infrastructure is organized under `modules/scripts/testing/` and includes:
+The testing infrastructure is organized under `tests/` and includes:
 
-- **Unit Tests** (`unit/`): Individual component testing
-- **Integration Tests** (`integration/`): End-to-end system testing
-- **Performance Tests** (`integration/performance-tests.nu`): System performance validation
-- **Test Fixtures** (`fixtures/`): Test data and mock configurations
-- **Test Utilities** (`lib/`): Common testing functions and helpers
-- **Storage Tests** (`storage/`): ZFS and storage-specific tests
+- **Unit Tests** (`tests/unit/`): Individual component testing
+- **Integration Tests** (`tests/integration/`): End-to-end system testing
+- **Performance Tests** (`tests/integration/performance-tests.nu`): System performance validation
+- **Test Utilities** (`tests/lib/`): Common testing functions and helpers
+  - `test-utils.nu`: Core test utilities and environment management
+  - `test-coverage.nu`: Coverage reporting and aggregation
+  - `coverage-core.nu`: Coverage tracking and data collection
+  - `shared.nu`: Shared test functions
+  - `test-common.nu`: Common test functions
 
-Test execution is managed through:
+Test execution is managed through multiple methods:
 
-- `run-tests.nu`: Main test runner
-- `summarize-tests.sh`: Test results aggregation and reporting
+- **Make Commands**: `make test`, `make unit`, `make integration`, `make clean`
+- **Nix Flake Checks**: `nix flake check`, granular test execution via flake outputs
+- **Direct Nushell**: `nu -c "source tests/run-tests.nu; run []"`
+- **Main Runner**: `tests/run-tests.nu`: Comprehensive test orchestration
 
-For more details, see the [Testing Guide](./docs/testing.md).
+The testing system provides:
+- **Coverage Reporting**: Automatic coverage generation in `TEST_TEMP_DIR`
+- **Cross-platform Support**: Tests run on Linux, macOS, and Windows
+- **Sandbox Compatibility**: Works in Nix build environments
+- **CI/CD Integration**: GitHub Actions support via `nix flake check`
+
+For more details, see the [Testing Guide](./../guides/testing.md).
