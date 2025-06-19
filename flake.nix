@@ -72,12 +72,35 @@
             default = linuxPackages.proxmox-update;
           } else {};
           checks = {
+            # Unit tests only
+            unit = pkgs.runCommand "nix-mox-unit-tests" {
+              buildInputs = [ pkgs.nushell ];
+              src = ./.;
+            } ''
+              cd $src
+              export TEST_TEMP_DIR=$TMPDIR/nix-mox-unit
+              nu -c "source tests/unit/unit-tests.nu"
+              touch $out
+            '';
+
+            # Integration tests only
+            integration = pkgs.runCommand "nix-mox-integration-tests" {
+              buildInputs = [ pkgs.nushell ];
+              src = ./.;
+            } ''
+              cd $src
+              export TEST_TEMP_DIR=$TMPDIR/nix-mox-integration
+              nu -c "source tests/integration/integration-tests.nu"
+              touch $out
+            '';
+
+            # Full suite (optional, keep your current test-suite if you want)
             test-suite = pkgs.runCommand "nix-mox-tests" {
               buildInputs = [ pkgs.nushell ];
               src = ./.;
             } ''
               cd $src
-              export TEST_TEMP_DIR=coverage-tmp
+              export TEST_TEMP_DIR=$TMPDIR/nix-mox-tests
               nu -c "source tests/run-tests.nu; run []"
               touch $out
             '';
