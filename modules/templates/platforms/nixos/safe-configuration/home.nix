@@ -56,4 +56,27 @@
   # Other programs
   programs.firefox.enable = true;
   programs.vscode.enable = true;
+
+  # Messaging and communication programs
+  programs = {
+    # Enable desktop notifications for messaging apps
+    dconf.enable = true;
+
+    # Configure file associations for messaging apps
+    xdg = {
+      enable = true;
+      mimeApps = {
+        enable = true;
+        defaultApplications = {
+          "x-scheme-handler/signal" = "signal-desktop.desktop";
+          "x-scheme-handler/telegram" = "telegram-desktop.desktop";
+          "x-scheme-handler/discord" = "discord.desktop";
+          "x-scheme-handler/slack" = "slack.desktop";
+        };
+      };
+    };
+  };
+
+  # Desktop notifications for messaging apps
+  services.dunst.enable = true;
 }

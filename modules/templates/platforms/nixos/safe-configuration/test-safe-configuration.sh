@@ -105,7 +105,38 @@ main() {
     run_test "display fragment has correct structure" "grep -q 'services.xserver' modules/templates/base/common/display.nix"
     run_test "packages fragment has nix-mox packages" "grep -q 'nix-mox.packages' modules/templates/base/common/packages.nix"
 
-    # Test 13: Check if config directory structure is properly organized
+    # Test 13: Check messaging functionality
+    run_test "messaging fragment exists" "[ -f 'modules/templates/base/common/messaging.nix' ]"
+    run_test "base common.nix imports messaging fragment" "grep -q 'messaging.nix' modules/templates/base/common.nix"
+    run_test "messaging fragment has Signal Desktop" "grep -q 'signal-desktop' modules/templates/base/common/messaging.nix"
+    run_test "messaging fragment has Telegram Desktop" "grep -q 'telegram-desktop' modules/templates/base/common/messaging.nix"
+    run_test "messaging fragment has Discord" "grep -q 'discord' modules/templates/base/common/messaging.nix"
+    run_test "messaging fragment has Slack" "grep -q 'slack' modules/templates/base/common/messaging.nix"
+    run_test "messaging fragment has dbus configuration" "grep -q 'dbus.enable' modules/templates/base/common/messaging.nix"
+    run_test "messaging fragment has gvfs configuration" "grep -q 'gvfs.enable' modules/templates/base/common/messaging.nix"
+    run_test "messaging fragment has PipeWire configuration" "grep -q 'pipewire' modules/templates/base/common/messaging.nix"
+
+    # Test 14: Check communication packages module
+    run_test "communication packages module exists" "[ -f 'modules/packages/productivity/communication.nix' ]"
+    run_test "productivity index includes communication" "grep -q 'communication = import' modules/packages/productivity/index.nix"
+    run_test "communication module has Signal Desktop" "grep -q 'signal-desktop' modules/packages/productivity/communication.nix"
+    run_test "communication module has Telegram Desktop" "grep -q 'telegram-desktop' modules/packages/productivity/communication.nix"
+
+    # Test 15: Check safe configuration messaging integration
+    run_test "safe configuration has Signal Desktop" "grep -q 'signal-desktop' modules/templates/platforms/nixos/safe-configuration/configuration.nix"
+    run_test "safe configuration has Telegram Desktop" "grep -q 'telegram-desktop' modules/templates/platforms/nixos/safe-configuration/configuration.nix"
+    run_test "safe configuration has messaging firewall ports" "grep -q '3478.*3479' modules/templates/platforms/nixos/safe-configuration/configuration.nix"
+    run_test "safe configuration has dbus packages" "grep -q 'dbus.packages' modules/templates/platforms/nixos/safe-configuration/configuration.nix"
+    run_test "safe home configuration has messaging programs" "grep -q 'dconf.enable' modules/templates/platforms/nixos/safe-configuration/home.nix"
+    run_test "safe home configuration has xdg mimeApps" "grep -q 'mimeApps' modules/templates/platforms/nixos/safe-configuration/home.nix"
+
+    # Test 16: Check setup script messaging options
+    run_test "setup script has messaging prompts" "grep -q 'Enable messaging applications' modules/templates/platforms/nixos/safe-configuration/setup.sh"
+    run_test "setup script has video calling prompts" "grep -q 'Enable video calling applications' modules/templates/platforms/nixos/safe-configuration/setup.sh"
+    run_test "setup script has email client prompts" "grep -q 'Enable email clients' modules/templates/platforms/nixos/safe-configuration/setup.sh"
+    run_test "setup script generates messaging configuration" "grep -q 'Messaging and communication services' modules/templates/platforms/nixos/safe-configuration/setup.sh"
+
+    # Test 17: Check if config directory structure is properly organized
     run_test "config directory exists" "[ -d 'config' ]"
     run_test "config/default.nix exists" "[ -f 'config/default.nix' ]"
     run_test "config/nixos directory exists" "[ -d 'config/nixos' ]"

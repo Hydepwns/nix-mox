@@ -153,6 +153,18 @@ main() {
     local enable_ssh
     prompt_with_default "Enable SSH server? (y/N)" "y" enable_ssh
 
+    # Messaging and communication options
+    echo
+    print_status "Messaging and Communication Applications:"
+    local enable_messaging
+    prompt_with_default "Enable messaging applications (Signal, Telegram, Discord, etc.)? (y/N)" "y" enable_messaging
+
+    local enable_video_calling
+    prompt_with_default "Enable video calling applications (Zoom, Teams, Skype)? (y/N)" "y" enable_video_calling
+
+    local enable_email_clients
+    prompt_with_default "Enable email clients (Thunderbird, Evolution)? (y/N)" "y" enable_email_clients
+
     # Git configuration
     echo
     local git_name
@@ -364,6 +376,52 @@ EOF
 EOF
     fi
 
+    # Add messaging and communication configuration
+    if [[ $enable_messaging =~ ^[Yy]$ ]] || [[ $enable_video_calling =~ ^[Yy]$ ]] || [[ $enable_email_clients =~ ^[Yy]$ ]]; then
+        cat >> nixos/configuration.nix << EOF
+
+  # Messaging and communication services
+  services.dbus.enable = true;
+  services.gvfs.enable = true;
+
+  # Configure dbus packages for messaging apps
+  services.dbus.packages = with pkgs; [
+EOF
+        if [[ $enable_messaging =~ ^[Yy]$ ]]; then
+            cat >> nixos/configuration.nix << EOF
+    signal-desktop
+    telegram-desktop
+    discord
+    slack
+    element-desktop
+    whatsapp-for-linux
+EOF
+        fi
+        if [[ $enable_video_calling =~ ^[Yy]$ ]]; then
+            cat >> nixos/configuration.nix << EOF
+    zoom-us
+    teams
+    skypeforlinux
+EOF
+        fi
+        cat >> nixos/configuration.nix << EOF
+  ];
+
+  # Firewall ports for messaging and communication
+  networking.firewall.allowedTCPPorts = [
+    80 443  # HTTP/HTTPS for web-based messaging
+    3478 3479  # STUN/TURN for WebRTC (Signal, Telegram calls)
+    5349 5350  # STUN/TURN over TLS
+    8080 8081  # Alternative ports for some messaging services
+  ];
+  networking.firewall.allowedUDPPorts = [
+    3478 3479  # STUN/TURN for WebRTC
+    5349 5350  # STUN/TURN over TLS
+    16384 16387  # WebRTC media ports
+  ];
+EOF
+    fi
+
     echo "}" >> nixos/configuration.nix
 
     # Generate home/home.nix
@@ -414,6 +472,39 @@ EOF
 
   programs.firefox.enable = true;
   programs.vscode.enable = true;
+
+  # Add messaging configuration to home.nix if enabled
+  if [[ $enable_messaging =~ ^[Yy]$ ]] || [[ $enable_video_calling =~ ^[Yy]$ ]] || [[ $enable_email_clients =~ ^[Yy]$ ]]; then
+      cat >> home/home.nix << EOF
+
+  # Messaging and communication programs
+  programs = {
+    # Enable desktop notifications for messaging apps
+    dconf.enable = true;
+
+    # Configure file associations for messaging apps
+    xdg = {
+      enable = true;
+      mimeApps = {
+        enable = true;
+        defaultApplications = {
+EOF
+      if [[ $enable_messaging =~ ^[Yy]$ ]]; then
+          cat >> home/home.nix << EOF
+          "x-scheme-handler/signal" = "signal-desktop.desktop";
+          "x-scheme-handler/telegram" = "telegram-desktop.desktop";
+          "x-scheme-handler/discord" = "discord.desktop";
+          "x-scheme-handler/slack" = "slack.desktop";
+EOF
+      fi
+      cat >> home/home.nix << EOF
+        };
+      };
+    };
+  };
+
+  # Desktop notifications for messaging apps
+  services.dunst.enable = true;
 }
 EOF
 

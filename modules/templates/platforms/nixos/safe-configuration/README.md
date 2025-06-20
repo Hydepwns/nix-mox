@@ -9,6 +9,7 @@ A complete NixOS configuration using nix-mox's modular fragment system. Prevents
 - **nix-mox Integration**: Includes nix-mox packages and development shells
 - **Gaming Ready**: Steam enabled with proper graphics configuration
 - **Development Friendly**: Common development tools and aliases included
+- **Messaging & Communication**: Signal Desktop, Telegram Desktop, Discord, Slack, and more
 
 ## Quick Start
 
@@ -209,6 +210,65 @@ imports = [
   ../../modules/templates/base/common/development.nix
 ];
 ```
+
+## Messaging Applications
+
+This template includes comprehensive messaging and communication support:
+
+### Primary Messaging Apps
+
+- **Signal Desktop**: Secure messaging with end-to-end encryption
+- **Telegram Desktop**: Feature-rich messaging platform
+- **Discord**: Gaming and community chat platform
+- **Slack**: Team collaboration and communication
+
+### Additional Communication Tools
+
+- **WhatsApp for Linux**: WhatsApp desktop client
+- **Element Desktop**: Matrix protocol client
+- **Thunderbird**: Email client
+- **Evolution**: GNOME email and calendar client
+
+### Video Calling & Conferencing
+
+- **Zoom**: Video conferencing platform
+- **Microsoft Teams**: Team collaboration platform
+- **Skype**: Voice and video calling
+
+### Voice & Chat
+
+- **Mumble**: Low-latency voice chat
+- **TeamSpeak**: Voice communication
+- **HexChat**: IRC client
+- **WeeChat**: Modular chat client
+
+## Configuration
+
+The messaging applications are configured with:
+
+- Proper firewall ports for WebRTC and STUN/TURN services
+- Desktop notifications via D-Bus
+- File associations for deep linking
+- Audio/video hardware support via PipeWire
+- Automatic startup and background services
+
+## Usage
+
+After deployment, messaging applications will be available in your application menu. They include:
+
+- Desktop notifications for new messages
+- Deep linking support (clicking signal:// or telegram:// links)
+- Audio/video calling capabilities
+- File sharing and media support
+
+## Customization
+
+You can customize the messaging setup by:
+
+- Adding/removing specific applications from `environment.systemPackages`
+- Modifying firewall ports in the networking configuration
+- Adjusting notification settings in the home configuration
+- Adding custom file associations for additional protocols
 
 ## Troubleshooting
 

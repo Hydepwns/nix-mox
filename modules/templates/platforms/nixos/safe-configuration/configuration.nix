@@ -24,8 +24,17 @@
     # Optional: enable firewall
     firewall = {
       enable = true;
-      allowedTCPPorts = [ ];
-      allowedUDPPorts = [ ];
+      allowedTCPPorts = [
+        80 443  # HTTP/HTTPS for web-based messaging
+        3478 3479  # STUN/TURN for WebRTC (Signal, Telegram calls)
+        5349 5350  # STUN/TURN over TLS
+        8080 8081  # Alternative ports for some messaging services
+      ];
+      allowedUDPPorts = [
+        3478 3479  # STUN/TURN for WebRTC
+        5349 5350  # STUN/TURN over TLS
+        16384 16387  # WebRTC media ports
+      ];
     };
   };
 
@@ -111,6 +120,23 @@
     kitty
     alacritty
 
+    # Messaging and communication (primary focus: Signal and Telegram)
+    signal-desktop
+    telegram-desktop
+    discord
+    slack
+    element-desktop
+    whatsapp-for-linux
+
+    # Video calling and conferencing
+    zoom-us
+    teams
+    skypeforlinux
+
+    # Email clients
+    thunderbird
+    evolution
+
     # From nix-mox (access the packages)
     inputs.nix-mox.packages.${pkgs.system}.proxmox-update
     inputs.nix-mox.packages.${pkgs.system}.vzdump-backup
@@ -152,6 +178,18 @@
       enable = true;
       enableOnBoot = true;
     };
+
+    # Messaging and communication services
+    dbus.enable = true;
+    gvfs.enable = true;
+
+    # Configure dbus packages for messaging apps
+    dbus.packages = with pkgs; [
+      signal-desktop
+      telegram-desktop
+      discord
+      slack
+    ];
   };
 
   # Nix configuration

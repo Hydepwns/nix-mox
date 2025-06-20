@@ -1,5 +1,86 @@
 # Safe Configuration Template Changelog
 
+## [2024-12-19] - Added Messaging and Communication Support
+
+### Added
+
+- **Messaging Applications**: Comprehensive messaging and communication support
+  - **Signal Desktop**: Secure messaging with end-to-end encryption
+  - **Telegram Desktop**: Feature-rich messaging platform
+  - **Discord**: Gaming and community chat platform
+  - **Slack**: Team collaboration and communication
+  - **WhatsApp for Linux**: WhatsApp desktop client
+  - **Element Desktop**: Matrix protocol client
+  - **Thunderbird**: Email client
+  - **Evolution**: GNOME email and calendar client
+
+- **Video Calling & Conferencing**:
+  - **Zoom**: Video conferencing platform
+  - **Microsoft Teams**: Team collaboration platform
+  - **Skype**: Voice and video calling
+
+- **Voice & Chat Applications**:
+  - **Mumble**: Low-latency voice chat
+  - **TeamSpeak**: Voice communication
+  - **HexChat**: IRC client
+  - **WeeChat**: Modular chat client
+
+- **Messaging Infrastructure**:
+  - **New Fragment**: `messaging.nix` - Base messaging configuration fragment
+  - **Communication Packages**: `modules/packages/productivity/communication.nix` - Centralized messaging packages
+  - **Firewall Configuration**: WebRTC and STUN/TURN ports for voice/video calls
+  - **D-Bus Integration**: Desktop notifications for messaging apps
+  - **File Associations**: Deep linking support for messaging protocols
+  - **Audio/Video Support**: Enhanced PipeWire configuration for calls
+
+- **Setup Script Enhancements**:
+  - Interactive prompts for messaging applications
+  - Conditional configuration generation
+  - Video calling application options
+  - Email client configuration
+
+### Updated
+
+- **Base Common Template**: Added messaging fragment import
+- **Safe Configuration**: Integrated messaging packages and services
+- **Home Configuration**: Added desktop notifications and file associations
+- **README.md**: Comprehensive documentation of messaging features
+- **Test Suite**: Added 12 new tests for messaging functionality
+
+### Technical Changes
+
+- **Fragment System**: New `messaging.nix` fragment for reusable messaging configuration
+- **Package Organization**: Centralized communication packages in productivity module
+- **Service Integration**: D-Bus and GVFS services for messaging app support
+- **Firewall Rules**: Added ports 3478-3479, 5349-5350, 16384-16387 for WebRTC
+- **Audio Configuration**: Enhanced PipeWire setup with JACK support
+
+### Compatibility
+
+- **Backward Compatible**: All existing configurations continue to work
+- **Optional Features**: Messaging applications are enabled by default but can be disabled
+- **Display Safety**: No changes to display configuration that could cause CLI lock
+
+### Usage
+
+After deployment, messaging applications provide:
+
+```bash
+# Desktop applications available in application menu
+signal-desktop
+telegram-desktop
+discord
+slack
+
+# Deep linking support
+signal://your-phone-number
+telegram://your-username
+
+# Desktop notifications for new messages
+# Audio/video calling capabilities
+# File sharing and media support
+```
+
 ## [2024-06-20] - Updated for nix-mox latest changes
 
 ### Added
