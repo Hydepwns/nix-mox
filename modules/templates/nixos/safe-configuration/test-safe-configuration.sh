@@ -42,7 +42,7 @@ run_test() {
 
 # Main test function
 main() {
-    print_status "Testing Safe Configuration Template"
+    print_status "Testing Safe Configuration Template with Fragment System"
     echo
 
     # Test 1: Check if template directory exists
@@ -58,21 +58,29 @@ main() {
     # Test 3: Check if setup script is executable
     run_test "setup.sh is executable" "[ -x 'modules/templates/nixos/safe-configuration/setup.sh' ]"
 
-    # Test 4: Check if template is integrated into templates.nix
-    run_test "Template integrated in templates.nix" "grep -q 'safe-configuration' modules/templates/templates.nix"
+    # Test 4: Check if fragment system exists
+    run_test "Base common.nix exists" "[ -f 'modules/templates/base/common.nix' ]"
+    run_test "Common fragments directory exists" "[ -d 'modules/templates/base/common' ]"
+    run_test "Networking fragment exists" "[ -f 'modules/templates/base/common/networking.nix' ]"
+    run_test "Display fragment exists" "[ -f 'modules/templates/base/common/display.nix' ]"
+    run_test "Packages fragment exists" "[ -f 'modules/templates/base/common/packages.nix' ]"
+    run_test "Programs fragment exists" "[ -f 'modules/templates/base/common/programs.nix' ]"
+    run_test "Services fragment exists" "[ -f 'modules/templates/base/common/services.nix' ]"
+    run_test "Nix settings fragment exists" "[ -f 'modules/templates/base/common/nix-settings.nix' ]"
+    run_test "System fragment exists" "[ -f 'modules/templates/base/common/system.nix' ]"
 
-    # Test 5: Check if documentation is updated
-    run_test "Documentation updated in USAGE.md" "grep -q 'Safe Configuration Template' docs/USAGE.md"
-    run_test "Documentation updated in nixos-on-proxmox.md" "grep -q 'Safe Configuration Template' docs/guides/nixos-on-proxmox.md"
+    # Test 5: Check if template imports from fragment system
+    run_test "Template imports base common.nix" "grep -q 'base/common.nix' modules/templates/nixos/safe-configuration/configuration.nix"
 
-    # Test 6: Check if flake.nix has correct structure
+    # Test 6: Check if flake.nix has correct structure for fragment system
     run_test "flake.nix has nix-mox input" "grep -q 'nix-mox' modules/templates/nixos/safe-configuration/flake.nix"
     run_test "flake.nix has home-manager input" "grep -q 'home-manager' modules/templates/nixos/safe-configuration/flake.nix"
+    run_test "flake.nix has flake-utils" "grep -q 'flake-utils' modules/templates/nixos/safe-configuration/flake.nix"
 
-    # Test 7: Check if configuration.nix has display safety
-    run_test "configuration.nix has display manager" "grep -q 'displayManager' modules/templates/nixos/safe-configuration/configuration.nix"
-    run_test "configuration.nix has desktop manager" "grep -q 'desktopManager' modules/templates/nixos/safe-configuration/configuration.nix"
-    run_test "configuration.nix has nix-mox packages" "grep -q 'nix-mox.packages' modules/templates/nixos/safe-configuration/configuration.nix"
+    # Test 7: Check if configuration.nix uses fragment system properly
+    run_test "configuration.nix imports base common" "grep -q 'base/common.nix' modules/templates/nixos/safe-configuration/configuration.nix"
+    run_test "configuration.nix has minimal overrides" "grep -q 'networking.hostName' modules/templates/nixos/safe-configuration/configuration.nix"
+    run_test "configuration.nix has user definition" "grep -q 'users.users' modules/templates/nixos/safe-configuration/configuration.nix"
 
     # Test 8: Check if home.nix has nix-mox aliases
     run_test "home.nix has nix-mox dev shell aliases" "grep -q 'dev-gaming' modules/templates/nixos/safe-configuration/home.nix"
@@ -81,9 +89,28 @@ main() {
     run_test "README.md has display safety feature" "grep -q 'Display Safety' modules/templates/nixos/safe-configuration/README.md"
     run_test "README.md has nix-mox integration feature" "grep -q 'nix-mox Integration' modules/templates/nixos/safe-configuration/README.md"
 
-    # Test 10: Check if setup script has proper structure
+    # Test 10: Check if setup script has proper structure for fragment system
     run_test "setup.sh has colored output functions" "grep -q 'print_status' modules/templates/nixos/safe-configuration/setup.sh"
     run_test "setup.sh has main function" "grep -q 'main()' modules/templates/nixos/safe-configuration/setup.sh"
+    run_test "setup.sh creates config directory structure" "grep -q 'mkdir -p.*nixos.*home.*hardware' modules/templates/nixos/safe-configuration/setup.sh"
+    run_test "setup.sh generates config/default.nix" "grep -q 'config/default.nix' modules/templates/nixos/safe-configuration/setup.sh"
+
+    # Test 11: Check if base common.nix imports all fragments
+    run_test "base common.nix imports networking fragment" "grep -q 'networking.nix' modules/templates/base/common.nix"
+    run_test "base common.nix imports display fragment" "grep -q 'display.nix' modules/templates/base/common.nix"
+    run_test "base common.nix imports packages fragment" "grep -q 'packages.nix' modules/templates/base/common.nix"
+
+    # Test 12: Check if fragments have correct structure
+    run_test "networking fragment has correct structure" "grep -q 'networking = {' modules/templates/base/common/networking.nix"
+    run_test "display fragment has correct structure" "grep -q 'services.xserver' modules/templates/base/common/display.nix"
+    run_test "packages fragment has nix-mox packages" "grep -q 'nix-mox.packages' modules/templates/base/common/packages.nix"
+
+    # Test 13: Check if config directory structure is properly organized
+    run_test "config directory exists" "[ -d 'config' ]"
+    run_test "config/default.nix exists" "[ -f 'config/default.nix' ]"
+    run_test "config/nixos directory exists" "[ -d 'config/nixos' ]"
+    run_test "config/home directory exists" "[ -d 'config/home' ]"
+    run_test "config/hardware directory exists" "[ -d 'config/hardware' ]"
 
     echo
     print_status "Test Summary:"
@@ -95,7 +122,7 @@ main() {
     fi
 
     if [ $TESTS_FAILED -eq 0 ]; then
-        print_success "All tests passed! Safe Configuration Template is working correctly."
+        print_success "All tests passed! Safe Configuration Template with Fragment System is working correctly."
         exit 0
     else
         print_error "Some tests failed. Please check the implementation."

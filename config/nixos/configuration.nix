@@ -2,8 +2,7 @@
 
 {
   imports = [
-    ../../base/common.nix
-    ./hardware-configuration.nix
+    ../hardware/hardware-configuration.nix
   ];
 
   # Boot loader
@@ -18,7 +17,7 @@
 
   # Networking
   networking = {
-    hostName = "hydebox"; # Change this to your hostname
+    hostName = "nixos"; # Change this to your hostname
     networkmanager.enable = true;
 
     # Optional: enable firewall
@@ -44,21 +43,20 @@
       # gdm.enable = true;   # Alternative: GNOME's display manager
     };
 
-    # Desktop environment - choose one:
-    desktopManager = {
-      gnome.enable = true;
-      # plasma5.enable = true;  # Alternative: KDE Plasma
-      # xfce.enable = true;     # Alternative: XFCE (lightweight)
-    };
-
     # Or use a window manager instead:
     # windowManager.i3.enable = true;
     # windowManager.awesome.enable = true;
   };
 
-  # Enable sound (PipeWire is the modern default; PulseAudio is legacy)
-  # Uncomment and adjust only if you know your hardware needs it
-  # hardware.pulseaudio.enable = false;
+  # Desktop environment - choose one:
+  services.desktopManager = {
+    gnome.enable = true;
+    # plasma5.enable = true;  # Alternative: KDE Plasma
+    # xfce.enable = true;     # Alternative: XFCE (lightweight)
+  };
+
+  # Enable sound
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -68,10 +66,9 @@
   };
 
   # Graphics drivers
-  hardware.opengl = {
+  hardware.graphics = {
     enable = true;
-    driSupport32Bit = true;
-    # driSupport = true; # Deprecated, no longer needed in recent NixOS
+    enable32Bit = true;
   };
 
   # NVIDIA drivers (uncomment if you have NVIDIA GPU)
@@ -88,9 +85,9 @@
   # services.xserver.videoDrivers = [ "amdgpu" ];
 
   # Users
-  users.users.hyde = {  # Change "hyde" to your username
+  users.users.droo = {  # Change "droo" to your username
     isNormalUser = true;
-    description = "Hyde";
+    description = "Droo";
     extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
     shell = pkgs.zsh;  # or pkgs.bash
   };
@@ -146,12 +143,12 @@
         PermitRootLogin = "no";
       };
     };
+  };
 
-    # Docker (optional)
-    docker = {
-      enable = true;
-      enableOnBoot = true;
-    };
+  # Docker (optional)
+  virtualisation.docker = {
+    enable = true;
+    enableOnBoot = true;
   };
 
   # Nix configuration

@@ -55,7 +55,7 @@ validate_input() {
 
 # Main setup function
 main() {
-    print_status "Setting up Safe NixOS Configuration with nix-mox integration"
+    print_status "Setting up Safe NixOS Configuration with nix-mox fragment system"
     echo
 
     # Get configuration directory
@@ -73,9 +73,9 @@ main() {
         fi
     fi
 
-    # Create directory
-    print_status "Creating configuration directory..."
-    mkdir -p "$config_dir"
+    # Create directory structure
+    print_status "Creating configuration directory structure..."
+    mkdir -p "$config_dir"/{nixos,home,hardware}
     cd "$config_dir"
 
     # Get system configuration
@@ -167,161 +167,146 @@ main() {
     # Generate flake.nix
     cat > flake.nix << EOF
 {
-  description = "Default NixOS configuration using nix-mox tools";
+  description = "NixOS configuration using nix-mox fragment system";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-
-    # Import repository
+    flake-utils.url = "github:numtide/flake-utils";
     nix-mox = {
       url = "github:Hydepwns/nix-mox";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # Optional: home-manager for user configuration
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, nix-mox, home-manager, ... }@inputs: {
-    nixosConfigurations = {
-      # Replace "hydebox" with your desired hostname
-      $hostname = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+  outputs = { self, nixpkgs, flake-utils, nix-mox, home-manager, ... }@inputs:
+    flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
+      let
+        pkgs = import nixpkgs { inherit system; config.allowUnfree = true; };
+      in {
+        packages = import ./modules/packages { inherit pkgs inputs; };
+        devShells = import ./devshells { inherit pkgs; };
+        nixosConfigurations = import ./config { inherit inputs; };
+      }
+    );
+}
+EOF
 
-        # Pass inputs to modules
-        specialArgs = { inherit inputs; };
-
-        modules = [
-          ./configuration.nix
-          ./hardware-configuration.nix
-
-          # Optional: Include home-manager
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.$username = import ./home.nix;
-          }
-        ];
-      };
-    };
+    # Generate config/default.nix
+    cat > config/default.nix << EOF
+{ inputs, ... }:
+let
+  userConfig = import ./nixos/configuration.nix;
+  userHome = import ./home/home.nix;
+  userHardware = import ./hardware/hardware-configuration.nix;
+in
+{
+  $hostname = inputs.nixpkgs.lib.nixosSystem {
+    system = "x86_64-linux";
+    specialArgs = { inherit inputs; };
+    modules = [
+      userConfig
+      userHardware
+      inputs.home-manager.nixosModules.home-manager
+      {
+        home-manager.useGlobalPkgs = true;
+        home-manager.useUserPackages = true;
+        home-manager.users.$username = userHome;
+      }
+    ];
   };
 }
 EOF
 
-    # Generate configuration.nix with proper display settings
-    cat > configuration.nix << EOF
+    # Generate nixos/configuration.nix using fragment system
+    cat > nixos/configuration.nix << EOF
 { config, pkgs, inputs, ... }:
 
 {
   imports = [
-    ./hardware-configuration.nix
+    ../../modules/templates/base/common.nix
+    ../hardware/hardware-configuration.nix
   ];
 
-  # Boot loader
-  boot.loader = {
-    systemd-boot.enable = true;
-    efi.canTouchEfiVariables = true;
-    timeout = 3;
-  };
-
-  # Kernel (optional: use latest)
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
-  # Networking
-  networking = {
-    hostName = "$hostname";
-    networkmanager.enable = true;
-
-    # Optional: enable firewall
-    firewall = {
-      enable = true;
-      allowedTCPPorts = [ ];
-      allowedUDPPorts = [ ];
-    };
-  };
-
-  # Time zone and locale
+  networking.hostName = "$hostname";
   time.timeZone = "$timezone";
-  i18n.defaultLocale = "en_US.UTF-8";
 
-  # IMPORTANT: Display configuration to prevent CLI lock
-  services.xserver = {
-    enable = true;
-
-    # Display manager
-    displayManager = {
+  users.users.$username = {
+    isNormalUser = true;
+    description = "$username";
+    extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
+    shell = pkgs.zsh;
+  };
 EOF
 
-    # Add display manager configuration
-    case $display_manager in
-        "lightdm")
-            echo "      lightdm.enable = true;" >> configuration.nix
-            ;;
-        "sddm")
-            echo "      sddm.enable = true;" >> configuration.nix
-            ;;
-        "gdm")
-            echo "      gdm.enable = true;" >> configuration.nix
-            ;;
-    esac
+    # Add display manager override if not lightdm
+    if [ "$display_manager" != "lightdm" ]; then
+        cat >> nixos/configuration.nix << EOF
 
-    cat >> configuration.nix << EOF
-    };
-
-    # Desktop environment
+  # Override display manager
+  services.xserver.displayManager = {
+    lightdm.enable = false;
 EOF
+        case $display_manager in
+            "sddm")
+                echo "    sddm.enable = true;" >> nixos/configuration.nix
+                ;;
+            "gdm")
+                echo "    gdm.enable = true;" >> nixos/configuration.nix
+                ;;
+        esac
+        echo "  };" >> nixos/configuration.nix
+    fi
 
-    # Add desktop environment configuration
-    case $desktop_environment in
-        "gnome")
-            echo "    desktopManager.gnome.enable = true;" >> configuration.nix
-            ;;
-        "plasma5")
-            echo "    desktopManager.plasma5.enable = true;" >> configuration.nix
-            ;;
-        "xfce")
-            echo "    desktopManager.xfce.enable = true;" >> configuration.nix
-            ;;
-        "i3")
-            echo "    windowManager.i3.enable = true;" >> configuration.nix
-            ;;
-        "awesome")
-            echo "    windowManager.awesome.enable = true;" >> configuration.nix
-            ;;
-    esac
+    # Add desktop environment override if not gnome
+    if [ "$desktop_environment" != "gnome" ]; then
+        cat >> nixos/configuration.nix << EOF
 
-    cat >> configuration.nix << EOF
-  };
-
-  # Enable sound
-  sound.enable = true;
-  hardware.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-  };
-
-  # Graphics drivers
-  hardware.opengl = {
-    enable = true;
-    driSupport = true;
-    driSupport32Bit = true;
-  };
-
+  # Override desktop environment
+  services.xserver.desktopManager = {
+    gnome.enable = false;
 EOF
+        case $desktop_environment in
+            "plasma5")
+                echo "    plasma5.enable = true;" >> nixos/configuration.nix
+                ;;
+            "xfce")
+                echo "    xfce.enable = true;" >> nixos/configuration.nix
+                ;;
+        esac
+        echo "  };" >> nixos/configuration.nix
+
+        # Add window manager if selected
+        if [ "$desktop_environment" = "i3" ] || [ "$desktop_environment" = "awesome" ]; then
+            cat >> nixos/configuration.nix << EOF
+
+  # Window manager
+  services.xserver.windowManager = {
+EOF
+            case $desktop_environment in
+                "i3")
+                    echo "    i3.enable = true;" >> nixos/configuration.nix
+                    ;;
+                "awesome")
+                    echo "    awesome.enable = true;" >> nixos/configuration.nix
+                    ;;
+            esac
+            echo "  };" >> nixos/configuration.nix
+        fi
+    fi
 
     # Add graphics driver configuration
-    case $graphics_driver in
-        "nvidia")
-            cat >> configuration.nix << EOF
-  # NVIDIA drivers
+    if [ "$graphics_driver" != "auto" ]; then
+        cat >> nixos/configuration.nix << EOF
+
+  # Graphics driver
+EOF
+        case $graphics_driver in
+            "nvidia")
+                cat >> nixos/configuration.nix << EOF
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia = {
     modesetting.enable = true;
@@ -330,160 +315,59 @@ EOF
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
-
 EOF
-            ;;
-        "amdgpu")
-            cat >> configuration.nix << EOF
-  # AMD drivers
-  services.xserver.videoDrivers = [ "amdgpu" ];
+                ;;
+            "amdgpu")
+                echo "  services.xserver.videoDrivers = [ \"amdgpu\" ];" >> nixos/configuration.nix
+                ;;
+            "intel")
+                echo "  services.xserver.videoDrivers = [ \"intel\" ];" >> nixos/configuration.nix
+                ;;
+        esac
+    fi
 
-EOF
-            ;;
-        "intel")
-            cat >> configuration.nix << EOF
-  # Intel drivers
-  services.xserver.videoDrivers = [ "intel" ];
-
-EOF
-            ;;
-        *)
-            # Auto-detect, no specific driver configuration
-            ;;
-    esac
-
-    cat >> configuration.nix << EOF
-  # Users
-  users.users.$username = {
-    isNormalUser = true;
-    description = "$username";
-    extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
-    shell = pkgs.zsh;
-  };
-
-  # Enable sudo
-  security.sudo.enable = true;
-
-  # System packages
-  environment.systemPackages = with pkgs; [
-    # Essential tools
-    vim
-    wget
-    git
-    htop
-    firefox
-
-    # Terminal emulators
-    kitty
-    alacritty
-
-    # From nix-mox (access the packages)
-    inputs.nix-mox.packages.\${pkgs.system}.proxmox-update
-    inputs.nix-mox.packages.\${pkgs.system}.vzdump-backup
-    inputs.nix-mox.packages.\${pkgs.system}.zfs-snapshot
-    inputs.nix-mox.packages.\${pkgs.system}.nixos-flake-update
-
-    # Development tools
-    vscode
-    docker
-    docker-compose
-  ];
-
-  # Programs
-  programs = {
-    zsh.enable = true;
-    git.enable = true;
-EOF
-
-    # Add Steam configuration if enabled
+    # Add optional services
     if [[ $enable_steam =~ ^[Yy]$ ]]; then
-        cat >> configuration.nix << EOF
+        cat >> nixos/configuration.nix << EOF
 
-    # Steam for gaming (since nix-mox has gaming focus)
-    steam = {
-      enable = true;
-      remotePlay.openFirewall = true;
-      dedicatedServer.openFirewall = true;
-    };
+  # Steam gaming
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;
+    dedicatedServer.openFirewall = true;
+  };
 EOF
     fi
 
-    cat >> configuration.nix << EOF
-  };
-
-  # Services
-  services = {
-EOF
-
-    # Add SSH configuration if enabled
     if [[ $enable_ssh =~ ^[Yy]$ ]]; then
-        cat >> configuration.nix << EOF
-    # SSH
-    openssh = {
-      enable = true;
-      settings = {
-        PasswordAuthentication = false;
-        PermitRootLogin = "no";
-      };
-    };
-EOF
-    fi
+        cat >> nixos/configuration.nix << EOF
 
-    # Add Docker configuration if enabled
-    if [[ $enable_docker =~ ^[Yy]$ ]]; then
-        cat >> configuration.nix << EOF
-
-    # Docker
-    docker = {
-      enable = true;
-      enableOnBoot = true;
-    };
-EOF
-    fi
-
-    cat >> configuration.nix << EOF
-  };
-
-  # Nix configuration
-  nix = {
+  # SSH server
+  services.openssh = {
+    enable = true;
     settings = {
-      experimental-features = [ "nix-command" "flakes" ];
-      auto-optimise-store = true;
-
-      # Use nix-mox's binary caches
-      substituters = [
-        "https://cache.nixos.org"
-        "https://hydepwns.cachix.org"
-        "https://nix-mox.cachix.org"
-      ];
-
-      trusted-public-keys = [
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "hydepwns.cachix.org-1:xg8huKdwzBkLdkq5eCKenadhCROHIICGI9H6y3simJU="
-        "nix-mox.cachix.org-1:MVJZxC7ZyRFAxVsxDuq0nmMRxlTIt5nFFm4Ur10ZCI4="
-      ];
-    };
-
-    # Garbage collection
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 30d";
+      PasswordAuthentication = false;
+      PermitRootLogin = "no";
     };
   };
-
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # were taken. Don't change this unless you know what you're doing.
-  system.stateVersion = "23.11";
-}
 EOF
+    fi
 
-    # Generate home.nix
-    cat > home.nix << EOF
+    if [[ $enable_docker =~ ^[Yy]$ ]]; then
+        cat >> nixos/configuration.nix << EOF
+
+  # Docker
+  services.docker = {
+    enable = true;
+    enableOnBoot = true;
+  };
+EOF
+    fi
+
+    echo "}" >> nixos/configuration.nix
+
+    # Generate home/home.nix
+    cat > home/home.nix << EOF
 { config, pkgs, inputs, ... }:
 
 {
@@ -491,7 +375,6 @@ EOF
   home.username = "$username";
   home.homeDirectory = "/home/$username";
 
-  # Shell configuration
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -501,13 +384,9 @@ EOF
     shellAliases = {
       ll = "ls -l";
       la = "ls -la";
-
-      # Nix aliases
       nrs = "sudo nixos-rebuild switch --flake .#$hostname";
       nfu = "nix flake update";
       ngc = "nix-collect-garbage -d";
-
-      # Quick access to nix-mox dev shells
       dev-default = "nix develop \${inputs.nix-mox}#default";
       dev-development = "nix develop \${inputs.nix-mox}#development";
       dev-testing = "nix develop \${inputs.nix-mox}#testing";
@@ -515,18 +394,14 @@ EOF
       dev-monitoring = "nix develop \${inputs.nix-mox}#monitoring";
       dev-gaming = "nix develop \${inputs.nix-mox}#gaming";
       dev-zfs = "nix develop \${inputs.nix-mox}#zfs";
-
-      # nix-mox package commands
       nixos-update = "nixos-flake-update";
     };
 
     initExtra = ''
-      # Any additional shell configuration
       export EDITOR=vim
     '';
   };
 
-  # Git configuration
   programs.git = {
     enable = true;
     userName = "$git_name";
@@ -537,7 +412,6 @@ EOF
     };
   };
 
-  # Other programs
   programs.firefox.enable = true;
   programs.vscode.enable = true;
 }
@@ -546,47 +420,34 @@ EOF
     # Generate hardware configuration
     print_status "Generating hardware configuration..."
     if command -v nixos-generate-config >/dev/null 2>&1; then
-        sudo nixos-generate-config --show-hardware-config > hardware-configuration.nix
+        sudo nixos-generate-config --show-hardware-config > hardware/hardware-configuration.nix
         print_success "Hardware configuration generated"
     else
-        print_warning "nixos-generate-config not found. Please run this script on a NixOS system or manually create hardware-configuration.nix"
-        cat > hardware-configuration.nix << EOF
-# This file was not automatically generated.
-# Please run 'sudo nixos-generate-config --show-hardware-config > hardware-configuration.nix'
-# on your target NixOS system to generate the proper hardware configuration.
+        print_warning "nixos-generate-config not found. Creating minimal hardware config..."
+        cat > hardware/hardware-configuration.nix << EOF
+# Minimal hardware configuration
+# Run 'sudo nixos-generate-config --show-hardware-config > hardware/hardware-configuration.nix' on your target system
 
 { config, lib, pkgs, modulesPath, ... }:
-
 {
   imports = [ ];
-
-  # Add your hardware-specific configuration here
-  # This is a minimal example - replace with your actual hardware config
-
   boot.initrd.availableKernelModules = [ "ata_piix" "ohci_pci" "ehci_pci" "ahci" "sd_mod" "sr_mod" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
 
-  fileSystems."/" =
-    { device = "/dev/disk/by-label/nixos";
-      fsType = "ext4";
-    };
+  fileSystems."/" = {
+    device = "/dev/disk/by-label/nixos";
+    fsType = "ext4";
+  };
 
-  fileSystems."/boot" =
-    { device = "/dev/disk/by-label/boot";
-      fsType = "vfat";
-    };
+  fileSystems."/boot" = {
+    device = "/dev/disk/by-label/boot";
+    fsType = "vfat";
+  };
 
   swapDevices = [ ];
-
-  # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
-  # (the default) this is the recommended approach. When using systemd-networkd it's
-  # still possible to use this option, but it's recommended to use it in conjunction
-  # with explicit per-interface declarations with networking.interfaces.<interface>.useDHCP = true.
   networking.useDHCP = lib.mkDefault true;
-  # networking.interfaces.ens33.useDHCP = lib.mkDefault true;
-
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }

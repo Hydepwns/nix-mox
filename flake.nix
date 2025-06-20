@@ -6,7 +6,7 @@
   # - packages.<system>.vzdump-backup: Proxmox vzdump backup script as a Nix package
   # - packages.<system>.zfs-snapshot: ZFS snapshot/prune script as a Nix package
 
-  description = "Safe NixOS configuration with nix-mox and home-manager";
+  description = "A comprehensive NixOS configuration framework with development tools, monitoring, and system management utilities";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -36,7 +36,6 @@
 
   outputs = { self, nixpkgs, flake-utils, nix-mox, home-manager, ... }@inputs:
     let
-      config = import ./config/default.nix;
       supportedSystems = [ "aarch64-darwin" "x86_64-darwin" "x86_64-linux" "aarch64-linux" ];
     in
       flake-utils.lib.eachSystem supportedSystems (system:
@@ -51,7 +50,8 @@
           devShell = import ./devshells/default.nix { inherit pkgs; };
           linuxPackages = if pkgs.stdenv.isLinux then
             import ./modules/packages/linux/default.nix {
-              inherit pkgs config;
+              inherit pkgs;
+              config = import ./config/default.nix;
               helpers = import ./modules/packages/error-handling/helpers.nix { inherit pkgs; };
             }
           else {};
@@ -102,7 +102,7 @@
               touch \$out
             '';
 
-            # Full suite (optional, keep your current test-suite if you want)
+            # Full suite
             test-suite = pkgs.runCommand "nix-mox-tests" {
               buildInputs = [ pkgs.nushell ];
               src = ./.;
@@ -115,22 +115,7 @@
           };
         }
       ) // {
-        # NixOS configurations only for x86_64-linux
-        nixosConfigurations = {
-          nixos = nixpkgs.lib.nixosSystem {
-            system = "x86_64-linux";
-            specialArgs = { inherit inputs; };
-            modules = [
-              ./configuration.nix
-              ./hardware-configuration.nix
-              home-manager.nixosModules.home-manager
-              {
-                home-manager.useGlobalPkgs = true;
-                home-manager.useUserPackages = true;
-                home-manager.users.droo = import ./home.nix;
-              }
-            ];
-          };
-        };
+        # NixOS configurations - now imported from config directory
+        nixosConfigurations = import ./config { inherit inputs; };
       };
 }

@@ -1,91 +1,120 @@
 # Safe NixOS Configuration Template
 
-This template provides a complete NixOS configuration that integrates with nix-mox tools while preventing common display issues that can occur when services aren't properly configured.
+A complete NixOS configuration using nix-mox's modular fragment system. Prevents common display issues while providing a solid foundation for desktop and development use.
 
 ## Key Features
 
+- **Fragment System**: Uses modular, DRY configuration fragments
 - **Display Safety**: Explicitly enables display services to prevent CLI lock
-- **nix-mox Integration**: Includes your nix-mox packages and development shells
-- **Gaming Ready**: Steam enabled with proper graphics driver configuration
-- **Development Friendly**: Includes common development tools and aliases
+- **nix-mox Integration**: Includes nix-mox packages and development shells
+- **Gaming Ready**: Steam enabled with proper graphics configuration
+- **Development Friendly**: Common development tools and aliases included
 
 ## Quick Start
 
-1. **Create the configuration directory:**
+### Option 1: Use Setup Script (Recommended)
+
+```bash
+# Run the interactive setup script
+./modules/templates/nixos/safe-configuration/setup.sh
+```
+
+### Option 2: Manual Setup
+
+1. **Copy template files:**
 
    ```bash
-   mkdir -p ~/nixos-config
-   cd ~/nixos-config
+   cp -r modules/templates/nixos/safe-configuration/* config/
    ```
 
-2. **Copy the template files:**
-   - `flake.nix`
-   - `configuration.nix`
-   - `home.nix`
-   - `hardware-configuration.nix` (will be generated)
-
-3. **Generate hardware configuration:**
+2. **Generate hardware configuration:**
 
    ```bash
-   sudo nixos-generate-config --show-hardware-config > hardware-configuration.nix
+   sudo nixos-generate-config --show-hardware-config > config/hardware/hardware-configuration.nix
    ```
 
-4. **Update the configuration:**
-   - Change "hydebox" to your desired hostname in both `flake.nix` and `configuration.nix`
-   - Change "hyde" to your username throughout all files
-   - Set your timezone in `configuration.nix`
-   - Update git user info in `home.nix`
-   - Choose your preferred desktop environment/window manager
-   - Configure graphics drivers based on your hardware
+3. **Customize configuration:**
+   - Edit `config/nixos/configuration.nix` for hostname, timezone, user
+   - Edit `config/home/home.nix` for user preferences
+   - Update `flake.nix` if needed
 
-5. **Build and switch:**
+4. **Deploy:**
 
    ```bash
-   sudo nixos-rebuild switch --flake .#hydebox
+   sudo nixos-rebuild switch --flake .#nixos
    ```
+
+## Fragment System
+
+This template uses nix-mox's modular fragment system:
+
+```nix
+# config/nixos/configuration.nix
+{ config, pkgs, inputs, ... }:
+{
+  imports = [
+    ../../modules/templates/base/common.nix  # Complete base config
+    ../hardware/hardware-configuration.nix
+  ];
+
+  # Only override what you need
+  networking.hostName = "myhost";
+  time.timeZone = "America/New_York";
+  users.users.myuser = { ... };
+}
+```
+
+### Available Fragments
+
+The base template includes:
+
+- `networking.nix` - NetworkManager, firewall
+- `display.nix` - X11, display manager, desktop environment
+- `sound.nix` - PipeWire, ALSA, PulseAudio
+- `graphics.nix` - OpenGL, hardware acceleration
+- `packages.nix` - Essential tools, nix-mox packages
+- `programs.nix` - Zsh, Git, Steam
+- `services.nix` - SSH, Docker
+- `nix-settings.nix` - Nix configuration, binary caches
+- `system.nix` - System settings
 
 ## Configuration Options
 
 ### Display Managers
 
-Choose one display manager in `configuration.nix`:
+Override in `config/nixos/configuration.nix`:
 
 ```nix
-displayManager = {
-  lightdm.enable = true;  # Lightweight
-  # sddm.enable = true;   # KDE's display manager
-  # gdm.enable = true;    # GNOME's display manager
+services.xserver.displayManager = {
+  lightdm.enable = false;  # Disable default
+  sddm.enable = true;      # Enable KDE's display manager
+  # gdm.enable = true;     # Enable GNOME's display manager
 };
 ```
 
 ### Desktop Environments
 
-Choose one desktop environment:
-
 ```nix
-desktopManager = {
-  gnome.enable = true;     # GNOME
-  # plasma5.enable = true; # KDE Plasma
-  # xfce.enable = true;    # XFCE (lightweight)
+services.xserver.desktopManager = {
+  gnome.enable = false;    # Disable default
+  plasma5.enable = true;   # Enable KDE Plasma
+  # xfce.enable = true;    # Enable XFCE
 };
 ```
 
 ### Window Managers
 
-Or use a window manager instead:
-
 ```nix
-windowManager.i3.enable = true;
-# windowManager.awesome.enable = true;
+services.xserver.windowManager = {
+  i3.enable = true;        # Enable i3
+  # awesome.enable = true; # Enable Awesome
+};
 ```
 
 ### Graphics Drivers
 
-Uncomment the appropriate driver section:
-
-**NVIDIA:**
-
 ```nix
+# NVIDIA
 services.xserver.videoDrivers = [ "nvidia" ];
 hardware.nvidia = {
   modesetting.enable = true;
@@ -94,39 +123,39 @@ hardware.nvidia = {
   nvidiaSettings = true;
   package = config.boot.kernelPackages.nvidiaPackages.stable;
 };
-```
 
-**AMD:**
-
-```nix
+# AMD
 services.xserver.videoDrivers = [ "amdgpu" ];
+
+# Intel
+services.xserver.videoDrivers = [ "intel" ];
 ```
 
-## Using nix-mox After Setup
+## Using nix-mox
 
 ### System Packages
 
-Your nix-mox packages are available system-wide:
+Available system-wide:
 
 ```bash
-proxmox-update
-vzdump-backup
-zfs-snapshot
-nixos-flake-update
+proxmox-update       # Update Proxmox VE
+vzdump-backup        # Backup VMs
+zfs-snapshot         # Manage ZFS snapshots
+nixos-flake-update   # Update flake inputs
 ```
 
 ### Development Shells
 
-Access dev shells via aliases:
+Via aliases:
 
 ```bash
-dev-default      # Opens default development shell
-dev-development  # Opens development tools shell
-dev-testing      # Opens testing shell
-dev-services     # Opens services shell
-dev-monitoring   # Opens monitoring shell
-dev-gaming       # Opens gaming development shell (Linux x86_64 only)
-dev-zfs          # Opens ZFS tools shell (Linux only)
+dev-default      # Default development shell
+dev-development  # Development tools
+dev-testing      # Testing tools
+dev-services     # Service management
+dev-monitoring   # Monitoring tools
+dev-gaming       # Gaming development (Linux x86_64)
+dev-zfs          # ZFS tools (Linux)
 ```
 
 Or directly:
@@ -134,81 +163,77 @@ Or directly:
 ```bash
 nix develop github:Hydepwns/nix-mox#default
 nix develop github:Hydepwns/nix-mox#development
-nix develop github:Hydepwns/nix-mox#testing
-nix develop github:Hydepwns/nix-mox#services
-nix develop github:Hydepwns/nix-mox#monitoring
-nix develop github:Hydepwns/nix-mox#gaming
-nix develop github:Hydepwns/nix-mox#zfs
+```
+
+## Customization
+
+### Adding Packages
+
+Extend the packages fragment or add to your config:
+
+```nix
+# config/nixos/configuration.nix
+environment.systemPackages = with pkgs; [
+  # Your packages here
+  vim git docker
+];
+```
+
+### Custom Services
+
+```nix
+# config/nixos/configuration.nix
+services.nginx.enable = true;
+services.postgresql.enable = true;
+```
+
+### Custom Fragments
+
+Create your own fragments:
+
+```nix
+# modules/templates/base/common/development.nix
+{ config, pkgs, inputs, ... }:
+{
+  environment.systemPackages = with pkgs; [
+    vscode git docker nodejs python3 rustc cargo
+  ];
+}
+```
+
+Then import in your config:
+
+```nix
+imports = [
+  ../../modules/templates/base/common.nix
+  ../../modules/templates/base/common/development.nix
+];
 ```
 
 ## Troubleshooting
 
 ### Display Issues
 
-If display still doesn't work after switching:
-
 1. Check logs: `journalctl -b -u display-manager`
-2. Try a different display manager (sddm or gdm instead of lightdm)
-3. Ensure graphics drivers match your hardware
-4. Try a minimal window manager (like i3) instead of a full DE
+2. Try different display manager (sddm/gdm)
+3. Verify graphics drivers match hardware
+4. Try minimal window manager (i3) instead of full DE
 
 ### Rollback
-
-To rollback if something goes wrong:
 
 ```bash
 sudo nixos-rebuild switch --rollback
 ```
 
-## Customization
+## Security
 
-### Adding More Packages
-
-Add packages to `environment.systemPackages` in `configuration.nix`:
-
-```nix
-environment.systemPackages = with pkgs; [
-  # Your packages here
-  vim
-  git
-  # ... more packages
-];
-```
-
-### Custom Services
-
-Add services to the `services` section in `configuration.nix`:
-
-```nix
-services = {
-  # Your services here
-  openssh.enable = true;
-  # ... more services
-};
-```
-
-### Shell Aliases
-
-Add custom aliases in `home.nix`:
-
-```nix
-shellAliases = {
-  # Your aliases here
-  ll = "ls -l";
-  # ... more aliases
-};
-```
-
-## Security Notes
-
-- SSH is configured with password authentication disabled
-- Firewall is enabled by default
-- Root login is disabled
-- Only trusted binary caches are configured
+- SSH: Password auth disabled, root login disabled
+- Firewall: Enabled by default
+- Binary caches: Only trusted sources configured
 
 ## Performance
 
-- Uses nix-mox's binary caches for faster builds
-- Automatic garbage collection configured
+- Uses nix-mox binary caches for faster builds
+- Automatic garbage collection
 - Auto-optimize store enabled
-- Latest kernel packages for better hardware support
+- Latest kernel packages

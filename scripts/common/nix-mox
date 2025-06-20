@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+# nix-mox - Proxmox templates + NixOS workstation + Windows gaming automation
+# Bash wrapper for reliable argument passing to Nushell script
+
+set -euo pipefail
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NUSHELL_SCRIPT="$SCRIPT_DIR/nix-mox.nu"
+
+# Function to show help
+show_help() {
+    cat << EOF
+nix-mox - Proxmox templates + NixOS workstation + Windows gaming automation
+
+Usage: nix-mox [options]
+
+Options:
+  -h, --help           Show this help message
+  --dry-run           Show what would be done without making changes
+  --debug             Enable debug output
+  --platform <os>     Specify platform (auto, linux, darwin, nixos)
+  --script <name>     Run specific script (install, update, zfs-snapshot)
+  --log <file>        Log output to file
+
+Examples:
+  nix-mox --help
+  nix-mox --platform auto --dry-run
+  nix-mox --script install --debug
+  nix-mox --script zfs-snapshot --log output.log
+
+EOF
+}
+
+# Check if Nushell is available
+check_nushell() {
+    if ! command -v nu >/dev/null 2>&1; then
+        echo "Error: Nushell is required but not installed."
+        echo "Install Nushell with: nix profile install nixpkgs#nushell"
+        exit 1
+    fi
+}
+
+# Check if the Nushell script exists
+check_script() {
+    if [[ ! -f "$NUSHELL_SCRIPT" ]]; then
+        echo "Error: Nushell script not found at $NUSHELL_SCRIPT"
+        exit 1
+    fi
+}
+
+# Main function
+main() {
+    # Check prerequisites
+    check_nushell
+    check_script
+    
+    # Show help if no arguments or --help is provided
+    if [[ $# -eq 0 ]] || [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+        show_help
+        exit 0
+    fi
+    
+    # Debug: Print what we're about to execute
+    echo "[DEBUG] Executing: nu $NUSHELL_SCRIPT -- $*" >&2
+    
+    # Export arguments as a single environment variable
+    export NIXMOX_ARGS="$*"
+    
+    # Pass all arguments to the Nushell script
+    exec nu "$NUSHELL_SCRIPT"
+}
+
+# Run main function with all arguments
+main "$@" 
