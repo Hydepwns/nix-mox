@@ -1,5 +1,7 @@
 {
-  # Future system modules can be added here
-  # networking = import ./networking;
-  # hardware = import ./hardware;
+  # System-level configurations
+  networking = import ./networking/index.nix;
+  hardware = import ./hardware/index.nix;
+  boot = import ./boot/index.nix;
+  users = import ./users/index.nix;
 }

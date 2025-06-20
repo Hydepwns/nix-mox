@@ -1,229 +1,454 @@
-# Gaming Setup Guide
+# Gaming Shell Documentation
 
-## Overview
+The nix-mox gaming shell provides a comprehensive environment for running Windows games on Linux, with special optimizations for League of Legends and other popular titles.
 
-This guide covers the setup and configuration of gaming tools and games in the nix-mox environment, with a focus on Windows games running through Wine/Lutris.
+## Quick Start
 
-## Available Shells
+### Enter the Gaming Shell
 
 ```bash
-# Enter the gaming shell
 nix develop .#gaming
 ```
 
-## Quick Setup Scripts
-
-From the gaming shell (`nix develop .#gaming`), you can use these helper scripts:
+### Quick League of Legends Setup
 
 ```bash
-# General Wine gaming configuration
-nix run .#configure-wine
+# Configure League of Legends Wine prefix
+league-setup
 
-# League of Legends-specific Wine prefix setup
-bash devshells/gaming/scripts/configure-league.sh
+# Launch League of Legends (after installation)
+league-launch
 ```
 
-- `configure-wine` sets up a general Wine prefix with optimal settings for gaming.
-- `configure-league.sh` creates a dedicated Wine prefix for League of Legends with all required components.
+## Available Tools
 
-## Tools Overview
+### Gaming Platforms
 
-### Steam
+- **Steam**: Valve's gaming platform with Proton support
+- **Lutris**: Open-source gaming platform with Wine integration
+- **Heroic**: Epic Games Store and GOG launcher
 
-- Full Steam client support
-- Native Linux games
-- Proton for Windows games
+### Wine & Compatibility
 
-### Lutris
-
-- Game manager and launcher
-- Wine configuration management
-- Game-specific optimizations
-
-### Wine
-
-- Windows compatibility layer
-- DirectX support through DXVK/VKD3D
-- 32-bit and 64-bit application support
+- **Wine**: Windows compatibility layer (v10.0)
+- **Winetricks**: Wine configuration utility
+- **DXVK**: DirectX 11/10/9 to Vulkan translation (v2.6.1)
+- **VKD3D**: DirectX 12 to Vulkan translation
+- **Protontricks**: Configure Proton games
 
 ### Performance Tools
 
-- MangoHud: FPS counter and performance monitoring
-- GameMode: System optimization for gaming
-- DXVK: DirectX 11 implementation
-- VKD3D: DirectX 12 implementation
+- **MangoHud**: FPS and system monitoring overlay
+- **GameMode**: CPU/GPU performance optimization
+- **Mesa**: OpenGL implementation
+- **Vulkan Tools**: Vulkan development and debugging
+
+### System Monitoring
+
+- **htop**: Interactive process viewer
+- **glmark2**: OpenGL benchmark
+
+### Additional Tools
+
+- **DOSBox**: DOS emulator
+- **ScummVM**: Point-and-click adventure game engine
 
 ## League of Legends Setup
 
-### Installation
+### Automatic Setup
 
-1. Enter the gaming shell:
+The gaming shell includes an automated setup script for League of Legends:
 
-   ```bash
-   nix develop .#gaming
-   ```
+```bash
+# Run the setup script
+league-setup
+```
 
-2. Launch Lutris:
+This script will:
 
-   ```bash
-   lutris
-   ```
+1. Create a dedicated Wine prefix (`~/.wine-league`)
+2. Install required components (DirectX, Visual C++, etc.)
+3. Configure optimal Wine settings
+4. Set up environment variables for performance
+5. Create launch scripts and Lutris configuration
+6. Perform system requirement checks
+7. Set up cache directories
 
-3. Add League of Legends:
-   - Click "+" to add new game
-   - Select "Install a Windows game from an executable"
-   - Download the League of Legends installer
-   - Follow the installation wizard
+### Manual Setup
 
-### Recommended Configuration
+If you prefer manual setup:
 
-1. Wine Configuration:
+```bash
+# Set environment variables
+export WINEPREFIX=~/.wine-league
+export WINEARCH=win64
 
-   ```bash
-   # Set up a 64-bit Wine prefix
-   WINEPREFIX=~/.wine winecfg
-   
-   # Install required components
-   winetricks d3dx9 vcrun2019 vcrun2017 vcrun2015 vcrun2013 vcrun2010 vcrun2008 vcrun2005
-   ```
+# Create Wine prefix
+wineboot -i
 
-2. Performance Settings:
+# Install required components
+winetricks -q d3dx9 vcrun2019 dxvk vkd3d xact xact_x64
 
-   ```bash
-   # Run with MangoHud for FPS monitoring
-   mangohud lutris
-   
-   # Run with GameMode for system optimization
-   gamemode lutris
-   ```
+# Configure Wine settings
+winetricks settings win7
+winetricks -q ddr=opengl
+winetricks -q videomemorysize=4096
+```
 
-3. Graphics Settings:
-   - Enable DXVK for DirectX 11 support
-   - Enable VKD3D for DirectX 12 support
-   - Use Vulkan renderer if available
+### Installation via Lutris
 
-### Troubleshooting
+1. Launch Lutris: `lutris`
+2. Search for "League of Legends"
+3. Install using the official installer
+4. Configure the game to use the `~/.wine-league` prefix
+5. Enable DXVK, VKD3D, GameMode, and MangoHud
 
-1. **Game Crashes**:
-   - Check Wine logs: `WINEPREFIX=~/.wine wine --debug`
-   - Verify DXVK installation: `winetricks dxvk`
-   - Update Wine: `winetricks --self-update`
+### Launching League of Legends
 
-2. **Performance Issues**:
-   - Monitor FPS with MangoHud
-   - Check system resource usage
-   - Verify GameMode is active
-   - Adjust in-game graphics settings
+#### Quick Launch
 
-3. **Audio Problems**:
-   - Install audio components: `winetricks xact xact_x64`
-   - Check PulseAudio configuration
-   - Verify Wine audio settings
+```bash
+league-launch
+```
 
-4. **Network Issues**:
-   - Check firewall settings
-   - Verify Wine network configuration
-   - Test network connectivity
+#### Manual Launch
 
-### Performance Optimization
+```bash
+# Source environment variables
+source ~/.config/league-env
 
-1. **System Settings**:
+# Launch with performance optimizations
+gamemoderun mangohud wine LeagueClient.exe
+```
 
-   ```bash
-   # Enable GameMode
-   gamemode
-   
-   # Monitor performance
-   mangohud
-   ```
+#### Launch with Monitoring
 
-2. **Wine Configuration**:
+```bash
+# Launch with FPS monitoring
+mangohud wine LeagueClient.exe
 
-   ```bash
-   # Optimize Wine prefix
-   WINEPREFIX=~/.wine winetricks settings win7
-   
-   # Install performance components
-   winetricks dxvk vkd3d
-   ```
+# Launch with performance optimization
+gamemoderun wine LeagueClient.exe
 
-3. **Graphics Settings**:
-   - Use Vulkan renderer
-   - Enable DXVK
-   - Enable VKD3D
-   - Adjust in-game settings
+# Launch with both
+gamemoderun mangohud wine LeagueClient.exe
+```
 
-## Common Issues
+## Performance Optimization
 
-### Game-Specific Issues
+### Environment Variables
 
-1. **League of Legends**:
-   - Anti-cheat compatibility
-   - Client performance
-   - Network connectivity
-   - Audio configuration
+The gaming shell automatically sets these environment variables:
 
-2. **Steam Games**:
-   - Proton compatibility
-   - Controller support
-   - Cloud saves
-   - Workshop content
+```bash
+# DXVK optimizations
+export DXVK_HUD=1                    # Show DXVK HUD
+export DXVK_STATE_CACHE=1            # Enable state cache
+export DXVK_STATE_CACHE_PATH=~/.cache/dxvk
 
-### System Issues
+# OpenGL optimizations
+export __GL_SHADER_DISK_CACHE=1      # Enable shader cache
+export __GL_SHADER_DISK_CACHE_PATH=~/.cache/gl-shaders
+export __GL_SYNC_TO_VBLANK=0         # Disable vsync
+export __GL_THREADED_OPTIMIZATIONS=1 # Enable threaded optimizations
 
-1. **Graphics**:
-   - Driver compatibility
-   - Vulkan support
-   - DirectX translation
-   - Resolution scaling
+# Mesa overrides
+export MESA_GL_VERSION_OVERRIDE=4.5
+export MESA_GLSL_VERSION_OVERRIDE=450
 
-2. **Audio**:
-   - PulseAudio configuration
-   - Wine audio components
-   - Surround sound support
-   - Voice chat
+# Audio settings
+export PULSE_LATENCY_MSEC=60
 
-3. **Input**:
-   - Controller support
-   - Mouse acceleration
-   - Keyboard mapping
-   - Gamepad configuration
+# Wine optimizations
+export WINEDEBUG=-all
+export WINEDLLOVERRIDES="mshtml,mscoree="
+```
+
+### GameMode Configuration
+
+GameMode optimizes CPU and GPU performance during gaming:
+
+```bash
+# Enable GameMode
+gamemode
+
+# Run application with GameMode
+gamemoderun <command>
+```
+
+### MangoHud Configuration
+
+MangoHud provides FPS and system monitoring:
+
+```bash
+# Basic usage
+mangohud <command>
+
+# With dlsym hooking
+mangohud --dlsym <command>
+
+# Custom configuration
+MANGOHUD_CONFIG="fps_limit=60,no_display" mangohud <command>
+```
+
+## General Wine Gaming Setup
+
+### Quick Setup Scripts
+
+From the gaming shell, you can use these helper scripts:
+
+```bash
+# General Wine gaming configuration
+wine-setup
+
+# League of Legends-specific Wine prefix setup
+league-setup
+```
+
+### Wine Configuration
+
+```bash
+# Set up a 64-bit Wine prefix
+WINEPREFIX=~/.wine winecfg
+
+# Install required components
+winetricks d3dx9 vcrun2019 vcrun2017 vcrun2015 vcrun2013 vcrun2010 vcrun2008 vcrun2005
+
+# Install audio components
+winetricks xact xact_x64
+
+# Install graphics components
+winetricks dxvk vkd3d
+
+# Configure Wine settings
+winetricks settings win7
+winetricks ddr=opengl
+winetricks videomemorysize=4096
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### Wine Not Found
+
+```bash
+# Ensure you're in the gaming shell
+nix develop .#gaming
+
+# Check if wine is available
+which wine
+```
+
+#### Low Performance
+
+```bash
+# Check if GameMode is working
+gamemode
+
+# Monitor system resources
+htop
+
+# Check graphics performance
+glmark2
+```
+
+#### Audio Issues
+
+```bash
+# Check audio configuration
+winetricks -q sound=pulse
+
+# Test audio
+winecfg  # Audio tab
+
+# Install audio components
+winetricks xact xact_x64
+```
+
+#### Graphics Issues
+
+```bash
+# Check OpenGL support
+glxinfo | grep "OpenGL version"
+
+# Check Vulkan support
+vulkaninfo
+
+# Test graphics performance
+glmark2
+
+# Install graphics components
+winetricks dxvk vkd3d
+```
+
+#### Game Crashes
+
+```bash
+# Check Wine logs
+WINEPREFIX=~/.wine wine --debug
+
+# Verify DXVK installation
+winetricks dxvk
+
+# Update Wine
+winetricks --self-update
+```
+
+### Debugging
+
+#### Enable Wine Debugging
+
+```bash
+export WINEDEBUG=+all
+wine <application>
+```
+
+#### Check DXVK Status
+
+```bash
+# Enable DXVK HUD
+export DXVK_HUD=1
+wine <application>
+```
+
+#### Monitor System Resources
+
+```bash
+# CPU and memory
+htop
+
+# GPU (NVIDIA)
+nvidia-smi
+
+# GPU (AMD/Intel)
+radeontop  # AMD
+intel_gpu_top  # Intel
+```
+
+## Advanced Configuration
+
+### Custom Wine Prefixes
+
+Create custom Wine prefixes for different games:
+
+```bash
+# Create prefix for specific game
+export WINEPREFIX=~/.wine-game-name
+export WINEARCH=win64
+wineboot -i
+
+# Install game-specific components
+winetricks -q <components>
+```
+
+### Lutris Integration
+
+Configure Lutris to use the gaming shell environment:
+
+1. Open Lutris
+2. Go to Preferences → System Options
+3. Set Wine prefix to `~/.wine-league`
+4. Enable DXVK, VKD3D, GameMode, and MangoHud
+5. Set environment variables as needed
+
+### Steam Proton
+
+Configure Steam to use the gaming shell tools:
+
+1. Open Steam
+2. Go to Settings → Steam Play
+3. Enable Steam Play for supported titles
+4. Enable Steam Play for all other titles
+5. Set custom Proton version if needed
+
+## File Locations
+
+### Wine Prefixes
+
+- League of Legends: `~/.wine-league`
+- General gaming: `~/.wine`
+
+### Configuration Files
+
+- Environment variables: `~/.config/league-env`
+- Launch script: `~/.local/bin/league-launch`
+- Lutris config: `~/.config/lutris/games/league-of-legends.yml`
+- Wine environment: `~/.config/wine-env`
+
+### Cache Directories
+
+- DXVK cache: `~/.cache/dxvk`
+- Shader cache: `~/.cache/gl-shaders`
+
+## Commands Reference
+
+### Quick Commands
+
+```bash
+league-setup          # Configure League of Legends
+wine-setup            # Configure general Wine prefix
+gaming-help           # Show help menu
+gaming-test           # Test gaming shell setup
+which-shell           # Show current shell
+```
+
+### Performance Commands
+
+```bash
+gamemoderun <cmd>     # Run with GameMode
+mangohud <cmd>        # Run with MangoHud
+gamemoderun mangohud <cmd>  # Run with both
+```
+
+### Monitoring Commands
+
+```bash
+htop                  # Process monitoring
+glmark2               # OpenGL benchmark
+vulkaninfo            # Vulkan information
+glxinfo               # OpenGL information
+```
+
+### Wine Commands
+
+```bash
+wine <app>            # Run Windows application
+winetricks <component> # Install Wine component
+winecfg               # Wine configuration
+wineserver -k         # Kill Wine server
+```
 
 ## Maintenance
 
 ### Regular Updates
 
-1. **System Updates**:
+```bash
+# Update Nix packages
+nix flake update
 
-   ```bash
-   # Update Nix packages
-   nix flake update
-   
-   # Update Wine components
-   winetricks --self-update
-   ```
-
-2. **Game Updates**:
-   - Keep games updated through their respective clients
-   - Update Wine prefixes when needed
-   - Check for DXVK/VKD3D updates
+# Update Wine components
+winetricks --self-update
+```
 
 ### Backup
 
-1. **Wine Prefixes**:
+```bash
+# Backup Wine prefix
+tar -czf wine-prefix-backup.tar.gz ~/.wine
 
-   ```bash
-   # Backup Wine prefix
-   tar -czf wine-prefix-backup.tar.gz ~/.wine
-   
-   # Restore Wine prefix
-   tar -xzf wine-prefix-backup.tar.gz
-   ```
+# Restore Wine prefix
+tar -xzf wine-prefix-backup.tar.gz
+```
 
-2. **Game Data**:
-   - Backup save files
-   - Export game configurations
-   - Document custom settings
+## Support
+
+For issues and questions:
+
+1. Check the troubleshooting section above
+2. Ensure you're running the latest version of nix-mox
+3. Check system requirements and compatibility
+4. Review Wine and Lutris documentation
 
 ## Additional Resources
 
@@ -233,4 +458,11 @@ bash devshells/gaming/scripts/configure-league.sh
 - [MangoHud GitHub](https://github.com/flightlessmango/MangoHud)
 - [GameMode GitHub](https://github.com/FeralInteractive/gamemode)
 
-> **See also:** [Hardware Drivers Guide](../guides/drivers.md) for GPU and driver setup for gaming.
+## Contributing
+
+To improve the gaming shell:
+
+1. Test with different games and configurations
+2. Report issues with specific error messages
+3. Suggest new tools or optimizations
+4. Update documentation for new features

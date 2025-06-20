@@ -8,17 +8,26 @@ This directory contains all the modules used by nix-mox. Each module is organize
 modules/
 ├── core/                 # Core functionality and base modules
 ├── system/              # System-level configurations
+│   ├── networking/      # Network configuration modules
+│   ├── hardware/        # Hardware-specific configurations
+│   ├── boot/           # Bootloader and boot configuration
+│   └── users/          # User management modules
 ├── services/            # Service-specific modules
 ├── storage/             # Storage-related modules
-├── templates/           # Template-related modules
 ├── security/            # Security-related modules
 ├── monitoring/          # Monitoring and observability
+├── gaming/              # Gaming-specific modules
 ├── packages/            # Package-specific modules
-│   ├── linux/          # Linux-specific packages and scripts
-│   └── darwin/         # macOS-specific packages and scripts
-└── scripts/            # Platform-specific scripts
-    ├── linux/          # Linux-specific scripts
-    └── windows/         # Windows-specific scripts
+│   ├── development/     # Development tools
+│   ├── multimedia/      # Media and entertainment
+│   ├── productivity/    # Office and productivity tools
+│   ├── system/         # System utilities
+│   ├── linux/          # Linux-specific packages
+│   └── windows/        # Windows-specific packages
+└── templates/           # Template configurations
+    ├── services/        # Service-specific templates
+    ├── infrastructure/  # Infrastructure templates
+    └── platforms/       # Platform-specific templates
 ```
 
 ## Using Modules
@@ -32,12 +41,13 @@ Each directory contains an `index.nix` file that exposes its modules. To use a m
   imports = [
     nix-mox.nixosModules.core
     nix-mox.nixosModules.services
+    nix-mox.nixosModules.system
     # etc...
   ];
 }
 ```
 
-1. Or import specific modules directly:
+2. Or import specific modules directly:
 
 ```nix
 {
@@ -77,20 +87,46 @@ Example of adding a new service module:
 
 - **core/**: Fundamental modules that provide base functionality
 - **system/**: System-level configurations for hardware and networking
+  - **networking/**: Network configuration modules
+  - **hardware/**: Hardware-specific configurations
+  - **boot/**: Bootloader and boot configuration
+  - **users/**: User management modules
 - **services/**: Service-specific modules for various applications
 - **storage/**: Storage-related modules including ZFS and backup
-- **templates/**: Template configurations for different systems
 - **security/**: Security-related modules for encryption and access control
 - **monitoring/**: Monitoring and observability modules
 - **gaming/**: Gaming-specific modules for Steam, Wine, and performance tuning
-- **packages/**: Platform-specific package modules
-  - **linux/**: Linux-specific packages and scripts
-  - **darwin/**: macOS-specific packages and scripts
-- **scripts/**: Platform-specific scripts
-  - **linux/**: Linux-specific scripts (e.g., backup, update, and maintenance scripts)
-  - **darwin/**: macOS-specific scripts
+- **packages/**: Package-specific modules organized by functionality
+  - **development/**: Development tools and packages
+  - **multimedia/**: Media and entertainment packages
+  - **productivity/**: Office and productivity tools
+  - **system/**: System utilities
+  - **linux/**: Linux-specific packages
+  - **windows/**: Windows-specific packages
+- **templates/**: Template configurations organized by category
+  - **services/**: Service-specific templates
+  - **infrastructure/**: Infrastructure templates
+  - **platforms/**: Platform-specific templates
 
 Each category has its own README.md with more specific information about its contents and usage.
+
+## Module Metadata
+
+Each module should include consistent metadata in comments:
+
+```nix
+# modules/services/example.nix
+{ config, pkgs, ... }:
+{
+  # Module: Example Service
+  # Category: Services
+  # Platform: Linux
+  # Dependencies: None
+  # Description: Example service configuration
+  
+  # ... module content
+}
+```
 
 ## Gaming Modules
 
@@ -118,7 +154,7 @@ The `scripts/` directory contains platform-specific automation scripts. The main
 
 ```bash
 # Main CLI entrypoint (robust argument passing)
-./modules/scripts/nix-mox --script install --dry-run
+./scripts/nix-mox --script install --dry-run
 ```
 
 - **linux/**: Linux scripts (backup, update, ZFS, install, etc.)

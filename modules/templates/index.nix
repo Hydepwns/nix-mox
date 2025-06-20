@@ -1,6 +1,13 @@
 {
+  # Template configurations organized by category
   templates = import ./templates.nix;
-  # Future template modules can be added here
-  # windows = import ./windows;
-  # linux = import ./linux;
+
+  # Service templates
+  services = import ./services/index.nix;
+
+  # Infrastructure templates
+  infrastructure = import ./infrastructure/index.nix;
+
+  # Platform-specific templates
+  platforms = import ./platforms/index.nix;
 }
