@@ -2,7 +2,6 @@
 
 {
   imports = [
-    ../../base/common.nix
     ./hardware-configuration.nix
   ];
 
@@ -77,11 +76,23 @@
   };
 
   # Graphics drivers
-  hardware.opengl = {
+  hardware.graphics = {
     enable = true;
-    driSupport32Bit = true;
+    enable32Bit = true;
     # driSupport = true; # Deprecated, no longer needed in recent NixOS
   };
+
+  # Additional graphics support for gaming
+  hardware.graphics.extraPackages = with pkgs; [
+    vaapiVdpau
+    libvdpau-va-gl
+  ];
+
+  # Enable 32-bit support for Wine
+  hardware.graphics.extraPackages32 = with pkgs.pkgsi686Linux; [
+    vaapiVdpau
+    libvdpau-va-gl
+  ];
 
   # NVIDIA drivers (uncomment if you have NVIDIA GPU)
   # services.xserver.videoDrivers = [ "nvidia" ];
@@ -102,6 +113,14 @@
     description = "Hyde";
     extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
     shell = pkgs.zsh;  # or pkgs.bash
+  };
+
+  # Add back the droo user for system access
+  users.users.droo = {
+    isNormalUser = true;
+    description = "Droo";
+    extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
+    shell = pkgs.zsh;
   };
 
   # Enable sudo
@@ -130,12 +149,30 @@
 
     # Video calling and conferencing
     zoom-us
-    teams
-    skypeforlinux
 
     # Email clients
     thunderbird
     evolution
+
+    # Wine and gaming support (64-bit enabled)
+    wineWowPackages.stable
+    winetricks
+    dxvk
+    vkd3d
+
+    # Gaming performance tools
+    gamemode
+    mangohud
+    vulkan-tools
+    vulkan-validation-layers
+    vulkan-headers
+    vulkan-loader
+    vulkan-extension-layer
+    vulkan-utility-libraries
+
+    # Additional gaming platforms
+    lutris
+    heroic
 
     # From nix-mox (access the packages)
     inputs.nix-mox.packages.${pkgs.system}.proxmox-update
@@ -162,6 +199,12 @@
     };
   };
 
+  # Docker (optional)
+  virtualisation.docker = {
+    enable = true;
+    enableOnBoot = true;
+  };
+
   # Services
   services = {
     # SSH (optional)
@@ -171,12 +214,6 @@
         PasswordAuthentication = false;
         PermitRootLogin = "no";
       };
-    };
-
-    # Docker (optional)
-    docker = {
-      enable = true;
-      enableOnBoot = true;
     };
 
     # Messaging and communication services
