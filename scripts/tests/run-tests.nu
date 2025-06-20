@@ -1,0 +1,286 @@
+#!/usr/bin/env nu
+# Main test runner for nix-mox
+# This script coordinates all test execution and reporting
+
+export-env {
+    use ./lib/test-utils.nu *
+    use ./lib/test-coverage.nu *
+    use ./lib/coverage-core.nu *
+    use ./lib/test-common.nu *
+}
+
+use ./lib/test-utils.nu *
+use ./lib/test-coverage.nu *
+use ./lib/coverage-core.nu *
+use ./lib/test-common.nu *
+
+# --- Test Configuration ---
+def setup_test_config [] {
+    {
+        run_unit_tests: true
+        run_integration_tests: true
+        run_storage_tests: true
+        run_performance_tests: true
+        generate_coverage: true
+        export_format: "json"
+        verbose: false
+        parallel: false
+        timeout: 300  # 5 minutes default timeout
+        retry_failed: false
+        max_retries: 3
+    }
+}
+
+# --- Test Execution with Better Error Handling ---
+def run_test_suite [suite_name: string, test_func: closure, config: record] {
+    print $"($env.GREEN)Running ($suite_name) tests...($env.NC)"
+
+    let start_time = (date now | into int)
+    let result = (try {
+        do $test_func
+        { success: true, error_msg: "" }
+    } catch {
+        { success: false, error_msg: $env.LAST_ERROR }
+    })
+
+    let success = $result.success
+    let error_msg = $result.error_msg
+
+    let end_time = (date now | into int)
+    let duration = (($end_time - $start_time) | into float) / 1000000000
+
+    if $success {
+        print $"($env.GREEN)✓ ($suite_name) tests completed successfully in ($duration)s($env.NC)"
+        true
+    } else {
+        print $"($env.RED)✗ ($suite_name) tests failed after ($duration)s($env.NC)"
+        if $config.verbose {
+            print $"($env.RED)Error: ($error_msg)($env.NC)"
+        }
+        false
+    }
+}
+
+def run_all_test_suites [config: record] {
+    setup_test_env
+
+    mut overall_success = true
+    mut test_results = []
+
+    # Run unit tests
+    if $config.run_unit_tests {
+        let unit_success = run_test_suite "unit" { run_unit_tests } $config
+        $test_results = ($test_results | append { suite: "unit", success: $unit_success })
+        $overall_success = ($overall_success and $unit_success)
+    }
+
+    # Run integration tests
+    if $config.run_integration_tests {
+        let integration_success = run_test_suite "integration" { run_integration_tests } $config
+        $test_results = ($test_results | append { suite: "integration", success: $integration_success })
+        $overall_success = ($overall_success and $integration_success)
+    }
+
+    # Run storage tests
+    if $config.run_storage_tests {
+        let storage_success = run_test_suite "storage" { run_storage_tests } $config
+        $test_results = ($test_results | append { suite: "storage", success: $storage_success })
+        $overall_success = ($overall_success and $storage_success)
+    }
+
+    # Run performance tests
+    if $config.run_performance_tests {
+        let performance_success = run_test_suite "performance" { run_performance_tests } $config
+        $test_results = ($test_results | append { suite: "performance", success: $performance_success })
+        $overall_success = ($overall_success and $performance_success)
+    }
+
+    # Generate coverage report
+    if $config.generate_coverage {
+        try {
+            print $"($env.GREEN)Generating coverage report...($env.NC)"
+            generate_coverage_report
+            let coverage_path = $"($env.TEST_TEMP_DIR)/coverage.($config.export_format)"
+            export_coverage_report $config.export_format | save --force $coverage_path
+            print $"($env.GREEN)Coverage report saved as ($coverage_path)($env.NC)"
+        } catch {
+            print $"($env.YELLOW)Warning: Failed to generate coverage report: ($env.LAST_ERROR)($env.NC)"
+        }
+    }
+
+    # Print summary
+    print_summary $test_results
+
+    cleanup_test_env
+
+    # Exit with appropriate code
+    if $overall_success {
+        exit 0
+    } else {
+        exit 1
+    }
+}
+
+# --- Test Summary ---
+def print_summary [results: list] {
+    print ""
+    print $"($env.GREEN)=== Test Summary ===($env.NC)"
+
+    let total_suites = ($results | length)
+    let passed_suites = ($results | where { |r| $r.success } | length)
+    let failed_suites = ($total_suites - $passed_suites)
+
+    for result in $results {
+        let status_color = if $result.success { $env.GREEN } else { $env.RED }
+        let status_symbol = if $result.success { "✓" } else { "✗" }
+        print $"($status_color)($status_symbol) ($result.suite) tests($env.NC)"
+    }
+
+    print ""
+    print $"Total test suites: ($total_suites)"
+    print $"Passed: ($passed_suites)"
+    print $"Failed: ($failed_suites)"
+
+    if $failed_suites > 0 {
+        print $"($env.RED)Some tests failed!($env.NC)"
+    } else {
+        print $"($env.GREEN)All tests passed!($env.NC)"
+    }
+}
+
+# --- Enhanced Command Line Interface ---
+def parse_args [args: list, config: record] {
+    if ($args | length) > 0 {
+        # Handle help
+        if ($args | any { |arg| $arg == "--help" or $arg == "-h" }) {
+            print_help
+            exit 0
+        }
+
+        # Handle verbose mode
+        let config = if ($args | any { |arg| $arg == "--verbose" or $arg == "-v" }) {
+            $config | upsert verbose true
+        } else {
+            $config
+        }
+
+        # Handle parallel execution
+        let config = if ($args | any { |arg| $arg == "--parallel" or $arg == "-p" }) {
+            $config | upsert parallel true
+        } else {
+            $config
+        }
+
+        # Handle timeout
+        let timeout_args = ($args | where { |arg| $arg | str starts-with "--timeout=" })
+        let config = if ($timeout_args | length) > 0 {
+            let timeout_arg = ($timeout_args | get 0)
+            let timeout_value = ($timeout_arg | str replace "--timeout=" "")
+            $config | upsert timeout ($timeout_value | into int)
+        } else {
+            $config
+        }
+
+        # Handle retry failed tests
+        let config = if ($args | any { |arg| $arg == "--retry-failed" }) {
+            $config | upsert retry_failed true
+        } else {
+            $config
+        }
+
+        # Handle max retries
+        let retry_args = ($args | where { |arg| $arg | str starts-with "--max-retries=" })
+        let config = if ($retry_args | length) > 0 {
+            let retry_arg = ($retry_args | get 0)
+            let retry_value = ($retry_arg | str replace "--max-retries=" "")
+            $config | upsert max_retries ($retry_value | into int)
+        } else {
+            $config
+        }
+
+        # If specific test types are requested, disable others
+        let test_flags = ["--unit", "--integration", "--storage", "--performance"]
+        let has_specific_tests = ($args | any { |arg| $test_flags | any { |flag| $arg == $flag } })
+
+        let config = if $has_specific_tests {
+            $config | upsert run_unit_tests ($args | any { |arg| $arg == "--unit" }) | upsert run_integration_tests ($args | any { |arg| $arg == "--integration" }) | upsert run_storage_tests ($args | any { |arg| $arg == "--storage" }) | upsert run_performance_tests ($args | any { |arg| $arg == "--performance" })
+        } else {
+            $config
+        }
+
+        # Only disable coverage if --no-coverage is explicitly passed
+        let config = if ($args | any { |arg| $arg == "--no-coverage" }) {
+            $config | upsert generate_coverage false
+        } else {
+            $config
+        }
+
+        let format_args = ($args | where { |arg| $arg | str starts-with "--format=" })
+        let config = if ($format_args | length) > 0 {
+            let format_arg = ($format_args | get 0)
+            $config | upsert export_format ($format_arg | str replace "--format=" "")
+        } else {
+            $config
+        }
+
+        $config
+    } else {
+        $config
+    }
+}
+
+# --- Help Function ---
+def print_help [] {
+    print "nix-mox Test Runner"
+    print "=================="
+    print ""
+    print "Usage: nu -c 'source scripts/tests/run-tests.nu; run [OPTIONS]'"
+    print ""
+    print "Options:"
+    print "  --unit, --integration, --storage, --performance"
+    print "    Run specific test suites (default: all)"
+    print ""
+    print "  --verbose, -v"
+    print "    Enable verbose output"
+    print ""
+    print "  --parallel, -p"
+    print "    Run tests in parallel (experimental)"
+    print ""
+    print "  --timeout=SECONDS"
+    print "    Set timeout for test suites (default: 300)"
+    print ""
+    print "  --retry-failed"
+    print "    Retry failed tests"
+    print ""
+    print "  --max-retries=N"
+    print "    Maximum number of retries (default: 3)"
+    print ""
+    print "  --no-coverage"
+    print "    Disable coverage report generation"
+    print ""
+    print "  --format=FORMAT"
+    print "    Coverage report format: json, yaml, toml (default: json)"
+    print ""
+    print "  --help, -h"
+    print "    Show this help message"
+    print ""
+    print "Examples:"
+    print "  nu -c 'source scripts/tests/run-tests.nu; run [\"--unit\"]'"
+    print "  nu -c 'source scripts/tests/run-tests.nu; run [\"--verbose\", \"--integration\"]'"
+    print "  nu -c 'source scripts/tests/run-tests.nu; run [\"--no-coverage\", \"--parallel\"]'"
+}
+
+# --- Main Runner ---
+def main [args: list] {
+    # Set up the test temp directory globally
+    # $env.TEST_TEMP_DIR = "coverage-tmp"
+
+    let config = setup_test_config
+    let config = parse_args $args $config
+    run_all_test_suites $config
+}
+
+# To run tests, use: nu -c "source scripts/tests/run-tests.nu; run ['--unit']"
+export def run [args: list] {
+    main $args
+}
