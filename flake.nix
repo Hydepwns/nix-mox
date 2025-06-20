@@ -79,7 +79,7 @@
             } ''
               cd $src
               export TEST_TEMP_DIR=$TMPDIR/nix-mox-unit
-              nu -c "source tests/unit/unit-tests.nu"
+              nu -c "source scripts/tests/unit/unit-tests.nu"
               touch $out
             '';
 
@@ -90,7 +90,7 @@
             } ''
               cd $src
               export TEST_TEMP_DIR=$TMPDIR/nix-mox-integration
-              nu -c "source tests/integration/integration-tests.nu"
+              nu -c "source scripts/tests/integration/integration-tests.nu"
               touch $out
             '';
 
@@ -101,7 +101,7 @@
             } ''
               cd $src
               export TEST_TEMP_DIR=$TMPDIR/nix-mox-tests
-              nu -c "source tests/run-tests.nu; run []"
+              nu -c "source scripts/tests/run-tests.nu; run []"
               touch $out
             '';
           };

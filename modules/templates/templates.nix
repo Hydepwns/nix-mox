@@ -634,10 +634,10 @@ let
 
   # Update test fixture references
   testFixtures = {
-    zfs-ssd-caching = ./../tests/fixtures/zfs-ssd-caching/default.nix;
-    nixos = ./../tests/fixtures/nixos/default.nix;
-    cachix = ./../tests/fixtures/cachix/default.nix;
-    utils = ./../tests/fixtures/utils/default.nix;
+    zfs-ssd-caching = ./../scripts/tests/fixtures/zfs-ssd-caching/default.nix;
+    nixos = ./../scripts/tests/fixtures/nixos/default.nix;
+    cachix = ./../scripts/tests/fixtures/cachix/default.nix;
+    utils = ./../scripts/tests/fixtures/utils/default.nix;
   };
 in
 {
