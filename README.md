@@ -150,6 +150,21 @@ nix develop .#gaming
 nix develop .#macos
 ```
 
+#### Shell Availability by Platform
+
+| Shell | Linux x86_64 | Linux aarch64 | macOS x86_64 | macOS aarch64 | Description |
+|-------|-------------|---------------|--------------|---------------|-------------|
+| `default` | ✅ | ✅ | ✅ | ✅ | Basic development environment with essential tools |
+| `development` | ✅ | ✅ | ✅ | ✅ | Enhanced development environment with additional tools |
+| `testing` | ✅ | ✅ | ✅ | ✅ | Testing environment with Elixir and test tools |
+| `services` | ✅ | ✅ | ✅ | ✅ | Service development and management tools |
+| `monitoring` | ✅ | ✅ | ✅ | ✅ | Monitoring and observability tools |
+| `gaming` | ✅ | ❌ | ❌ | ❌ | Gaming environment with Steam, Wine, and more |
+| `zfs` | ✅ | ✅ | ❌ | ❌ | ZFS development and testing tools |
+| `macos` | ❌ | ❌ | ✅ | ✅ | macOS-specific development environment |
+
+> **Note:** Platform-specific shells are only available on their target platforms. For example, the `gaming` shell is only available on Linux x86_64 systems, while the `macos` shell is only available on macOS systems.
+
 Each shell comes with its own set of tools and helpful documentation. For example:
 
 - The testing shell includes Elixir, Erlang, and test tools
