@@ -143,12 +143,12 @@
         PermitRootLogin = "no";
       };
     };
+  };
 
-    # Docker (optional)
-    docker = {
-      enable = true;
-      enableOnBoot = true;
-    };
+  # Docker (optional)
+  virtualisation.docker = {
+    enable = true;
+    enableOnBoot = true;
   };
 
   # Nix configuration
