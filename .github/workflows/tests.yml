@@ -38,7 +38,7 @@ jobs:
       run: |
         nix develop --command nu -c "
           let coverage = (open coverage-tmp/nix-mox-tests/coverage.json | from json)
-          let pass_rate = $coverage.summary.pass_rate
+          let pass_rate = ($coverage | get summary.pass_rate)
           if $pass_rate < 90 {
             error make { msg: 'Test coverage below 90%' }
           }
