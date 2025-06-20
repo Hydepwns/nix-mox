@@ -386,11 +386,14 @@ nix-mox/
 │   ├── examples/    # Example configurations
 │   └── development/ # Development documentation
 ├── lib/              # Library code and utilities
-├── tests/             # Test suite
-│   ├── unit/         # Unit tests
-│   ├── integration/  # Integration tests
-│   ├── lib/          # Test utilities and shared functions
-│   └── run-tests.nu  # Main test runner
+├── scripts/          # Utility scripts
+│   ├── ci-test.sh    # Quick CI testing
+│   ├── test-ci-local.sh # Comprehensive CI testing
+│   └── tests/        # Test suite
+│       ├── unit/     # Unit tests
+│       ├── integration/ # Integration tests
+│       ├── lib/      # Test utilities and shared functions
+│       └── run-tests.nu # Main test runner
 ├── modules/          # NixOS modules
 │   ├── core/        # Core functionality
 │   ├── services/    # Service-specific modules
@@ -428,12 +431,34 @@ nix flake check
 
 ## Documentation
 
+### Getting Started
+
 - [**USAGE.md**](./docs/USAGE.md) - Installation & usage
-- [**ARCHITECTURE.md**](./docs/ARCHITECTURE.md) - System design
-- [**ROADMAP.md**](./docs/ROADMAP.md) - Future plans
-- [**Script Development Guide**](./docs/guides/scripting.md) - Script development
-- [**Testing Guide**](./docs/guides/testing.md) - Testing framework
+- [**Development Workflow Guide**](./docs/guides/development-workflow.md) - Development workflow & Make targets
+
+### Guides
+
+- [**Testing Guide**](./docs/guides/testing.md) - Testing framework & best practices
 - [**CI/CD Guide**](./docs/guides/ci-cd.md) - Continuous integration and deployment
-- [**Script Architecture**](./docs/architecture/scripts.md) - Script system design
+- [**Script Development Guide**](./docs/guides/scripting.md) - Script development
 - [**Gaming Setup Guide**](./docs/gaming/README.md) - Linux & Windows gaming, League of Legends, Wine/Lutris
 - [**Hardware Drivers Guide**](./docs/guides/drivers.md) - configuring NVIDIA, AMD, and Intel drivers
+- [**macOS Shell Guide**](./docs/guides/macos-shell.md) - macOS development environment
+
+### Architecture & Design
+
+- [**ARCHITECTURE.md**](./docs/architecture/ARCHITECTURE.md) - System design & overview
+- [**Script Architecture**](./docs/architecture/scripts.md) - Script system design
+- [**ROADMAP.md**](./docs/architecture/ROADMAP.md) - Future plans
+
+### Advanced Topics
+
+- [**Advanced Configuration**](./docs/guides/advanced-configuration.md) - Advanced setup options
+- [**NixOS on Proxmox**](./docs/guides/nixos-on-proxmox.md) - Proxmox deployment
+- [**Troubleshooting**](./docs/guides/TROUBLESHOOTING.md) - Common issues & solutions
+- [**Migration Guide**](./docs/guides/MIGRATION.md) - Upgrading & migration
+
+### Contributing
+
+- [**CONTRIBUTING.md**](./docs/CONTRIBUTING.md) - How to contribute
+- [**Examples**](./docs/nixamples/README.md) - Configuration examples
