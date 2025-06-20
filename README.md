@@ -1,6 +1,6 @@
 # nix-mox
 
-A comprehensive NixOS configuration framework with development tools, monitoring, and system management utilities.
+A comprehensive NixOS configuration framework with development tools, monitoring, system management utilities, and messaging support.
 
 ## 🚀 Quick Start
 
@@ -10,7 +10,7 @@ A comprehensive NixOS configuration framework with development tools, monitoring
 git clone https://github.com/Hydepwns/nix-mox.git
 cd nix-mox
 
-# Use safe configuration template
+# Use safe configuration template with messaging support
 cp -r modules/templates/nixos/safe-configuration/* config/
 sudo nixos-generate-config --show-hardware-config > config/hardware/hardware-configuration.nix
 
@@ -53,8 +53,12 @@ nix-mox/
 │   │   ├── networking.nix
 │   │   ├── display.nix
 │   │   ├── packages.nix
+│   │   ├── messaging.nix     # Signal, Telegram, Discord, etc.
 │   │   └── ...
 │   └── nixos/safe-configuration/
+├── modules/packages/          # Package collections
+│   └── productivity/
+│       └── communication.nix # Messaging & communication apps
 ├── devshells/                # Development environments
 ├── scripts/                  # Utility scripts
 └── flake.nix                 # Main flake
@@ -95,6 +99,22 @@ Compose configurations from reusable fragments:
 }
 ```
 
+### Add Messaging Support
+
+```nix
+# Desktop configuration with messaging
+{ config, pkgs, inputs, ... }:
+{
+  imports = [
+    ../../modules/templates/base/common/networking.nix
+    ../../modules/templates/base/common/display.nix
+    ../../modules/templates/base/common/messaging.nix  # Signal, Telegram, etc.
+    ../../modules/templates/base/common/packages.nix
+  ];
+  networking.hostName = "desktop";
+}
+```
+
 ### Create Custom Fragments
 
 ```nix
@@ -106,6 +126,44 @@ Compose configurations from reusable fragments:
   ];
 }
 ```
+
+## 💬 Messaging & Communication
+
+nix-mox includes comprehensive messaging and communication support:
+
+### Primary Messaging Apps
+
+- **Signal Desktop**: Secure messaging with end-to-end encryption
+- **Telegram Desktop**: Feature-rich messaging platform
+- **Discord**: Gaming and community chat platform
+- **Slack**: Team collaboration and communication
+
+### Additional Communication Tools
+
+- **WhatsApp for Linux**: WhatsApp desktop client
+- **Element Desktop**: Matrix protocol client
+- **Thunderbird**: Email client
+- **Evolution**: GNOME email and calendar client
+
+### Video Calling & Conferencing
+
+- **Zoom**: Video conferencing platform
+- **Microsoft Teams**: Team collaboration platform
+- **Skype**: Voice and video calling
+
+### Voice & Chat
+
+- **Mumble**: Low-latency voice chat
+- **TeamSpeak**: Voice communication
+- **HexChat**: IRC client
+- **WeeChat**: Modular chat client
+
+### Features
+
+- **Desktop Notifications**: D-Bus integration for all messaging apps
+- **Deep Linking**: Support for `signal://` and `telegram://` protocols
+- **Audio/Video Calls**: Enhanced PipeWire configuration with WebRTC support
+- **Firewall Configuration**: Proper ports for STUN/TURN and WebRTC services
 
 ## 🛠️ Development Shells
 
@@ -133,7 +191,7 @@ nix run .#uninstall            # Uninstall nix-mox
 
 ## 🏗️ Templates
 
-- **Safe Configuration**: Complete desktop setup with display safety
+- **Safe Configuration**: Complete desktop setup with display safety and messaging support
 - **CI Runner**: High-performance CI/CD
 - **Web Server**: Production web server
 - **Database**: Database server setup

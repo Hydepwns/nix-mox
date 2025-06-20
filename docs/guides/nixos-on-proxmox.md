@@ -29,6 +29,7 @@ nix-mox-template-safe-configuration
 - **nix-mox Integration**: Includes your nix-mox packages and development shells
 - **Gaming Ready**: Steam enabled with proper graphics driver configuration
 - **Development Friendly**: Includes common development tools and aliases
+- **Messaging & Communication**: Signal Desktop, Telegram Desktop, Discord, Slack, and more
 
 ### Manual Setup
 
