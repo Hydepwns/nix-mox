@@ -1,230 +1,199 @@
 # Cache Server Template
 
-This template provides a flexible and powerful caching solution with support for both Redis and Memcached. It includes features for high availability, monitoring, backups, and custom configuration.
+This template provides automated configuration for cache servers including Redis and Memcached. It includes comprehensive monitoring, health checks, and automated maintenance features.
 
 ## Features
 
-- Support for multiple cache server types:
-  - Redis
-  - Memcached
-- Health checks and monitoring
-- Automated backups
-- Memory management
-- Authentication support
-- Prometheus metrics integration
-- Custom configuration options
-- Error handling and logging
+- **Multiple Cache Types**: Support for Redis and Memcached
+- **Health Monitoring**: Automated health checks and validation
+- **Prometheus Integration**: Built-in metrics collection
+- **Automated Backups**: Configurable backup schedules with retention
+- **Security**: Password protection and access control
+- **Performance Tuning**: Memory and connection optimization
+
+## Structure
+
+The template is organized into fragments for better maintainability:
+
+- `fragments/base.nix`: Common configuration options and validation
+- `fragments/redis.nix`: Redis-specific configuration and health checks
+- `fragments/memcached.nix`: Memcached-specific configuration and health checks
+- `fragments/monitoring.nix`: Prometheus monitoring setup
+- `fragments/backup.nix`: Automated backup functionality
+- `cache-server.nix`: Main template that imports all fragments
 
 ## Usage
 
 ### Basic Configuration
 
 ```nix
-services.nix-mox.cache-server = {
-  enable = true;
-  cacheType = "redis";  # or "memcached"
-  bindAddress = "127.0.0.1";
-  maxMemory = 1024;  # MB
-  maxConnections = 1024;
-  password = "secure_password";
-  enableMonitoring = true;
-  enableBackup = true;
-  backupDir = "/var/lib/cache-server/backups";
-  backupRetention = 7;  # days
-};
+{
+  services.nix-mox.cache-server = {
+    enable = true;
+    cacheType = "redis";  # or "memcached"
+    bindAddress = "127.0.0.1";
+    maxMemory = 1024;
+    maxConnections = 1024;
+  };
+}
 ```
 
 ### Advanced Configuration
 
 ```nix
-services.nix-mox.cache-server = {
-  enable = true;
-  cacheType = "redis";
-  bindAddress = "0.0.0.0";
-  maxMemory = 4096;
-  maxConnections = 2048;
-  evictionPolicy = "allkeys-lru";
-  persistence = true;
-  password = "secure_password";
-  enableMonitoring = true;
-  enableBackup = true;
-  backupDir = "/var/lib/cache-server/backups";
-  backupRetention = 30;
-  customConfig = {
-    tcpKeepAlive = 300;
-    timeout = 0;
-    databases = 16;
+{
+  services.nix-mox.cache-server = {
+    enable = true;
+    cacheType = "redis";
+    
+    # Redis-specific options
+    evictionPolicy = "allkeys-lru";
+    persistence = true;
+    
+    # Security
+    password = "your-secure-password";
+    
+    # Monitoring
+    enableMonitoring = true;
+    
+    # Backup
+    enableBackup = true;
+    backupDir = "/var/lib/cache-server/backups";
+    backupRetention = 7;
   };
-};
+}
 ```
 
 ## Configuration Options
 
-### Cache Server Type
+### Base Options
 
-- `cacheType`: Type of cache server to use
-  - Options: "redis" or "memcached"
-  - Default: "redis"
-
-### Basic Settings
-
+- `enable`: Enable the cache server template
+- `cacheType`: Type of cache server ("redis" or "memcached")
 - `bindAddress`: Address to bind the cache server to
-  - Default: "127.0.0.1"
 - `maxMemory`: Maximum memory usage in MB
-  - Default: 1024
 - `maxConnections`: Maximum number of connections
-  - Default: 1024
+- `password`: Password for authentication (optional)
+- `customConfig`: Custom cache server configuration
 
-### Redis-specific Settings
+### Redis-Specific Options
 
 - `evictionPolicy`: Memory eviction policy
-  - Options: "noeviction", "allkeys-lru", "volatile-lru", "allkeys-random", "volatile-random", "volatile-ttl"
-  - Default: "noeviction"
-- `persistence`: Enable persistence
-  - Default: true
+  - `noeviction`: No eviction (default)
+  - `allkeys-lru`: Least recently used
+  - `volatile-lru`: Volatile keys least recently used
+  - `allkeys-random`: Random eviction
+  - `volatile-random`: Volatile keys random eviction
+  - `volatile-ttl`: Volatile keys time to live
+- `persistence`: Enable persistence (AOF)
 
-### Security
-
-- `password`: Password for authentication
-  - Optional
-  - Default: null
-
-### Monitoring
+### Monitoring Options
 
 - `enableMonitoring`: Enable Prometheus monitoring
-  - Default: true
+- Metrics are available on:
+  - Redis: Port 9121
+  - Memcached: Port 9150
 
-### Backup
+### Backup Options
 
 - `enableBackup`: Enable automated backups
-  - Default: true
 - `backupDir`: Directory for backups
-  - Default: "/var/lib/cache-server/backups"
 - `backupRetention`: Number of days to retain backups
-  - Default: 7
-
-### Custom Configuration
-
-- `customConfig`: Additional cache server configuration
-  - Type: attribute set
-  - Optional
 
 ## Health Checks
 
-The template performs the following health checks:
+The template includes comprehensive health checks:
 
-1. Cache server service status
-2. Port availability
-3. Metrics availability (if monitoring is enabled)
-4. Cache server response
+1. **Service Status**: Verifies the cache server service is running
+2. **Port Availability**: Checks if the server is listening on the configured port
+3. **Response Validation**: Tests actual cache server responses
+4. **Monitoring Health**: Validates metrics endpoint availability (if enabled)
 
 ## Monitoring
 
-### Prometheus Integration
+When `enableMonitoring` is enabled, the template automatically configures:
 
-- Redis exporter: Port 9121
-- Memcached exporter: Port 9150
-- Metrics available:
-  - Memory usage
-  - Connection counts
-  - Command statistics
-  - Hit/miss ratios
-  - Eviction statistics
-  - Replication status (Redis)
+- Prometheus exporters for the selected cache type
+- Metrics collection on dedicated ports
+- Health check integration
 
-## Backup
+## Backups
 
-### Redis Backup
+Automated backups are configured with:
 
-- Creates RDB snapshots
-- Daily automated backups
+- Daily backup schedule
 - Configurable retention period
-- Backup rotation
+- Automatic cleanup of old backups
+- Error handling and logging
 
-### Memcached Backup
+## Security
 
-- Exports server statistics
-- Daily automated backups
-- Configurable retention period
-- Backup rotation
-
-## Error Handling
-
-The template uses the standardized error handling module for:
-
-- Configuration validation
-- Service status checks
-- Health check failures
-- Monitoring setup
-- Backup operations
-- Logging
+- Password protection for cache access
+- Bind address configuration
+- Connection limits
+- Secure configuration file permissions
 
 ## Examples
 
-### Basic Redis Setup
+### Redis with Monitoring and Backups
 
 ```nix
-services.nix-mox.cache-server = {
-  enable = true;
-  cacheType = "redis";
-  bindAddress = "127.0.0.1";
-  maxMemory = 1024;
-  password = "secure_password";
-  enableMonitoring = true;
-  enableBackup = true;
-};
+{
+  services.nix-mox.cache-server = {
+    enable = true;
+    cacheType = "redis";
+    bindAddress = "127.0.0.1";
+    maxMemory = 2048;
+    evictionPolicy = "allkeys-lru";
+    persistence = true;
+    password = "redis-password";
+    enableMonitoring = true;
+    enableBackup = true;
+    backupRetention = 14;
+  };
+}
 ```
 
-### Memcached with Custom Settings
+### Memcached for High Performance
 
 ```nix
-services.nix-mox.cache-server = {
-  enable = true;
-  cacheType = "memcached";
-  bindAddress = "0.0.0.0";
-  maxMemory = 2048;
-  maxConnections = 2048;
-  password = "secure_password";
-  enableMonitoring = true;
-  enableBackup = true;
-  backupRetention = 14;
-  customConfig = {
-    threadCount = 4;
-    maxItemSize = "1m";
+{
+  services.nix-mox.cache-server = {
+    enable = true;
+    cacheType = "memcached";
+    bindAddress = "0.0.0.0";
+    maxMemory = 4096;
+    maxConnections = 2048;
+    enableMonitoring = true;
   };
-};
+}
 ```
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. Service not starting
-   - Check systemd logs: `journalctl -u nix-mox-cache-server-{redis,memcached}`
-   - Verify configuration syntax
-   - Check port availability
+1. **Service not starting**: Check systemd logs with `journalctl -u nix-mox-cache-server-<type>`
+2. **Port conflicts**: Verify no other services are using the configured ports
+3. **Memory issues**: Adjust `maxMemory` based on available system memory
+4. **Authentication failures**: Ensure password is correctly configured
 
-2. Memory issues
-   - Monitor memory usage
-   - Adjust maxMemory setting
-   - Check eviction policy (Redis)
+### Health Check Failures
 
-3. Connection issues
-   - Verify bindAddress setting
-   - Check firewall rules
-   - Monitor connection count
+The template includes detailed error messages for:
+- Service not running
+- Port not listening
+- Cache server not responding
+- Monitoring endpoint unavailable
 
-4. Backup failures
-   - Check backup directory permissions
-   - Verify disk space
-   - Check backup script logs
+## Fragment System
 
-### Logs
+The template uses a fragment-based architecture for better maintainability:
 
-- Systemd logs: `journalctl -u nix-mox-cache-server-{redis,memcached}`
-- Redis logs: `/var/log/redis/redis.log`
-- Memcached logs: `/var/log/memcached/memcached.log`
-- Backup logs: `journalctl -u nix-mox-cache-server-backup-{redis,memcached}`
+- **Modular Design**: Each aspect (base, redis, memcached, monitoring, backup) is in its own fragment
+- **Conditional Loading**: Fragments are only loaded when relevant options are enabled
+- **Easy Extension**: New cache types or features can be added as new fragments
+- **Clear Separation**: Configuration, validation, and implementation are clearly separated
 
 ## Contributing
 
