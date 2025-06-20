@@ -17,7 +17,7 @@
 
   # Networking
   networking = {
-    hostName = "hydebox"; # Change this to your hostname
+    hostName = "nixos"; # Change this to your hostname
     networkmanager.enable = true;
 
     # Optional: enable firewall
@@ -56,7 +56,6 @@
   };
 
   # Enable sound
-  sound.enable = true;
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -69,7 +68,6 @@
   # Graphics drivers
   hardware.opengl = {
     enable = true;
-    driSupport = true;
     driSupport32Bit = true;
   };
 
@@ -87,9 +85,9 @@
   # services.xserver.videoDrivers = [ "amdgpu" ];
 
   # Users
-  users.users.hyde = {  # Change "hyde" to your username
+  users.users.droo = {  # Change "droo" to your username
     isNormalUser = true;
-    description = "Hyde";
+    description = "Droo";
     extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
     shell = pkgs.zsh;  # or pkgs.bash
   };
@@ -111,10 +109,10 @@
     alacritty
 
     # From nix-mox (access the packages)
-    inputs.nix-mox.packages.\${pkgs.system}.proxmox-update
-    inputs.nix-mox.packages.\${pkgs.system}.vzdump-backup
-    inputs.nix-mox.packages.\${pkgs.system}.zfs-snapshot
-    inputs.nix-mox.packages.\${pkgs.system}.nixos-flake-update
+    inputs.nix-mox.packages.${pkgs.system}.proxmox-update
+    inputs.nix-mox.packages.${pkgs.system}.vzdump-backup
+    inputs.nix-mox.packages.${pkgs.system}.zfs-snapshot
+    inputs.nix-mox.packages.${pkgs.system}.nixos-flake-update
 
     # Development tools
     vscode

@@ -41,7 +41,7 @@ nix-mox-template-safe-configuration
 
 2. **Copy template files from:**
 
-   ```
+   ```bash
    modules/templates/nixos/safe-configuration/
    ```
 

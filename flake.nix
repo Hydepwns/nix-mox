@@ -11,6 +11,14 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    nix-mox = {
+      url = "github:Hydepwns/nix-mox";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   nixConfig = {
@@ -26,7 +34,7 @@
     ];
   };
 
-  outputs = { self, nixpkgs, flake-utils, ... }:
+  outputs = { self, nixpkgs, flake-utils, nix-mox, home-manager, ... }@inputs:
     let
       config = import ./config/default.nix;
       supportedSystems = [ "aarch64-darwin" "x86_64-darwin" "x86_64-linux" "aarch64-linux" ];
@@ -77,10 +85,10 @@
               buildInputs = [ pkgs.nushell ];
               src = ./.;
             } ''
-              cd $src
-              export TEST_TEMP_DIR=$TMPDIR/nix-mox-unit
+              cd \$src
+              export TEST_TEMP_DIR=\$TMPDIR/nix-mox-unit
               nu -c "source scripts/tests/unit/unit-tests.nu"
-              touch $out
+              touch \$out
             '';
 
             # Integration tests only
@@ -88,10 +96,10 @@
               buildInputs = [ pkgs.nushell ];
               src = ./.;
             } ''
-              cd $src
-              export TEST_TEMP_DIR=$TMPDIR/nix-mox-integration
+              cd \$src
+              export TEST_TEMP_DIR=\$TMPDIR/nix-mox-integration
               nu -c "source scripts/tests/integration/integration-tests.nu"
-              touch $out
+              touch \$out
             '';
 
             # Full suite (optional, keep your current test-suite if you want)
@@ -99,11 +107,27 @@
               buildInputs = [ pkgs.nushell ];
               src = ./.;
             } ''
-              cd $src
-              export TEST_TEMP_DIR=$TMPDIR/nix-mox-tests
+              cd \$src
+              export TEST_TEMP_DIR=\$TMPDIR/nix-mox-tests
               nu -c "source scripts/tests/run-tests.nu; run []"
-              touch $out
+              touch \$out
             '';
+          };
+          nixosConfigurations = {
+            nixos = nixpkgs.lib.nixosSystem {
+              system = "x86_64-linux";
+              specialArgs = { inherit inputs; };
+              modules = [
+                ./configuration.nix
+                ./hardware-configuration.nix
+                home-manager.nixosModules.home-manager
+                {
+                  home-manager.useGlobalPkgs = true;
+                  home-manager.useUserPackages = true;
+                  home-manager.users.droo = import ./home.nix;
+                }
+              ];
+            };
           };
         }
       );
