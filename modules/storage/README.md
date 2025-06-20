@@ -9,17 +9,18 @@ The storage modules are organized into fragments for better maintainability:
 - `fragments/base.nix`: Common storage configuration options and validation
 - `fragments/zfs.nix`: ZFS-specific configuration and auto-snapshot functionality
 - `fragments/backup.nix`: General storage backup functionality
-- `fragments/monitoring.nix`: Storage monitoring and health checks
+- `fragments/monitoring.nix`: Comprehensive storage monitoring with Prometheus/Grafana integration
 - `storage.nix`: Main storage module that imports all fragments
-- `zfs/`: Legacy ZFS module (for backward compatibility)
+- `templates/zfs-ssd-caching/`: ZFS SSD caching template with fragment-based architecture
 
 ## Features
 
 - **ZFS Management**: Automated snapshots, health monitoring, and pool management
 - **Backup Solutions**: Configurable backup targets with compression and retention
 - **Health Monitoring**: SMART disk checks, temperature monitoring, and space usage alerts
-- **Prometheus Integration**: Built-in metrics collection for storage systems
+- **Prometheus Integration**: Built-in metrics collection for storage systems with Grafana support
 - **Error Handling**: Comprehensive error handling and logging
+- **Template System**: Pre-configured templates for common storage scenarios
 
 ## Usage
 
@@ -85,6 +86,8 @@ The storage modules are organized into fragments for better maintainability:
 {
   services.nix-mox.storage-monitoring = {
     enable = true;
+    enablePrometheus = true;
+    enableGrafana = true;
     disks = {
       "sda" = {
         device = "/dev/sda";
@@ -102,6 +105,15 @@ The storage modules are organized into fragments for better maintainability:
       };
     };
   };
+}
+```
+
+### Using Templates
+
+```nix
+{
+  # Import the ZFS SSD caching template
+  imports = [ modules.storage.templates.zfs-ssd-caching ];
 }
 ```
 
@@ -137,6 +149,8 @@ The storage modules are organized into fragments for better maintainability:
 ### Monitoring Options
 
 - `enable`: Enable storage monitoring and health checks
+- `enablePrometheus`: Enable Prometheus metrics collection
+- `enableGrafana`: Enable Grafana dashboard provisioning
 - `disks`: Configuration for disk monitoring
   - `device`: Device path (e.g., /dev/sda)
   - `check_smart`: Enable SMART health checks
@@ -156,6 +170,7 @@ The storage modules use a fragment-based architecture for better maintainability
 - **Conditional Loading**: Fragments are only loaded when relevant options are enabled
 - **Easy Extension**: New storage types or features can be added as new fragments
 - **Clear Separation**: Configuration, validation, and implementation are clearly separated
+- **Template Integration**: Templates can import specific fragments as needed
 
 ## Health Checks
 
@@ -170,10 +185,23 @@ The storage modules include comprehensive health checks:
 
 When monitoring is enabled, the modules automatically configure:
 
-- Prometheus exporters for storage metrics
+- Prometheus exporters for storage metrics (including ZFS and SMART data)
 - SMART disk health monitoring
 - ZFS pool status monitoring
 - Temperature and space usage alerts
+- Grafana dashboard provisioning (optional)
+
+## Templates
+
+### ZFS SSD Caching Template
+
+The `zfs-ssd-caching` template provides automated configuration for ZFS SSD caching:
+
+- **Automatic Detection**: Automatically detects NVMe SSDs
+- **Flexible Configuration**: Supports both L2ARC and Special VDEVs
+- **Health Checks**: Comprehensive device and pool health validation
+- **Error Handling**: Robust error handling with retry logic
+- **Monitoring Integration**: Works with the main storage monitoring system
 
 ## Examples
 
@@ -199,55 +227,38 @@ When monitoring is enabled, the modules automatically configure:
     };
   };
 
-  services.nix-mox.storage-backup = {
-    enable = true;
-    targets = {
-      "home-backup" = {
-        source = "/home";
-        destination = "/backup/home";
-        frequency = "daily";
-        retention_days = 30;
-        compression = true;
-      };
-    };
-  };
-
   services.nix-mox.storage-monitoring = {
     enable = true;
-    disks = {
-      "sda" = {
-        device = "/dev/sda";
-        check_smart = true;
-        check_temperature = true;
-        max_temperature = 45;
-      };
-    };
-    pools = {
-      "rpool" = {
-        name = "rpool";
-        check_health = true;
-        check_space = true;
-        space_threshold = 80;
-      };
-    };
+    enablePrometheus = true;
+    enableGrafana = true;
   };
 }
 ```
 
-## Troubleshooting
+### Template-Based Setup
 
-### Common Issues
+```nix
+{
+  # Import storage modules
+  imports = [ modules.storage.storage ];
 
-1. **ZFS pool not found**: Ensure the pool name is correct and the pool exists
-2. **Device not found**: Verify the device path exists and is accessible
-3. **Permission denied**: Ensure services run with appropriate permissions
-4. **Backup failures**: Check source and destination paths and permissions
+  # Use ZFS SSD caching template
+  imports = [ modules.storage.templates.zfs-ssd-caching ];
 
-### Health Check Failures
+  # Configure monitoring
+  services.nix-mox.storage-monitoring = {
+    enable = true;
+    enablePrometheus = true;
+  };
+}
+```
 
-The modules include detailed error messages for:
-- Device not found
-- SMART health check failures
-- Temperature threshold exceeded
-- Pool health issues
-- Space usage warnings
+## Recent Changes
+
+### Cleanup (Latest)
+
+- **Consolidated Monitoring**: Merged template-specific monitoring into the main monitoring fragment
+- **Removed Legacy Modules**: Eliminated redundant ZFS modules in favor of the fragment-based approach
+- **Standardized Imports**: All modules now use consistent import patterns
+- **Enhanced Documentation**: Updated README to reflect the new structure and capabilities
+- **Template Simplification**: Templates now focus on their specific functionality without duplicating common features

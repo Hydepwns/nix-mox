@@ -12,6 +12,19 @@ in
   options.services.nix-mox.storage-monitoring = {
     enable = lib.mkEnableOption "Enable storage monitoring and health checks";
 
+    # Enhanced monitoring options
+    enablePrometheus = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Enable Prometheus metrics collection";
+    };
+
+    enableGrafana = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Enable Grafana dashboard provisioning";
+    };
+
     disks = lib.mkOption {
       type = lib.types.attrsOf (lib.types.submodule ({ ... }: {
         options = {
@@ -92,6 +105,42 @@ in
       hdparm
       hddtemp
       iostat
+    ];
+
+    # Enhanced Prometheus monitoring
+    services.prometheus.exporters = lib.mkIf monitoringCfg.enablePrometheus {
+      node = {
+        enable = true;
+        enabledCollectors = [
+          "diskstats"
+          "filesystem"
+          "uname"
+          "vmstat"
+          "zfs"
+          "smartmon"
+        ];
+      };
+    };
+
+    # Enhanced Prometheus configuration
+    services.prometheus.scrapeConfigs = lib.mkIf monitoringCfg.enablePrometheus [
+      {
+        job_name = "storage";
+        static_configs = [{
+          targets = [ "localhost:9100" ];
+        }];
+      }
+    ];
+
+    # Add ZFS monitoring to Grafana if enabled
+    services.grafana.provision.datasources = lib.mkIf (monitoringCfg.enableGrafana && monitoringCfg.enablePrometheus) [
+      {
+        name = "Storage Metrics";
+        type = "prometheus";
+        url = "http://localhost:9090";
+        access = "proxy";
+        isDefault = true;
+      }
     ];
 
     # Create systemd services for disk and pool monitoring
@@ -214,13 +263,5 @@ in
           })
         (lib.filterAttrs (_: pool: pool.enable) monitoringCfg.pools))
     ];
-
-    # Add Prometheus monitoring
-    services.prometheus.exporters = {
-      node = {
-        enable = true;
-        enabledCollectors = [ "diskstats" "filesystem" "uname" "vmstat" ];
-      };
-    };
   };
 }
