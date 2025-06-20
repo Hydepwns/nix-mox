@@ -1,0 +1,30 @@
+{
+  "id": null,
+  "uid": "node-exporter-sample",
+  "title": "Node Exporter Sample",
+  "tags": ["node-exporter", "sample"],
+  "timezone": "browser",
+  "schemaVersion": 30,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "CPU Usage",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "100 - (avg by(instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "xaxis": {"show": true},
+      "yaxes": [
+        {"format": "percent", "label": "CPU Usage", "show": true},
+        {"show": true}
+      ],
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0}
+    }
+  ]
+} 
