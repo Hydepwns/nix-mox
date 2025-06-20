@@ -18,6 +18,7 @@
   - [Development Shells](#development-shells)
   - [Script Development](#script-development)
   - [Testing](#testing)
+  - [Local CI Testing](#local-ci-testing)
   - [Architecture](#architecture)
 
 ## Overview
@@ -317,6 +318,34 @@ nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update
 # Clean up test artifacts
 make clean
 ```
+
+#### Local CI Testing
+
+Test the CI workflow locally before pushing to GitHub:
+
+```bash
+# Quick CI testing (recommended for development)
+./scripts/ci-test.sh
+
+# Comprehensive CI testing (simulates full GitHub Actions workflow)
+./scripts/test-ci-local.sh
+
+# Test specific CI jobs
+./scripts/test-ci-local.sh build    # Only build packages
+./scripts/test-ci-local.sh test     # Only run tests
+./scripts/test-ci-local.sh checks   # Only run validation checks
+./scripts/test-ci-local.sh clean    # Clean up artifacts
+```
+
+The local CI scripts test:
+
+- Package builds for multiple systems and Nix versions
+- Flake validation and checks
+- Unit and integration tests
+- Devshell validation
+- Release job simulation
+
+See [`scripts/README.md`](./scripts/README.md) for detailed usage information.
 
 #### Continuous Integration
 

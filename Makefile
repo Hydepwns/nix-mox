@@ -19,14 +19,17 @@ help:
 
 # Run all tests
 test:
+	mkdir -p coverage-tmp/nix-mox-tests
 	TEST_TEMP_DIR=coverage-tmp nu -c "source tests/run-tests.nu; run []"
 
 # Run unit tests only
 unit:
+	mkdir -p coverage-tmp/nix-mox-tests
 	TEST_TEMP_DIR=coverage-tmp nu tests/unit/unit-tests.nu
 
 # Run integration tests only
 integration:
+	mkdir -p coverage-tmp/nix-mox-tests
 	TEST_TEMP_DIR=coverage-tmp nu tests/integration/integration-tests.nu
 
 # Clean up test artifacts
