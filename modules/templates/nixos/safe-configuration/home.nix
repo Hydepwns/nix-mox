@@ -22,9 +22,18 @@
       ngc = "nix-collect-garbage -d";
 
       # Quick access to nix-mox dev shells
-      dev-default = "nix develop ${inputs.nix-mox}#default";
-      dev-gaming = "nix develop ${inputs.nix-mox}#gaming";
-      dev-test = "nix develop ${inputs.nix-mox}#testing";
+      dev-default = "nix develop \${inputs.nix-mox}#default";
+      dev-development = "nix develop \${inputs.nix-mox}#development";
+      dev-testing = "nix develop \${inputs.nix-mox}#testing";
+      dev-services = "nix develop \${inputs.nix-mox}#services";
+      dev-monitoring = "nix develop \${inputs.nix-mox}#monitoring";
+      dev-gaming = "nix develop \${inputs.nix-mox}#gaming";
+      dev-zfs = "nix develop \${inputs.nix-mox}#zfs";
+      dev-macos = "nix develop \${inputs.nix-mox}#macos";
+      dev-storage = "nix develop \${inputs.nix-mox}#storage";
+
+      # nix-mox package commands
+      nixos-update = "nixos-flake-update";
     };
 
     initExtra = ""
