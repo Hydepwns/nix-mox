@@ -13,9 +13,9 @@ use ./coverage-core.nu *
 export-env {
     # Base directories
     $env.TEST_DIR = "."
-    $env.UNIT_TEST_DIR = $"($env.TEST_DIR)/unit"
-    $env.INTEGRATION_TEST_DIR = $"($env.TEST_DIR)/integration"
-    $env.FIXTURES_DIR = $"($env.TEST_DIR)/fixtures"
+    $env.UNIT_TEST_DIR = $"($env.TEST_DIR)/scripts/tests/unit"
+    $env.INTEGRATION_TEST_DIR = $"($env.TEST_DIR)/scripts/tests/integration"
+    $env.FIXTURES_DIR = $"($env.TEST_DIR)/scripts/tests/fixtures"
 
     # Test environment
     $env.LOG_LEVEL = "INFO"
@@ -204,17 +204,17 @@ export def run_tests [test_dir: string, category: string = "unit"] {
 
 export def run_unit_tests [] {
     print $"($env.GREEN)Running unit tests...($env.NC)"
-    nu tests/unit/unit-tests.nu
+    nu scripts/tests/unit/unit-tests.nu
 }
 
 export def run_integration_tests [] {
     print $"($env.GREEN)Running integration tests...($env.NC)"
-    run_tests "tests/integration" "integration"
+    run_tests "scripts/tests/integration" "integration"
 }
 
 export def run_storage_tests [] {
     print $"($env.GREEN)Running storage tests...($env.NC)"
-    let storage_test_dir = "tests/storage"
+    let storage_test_dir = "scripts/tests/storage"
     if ($storage_test_dir | path exists) {
         run_tests $storage_test_dir "storage"
     } else {
@@ -225,7 +225,7 @@ export def run_storage_tests [] {
 
 export def run_performance_tests [] {
     print $"($env.GREEN)Running performance tests...($env.NC)"
-    let performance_test_dir = "tests/performance"
+    let performance_test_dir = "scripts/tests/performance"
     if ($performance_test_dir | path exists) {
         run_tests $performance_test_dir "performance"
     } else {
