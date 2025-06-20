@@ -386,17 +386,17 @@ make monitoring-shell
 - Enters monitoring environment
 - Provides monitoring and observability tools
 
-#### `make storage-shell`
+#### `make zfs-shell`
 
-Enter storage development shell.
+Enter the ZFS/storage development shell (Linux only).
 
 ```bash
-make storage-shell
+make zfs-shell
 ```
 
 **What it does:**
 
-- Enters storage development environment
+- Enters ZFS/storage development environment
 - Provides ZFS and storage tools
 
 #### `make gaming-shell`
@@ -471,7 +471,7 @@ make test          # Run tests
 make check         # Validate flake
 ```
 
-### Troubleshooting
+### Troubleshooting Workflow
 
 ```bash
 make clean-all     # Clean everything

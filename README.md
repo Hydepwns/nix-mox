@@ -33,6 +33,8 @@ environment.systemPackages = with pkgs; [
   inputs.nix-mox.packages.${pkgs.system}.vzdump-backup
   inputs.nix-mox.packages.${pkgs.system}.zfs-snapshot
   inputs.nix-mox.packages.${pkgs.system}.nixos-flake-update
+  inputs.nix-mox.packages.${pkgs.system}.install
+  inputs.nix-mox.packages.${pkgs.system}.uninstall
 ];
 ```
 
@@ -125,6 +127,8 @@ nix run .#proxmox-update       # Update Proxmox VE
 nix run .#vzdump-backup        # Backup VMs
 nix run .#zfs-snapshot         # Manage ZFS snapshots
 nix run .#nixos-flake-update   # Update flake inputs
+nix run .#install              # Install nix-mox
+nix run .#uninstall            # Uninstall nix-mox
 ```
 
 ## 🏗️ Templates

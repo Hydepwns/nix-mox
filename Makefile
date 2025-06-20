@@ -5,11 +5,11 @@ NUSHELL = nu
 NIX = nix
 
 # Available packages (from flake.nix)
-PACKAGES = proxmox-update vzdump-backup zfs-snapshot nixos-flake-update
+PACKAGES = proxmox-update vzdump-backup zfs-snapshot nixos-flake-update install uninstall
 
 # Phony targets
 .PHONY: help test unit integration clean format check build build-all \
-        dev test-shell gaming-shell macos-shell services-shell monitoring-shell storage-shell \
+        dev test-shell gaming-shell macos-shell services-shell monitoring-shell zfs-shell \
         ci-test ci-local update lock clean-all
 
 # Default target
@@ -38,7 +38,7 @@ help:
 	@echo "  macos-shell - Enter macOS shell (macOS only)"
 	@echo "  services-shell - Enter services shell"
 	@echo "  monitoring-shell - Enter monitoring shell"
-	@echo "  storage-shell - Enter storage shell"
+	@echo "  zfs-shell   - Enter ZFS/storage shell (Linux only)"
 	@echo ""
 	@echo "CI/CD:"
 	@echo "  ci-test     - Run quick CI test locally"
@@ -111,8 +111,8 @@ services-shell:
 monitoring-shell:
 	$(NIX) develop .#monitoring
 
-storage-shell:
-	$(NIX) develop .#storage
+zfs-shell:
+	$(NIX) develop .#zfs
 
 # CI/CD targets
 ci-test:
@@ -145,4 +145,4 @@ shells:
 	@echo "  - monitoring"
 	@echo "  - gaming (Linux x86_64 only)"
 	@echo "  - macos (macOS only)"
-	@echo "  - storage"
+	@echo "  - zfs (Linux only)"

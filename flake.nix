@@ -5,6 +5,9 @@
   # - packages.<system>.proxmox-update: Proxmox update script as a Nix package
   # - packages.<system>.vzdump-backup: Proxmox vzdump backup script as a Nix package
   # - packages.<system>.zfs-snapshot: ZFS snapshot/prune script as a Nix package
+  # - packages.<system>.nixos-flake-update: NixOS flake update script as a Nix package
+  # - packages.<system>.install: nix-mox installation script as a Nix package
+  # - packages.<system>.uninstall: nix-mox uninstallation script as a Nix package
 
   description = "A comprehensive NixOS configuration framework with development tools, monitoring, and system management utilities";
 
@@ -77,40 +80,44 @@
             vzdump-backup = linuxPackages.vzdump-backup;
             zfs-snapshot = linuxPackages.zfs-snapshot;
             nixos-flake-update = linuxPackages.nixos-flake-update;
+            install = linuxPackages.install;
+            uninstall = linuxPackages.uninstall;
             default = linuxPackages.proxmox-update;
           } else {};
-          checks = {
+          checks = let
+            src = ./.;
+          in {
             # Unit tests only
             unit = pkgs.runCommand "nix-mox-unit-tests" {
               buildInputs = [ pkgs.nushell ];
-              src = ./.;
             } ''
-              cd \$src
-              export TEST_TEMP_DIR=\$TMPDIR/nix-mox-unit
+              cp -r ${src} $TMPDIR/src
+              cd $TMPDIR/src
+              export TEST_TEMP_DIR=$TMPDIR/nix-mox-unit
               nu -c "source scripts/tests/unit/unit-tests.nu"
-              touch \$out
+              touch $out
             '';
 
             # Integration tests only
             integration = pkgs.runCommand "nix-mox-integration-tests" {
               buildInputs = [ pkgs.nushell ];
-              src = ./.;
             } ''
-              cd \$src
-              export TEST_TEMP_DIR=\$TMPDIR/nix-mox-integration
+              cp -r ${src} $TMPDIR/src
+              cd $TMPDIR/src
+              export TEST_TEMP_DIR=$TMPDIR/nix-mox-integration
               nu -c "source scripts/tests/integration/integration-tests.nu"
-              touch \$out
+              touch $out
             '';
 
             # Full suite
             test-suite = pkgs.runCommand "nix-mox-tests" {
               buildInputs = [ pkgs.nushell ];
-              src = ./.;
             } ''
-              cd \$src
-              export TEST_TEMP_DIR=\$TMPDIR/nix-mox-tests
+              cp -r ${src} $TMPDIR/src
+              cd $TMPDIR/src
+              export TEST_TEMP_DIR=$TMPDIR/nix-mox-tests
               nu -c "source scripts/tests/run-tests.nu; run []"
-              touch \$out
+              touch $out
             '';
           };
         }
