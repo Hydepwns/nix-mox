@@ -235,6 +235,7 @@ git push origin feature/your-feature
 For a complete development workflow guide, see [Development Workflow Guide](./guides/development-workflow.md).
 
 **Quick Development Commands:**
+
 ```bash
 make dev           # Enter development shell
 make test          # Run all tests

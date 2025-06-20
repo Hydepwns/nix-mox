@@ -77,12 +77,13 @@ let
 
     safe-configuration = {
       name = "safe-configuration";
-      description = "Default NixOS configuration template that prevents display issues and integrates with nix-mox tools";
+      description = "Default NixOS configuration template that prevents display issues and integrates with nix-mox tools using the fragment system.";
       scripts = [
         "flake.nix"
         "configuration.nix"
         "home.nix"
         "README.md"
+        "setup.sh"
       ];
       dependencies = [
         "nix"

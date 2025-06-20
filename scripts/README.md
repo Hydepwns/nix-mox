@@ -1,74 +1,72 @@
-# Scripts Directory
+# nix-mox Scripts
 
-This directory contains utility scripts for development and CI testing.
+This directory contains all platform-specific and automation scripts for the nix-mox toolkit.
 
-## CI Testing Scripts
+## Main Entrypoint
 
-### `ci-test.sh` - Simple CI Testing
+The primary entrypoint for automation is now the bash wrapper script:
 
-A quick and simple script to test the CI workflow locally.
-
-**Usage:**
-
-```bash
-./scripts/ci-test.sh
+```
+modules/scripts/nix-mox
 ```
 
-**What it tests:**
+### Usage
 
-- Package builds for current system
-- Flake check
-- Unit tests
-- Integration tests
-- Flake outputs validation
-- Devshell validation
-
-### `test-ci-local.sh` - Comprehensive CI Testing
-
-A comprehensive script that simulates the full GitHub Actions workflow locally.
-
-**Usage:**
+Run the script with:
 
 ```bash
-# Run all CI jobs
-./scripts/test-ci-local.sh
-
-# Run specific jobs
-./scripts/test-ci-local.sh build    # Only build packages
-./scripts/test-ci-local.sh test     # Only run tests
-./scripts/test-ci-local.sh checks   # Only run checks
-./scripts/test-ci-local.sh clean    # Clean up artifacts
-./scripts/test-ci-local.sh help     # Show help
+./modules/scripts/nix-mox --script install --dry-run
 ```
 
-**What it tests:**
+> **Note:** The wrapper script ensures robust argument passing for all Nushell versions and platforms. You no longer need to worry about double-dash (`--`) or Nushell quirks.
 
-- Package builds for multiple systems (x86_64-linux, aarch64-linux)
-- Multiple Nix versions (2.19.2, 2.20.1)
-- Full test suite (unit, integration, flake check)
-- Release job simulation
-- Comprehensive validation checks
+### Options
 
-## When to Use Which Script
+- `-h, --help`           Show help message
+- `--dry-run`           Show what would be done without making changes
+- `--debug`             Enable debug output
+- `--platform <os>`     Specify platform (auto, linux, darwin, nixos)
+- `--script <name>`     Run specific script (install, update, zfs-snapshot)
+- `--log <file>`        Log output to file
 
-- **Use `ci-test.sh`** for quick local testing during development
-- **Use `test-ci-local.sh`** for comprehensive testing before pushing to GitHub
-- **Use `test-ci-local.sh build`** to test only package builds
-- **Use `test-ci-local.sh test`** to test only the test suite
+### Platform & OS Info
+- When running a script, nix-mox prints detailed OS info (distro, version, kernel) for Linux/NixOS, macOS, or Windows.
+- NixOS is fully supported and detected as a Linux platform.
 
-## Prerequisites
+### Error Handling & Logging
+- All error handling and logging is robust and platform-aware.
+- Errors are clearly reported, and logs can be written to a file with `--log <file>`.
 
-Both scripts require:
+## Directory Structure
 
-- Nix installed and configured
-- Running from the project root directory
-- Proper permissions to execute the scripts
+- `nix-mox`             — Main automation entrypoint (bash wrapper)
+- `nix-mox.nu`          — Nushell automation logic
+- `common.nu`           — Shared utilities and logging
+- `linux/`              — Linux-specific scripts (install, update, zfs, etc.)
+- `windows/`            — Windows-specific scripts
+- `testing/`            — Test infrastructure and helpers
+- `lib/`                — Script libraries and helpers
+
+## Script Development
+
+- Use the utilities in `common.nu` for logging, error handling, and platform detection.
+- Follow the argument parsing and error handling patterns in `nix-mox.nu` for new scripts.
+- See the [Script Development Guide](../../docs/guides/scripting.md) for best practices and advanced usage.
 
 ## Troubleshooting
 
-If you encounter issues:
+- If you see `[ERROR] No script specified`, check your invocation method and ensure you are using the wrapper script.
+- For Nushell versions that do not support argument passing, the wrapper script will handle it for you.
 
-1. Make sure you're running from the project root
-2. Ensure Nix is properly installed and configured
-3. Check that all dependencies are available
-4. Run `./scripts/test-ci-local.sh clean` to clean up any artifacts
+## Example Invocations
+
+```bash
+# Install (dry run)
+./modules/scripts/nix-mox --script install --dry-run
+
+# Update packages
+./modules/scripts/nix-mox --script update
+
+# ZFS snapshot (Linux only)
+./modules/scripts/nix-mox --script zfs-snapshot
+``` 

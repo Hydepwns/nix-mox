@@ -1,49 +1,24 @@
+{ inputs, ... }:
+let
+  # Import the user's NixOS configuration
+  userConfig = import ./nixos/configuration.nix;
+  userHome = import ./home/home.nix;
+  userHardware = import ./hardware/hardware-configuration.nix;
+in
 {
-  # Default configuration for nix-mox
-  config = {
-    # Enable unfree packages
-    allowUnfree = true;
-
-    # Default paths
-    paths = {
-      templates = ../modules/templates;
-      scripts = ../modules/scripts;
-      tests = ../modules/scripts/testing;
-    };
-
-    # Default settings
-    settings = {
-      # Enable experimental features
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-
-      # Default substituters
-      substituters = [
-        "https://hydepwns.cachix.org"
-        "https://nix-mox.cachix.org"
-      ];
-
-      # Trusted public keys
-      trusted-public-keys = [
-        "hydepwns.cachix.org-1:xg8huKdwzBkLdkq5eCKenadhCROHIICGI9H6y3simJU="
-        "nix-mox.cachix.org-1:MVJZxC7ZyRFAxVsxDuq0nmMRxlTIt5nFFm4Ur10ZCI4="
-      ];
-    };
-
-    # Platform-specific settings
-    meta = {
-      platforms = {
-        linux = [
-          "aarch64-linux"
-          "x86_64-linux"
-        ];
-        darwin = [
-          "aarch64-darwin"
-          "x86_64-darwin"
-        ];
-      };
-    };
+  # Default NixOS configuration using user's configs
+  nixos = inputs.nixpkgs.lib.nixosSystem {
+    system = "x86_64-linux";
+    specialArgs = { inherit inputs; };
+    modules = [
+      userConfig
+      userHardware
+      inputs.home-manager.nixosModules.home-manager
+      {
+        home-manager.useGlobalPkgs = true;
+        home-manager.useUserPackages = true;
+        home-manager.users.droo = userHome;
+      }
+    ];
   };
 }
