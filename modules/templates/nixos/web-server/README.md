@@ -51,21 +51,28 @@ services.nix-mox.web-server = {
 ## Configuration Options
 
 ### `enable`
+
 Enable or disable the web server template.
 
 ### `serverType`
+
 Type of web server to use. Available options:
+
 - `nginx`: Nginx web server
 - `apache`: Apache web server
 
 ### `enableSSL`
+
 Enable or disable SSL support.
 
 ### `enableMonitoring`
+
 Enable or disable Prometheus monitoring.
 
 ### `virtualHosts`
+
 List of virtual hosts to configure. Each virtual host can have:
+
 - `name`: Name of the virtual host
 - `domain`: Domain name
 - `root`: Root directory
@@ -73,11 +80,13 @@ List of virtual hosts to configure. Each virtual host can have:
 - `proxyPass`: Proxy pass URL for API requests
 
 ### `customConfig`
+
 Custom server configuration options. See the respective server documentation for available options.
 
 ## Health Checks
 
 The template performs the following health checks:
+
 1. Server service status
 2. Port availability
 3. SSL configuration (if enabled)
@@ -86,6 +95,7 @@ The template performs the following health checks:
 ## SSL Support
 
 When SSL is enabled, the template:
+
 1. Creates an SSL directory
 2. Generates a self-signed certificate if not provided
 3. Configures the server to use SSL
@@ -94,6 +104,7 @@ When SSL is enabled, the template:
 ## Virtual Hosts
 
 Virtual hosts can be configured with:
+
 - Custom root directories
 - Multiple index files
 - API proxy support
@@ -103,6 +114,7 @@ Virtual hosts can be configured with:
 ## Monitoring
 
 The template integrates with Prometheus for monitoring:
+
 - Nginx: Exporter runs on port 9180
 - Apache: Exporter runs on port 9117
 
@@ -199,4 +211,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This template is licensed under the MIT License. 
+This template is licensed under the MIT License.
