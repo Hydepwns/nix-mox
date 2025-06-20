@@ -183,18 +183,6 @@ let
       ];
     };
 
-    zfs-ssd-caching = {
-      name = "zfs-ssd-caching";
-      description = "ZFS SSD caching template with L2ARC and Special VDEVs";
-      scripts = [
-        "zfs-ssd-caching.nix"
-      ];
-      dependencies = [
-        "zfs"
-        "smartmontools"
-      ];
-    };
-
     database-management = {
       name = "database-management";
       description = "Database management template with PostgreSQL and MySQL support";
@@ -635,7 +623,6 @@ let
 
   # Update test fixture references
   testFixtures = {
-    zfs-ssd-caching = ./../scripts/tests/fixtures/zfs-ssd-caching/default.nix;
     nixos = ./../scripts/tests/fixtures/nixos/default.nix;
     cachix = ./../scripts/tests/fixtures/cachix/default.nix;
     utils = ./../scripts/tests/fixtures/utils/default.nix;
@@ -681,16 +668,6 @@ in
 
     # Create systemd services for templates that need them
     systemd.services = lib.mkMerge [
-      (lib.mkIf (lib.elem "zfs-ssd-caching" finalTemplates) {
-        zfs-ssd-caching = {
-          description = "ZFS SSD caching service";
-          wantedBy = [ "multi-user.target" ];
-          serviceConfig = {
-            Type = "oneshot";
-            ExecStart = "${templatePackages.zfs-ssd-caching}/bin/nix-mox-template-zfs-ssd-caching";
-          };
-        };
-      })
       (lib.mkIf (lib.elem "database-management" finalTemplates) {
         "database-${cfg.customOptions.database-management.dbType or "postgresql"}" = {
           description = "Database management service";
