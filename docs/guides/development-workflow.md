@@ -125,7 +125,7 @@ make dev              # Default development shell
 make test-shell       # Testing environment
 make services-shell   # Service development
 make monitoring-shell # Monitoring tools
-make storage-shell    # Storage tools
+make zfs-shell         # Storage tools
 ```
 
 ### Platform-Specific Shells
@@ -133,7 +133,7 @@ make storage-shell    # Storage tools
 ```bash
 # Linux only
 make gaming-shell     # Gaming development (x86_64 only)
-make storage-shell    # ZFS tools
+make zfs-shell         # ZFS tools
 
 # macOS only
 make macos-shell      # macOS development
