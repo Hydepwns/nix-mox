@@ -381,6 +381,7 @@ EOF
     inputs.nix-mox.packages.\${pkgs.system}.proxmox-update
     inputs.nix-mox.packages.\${pkgs.system}.vzdump-backup
     inputs.nix-mox.packages.\${pkgs.system}.zfs-snapshot
+    inputs.nix-mox.packages.\${pkgs.system}.nixos-flake-update
 
     # Development tools
     vscode
@@ -508,8 +509,15 @@ EOF
 
       # Quick access to nix-mox dev shells
       dev-default = "nix develop \${inputs.nix-mox}#default";
+      dev-development = "nix develop \${inputs.nix-mox}#development";
+      dev-testing = "nix develop \${inputs.nix-mox}#testing";
+      dev-services = "nix develop \${inputs.nix-mox}#services";
+      dev-monitoring = "nix develop \${inputs.nix-mox}#monitoring";
       dev-gaming = "nix develop \${inputs.nix-mox}#gaming";
-      dev-test = "nix develop \${inputs.nix-mox}#testing";
+      dev-zfs = "nix develop \${inputs.nix-mox}#zfs";
+
+      # nix-mox package commands
+      nixos-update = "nixos-flake-update";
     };
 
     initExtra = ''
@@ -595,9 +603,9 @@ EOF
     echo "   sudo nixos-rebuild switch --flake .#$hostname"
     echo
     print_status "After switching, you can access nix-mox tools:"
-    echo "- System packages: proxmox-update, vzdump-backup, zfs-snapshot"
-    echo "- Development shells: dev-gaming, dev-test"
-    echo "- Or directly: nix develop github:Hydepwns/nix-mox#gaming"
+    echo "- System packages: proxmox-update, vzdump-backup, zfs-snapshot, nixos-flake-update"
+    echo "- Development shells: dev-default, dev-development, dev-testing, dev-services, dev-monitoring, dev-gaming, dev-zfs"
+    echo "- Or directly: nix develop github:Hydepwns/nix-mox#default"
     echo
     print_warning "If you encounter display issues, check the troubleshooting section in the README.md file"
 }
