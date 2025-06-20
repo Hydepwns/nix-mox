@@ -3,10 +3,10 @@
 ## Test Structure
 
 ```bash
-tests/
+scripts/tests/
 ├── unit/           # Unit tests
 ├── integration/    # Integration tests
-├── lib/           # Test utilities and shared functions
+├── lib/           # Test utilities
 │   ├── test-utils.nu    # Core test utilities
 │   ├── test-coverage.nu # Coverage reporting
 │   ├── coverage-core.nu # Coverage tracking
@@ -50,11 +50,11 @@ nix flake check .#test-suite  # Full test suite
 nix develop .#testing
 
 # Run all tests
-nu -c "source tests/run-tests.nu; run []"
+nu -c "source scripts/tests/run-tests.nu; run []"
 
 # Run specific test types
-nu tests/unit/unit-tests.nu
-nu tests/integration/integration-tests.nu
+nu scripts/tests/unit/unit-tests.nu
+nu scripts/tests/integration/integration-tests.nu
 ```
 
 ## Writing Tests
@@ -106,14 +106,14 @@ export_coverage_report "json"
 
 ## Test Categories
 
-### Unit Tests (`tests/unit/`)
+### Unit Tests (`scripts/tests/unit/`)
 
 - Individual component testing
 - Fast execution
 - Isolated functionality
 - Mock external dependencies
 
-### Integration Tests (`tests/integration/`)
+### Integration Tests (`scripts/tests/integration/`)
 
 - End-to-end system testing
 - Platform-specific checks

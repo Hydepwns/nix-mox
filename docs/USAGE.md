@@ -183,10 +183,45 @@ nix flake check       # All checks
 nix flake check .#unit        # Unit tests only
 nix flake check .#integration # Integration tests only
 
+# Build packages
+make build            # Build default package
+make build-all        # Build all packages
+
+# Code quality
+make format           # Format Nix files
+make check            # Run flake checks
+
+# CI/CD testing
+make ci-test          # Quick CI test locally
+make ci-local         # Comprehensive CI test locally
+
+# Maintenance
+make update           # Update flake inputs
+make lock             # Update flake.lock
+make clean-all        # Clean all artifacts
+
+# Information
+make packages         # Show available packages
+make shells           # Show available shells
+make help             # Show all available targets
+
 # Contribute
 git checkout -b feature/your-feature
 git commit -m "feat: your feature"
 git push origin feature/your-feature
+```
+
+### Development Workflow
+
+For a complete development workflow guide, see [Development Workflow Guide](./guides/development-workflow.md).
+
+**Quick Development Commands:**
+```bash
+make dev           # Enter development shell
+make test          # Run all tests
+make format        # Format code
+make check         # Run flake checks
+make build-all     # Build all packages
 ```
 
 ## macOS Development

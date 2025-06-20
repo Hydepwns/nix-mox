@@ -136,12 +136,12 @@ graph TD
 
 ## Testing Infrastructure
 
-The testing infrastructure is organized under `tests/` and includes:
+The testing infrastructure is organized under `scripts/tests/` and includes:
 
-- **Unit Tests** (`tests/unit/`): Individual component testing
-- **Integration Tests** (`tests/integration/`): End-to-end system testing
-- **Performance Tests** (`tests/integration/performance-tests.nu`): System performance validation
-- **Test Utilities** (`tests/lib/`): Common testing functions and helpers
+- **Unit Tests** (`scripts/tests/unit/`): Individual component testing
+- **Integration Tests** (`scripts/tests/integration/`): End-to-end system testing
+- **Performance Tests** (`scripts/tests/integration/performance-tests.nu`): System performance validation
+- **Test Utilities** (`scripts/tests/lib/`): Common testing functions and helpers
   - `test-utils.nu`: Core test utilities and environment management
   - `test-coverage.nu`: Coverage reporting and aggregation
   - `coverage-core.nu`: Coverage tracking and data collection
@@ -152,8 +152,8 @@ Test execution is managed through multiple methods:
 
 - **Make Commands**: `make test`, `make unit`, `make integration`, `make clean`
 - **Nix Flake Checks**: `nix flake check`, granular test execution via flake outputs
-- **Direct Nushell**: `nu -c "source tests/run-tests.nu; run []"`
-- **Main Runner**: `tests/run-tests.nu`: Comprehensive test orchestration
+- **Direct Nushell**: `nu -c "source scripts/tests/run-tests.nu; run []"`
+- **Main Runner**: `scripts/tests/run-tests.nu`: Comprehensive test orchestration
 
 The testing system provides:
 
