@@ -29,11 +29,8 @@ let
       else
         pkg;
 
-    # File operations
-    readScript = path: builtins.readFile (pkgs.lib.cleanSourceWith {
-      src = pkgs.lib.cleanSource ../..;
-      filter = path: type: true;
-    } + "/${path}");
+    # File operations - this will be overridden with the actual source path
+    readScript = path: throw "readScript called without source path context";
 
     # Expose platform detection functions
     inherit isLinux isDarwin;

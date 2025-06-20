@@ -1,7 +1,7 @@
 { pkgs, helpers, config, ... }:
 let
   inherit (helpers) isLinux createShellApp readScript;
-  inherit (config.config.meta.platforms) linux;
+  linux = [ "x86_64-linux" "aarch64-linux" ];
 in
 {
   vzdump-backup = if isLinux pkgs.system then pkgs.symlinkJoin {
@@ -67,32 +67,20 @@ in
     ${readScript "scripts/linux/install.nu"}
   '' else null;
 
-  uninstall = if isLinux pkgs.system then let
-    commonSh = readScript "scripts/linux/_common.nu";
-    uninstallSh = readScript "scripts/linux/uninstall.nu";
-  in createShellApp {
+  uninstall = if isLinux pkgs.system then pkgs.symlinkJoin {
     name = "nix-mox-uninstall";
-    runtimeInputs = [ pkgs.bash pkgs.coreutils ];
-    text = ''
-      #!${pkgs.bash}/bin/bash
-      set -euo pipefail
-
-      # Write _common.nu to a temp file
-      common_sh=$(mktemp)
-      cat > "$common_sh" <<'EOF'
-      ${commonSh}
-      EOF
-
-      # Source common functions
-      source "$common_sh"
-
-      # Main uninstall logic
-      ${uninstallSh}
+    paths = [ (pkgs.writeScriptBin "nix-mox-uninstall" ''
+      #!${pkgs.nushell}/bin/nu
+      ${readScript "scripts/linux/uninstall.nu"}
+    '') ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/nix-mox-uninstall \
+        --prefix PATH : ${pkgs.lib.makeBinPath [
+          pkgs.bash
+          pkgs.coreutils
+        ]}
     '';
-    meta = {
-      description = "Legacy/compat uninstall logic for nix-mox scripts.";
-      platforms = linux;
-    };
   } else null;
 
   proxmox-update = if isLinux pkgs.system then pkgs.writeTextFile {

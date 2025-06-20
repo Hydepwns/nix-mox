@@ -51,11 +51,16 @@
             } else {};
           };
           devShell = import ./devshells/default.nix { inherit pkgs; };
+          helpers = import ./modules/packages/error-handling/helpers.nix {
+            inherit pkgs;
+          } // {
+            readScript = path: builtins.readFile (self + "/${path}");
+          };
           linuxPackages = if pkgs.stdenv.isLinux then
             import ./modules/packages/linux/default.nix {
               inherit pkgs;
-              config = import ./config/default.nix;
-              helpers = import ./modules/packages/error-handling/helpers.nix { inherit pkgs; };
+              config = import ./config/default.nix { inherit inputs; };
+              helpers = helpers;
             }
           else {};
         in
