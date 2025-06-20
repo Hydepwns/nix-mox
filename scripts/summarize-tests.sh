@@ -16,7 +16,7 @@ mkdir -p "$TMP_DIR"
 
 # Run the test suite and capture all output
 echo "Running Nushell tests..."
-if nu -c "source tests/run-tests.nu; run ['--unit']" > "$INPUT_FILE" 2>&1; then
+if nu -c "source scripts/tests/run-tests.nu; run ['--unit']" > "$INPUT_FILE" 2>&1; then
   echo "All tests passed!" > "$OUTPUT_FILE"
   echo "Full summary in $OUTPUT_FILE"
   exit 0
