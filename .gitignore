@@ -1,16 +1,38 @@
-coverage.*
+# Build artifacts
+result/
 coverage-tmp/
+tmp/
+*.log
+
+# Coverage reports
+coverage.*
+coverage.yaml
+coverage.toml
+
+# IDE and editor files
+.vscode/
+.cursor/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment and development files
 .envrc
 .direnv/
-*.log
-*.swp
-result
-tmp/
+.env
+.env.local
 
-# personal settings
+# Personal configuration files (uncomment if needed)
 #configuration.nix
 #hardware-configuration.nix
 #home.nix
-.vscode/
-.cursor/
+
+# Temporary files
+*.tmp
+*.temp
