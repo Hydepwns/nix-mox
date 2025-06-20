@@ -19,11 +19,13 @@
    nix profile install .#proxmox-update
    nix profile install .#vzdump-backup
    nix profile install .#zfs-snapshot
+   nix profile install .#nixos-flake-update
 
    # Run scripts directly
    nix run .#proxmox-update
    nix run .#vzdump-backup
    nix run .#zfs-snapshot
+   nix run .#nixos-flake-update
    ```
 
 3. Manual Install:
@@ -89,13 +91,27 @@ After setting up your NixOS system with the safe template:
 proxmox-update
 vzdump-backup
 zfs-snapshot
+nixos-flake-update
 
 # Access development shells via aliases
-dev-gaming  # Opens gaming development shell
-dev-test    # Opens testing shell
+dev-default      # Opens default development shell
+dev-development  # Opens development tools shell
+dev-testing      # Opens testing shell
+dev-services     # Opens services shell
+dev-monitoring   # Opens monitoring shell
+dev-gaming       # Opens gaming development shell (Linux x86_64 only)
+dev-zfs          # Opens ZFS tools shell (Linux only)
+dev-macos        # Opens macOS development shell (macOS only)
 
 # Or directly
+nix develop github:Hydepwns/nix-mox#default
+nix develop github:Hydepwns/nix-mox#development
+nix develop github:Hydepwns/nix-mox#testing
+nix develop github:Hydepwns/nix-mox#services
+nix develop github:Hydepwns/nix-mox#monitoring
 nix develop github:Hydepwns/nix-mox#gaming
+nix develop github:Hydepwns/nix-mox#zfs
+nix develop github:Hydepwns/nix-mox#macos
 ```
 
 For detailed information about the safe configuration template, see:
@@ -109,6 +125,7 @@ The following packages are available on Linux systems:
 - **proxmox-update**: Update and upgrade Proxmox host packages safely
 - **vzdump-backup**: Backup Proxmox VMs and containers using vzdump
 - **zfs-snapshot**: Create and manage ZFS snapshots with automatic pruning
+- **nixos-flake-update**: Update NixOS flake inputs and system automatically
 - **steam-rust-update**: Update Steam and Rust games
 - **optimize-game-performance**: Optimize game performance settings
 
@@ -133,7 +150,7 @@ The following packages are available on Linux systems:
 
 ## Components
 
-- **Scripts**: proxmox-update, vzdump-backup, zfs-snapshot
+- **Scripts**: proxmox-update, vzdump-backup, zfs-snapshot, nixos-flake-update
 - **Templates**: Containers, VMs, Monitoring, Storage, Safe Configuration
 - **Modules**: Common, ZFS, Infisical, Tailscale
 
@@ -165,12 +182,14 @@ services.nix-mox.templates = {
 nix develop
 
 # Enter specific development shells
-nix develop .#development
-nix develop .#testing
-nix develop .#services
-nix develop .#monitoring
-nix develop .#zfs  # Linux only
-nix develop .#macos  # macOS only
+nix develop .#default        # Basic development environment (all platforms)
+nix develop .#development    # Enhanced development environment (all platforms)
+nix develop .#testing        # Testing environment (all platforms)
+nix develop .#services       # Service development and management (all platforms)
+nix develop .#monitoring     # Monitoring and observability (all platforms)
+nix develop .#gaming         # Gaming environment (Linux x86_64 only)
+nix develop .#zfs            # ZFS development and testing (Linux only)
+nix develop .#macos          # macOS development environment (macOS only)
 
 # Run tests
 make test              # All tests

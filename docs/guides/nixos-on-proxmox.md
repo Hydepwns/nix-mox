@@ -111,6 +111,38 @@ If you still encounter display problems:
    sudo nixos-rebuild switch --rollback
    ```
 
+### Using nix-mox After Setup
+
+After setting up your NixOS system with the safe template:
+
+```bash
+# Your nix-mox packages are available system-wide
+proxmox-update
+vzdump-backup
+zfs-snapshot
+nixos-flake-update
+
+# Access development shells via aliases
+dev-default      # Opens default development shell
+dev-development  # Opens development tools shell
+dev-testing      # Opens testing shell
+dev-services     # Opens services shell
+dev-monitoring   # Opens monitoring shell
+dev-gaming       # Opens gaming development shell (Linux x86_64 only)
+dev-zfs          # Opens ZFS tools shell (Linux only)
+dev-macos        # Opens macOS development shell (macOS only)
+
+# Or directly
+nix develop github:Hydepwns/nix-mox#default
+nix develop github:Hydepwns/nix-mox#development
+nix develop github:Hydepwns/nix-mox#testing
+nix develop github:Hydepwns/nix-mox#services
+nix develop github:Hydepwns/nix-mox#monitoring
+nix develop github:Hydepwns/nix-mox#gaming
+nix develop github:Hydepwns/nix-mox#zfs
+nix develop github:Hydepwns/nix-mox#macos
+```
+
 ## LXC Container Setup
 
 ```mermaid
