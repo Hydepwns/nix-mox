@@ -14,10 +14,6 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    nix-mox = {
-      url = "github:Hydepwns/nix-mox";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -37,58 +33,90 @@
     ];
   };
 
-  outputs = { self, nixpkgs, flake-utils, nix-mox, home-manager, ... }@inputs:
+  outputs = { self, nixpkgs, flake-utils, home-manager, ... }@inputs:
     let
-      supportedSystems = [ "aarch64-darwin" "x86_64-darwin" "x86_64-linux" "aarch64-linux" ];
+      # Supported systems with clear documentation
+      supportedSystems = [
+        "aarch64-darwin"   # Apple Silicon Macs
+        "x86_64-darwin"    # Intel Macs
+        "x86_64-linux"     # Intel/AMD Linux
+        "aarch64-linux"    # ARM Linux (Raspberry Pi, etc.)
+      ];
+
+      # Helper function to check if system is supported
+      isSupported = system: builtins.elem system supportedSystems;
+
+      # Helper function to get system-specific packages
+      getSystemPackages = system: pkgs:
+        if pkgs.stdenv.isLinux then
+          import ./modules/packages/linux/default.nix {
+            inherit pkgs;
+            config = import ./config/default.nix { inherit inputs; };
+            helpers = {
+              readScript = path: builtins.readFile (self + "/${path}");
+              isLinux = system: builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
+            };
+          }
+        else {};
     in
       flake-utils.lib.eachSystem supportedSystems (system:
         let
+          # Import nixpkgs with proper configuration
           pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
-            config.darwinConfig = if pkgs.stdenv.isDarwin then {
+            config.darwinConfig = if system == "aarch64-darwin" || system == "x86_64-darwin" then {
               system = system;
             } else {};
           };
+
+          # Import development shell
           devShell = import ./devshells/default.nix { inherit pkgs; };
-          helpers = import ./modules/packages/error-handling/helpers.nix {
-            inherit pkgs;
-          } // {
+
+          # Get system-specific packages
+          systemPackages = getSystemPackages system pkgs;
+
+          # Helper functions
+          helpers = {
             readScript = path: builtins.readFile (self + "/${path}");
+            isLinux = system: builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
           };
-          linuxPackages = if pkgs.stdenv.isLinux then
-            import ./modules/packages/linux/default.nix {
-              inherit pkgs;
-              config = import ./config/default.nix { inherit inputs; };
-              helpers = helpers;
-            }
-          else {};
         in
         {
+          # Development shells with platform-specific availability
           devShells = {
             default = devShell.default;
             development = devShell.development;
             testing = devShell.testing;
             services = devShell.services;
             monitoring = devShell.monitoring;
-          } // (if pkgs.stdenv.isLinux && pkgs.system == "x86_64-linux" then {
-            gaming = devShell.gaming;
-            zfs = devShell.zfs;
-          } else if pkgs.stdenv.isLinux then {
-            zfs = devShell.zfs;
-          } else if pkgs.stdenv.isDarwin then {
-            macos = devShell.macos;
-          } else {});
+          } // (
+            # Platform-specific shells
+            if pkgs.stdenv.isLinux && system == "x86_64-linux" then {
+              gaming = devShell.gaming;  # Gaming shell (Linux x86_64 only)
+              zfs = devShell.zfs;        # ZFS tools (Linux only)
+            } else if pkgs.stdenv.isLinux then {
+              zfs = devShell.zfs;        # ZFS tools (Linux only)
+            } else if pkgs.stdenv.isDarwin then {
+              macos = devShell.macos;    # macOS development (macOS only)
+            } else {}
+          );
+
+          # Code formatter
           formatter = pkgs.nixpkgs-fmt;
+
+          # Packages (Linux only for system management tools)
           packages = if pkgs.stdenv.isLinux then {
-            proxmox-update = linuxPackages.proxmox-update;
-            vzdump-backup = linuxPackages.vzdump-backup;
-            zfs-snapshot = linuxPackages.zfs-snapshot;
-            nixos-flake-update = linuxPackages.nixos-flake-update;
-            install = linuxPackages.install;
-            uninstall = linuxPackages.uninstall;
-            default = linuxPackages.proxmox-update;
+            proxmox-update = systemPackages.proxmox-update;
+            vzdump-backup = systemPackages.vzdump-backup;
+            zfs-snapshot = systemPackages.zfs-snapshot;
+            nixos-flake-update = systemPackages.nixos-flake-update;
+            install = systemPackages.install;
+            uninstall = systemPackages.uninstall;
+            default = systemPackages.proxmox-update;
           } else {};
+
+          # Test suite with proper error handling
           checks = let
             src = ./.;
           in {
@@ -99,7 +127,7 @@
               cp -r ${src} $TMPDIR/src
               cd $TMPDIR/src
               export TEST_TEMP_DIR=$TMPDIR/nix-mox-unit
-              nu -c "source scripts/tests/unit/unit-tests.nu"
+              nu -c "source scripts/tests/unit/unit-tests.nu" || exit 1
               touch $out
             '';
 
@@ -110,24 +138,24 @@
               cp -r ${src} $TMPDIR/src
               cd $TMPDIR/src
               export TEST_TEMP_DIR=$TMPDIR/nix-mox-integration
-              nu -c "source scripts/tests/integration/integration-tests.nu"
+              nu -c "source scripts/tests/integration/integration-tests.nu" || exit 1
               touch $out
             '';
 
-            # Full suite
+            # Full test suite
             test-suite = pkgs.runCommand "nix-mox-tests" {
               buildInputs = [ pkgs.nushell ];
             } ''
               cp -r ${src} $TMPDIR/src
               cd $TMPDIR/src
               export TEST_TEMP_DIR=$TMPDIR/nix-mox-tests
-              nu -c "source scripts/tests/run-tests.nu; run []"
+              nu -c "source scripts/tests/run-tests.nu; run []" || exit 1
               touch $out
             '';
           };
         }
       ) // {
-        # NixOS configurations - now imported from config directory
+        # NixOS configurations - imported from config directory
         nixosConfigurations = import ./config { inherit inputs; };
       };
 }
