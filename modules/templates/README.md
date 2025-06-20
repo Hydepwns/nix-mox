@@ -61,5 +61,5 @@ Infrastructure templates handle system-level configurations:
 
 Platform-specific templates for different operating systems:
 
-- **NixOS**: NixOS-specific configurations including VM templates, CI runners, and safe configurations
+- **NixOS**: NixOS-specific configurations including VM templates, CI runners, and safe configurations with messaging support
 - **Windows**: Windows-specific templates for development, gaming, and multimedia workstations

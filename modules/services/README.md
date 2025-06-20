@@ -234,6 +234,7 @@ When monitoring is enabled, the modules automatically configure:
 ### Health Check Failures
 
 The modules include detailed error messages for:
+
 - Service not running
 - Port not listening
 - HTTP health check failures

@@ -10,6 +10,7 @@
     ./common/services.nix
     ./common/nix-settings.nix
     ./common/system.nix
+    ./common/messaging.nix
   ];
 
   # Boot loader

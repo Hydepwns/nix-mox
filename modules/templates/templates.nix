@@ -77,7 +77,7 @@ let
 
     safe-configuration = {
       name = "safe-configuration";
-      description = "Default NixOS configuration template that prevents display issues and integrates with nix-mox tools using the fragment system.";
+      description = "Default NixOS configuration template that prevents display issues, integrates with nix-mox tools using the fragment system, and includes comprehensive messaging and communication support.";
       scripts = [
         "flake.nix"
         "configuration.nix"
@@ -143,6 +143,21 @@ let
           type = "bool";
           default = true;
           description = "Enable firewall";
+        };
+        enableMessaging = {
+          type = "bool";
+          default = true;
+          description = "Enable messaging applications (Signal, Telegram, Discord, etc.)";
+        };
+        enableVideoCalling = {
+          type = "bool";
+          default = true;
+          description = "Enable video calling applications (Zoom, Teams, Skype)";
+        };
+        enableEmailClients = {
+          type = "bool";
+          default = true;
+          description = "Enable email clients (Thunderbird, Evolution)";
         };
         gitUserName = {
           type = "string";
