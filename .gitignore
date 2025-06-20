@@ -7,3 +7,10 @@ coverage-tmp/
 *.swp
 result
 tmp/
+
+# personal settings
+#configuration.nix
+#hardware-configuration.nix
+#home.nix
+.vscode/
+.cursor/

@@ -30,12 +30,13 @@
       dev-gaming = "nix develop \${inputs.nix-mox}#gaming";
       dev-zfs = "nix develop \${inputs.nix-mox}#zfs";
       dev-macos = "nix develop \${inputs.nix-mox}#macos";
+      dev-storage = "nix develop \${inputs.nix-mox}#storage";
 
       # nix-mox package commands
       nixos-update = "nixos-flake-update";
     };
 
-    initExtra = ''
+    initContent = ''
       # Any additional shell configuration
       export EDITOR=vim
     '';

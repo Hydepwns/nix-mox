@@ -6,7 +6,7 @@
   # - packages.<system>.vzdump-backup: Proxmox vzdump backup script as a Nix package
   # - packages.<system>.zfs-snapshot: ZFS snapshot/prune script as a Nix package
 
-  description = "Proxmox templates + NixOS workstation + Windows gaming automation";
+  description = "Safe NixOS configuration with nix-mox and home-manager";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -113,22 +113,24 @@
               touch \$out
             '';
           };
-          nixosConfigurations = {
-            nixos = nixpkgs.lib.nixosSystem {
-              system = "x86_64-linux";
-              specialArgs = { inherit inputs; };
-              modules = [
-                ./configuration.nix
-                ./hardware-configuration.nix
-                home-manager.nixosModules.home-manager
-                {
-                  home-manager.useGlobalPkgs = true;
-                  home-manager.useUserPackages = true;
-                  home-manager.users.droo = import ./home.nix;
-                }
-              ];
-            };
-          };
         }
-      );
+      ) // {
+        # NixOS configurations only for x86_64-linux
+        nixosConfigurations = {
+          nixos = nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            specialArgs = { inherit inputs; };
+            modules = [
+              ./configuration.nix
+              ./hardware-configuration.nix
+              home-manager.nixosModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.users.droo = import ./home.nix;
+              }
+            ];
+          };
+        };
+      };
 }

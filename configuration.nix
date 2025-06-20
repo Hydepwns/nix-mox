@@ -43,20 +43,20 @@
       # gdm.enable = true;   # Alternative: GNOME's display manager
     };
 
-    # Desktop environment - choose one:
-    desktopManager = {
-      gnome.enable = true;
-      # plasma5.enable = true;  # Alternative: KDE Plasma
-      # xfce.enable = true;     # Alternative: XFCE (lightweight)
-    };
-
     # Or use a window manager instead:
     # windowManager.i3.enable = true;
     # windowManager.awesome.enable = true;
   };
 
+  # Desktop environment - choose one:
+  services.desktopManager = {
+    gnome.enable = true;
+    # plasma5.enable = true;  # Alternative: KDE Plasma
+    # xfce.enable = true;     # Alternative: XFCE (lightweight)
+  };
+
   # Enable sound
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -66,9 +66,9 @@
   };
 
   # Graphics drivers
-  hardware.opengl = {
+  hardware.graphics = {
     enable = true;
-    driSupport32Bit = true;
+    enable32Bit = true;
   };
 
   # NVIDIA drivers (uncomment if you have NVIDIA GPU)

@@ -1,479 +1,265 @@
 # nix-mox
 
-> Proxmox templates + NixOS workstation + Windows gaming automation
+A comprehensive NixOS configuration framework with development tools, monitoring, and system management utilities.
 
-## Table of Contents
+## 🚀 Quick Start
 
-- [Overview](#overview)
-- [Features](#features)
-- [Installation](#installation)
-  - [Prerequisites](#prerequisites)
-  - [Optional Dependencies](#optional-dependencies)
-  - [Installation Methods](#installation-methods)
-- [Usage](#usage)
-  - [Command Line Interface](#command-line-interface)
-  - [Scripts](#scripts)
-  - [Logging](#logging)
-- [Development](#development)
-  - [Development Shells](#development-shells)
-  - [Script Development](#script-development)
-  - [Testing](#testing)
-  - [Local CI Testing](#local-ci-testing)
-  - [Architecture](#architecture)
+### For New Users
 
-## Overview
+1. **Clone the repository:**
 
-nix-mox is a comprehensive toolkit for managing Proxmox environments, NixOS workstations, and Windows gaming setups. It provides automation scripts, templates, and configurations to streamline your infrastructure management.
+   ```bash
+   git clone https://github.com/Hydepwns/nix-mox.git
+   cd nix-mox
+   ```
 
-## Features
+2. **Use the Safe Configuration Template:**
 
-- 🖥️ **Proxmox Management**
-  - Automated VM and container templates
-  - Backup and snapshot management
-  - Network configuration tools
+   ```bash
+   # Copy the safe configuration template to your config directory
+   cp -r modules/templates/nixos/safe-configuration/* config/
+   
+   # Generate your hardware configuration
+   sudo nixos-generate-config --show-hardware-config > config/hardware-configuration.nix
+   ```
 
-- 🎮 **Windows Gaming**
-  - Automated Steam and Rust installation
-  - Performance optimization scripts
-  - Gaming VM templates
+3. **Customize your configuration:**
+   - Edit `config/configuration.nix` to set your hostname, timezone, and preferences
+   - Edit `config/home.nix` to configure your user settings
+   - Update `config/flake.nix` if needed
 
-- 🔧 **NixOS Integration**
-  - System configuration modules
-  - Development environment setup
-  - Package management tools
+4. **Deploy your configuration:**
 
-- 📝 **Enhanced Scripting**
-  - Platform-specific automation
-  - Comprehensive logging
-  - Error handling
-  - Testing framework
+   ```bash
+   sudo nixos-rebuild switch --flake .#nixos
+   ```
 
-## Installation
+### For Existing Users
 
-### Prerequisites
+If you already have a NixOS configuration, you can integrate nix-mox tools:
 
-Before installing nix-mox, ensure you have the following:
+1. **Add nix-mox to your flake inputs:**
 
-- **Nix Package Manager**: Required for all nix-mox functionality
+   ```nix
+   inputs.nix-mox = {
+     url = "github:Hydepwns/nix-mox";
+     inputs.nixpkgs.follows = "nixpkgs";
+   };
+   ```
 
-  ```bash
-  sh <(curl -L https://nixos.org/nix/install) --daemon
-  ```
+2. **Add nix-mox packages to your system:**
 
-  > **macOS Troubleshooting:**
-  >
-  > - If you have previously installed Nix, you may need to clean up remnants before reinstalling. Follow the official [Nix uninstall guide](https://nixos.org/manual/nix/stable/installation/uninstall.html) to remove old files and users. For example, run:
-  >
-  > ```bash
-  > # Remove old Nix files
-  > sudo rm -rf /nix
-  > sudo rm -rf /etc/nix
-  > sudo rm -rf /var/root/.nix-profile
-  > ```
-  >
-  > - After installation, you must **restart your terminal** (or run `source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh`) to make Nix commands available.
-  > - If you see errors like `command not found: nix-shell` after install, your shell may not be loading the Nix profile. Ensure your shell config (e.g., `.zshrc`, `.bashrc`) includes the Nix profile snippet added by the installer.
-  > - For more help, see the [Nix on macOS troubleshooting page](https://nixos.org/manual/nix/stable/installation/#sect-macos-troubleshooting)
+   ```nix
+   environment.systemPackages = with pkgs; [
+     inputs.nix-mox.packages.${pkgs.system}.proxmox-update
+     inputs.nix-mox.packages.${pkgs.system}.vzdump-backup
+     inputs.nix-mox.packages.${pkgs.system}.zfs-snapshot
+     inputs.nix-mox.packages.${pkgs.system}.nixos-flake-update
+   ];
+   ```
 
-- **Nushell**: Required for running automation scripts and tests
+## 📁 Project Structure
 
-  ```bash
-  nix profile install nixpkgs#nushell
-  ```
-
-### Optional Dependencies
-
-Depending on your use case, you may need:
-
-- **Proxmox VE**: For VM and container management
-- **NixOS**: For NixOS-specific features
-- **Windows VM**: For Windows gaming automation
-- **ZFS**: For snapshot management
-
-### Installation Methods
-
-#### For NixOS Systems
-
-Add nix-mox to your system configuration by updating your `flake.nix`:
-
-```nix
-{
-  inputs.nix-mox.url = "github:hydepwns/nix-mox";
-  
-  outputs = { self, nixpkgs, nix-mox, ... }: {
-    nixosConfigurations.your-host = nixpkgs.lib.nixosSystem {
-      modules = [
-        nix-mox.nixosModules.nix-mox
-      ];
-    };
-  };
-}
+```
+nix-mox/
+├── config/                    # Configuration directory (recommended for user configs)
+│   ├── default.nix           # Default configuration settings
+│   ├── build/                # Build-specific configurations
+│   ├── configuration.nix     # Your NixOS configuration (if using template)
+│   ├── home.nix              # Your home-manager configuration (if using template)
+│   └── hardware-configuration.nix # Your hardware config (if using template)
+├── modules/                   # Reusable NixOS modules
+│   ├── core/                 # Core functionality
+│   ├── packages/             # Package definitions
+│   ├── services/             # Service definitions
+│   ├── storage/              # Storage management
+│   └── templates/            # Configuration templates
+├── devshells/                # Development shell definitions
+├── scripts/                  # Utility scripts
+├── docs/                     # Documentation
+└── flake.nix                 # Main flake definition
 ```
 
-#### For Other Systems
+## 🛠️ Development Shells
 
-Install nix-mox directly using Nix:
-
-```bash
-nix profile install github:hydepwns/nix-mox
-```
-
-## Usage
-
-### Development Shells
-
-nix-mox provides specialized development shells for different purposes:
+Access specialized development environments:
 
 ```bash
 # Default shell with basic tools
 nix develop
 
-# Enhanced development environment
-nix develop .#development
-
-# Testing environment with Elixir and test tools
-nix develop .#testing
-
-# Service development and management
-nix develop .#services
-
-# Monitoring and observability
-nix develop .#monitoring
-
-# ZFS development and testing (Linux only)
-nix develop .#zfs
-
-# Gaming environment with Steam, Wine, and more (Linux only)
-nix develop .#gaming
-
-# macOS development environment (macOS only)
-nix develop .#macos
+# Specialized shells
+nix develop .#development    # Development tools (just, pre-commit, gh)
+nix develop .#testing        # Testing tools
+nix develop .#services       # Service management tools
+nix develop .#monitoring     # Monitoring tools
+nix develop .#gaming         # Gaming development (Linux x86_64 only)
+nix develop .#zfs            # ZFS tools (Linux only)
+nix develop .#macos          # macOS development (macOS only)
 ```
 
-#### Shell Availability by Platform
+## 📦 Available Packages
 
-| Shell | Linux x86_64 | Linux aarch64 | macOS x86_64 | macOS aarch64 | Description |
-|-------|-------------|---------------|--------------|---------------|-------------|
-| `default` | ✅ | ✅ | ✅ | ✅ | Basic development environment with essential tools |
-| `development` | ✅ | ✅ | ✅ | ✅ | Enhanced development environment with additional tools |
-| `testing` | ✅ | ✅ | ✅ | ✅ | Testing environment with Elixir and test tools |
-| `services` | ✅ | ✅ | ✅ | ✅ | Service development and management tools |
-| `monitoring` | ✅ | ✅ | ✅ | ✅ | Monitoring and observability tools |
-| `gaming` | ✅ | ❌ | ❌ | ❌ | Gaming environment with Steam, Wine, and more |
-| `zfs` | ✅ | ✅ | ❌ | ❌ | ZFS development and testing tools |
-| `macos` | ❌ | ❌ | ✅ | ✅ | macOS-specific development environment |
+### System Management
 
-> **Note:** Platform-specific shells are only available on their target platforms. For example, the `gaming` shell is only available on Linux x86_64 systems, while the `macos` shell is only available on macOS systems.
+- `proxmox-update` - Update Proxmox VE systems
+- `vzdump-backup` - Backup Proxmox VMs
+- `zfs-snapshot` - Manage ZFS snapshots
+- `nixos-flake-update` - Update NixOS flake inputs
 
-Each shell comes with its own set of tools and helpful documentation. For example:
-
-- The testing shell includes Elixir, Erlang, and test tools
-- The gaming shell includes Steam, Wine, and gaming utilities
-- The development and macOS shells include:
-  - Core development tools (git, nix, nixpkgs-fmt)
-  - code-cursor editor for AI-powered code navigation and editing
-  - macOS-specific frameworks (macOS shell)
-  - Common development tools (vscode, jq, yq, curl)
-  - Terminal tools (tmux, zsh, oh-my-zsh)
-  - System monitoring tools (htop)
-
-### Command Line Interface
-
-nix-mox provides a powerful command-line interface. The main entrypoint is now a bash wrapper script (`modules/scripts/nix-mox`) that ensures robust argument passing to the Nushell automation script.
-
-**Usage:**
+### Usage
 
 ```bash
-# Recommended (works on all systems)
-./modules/scripts/nix-mox --script install --dry-run
+# Run packages directly
+nix run .#proxmox-update
+nix run .#vzdump-backup
+nix run .#zfs-snapshot
+nix run .#nixos-flake-update
+
+# Or build and run
+nix build .#proxmox-update
+./result/bin/proxmox-update
 ```
 
-> **Note:** The wrapper script sets up argument passing for all Nushell versions and platforms. You no longer need to worry about double-dash (`--`) or Nushell quirks.
+## 🏗️ Configuration Templates
 
-Options:
-  -h, --help           Show help message
-  --dry-run           Show what would be done without making changes
-  --debug             Enable debug output
-  --platform <os>     Specify platform (auto, linux, darwin, nixos)
-  --script <name>     Run specific script (install, update, zfs-snapshot)
-  --log <file>        Log output to file
+### Safe NixOS Configuration
 
-### Platform & OS Info
+The safe configuration template provides a complete NixOS setup that prevents common display issues:
 
-- When running a script, nix-mox now prints detailed OS info (distro, version, kernel) for Linux/NixOS, macOS, or Windows.
-- NixOS is now fully supported and detected as a Linux platform.
+**Features:**
 
-### Error Handling & Logging
+- ✅ Display safety (prevents CLI lock)
+- ✅ nix-mox integration
+- ✅ Gaming ready (Steam enabled)
+- ✅ Development friendly
+- ✅ Multiple desktop environment options
 
-- All error handling and logging is robust and platform-aware.
-- Errors are clearly reported, and logs can be written to a file with `--log <file>`.
-
-### Scripts
-
-#### Package Installation
+**Quick Setup:**
 
 ```bash
-# Basic installation
-./modules/scripts/nix-mox --script install
+# Copy the template
+cp -r modules/templates/nixos/safe-configuration/* config/
 
-# Platform-specific package installation
-./modules/scripts/nix-mox --script install --platform linux
+# Generate hardware config
+sudo nixos-generate-config --show-hardware-config > config/hardware-configuration.nix
 
-# Package installation with logging
-./modules/scripts/nix-mox --script install --log install.log
+# Customize and deploy
+sudo nixos-rebuild switch --flake .#nixos
 ```
 
-#### Package Updates
+See `modules/templates/nixos/safe-configuration/README.md` for detailed instructions.
+
+### Other Templates
+
+- **CI Runner**: High-performance CI/CD setup
+- **Web Server**: Production web server configuration
+- **Database Management**: Database server setup
+- **Monitoring**: Prometheus/Grafana monitoring stack
+- **Load Balancer**: HAProxy load balancer configuration
+
+## 🔧 Configuration Best Practices
+
+### Keep Configurations in `/config`
+
+We recommend keeping your personal configurations in the `/config` directory:
 
 ```bash
-# Update all packages
-./modules/scripts/nix-mox --script update
-
-# Update with debug output
-./modules/scripts/nix-mox --script update --debug
+# Your personal configs go here
+config/
+├── configuration.nix          # Your NixOS configuration
+├── home.nix                   # Your home-manager config
+├── hardware-configuration.nix # Your hardware config
+└── custom-modules/            # Your custom modules
 ```
 
-#### ZFS Snapshot Management
+### Benefits of Using `/config`
 
-```bash
-# Create snapshots
-./modules/scripts/nix-mox --script zfs-snapshot
+- ✅ Keeps your configs separate from nix-mox source
+- ✅ Easy to backup and version control
+- ✅ Clear separation between framework and personal config
+- ✅ Follows nix-mox conventions
 
-# Dry run snapshot creation (no changes made)
-./modules/scripts/nix-mox --script zfs-snapshot --dry-run
+### Example Configuration Structure
+
+```nix
+# config/configuration.nix
+{ config, pkgs, inputs, ... }:
+
+{
+  imports = [
+    ./hardware-configuration.nix
+    ./custom-modules/my-service.nix
+  ];
+
+  # Your system configuration here
+  networking.hostName = "myhost";
+  time.timeZone = "America/New_York";
+  
+  # Include nix-mox packages
+  environment.systemPackages = with pkgs; [
+    inputs.nix-mox.packages.${pkgs.system}.proxmox-update
+    inputs.nix-mox.packages.${pkgs.system}.nixos-flake-update
+  ];
+}
 ```
 
-### Logging
+## 🧪 Testing
 
-nix-mox provides comprehensive logging capabilities:
+Run the test suite:
 
 ```bash
-# Log to file
-./modules/scripts/nix-mox --script install --log install.log
+# Unit tests
+nix flake check .#checks.x86_64-linux.unit
 
-# Enable debug output (more verbose output)
-./modules/scripts/nix-mox --script update --debug
+# Integration tests
+nix flake check .#checks.x86_64-linux.integration
+
+# Full test suite
+nix flake check .#checks.x86_64-linux.test-suite
 ```
 
-### Gaming Shell & Windows Games
+## 📚 Documentation
 
-nix-mox now includes a dedicated gaming shell for Linux gaming and Windows games (like League of Legends) via Wine and Lutris:
+- [Usage Guide](docs/USAGE.md) - Detailed usage instructions
+- [Nixamples](docs/nixamples/) - Configuration examples
+- [Guides](docs/guides/) - Step-by-step guides
+- [API Reference](docs/api/) - Module and function documentation
 
-```bash
-# Enter the gaming shell
-nix develop .#gaming
-```
+## 🤝 Contributing
 
-- Includes Steam, Wine, Lutris, MangoHud, GameMode, DXVK, VKD3D, and more
-- Helper scripts for Wine and League of Legends setup:
-  - `nix run .#configure-wine` (general Wine gaming config)
-  - `bash devshells/gaming/scripts/configure-league.sh` (League-specific setup)
-- See [Gaming Setup Guide](./docs/gaming/README.md) for full instructions, troubleshooting, and optimization tips
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-## Development
-
-### devshells
-
-nix-mox provides several specialized development shells:
-
-- **default**: Basic development environment with essential tools
-- **development**: Enhanced development environment with additional tools
-- **testing**: Testing environment with Elixir and test tools
-- **services**: Service development and management tools
-- **monitoring**: Monitoring and observability tools
-- **zfs**: ZFS development and testing tools
-
-Each shell includes:
-
-- Platform-specific tools
-- Development utilities
-- Documentation and examples
-- Helpful shell hooks
-
-### Script Development
-
-See [Script Development Guide](./docs/guides/scripting.md) for detailed information about:
-
-- Script structure
-- Common utilities
-- Platform support
-- Best practices
-
-### Testing
-
-The testing environment includes:
-
-- **Nushell Tests**: Unit, integration, and performance tests
-- **Nix Flake Checks**: Automated test execution via `nix flake check`
-- **Coverage Reporting**: Test coverage with detailed reporting
-- **Cross-platform Support**: Tests run on Linux, macOS, and Windows
-- **Continuous Integration**: GitHub Actions workflow with multi-platform builds
-
-To run tests:
+### Development Setup
 
 ```bash
-# Enter the testing shell
-nix develop .#testing
-
-# Run all tests
-make test
-
-# Run specific test types
-make unit          # Unit tests only
-make integration   # Integration tests only
-
-# Run via Nix flake (recommended for CI)
-nix flake check    # All checks
-nix flake check .#unit        # Unit tests only
-nix flake check .#integration # Integration tests only
-
-# Build all packages locally
-nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update
-
-# Clean up test artifacts
-make clean
-```
-
-#### Local CI Testing
-
-Test the CI workflow locally before pushing to GitHub:
-
-```bash
-# Quick CI testing (recommended for development)
-./scripts/ci-test.sh
-
-# Comprehensive CI testing (simulates full GitHub Actions workflow)
-./scripts/test-ci-local.sh
-
-# Test specific CI jobs
-./scripts/test-ci-local.sh build    # Only build packages
-./scripts/test-ci-local.sh test     # Only run tests
-./scripts/test-ci-local.sh checks   # Only run validation checks
-./scripts/test-ci-local.sh clean    # Clean up artifacts
-```
-
-The local CI scripts test:
-
-- Package builds for multiple systems and Nix versions
-- Flake validation and checks
-- Unit and integration tests
-- Devshell validation
-- Release job simulation
-
-See [`scripts/README.md`](./scripts/README.md) for detailed usage information.
-
-#### Continuous Integration
-
-The project uses GitHub Actions for automated testing and building:
-
-- **Multi-platform builds**: Tests on `x86_64-linux` and `aarch64-linux`
-- **Multiple Nix versions**: Ensures compatibility with Nix 2.19.2 and 2.20.1
-- **Package building**: Builds all available packages before running tests
-- **Integrated testing**: Uses `nix flake check` for comprehensive test execution
-
-All tests must pass before merging pull requests. See [Testing Guide](./docs/guides/testing.md) for detailed information.
-
-### Architecture
-
-See [Script Architecture](./docs/architecture/scripts.md) for details about:
-
-- Core components
-- Script types
-- Error handling
-- Logging system
-
-## Project Structure
-
-```bash
-nix-mox/
-├── .github/           # GitHub workflows and templates
-├── config/           # Configuration files
-├── devshells/        # Development shells
-│   ├── default.nix   # Default shell configuration
-│   ├── development/  # Development environment
-│   ├── testing/      # Testing environment
-│   ├── services/     # Service development
-│   ├── monitoring/   # Monitoring tools
-│   └── storage/      # Storage tools
-├── docs/             # Documentation
-│   ├── guides/      # User guides
-│   ├── api/         # API documentation
-│   ├── examples/    # Example configurations
-│   └── development/ # Development documentation
-├── lib/              # Library code and utilities
-├── scripts/          # Utility scripts
-│   ├── ci-test.sh    # Quick CI testing
-│   ├── test-ci-local.sh # Comprehensive CI testing
-│   └── tests/        # Test suite
-│       ├── unit/     # Unit tests
-│       ├── integration/ # Integration tests
-│       ├── lib/      # Test utilities and shared functions
-│       └── run-tests.nu # Main test runner
-├── modules/          # NixOS modules
-│   ├── core/        # Core functionality
-│   ├── services/    # Service-specific modules
-│   ├── storage/     # Storage-related modules
-│   └── scripts/     # Platform-specific scripts
-│       ├── linux/   # Linux scripts
-│       └── windows/ # Windows scripts
-├── packages/         # Package definitions
-│   ├── linux/       # Linux packages
-│   └── windows/     # Windows packages
-└── templates/        # Templates
-    ├── nixos/       # NixOS templates
-    ├── windows/     # Windows templates
-    └── common/      # Shared template components
-```
-
-## Quick Start
-
-```bash
-# Clone & enter
-git clone https://github.com/hydepwns/nix-mox.git
-cd nix-mox
-
-# Explore available shells
-nix flake show
-
 # Enter development shell
 nix develop .#development
 
+# Install pre-commit hooks
+pre-commit install
+
 # Run tests
-make test
-# Or use Nix flake checks
-nix flake check
+just test
 ```
 
-## Documentation
+## 📄 License
 
-### Getting Started
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-- [**USAGE.md**](./docs/USAGE.md) - Installation & usage
-- [**Development Workflow Guide**](./docs/guides/development-workflow.md) - Development workflow & Make targets
+## 🙏 Acknowledgments
 
-### Guides
+- Built on top of [NixOS](https://nixos.org/)
+- Uses [home-manager](https://github.com/nix-community/home-manager)
+- Inspired by the NixOS community
 
-- [**Testing Guide**](./docs/guides/testing.md) - Testing framework & best practices
-- [**CI/CD Guide**](./docs/guides/ci-cd.md) - Continuous integration and deployment
-- [**Script Development Guide**](./docs/guides/scripting.md) - Script development
-- [**Gaming Setup Guide**](./docs/gaming/README.md) - Linux & Windows gaming, League of Legends, Wine/Lutris
-- [**Hardware Drivers Guide**](./docs/guides/drivers.md) - configuring NVIDIA, AMD, and Intel drivers
-- [**macOS Shell Guide**](./docs/guides/macos-shell.md) - macOS development environment
+## 🔗 Links
 
-### Architecture & Design
-
-- [**ARCHITECTURE.md**](./docs/architecture/ARCHITECTURE.md) - System design & overview
-- [**Script Architecture**](./docs/architecture/scripts.md) - Script system design
-- [**ROADMAP.md**](./docs/architecture/ROADMAP.md) - Future plans
-
-### Advanced Topics
-
-- [**Advanced Configuration**](./docs/guides/advanced-configuration.md) - Advanced setup options
-- [**NixOS on Proxmox**](./docs/guides/nixos-on-proxmox.md) - Proxmox deployment
-- [**Troubleshooting**](./docs/guides/TROUBLESHOOTING.md) - Common issues & solutions
-- [**Migration Guide**](./docs/guides/MIGRATION.md) - Upgrading & migration
-
-### Contributing
-
-- [**CONTRIBUTING.md**](./docs/CONTRIBUTING.md) - How to contribute
-- [**Examples**](./docs/nixamples/README.md) - Configuration examples
+- [GitHub Repository](https://github.com/Hydepwns/nix-mox)
+- [Issues](https://github.com/Hydepwns/nix-mox/issues)
+- [Discussions](https://github.com/Hydepwns/nix-mox/discussions)
+- [Releases](https://github.com/Hydepwns/nix-mox/releases)

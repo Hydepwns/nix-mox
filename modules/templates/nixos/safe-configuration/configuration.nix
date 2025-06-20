@@ -55,9 +55,9 @@
     # windowManager.awesome.enable = true;
   };
 
-  # Enable sound
-  sound.enable = true;
-  hardware.pulseaudio.enable = false;
+  # Enable sound (PipeWire is the modern default; PulseAudio is legacy)
+  # Uncomment and adjust only if you know your hardware needs it
+  # hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -69,8 +69,8 @@
   # Graphics drivers
   hardware.opengl = {
     enable = true;
-    driSupport = true;
     driSupport32Bit = true;
+    # driSupport = true; # Deprecated, no longer needed in recent NixOS
   };
 
   # NVIDIA drivers (uncomment if you have NVIDIA GPU)
@@ -111,10 +111,10 @@
     alacritty
 
     # From nix-mox (access the packages)
-    inputs.nix-mox.packages.\${pkgs.system}.proxmox-update
-    inputs.nix-mox.packages.\${pkgs.system}.vzdump-backup
-    inputs.nix-mox.packages.\${pkgs.system}.zfs-snapshot
-    inputs.nix-mox.packages.\${pkgs.system}.nixos-flake-update
+    inputs.nix-mox.packages.${pkgs.system}.proxmox-update
+    inputs.nix-mox.packages.${pkgs.system}.vzdump-backup
+    inputs.nix-mox.packages.${pkgs.system}.zfs-snapshot
+    inputs.nix-mox.packages.${pkgs.system}.nixos-flake-update
 
     # Development tools
     vscode
