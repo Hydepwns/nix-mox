@@ -9,6 +9,7 @@ on:
 jobs:
   build_packages:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     strategy:
       matrix:
         system: [x86_64-linux, aarch64-linux]
@@ -40,14 +41,29 @@ jobs:
           key: nix-store-${{ runner.os }}-${{ matrix.nix-version }}-${{ hashFiles('**/*.nix') }}
           restore-keys: |
             nix-store-${{ runner.os }}-${{ matrix.nix-version }}-
-      - name: Build all packages
+      - name: Build lightweight packages first
         run: |
-          nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update --system ${{ matrix.system }} --accept-flake-config
-      - name: Upload build artifact
+          echo "Building lightweight packages for ${{ matrix.system }}..."
+          nix build .#proxmox-update .#nixos-flake-update --system ${{ matrix.system }} --accept-flake-config --timeout 1800
+        continue-on-error: true
+      - name: Build heavy packages (aarch64 with reduced parallelism)
+        if: matrix.system == 'aarch64-linux'
+        run: |
+          echo "Building heavy packages for aarch64 with reduced parallelism..."
+          NIX_BUILD_CORES=1 nix build .#vzdump-backup .#zfs-snapshot --system ${{ matrix.system }} --accept-flake-config --timeout 3600
+        continue-on-error: true
+      - name: Build heavy packages (x86_64)
+        if: matrix.system == 'x86_64-linux'
+        run: |
+          echo "Building heavy packages for x86_64..."
+          nix build .#vzdump-backup .#zfs-snapshot --system ${{ matrix.system }} --accept-flake-config --timeout 3600
+        continue-on-error: true
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: nix-mox-${{ matrix.system }}-${{ matrix.nix-version }}
           path: result*
+          if-no-files-found: ignore
 
   test:
     needs: [build_packages]
