@@ -226,6 +226,21 @@ winetricks ddr=opengl
 winetricks videomemorysize=4096
 ```
 
+## Quick Wine and League of Legends Setup Scripts
+
+From the gaming shell (`nix develop .#gaming`), you can use these helper scripts:
+
+```bash
+# General Wine gaming configuration
+nix run .#configure-wine
+
+# League of Legends-specific Wine prefix setup
+bash devshells/gaming/scripts/configure-league.sh
+```
+
+- `configure-wine` sets up a general Wine prefix with optimal settings for gaming.
+- `configure-league.sh` creates a dedicated Wine prefix for League of Legends with all required components.
+
 ## Troubleshooting
 
 ### Common Issues
@@ -295,6 +310,36 @@ winetricks dxvk
 winetricks --self-update
 ```
 
+### Wine/Gaming Issues
+
+**Problem:** Wine prefix architecture mismatch
+
+```bash
+# Error: "64-bit installation, it cannot be used with a 32-bit wineserver"
+```
+
+**Solution:**
+
+```bash
+# Remove existing prefix and recreate as 32-bit
+rm -rf ~/.wine-league
+export WINEPREFIX=~/.wine-league
+export WINEARCH=win32
+wineboot -i
+```
+
+**Problem:** League of Legends installer not found
+
+```bash
+# Error: "failed to open LeagueInstaller.exe"
+```
+
+**Solution:**
+
+1. Download from [Riot Games](https://signup.leagueoflegends.com/en-us/download/)
+2. Place in `~/Downloads/` directory
+3. Run: `wine ~/Downloads/LeagueInstaller.exe`
+
 ### Debugging
 
 #### Enable Wine Debugging
@@ -324,6 +369,19 @@ nvidia-smi
 # GPU (AMD/Intel)
 radeontop  # AMD
 intel_gpu_top  # Intel
+```
+
+### Gaming Performance
+
+```bash
+# Enable GameMode for CPU/GPU optimization
+gamemoderun mangohud wine LeagueClient.exe
+
+# Monitor performance
+mangohud --dlsym
+
+# Check Vulkan support
+vulkaninfo
 ```
 
 ## Advanced Configuration

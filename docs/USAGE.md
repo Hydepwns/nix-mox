@@ -1,5 +1,43 @@
 # Usage & Deployment Guide
 
+## 📋 Table of Contents
+
+- [Quick Start](#quick-start)
+- [Core Features](#core-features)
+  - [Fragment System](#-fragment-system)
+  - [Messaging & Communication](#-messaging--communication)
+  - [Gaming Support](#-gaming-support)
+  - [Size Analysis & Performance](#-size-analysis--performance)
+- [Usage Examples](#usage-examples)
+- [Safe NixOS Configuration](#safe-nixos-configuration)
+- [Available Packages](#available-packages)
+- [Module Integration](#module-integration)
+- [Components](#components)
+- [Template Configuration](#template-configuration)
+- [Development](#development)
+  - [Development Workflow](#development-workflow)
+- [macOS Development](#macos-development)
+- [Examples](#examples)
+- [Gaming and Windows Games](#gaming-and-windows-games)
+- [Troubleshooting](#troubleshooting)
+  - [Common Issues](#common-issues)
+  - [Performance Optimization](#performance-optimization)
+  - [Getting Help](#getting-help)
+  - [Debug Mode](#debug-mode)
+- [Frequently Asked Questions](#-frequently-asked-questions)
+  - [General Questions](#general-questions)
+  - [Installation & Setup](#installation--setup)
+  - [Gaming Support](#-gaming-support)
+  - [Development & Customization](#development--customization)
+  - [Performance & Optimization](#performance--optimization)
+  - [Troubleshooting](#troubleshooting)
+  - [Advanced Usage](#advanced-usage)
+- [Packages & Tools](#-packages--tools)
+- [Templates](#-templates)
+- [Testing](#-testing)
+- [Documentation](#-documentation)
+- [Contributing](#-contributing)
+
 ## Quick Start
 
 1. Clone repository:
@@ -33,6 +71,237 @@
    ```bash
    sudo nu scripts/linux/install.nu
    ```
+
+[⬆️ Return to Top](#-table-of-contents)
+
+## Core Features
+
+### 🧩 Fragment System
+
+Compose configurations from reusable fragments for maximum flexibility:
+
+#### Use Complete Base Configuration
+
+```nix
+# config/nixos/configuration.nix
+{ config, pkgs, inputs, ... }:
+{
+  imports = [
+    ../../modules/templates/base/common.nix
+    ../hardware/hardware-configuration.nix
+  ];
+  networking.hostName = "myhost";
+  time.timeZone = "America/New_York";
+}
+```
+
+#### Compose Individual Fragments
+
+```nix
+# Server configuration
+{ config, pkgs, inputs, ... }:
+{
+  imports = [
+    ../../modules/templates/base/common/networking.nix
+    ../../modules/templates/base/common/packages.nix
+    ../../modules/templates/base/common/nix-settings.nix
+    # Skip display.nix for headless server
+  ];
+  services.nginx.enable = true;
+}
+```
+
+#### Add Messaging Support
+
+```nix
+# Desktop configuration with messaging
+{ config, pkgs, inputs, ... }:
+{
+  imports = [
+    ../../modules/templates/base/common/networking.nix
+    ../../modules/templates/base/common/display.nix
+    ../../modules/templates/base/common/messaging.nix  # Signal, Telegram, etc.
+    ../../modules/templates/base/common/packages.nix
+  ];
+  networking.hostName = "desktop";
+}
+```
+
+#### Create Custom Fragments
+
+```nix
+# modules/templates/base/common/development.nix
+{ config, pkgs, inputs, ... }:
+{
+  environment.systemPackages = with pkgs; [
+    vscode git docker nodejs python3 rustc cargo
+  ];
+}
+```
+
+### 🛠️ Development Shells
+
+Specialized development environments for different use cases:
+
+```bash
+nix develop                    # Default development environment
+nix develop .#development      # Full development tools
+nix develop .#testing          # Testing and CI tools
+nix develop .#services         # Service deployment tools
+nix develop .#monitoring       # Monitoring and observability
+nix develop .#gaming           # Gaming tools (Linux x86_64)
+nix develop .#zfs              # ZFS management tools (Linux)
+nix develop .#macos            # macOS development (macOS)
+```
+
+### 💬 Messaging & Communication
+
+Comprehensive messaging and communication support with desktop notifications, deep linking, and enhanced audio/video capabilities:
+
+#### Primary Messaging Apps
+
+- **Signal Desktop**: Secure messaging with end-to-end encryption
+- **Telegram Desktop**: Feature-rich messaging platform
+- **Discord**: Gaming and community chat platform
+- **Slack**: Team collaboration and communication
+
+#### Additional Communication Tools
+
+- **WhatsApp for Linux**: WhatsApp desktop client
+- **Element Desktop**: Matrix protocol client
+- **Thunderbird**: Email client
+- **Evolution**: GNOME email and calendar client
+
+#### Video Calling & Conferencing
+
+- **Zoom**: Video conferencing platform
+- **Microsoft Teams**: Team collaboration platform
+- **Skype**: Voice and video calling
+
+#### Voice & Chat
+
+- **Mumble**: Low-latency voice chat
+- **TeamSpeak**: Voice communication
+- **HexChat**: IRC client
+- **WeeChat**: Modular chat client
+
+#### Features
+
+- **Desktop Notifications**: D-Bus integration for all messaging apps
+- **Deep Linking**: Support for `signal://` and `telegram://` protocols
+- **Audio/Video Calls**: Enhanced PipeWire configuration with WebRTC support
+- **Firewall Configuration**: Proper ports for STUN/TURN and WebRTC services
+
+### 🎮 Gaming Support
+
+nix-mox provides comprehensive gaming support with Wine, DXVK, and performance optimization tools. For detailed gaming setup, configuration, and troubleshooting, see the [Gaming Guide](guides/gaming.md).
+
+**Quick Start:**
+
+```bash
+nix develop .#gaming  # Enter gaming shell
+```
+
+**Features:**
+
+- **Game Launchers:** Steam, Lutris, Heroic
+- **Windows Compatibility:** Wine & DXVK
+- **Performance Tools:** MangoHud, GameMode, Vulkan Tools
+- **Game Support:** League of Legends and other Windows games
+
+[⬆️ Return to Top](#-table-of-contents)
+
+### 📊 Size Analysis & Performance
+
+Analyze the actual size and performance tradeoffs of different templates and shells:
+
+#### Quick Analysis
+
+```bash
+# Analyze all components
+make analyze-sizes
+
+# Or run directly
+./scripts/analyze-sizes.sh
+```
+
+#### What It Analyzes
+
+- **📦 Packages**: Individual package sizes and dependencies
+- **💻 DevShells**: Development environment sizes and build times
+- **🏗️ Templates**: NixOS configuration sizes and complexity
+- **📈 Performance**: Build times and optimization recommendations
+
+#### Sample Output
+
+```bash
+📦 Package Analysis
+------------------
+  proxmox-update      |   45.2 MB total |   12.1 MB package |   33.1 MB deps | 15s
+  vzdump-backup       |   38.7 MB total |    8.9 MB package |   29.8 MB deps | 12s
+  zfs-snapshot        |   52.1 MB total |   15.3 MB package |   36.8 MB deps | 18s
+
+💻 Development Shell Analysis
+----------------------------
+  gaming              | 2047.3 MB | 45s
+  development         |  892.1 MB | 23s
+  default             |  156.7 MB |  8s
+
+📈 Summary Report
+----------------
+📊 Total Repository Size: 3.2 GB
+    Packages: 136.0 MB
+    DevShells: 3.1 GB
+   ️ Templates: 0.0 MB
+```
+
+#### Performance Insights
+
+- **Gaming shell** is typically the largest due to Wine, DXVK, and game tools
+- **Development shell** includes comprehensive dev tools
+- **Default shell** provides minimal overhead for basic tasks
+- **Templates** show the actual system configuration complexity
+
+This helps users make informed decisions about which components to use based on their storage constraints and performance requirements.
+
+[⬆️ Return to Top](#-table-of-contents)
+
+## Usage Examples
+
+### Basic Desktop Setup
+
+```bash
+# Clone and setup
+git clone https://github.com/Hydepwns/nix-mox.git
+cd nix-mox
+cp -r modules/templates/nixos/safe-configuration/* config/
+
+# Generate hardware config
+sudo nixos-generate-config --show-hardware-config > config/hardware/hardware-configuration.nix
+
+# Deploy
+sudo nixos-rebuild switch --flake .#nixos
+```
+
+### Development Environment
+
+```bash
+# Enter development shell
+nix develop .#development
+
+# Available tools: git, vscode, docker, nodejs, python3, rustc, cargo
+```
+
+### Gaming Setup
+
+```bash
+# Enter gaming shell
+nix develop .#gaming
+```
+
+For detailed setup instructions, see the [Gaming Guide](guides/gaming.md).
+
+[⬆️ Return to Top](#-table-of-contents)
 
 ## Safe NixOS Configuration
 
@@ -119,6 +388,8 @@ For detailed information about the safe configuration template, see:
 
 - [NixOS on Proxmox Guide](./guides/nixos-on-proxmox.md#safe-configuration-template)
 
+[⬆️ Return to Top](#-table-of-contents)
+
 ## Available Packages
 
 The following packages are available on Linux systems:
@@ -129,6 +400,8 @@ The following packages are available on Linux systems:
 - **nixos-flake-update**: Update NixOS flake inputs and system automatically
 - **steam-rust-update**: Update Steam and Rust games
 - **optimize-game-performance**: Optimize game performance settings
+
+[⬆️ Return to Top](#-table-of-contents)
 
 ## Module Integration
 
@@ -149,11 +422,15 @@ The following packages are available on Linux systems:
 }
 ```
 
+[⬆️ Return to Top](#-table-of-contents)
+
 ## Components
 
 - **Scripts**: proxmox-update, vzdump-backup, zfs-snapshot, nixos-flake-update
 - **Templates**: Containers, VMs, Monitoring, Storage, Safe Configuration
 - **Modules**: Common, ZFS, Infisical, Tailscale
+
+[⬆️ Return to Top](#-table-of-contents)
 
 ## Template Configuration
 
@@ -175,6 +452,8 @@ services.nix-mox.templates = {
   };
 };
 ```
+
+[⬆️ Return to Top](#-table-of-contents)
 
 ## Development
 
@@ -245,6 +524,8 @@ make check         # Run flake checks
 make build-all     # Build all packages
 ```
 
+[⬆️ Return to Top](#-table-of-contents)
+
 ## macOS Development
 
 For macOS users, a dedicated development shell is available with tools and configurations optimized for macOS development:
@@ -266,6 +547,8 @@ For detailed information about the macOS development shell, see:
 
 - [macOS Shell Guide](./guides/macos-shell.md)
 
+[⬆️ Return to Top](#-table-of-contents)
+
 ## Examples
 
 See `nixamples` directory for:
@@ -277,11 +560,11 @@ See `nixamples` directory for:
 - Template Variables
 - Template Overrides
 
+[⬆️ Return to Top](#-table-of-contents)
+
 ## Gaming and Windows Games
 
-For a full guide to gaming setup, including League of Legends and other Windows games, see:
-
-- [Gaming Setup Guide](./gaming/README.md)
+For comprehensive gaming setup, configuration, and troubleshooting, see the [Gaming Guide](guides/gaming.md).
 
 This guide covers:
 
@@ -289,18 +572,262 @@ This guide covers:
 - Installing and configuring Lutris, Wine, and dependencies
 - League of Legends setup and troubleshooting
 - Performance optimization tips
+- Quick Wine and League of Legends setup scripts
 
-### Quick Wine and League of Legends Setup Scripts
+[⬆️ Return to Top](#-table-of-contents)
 
-From the gaming shell (`nix develop .#gaming`), you can use these helper scripts:
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### NixOS Configuration Issues
+
+**Problem:** Flake evaluation errors
 
 ```bash
-# General Wine gaming configuration
-nix run .#configure-wine
-
-# League of Legends-specific Wine prefix setup
-bash devshells/gaming/scripts/configure-league.sh
+# Error: "undefined variable 'nix-mox'"
 ```
 
-- `configure-wine` sets up a general Wine prefix with optimal settings for gaming.
-- `configure-league.sh` creates a dedicated Wine prefix for League of Legends with all required components.
+**Solution:**
+
+```bash
+# Ensure flake inputs are properly configured
+nix flake update
+nix flake lock
+```
+
+**Problem:** Hardware configuration missing
+
+```bash
+# Error: "hardware-configuration.nix not found"
+```
+
+**Solution:**
+
+```bash
+# Generate hardware configuration
+sudo nixos-generate-config --show-hardware-config > config/hardware/hardware-configuration.nix
+```
+
+#### Development Shell Issues
+
+**Problem:** Shell not found
+
+```bash
+# Error: "development shell 'gaming' not found"
+```
+
+**Solution:**
+
+```bash
+# Check available shells
+nix flake show
+
+# Ensure you're on the correct platform
+# Gaming shell: Linux x86_64 only
+# macOS shell: macOS only
+# ZFS shell: Linux only
+```
+
+#### Package Build Issues
+
+**Problem:** Package build failures
+
+```bash
+# Error: "build of '/nix/store/...' failed"
+```
+
+**Solution:**
+
+```bash
+# Clean and rebuild
+nix store gc
+nix build .#package-name --rebuild
+
+# Check system requirements
+nix flake check
+```
+
+### Performance Optimization
+
+#### System Performance
+
+```bash
+# Check system resources
+htop
+
+# Monitor disk usage
+df -h
+
+# Check memory usage
+free -h
+```
+
+### Getting Help
+
+1. **Check existing issues:** [GitHub Issues](https://github.com/Hydepwns/nix-mox/issues)
+2. **Search discussions:** [GitHub Discussions](https://github.com/Hydepwns/nix-mox/discussions)
+3. **Review documentation:** [Usage Guide](docs/USAGE.md)
+4. **Check examples:** [Examples](docs/examples/)
+
+### Debug Mode
+
+Enable debug output for troubleshooting:
+
+```bash
+# NixOS rebuild with debug
+sudo nixos-rebuild switch --flake .#nixos --show-trace
+
+# Flake check with verbose output
+nix flake check --verbose
+
+# Package build with debug
+nix build .#package-name --verbose
+```
+
+[⬆️ Return to Top](#-table-of-contents)
+
+## ❓ Frequently Asked Questions
+
+### General Questions
+
+**Q: What is nix-mox?**
+A: nix-mox is a comprehensive NixOS configuration framework that provides modular, composable configurations with pre-built templates, development environments, and utility packages for developers, system administrators, and power users.
+
+**Q: Do I need to be on NixOS to use nix-mox?**
+A: No, you can use nix-mox on any Linux distribution with Nix package manager installed, though it's optimized for NixOS.
+
+**Q: Is nix-mox production-ready?**
+A: Yes, nix-mox is designed for production use with comprehensive testing, monitoring, and security features.
+
+### Installation & Setup
+
+**Q: How do I get started with nix-mox?**
+A: Follow the [Quick Start](#quick-start) guide. For new users, clone the repo and use the safe configuration template.
+
+**Q: Can I use nix-mox with my existing NixOS configuration?**
+A: Yes, you can import nix-mox modules into your existing configuration or use it as a complete replacement.
+
+**Q: What if I don't want all the features?**
+A: Use the [Fragment System](#-fragment-system) to compose only the modules you need.
+
+### Gaming Support
+
+**Q: Does nix-mox support gaming on Linux?**
+A: Yes, nix-mox includes comprehensive gaming support with Wine, DXVK, Steam, Lutris, and performance optimization tools. See the [Gaming Guide](guides/gaming.md) for detailed information.
+
+**Q: Can I play Windows games like League of Legends?**
+A: Yes, the gaming shell includes Wine configuration and tools specifically for Windows games. See the [Gaming Guide](guides/gaming.md) for setup instructions.
+
+**Q: What gaming platforms are supported?**
+A: Steam, Lutris, Heroic Games Launcher, and direct Wine applications are all supported.
+
+### Development & Customization
+
+**Q: How do I add my own modules?**
+A: Create your module in the appropriate `modules/` directory and add it to the directory's `index.nix` file.
+
+**Q: Can I contribute to nix-mox?**
+A: Yes! See the [Contributing](#-contributing) section for guidelines and setup instructions.
+
+**Q: How do I test my changes?**
+A: Use the testing shell: `nix develop .#testing` and run the test suite with `make test`.
+
+### Performance & Optimization
+
+**Q: Will nix-mox slow down my system?**
+A: No, nix-mox is designed for performance with minimal overhead. Gaming and development tools are optimized for speed.
+
+**Q: How do I optimize gaming performance?**
+A: See the [Gaming Guide](guides/gaming.md) for detailed performance optimization tips including GameMode and MangoHud usage.
+
+**Q: Can I use nix-mox on low-end hardware?**
+A: Yes, you can selectively import only the modules you need to minimize resource usage.
+
+### Troubleshooting
+
+**Q: What if something doesn't work?**
+A: Check the [Troubleshooting](#-troubleshooting) section first, then search [GitHub Issues](https://github.com/Hydepwns/nix-mox/issues).
+
+**Q: How do I report a bug?**
+A: Create an issue on GitHub with detailed information about your system, error messages, and steps to reproduce.
+
+**Q: Where can I get help?**
+A: Use [GitHub Discussions](https://github.com/Hydepwns/nix-mox/discussions) for questions and community support.
+
+### Advanced Usage
+
+**Q: Can I use nix-mox for server deployments?**
+A: Yes, nix-mox includes server templates and monitoring tools suitable for production deployments.
+
+**Q: How do I manage multiple machines?**
+A: Use the same configuration across machines with hardware-specific fragments for customization.
+
+**Q: Can I use nix-mox with containers?**
+A: Yes, nix-mox includes container templates and LXC support for containerized deployments.
+
+[⬆️ Return to Top](#-table-of-contents)
+
+## 📦 Packages & Tools
+
+### System Management
+
+```bash
+nix run .#proxmox-update       # Update Proxmox VE
+nix run .#vzdump-backup        # Backup VMs
+nix run .#zfs-snapshot         # Manage ZFS snapshots
+nix run .#nixos-flake-update   # Update flake inputs
+```
+
+### Installation
+
+```bash
+nix run .#install              # Install nix-mox
+nix run .#uninstall            # Uninstall nix-mox
+```
+
+[⬆️ Return to Top](#-table-of-contents)
+
+## 🏗️ Templates
+
+Pre-built configurations for common use cases:
+
+- **Safe Configuration**: Complete desktop setup with display safety and messaging support
+- **CI Runner**: High-performance CI/CD environment
+- **Web Server**: Production web server configuration
+- **Database**: Database server setup
+- **Monitoring**: Prometheus/Grafana stack
+- **Load Balancer**: HAProxy configuration
+
+[⬆️ Return to Top](#-table-of-contents)
+
+## 🧪 Testing
+
+```bash
+nix flake check .#checks.x86_64-linux.unit
+nix flake check .#checks.x86_64-linux.integration
+nix flake check .#checks.x86_64-linux.test-suite
+```
+
+[⬆️ Return to Top](#-table-of-contents)
+
+## 📚 Documentation
+
+- [Usage Guide](docs/USAGE.md)
+- [Examples](docs/examples/)
+- [Guides](docs/guides/)
+- [Architecture](docs/architecture/)
+- [API Reference](docs/api/)
+
+[⬆️ Return to Top](#-table-of-contents)
+
+## 🤝 Contributing
+
+```bash
+# Setup development environment
+nix develop .#development
+pre-commit install
+just test
+```
+
+[⬆️ Return to Top](#-table-of-contents)
