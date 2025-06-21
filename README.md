@@ -5,6 +5,9 @@
 [![NixOS](https://img.shields.io/badge/NixOS-21.11-blue.svg)](https://nixos.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Flake](https://img.shields.io/badge/Flake-Enabled-green.svg)](https://nixos.wiki/wiki/Flakes)
+[![CI](https://github.com/Hydepwns/nix-mox/workflows/CI/badge.svg)](https://github.com/Hydepwns/nix-mox/actions/workflows/ci.yml)
+[![Tests](https://github.com/Hydepwns/nix-mox/workflows/Tests/badge.svg)](https://github.com/Hydepwns/nix-mox/actions/workflows/tests.yml)
+[![Cachix Cache](https://img.shields.io/badge/cachix-nix--mox-blue.svg)](https://nix-mox.cachix.org)
 
 nix-mox provides a modular, composable approach to NixOS configuration with pre-built templates, development environments, and utility packages. Perfect for developers, system administrators, and power users who want a robust, reproducible system setup.
 
@@ -110,6 +113,22 @@ environment.systemPackages = with pkgs; [
   inputs.nix-mox.packages.${pkgs.system}.uninstall
 ];
 ```
+
+### 🚀 Cachix Cache (Recommended)
+
+For faster builds and to avoid rebuilding packages, use our Cachix cache:
+
+```bash
+# Add the nix-mox cache to your Nix configuration
+nix-env -iA cachix -f https://cachix.org/api/v1/install
+cachix use nix-mox
+
+# Or add to your NixOS configuration
+nix.settings.substituters = [ "https://nix-mox.cachix.org" ];
+nix.settings.trusted-public-keys = [ "nix-mox.cachix.org-1:8SitoywBaXeFjuQ98Dox4Fq1g48fVVAf8jQjA=1" ];
+```
+
+This will significantly speed up your builds by downloading pre-built packages instead of building them locally.
 
 ## 🎯 Core Features
 
