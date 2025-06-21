@@ -85,30 +85,109 @@ Example of adding a new service module:
 
 ## Module Categories
 
-- **core/**: Fundamental modules that provide base functionality
+### Core Modules
+
+- **core/**: Fundamental modules that provide base functionality and essential system components
+
+### System Modules
+
 - **system/**: System-level configurations for hardware and networking
-  - **networking/**: Network configuration modules
-  - **hardware/**: Hardware-specific configurations
-  - **boot/**: Bootloader and boot configuration
-  - **users/**: User management modules
-- **services/**: Service-specific modules for various applications
-- **storage/**: Storage-related modules including ZFS and backup
-- **security/**: Security-related modules for encryption and access control
+  - **networking/**: Network configuration modules with comprehensive network setup
+  - **hardware/**: Hardware-specific configurations including CPU, GPU, storage, and input devices
+  - **boot/**: Bootloader and boot configuration for various systems
+  - **users/**: User management modules with authentication and access control
+
+### Service Modules
+
+- **services/**: Service-specific modules for various applications and infrastructure
+  - **infisical.nix**: Secret management and configuration
+  - **tailscale.nix**: VPN and secure networking
+  - **fragments/**: Modular service configurations for easy composition
+
+### Storage Modules
+
+- **storage/**: Storage-related modules including ZFS, backup systems, and storage optimization
+  - **backup/**: Automated backup solutions
+  - **fragments/**: Modular storage configurations
+  - **templates/**: Pre-configured storage setups
+
+### Security Modules
+
+- **security/**: Security-related modules for encryption, access control, and system hardening
+  - **access/**: Access control and authentication systems
+  - **encryption/**: Disk encryption and key management
+  - Complete security framework with firewall, monitoring, and logging
+
+### Monitoring Modules
+
 - **monitoring/**: Monitoring and observability modules
+  - **logging/**: Centralized logging solutions
+  - **metrics/**: Performance and system metrics collection
+  - Comprehensive monitoring stack with Prometheus, Grafana, and alerting
+
+### Gaming Modules
+
 - **gaming/**: Gaming-specific modules for Steam, Wine, and performance tuning
+  - Complete gaming environment with Wine, DXVK, and performance optimization
+  - Game launcher support (Steam, Lutris, Heroic)
+  - Performance tools (MangoHud, GameMode, Vulkan Tools)
+
+### Package Modules
+
 - **packages/**: Package-specific modules organized by functionality
-  - **development/**: Development tools and packages
+  - **development/**: Comprehensive development toolchain with IDEs, compilers, and debugging tools
   - **multimedia/**: Media and entertainment packages
   - **productivity/**: Office and productivity tools
-  - **system/**: System utilities
+  - **system/**: System utilities and management tools
   - **linux/**: Linux-specific packages
   - **windows/**: Windows-specific packages
+  - **error-handling/**: Error handling and diagnostic tools
+
+### Template Modules
+
 - **templates/**: Template configurations organized by category
+  - **base/**: Complete base configurations with common fragments
   - **services/**: Service-specific templates
-  - **infrastructure/**: Infrastructure templates
-  - **platforms/**: Platform-specific templates
+  - **infrastructure/**: Infrastructure templates for various deployment scenarios
+  - **platforms/**: Platform-specific templates (NixOS, Windows, macOS)
 
 Each category has its own README.md with more specific information about its contents and usage.
+
+## Complete Module Implementations
+
+### Development Packages Module
+
+Located at `modules/packages/development/index.nix`, this module provides:
+
+- **IDEs and Editors**: VSCode, IntelliJ, Vim, Emacs
+- **Programming Languages**: Comprehensive language support with compilers and interpreters
+- **Debugging Tools**: Advanced debugging and profiling capabilities
+- **Version Control**: Git and collaboration tools
+- **Database Tools**: Database development and management utilities
+- **API Development**: Tools for building and testing APIs
+
+### Hardware System Module
+
+Located at `modules/system/hardware/index.nix`, this module includes:
+
+- **CPU Configuration**: Processor-specific optimizations and settings
+- **GPU Management**: Graphics card configuration and driver setup
+- **Storage Devices**: Disk management and optimization
+- **Network Interfaces**: Network hardware configuration
+- **Audio/Video**: Multimedia hardware support
+- **Input Devices**: Keyboard, mouse, and other input device configuration
+- **Power Management**: System power optimization settings
+
+### Security Module
+
+Located at `modules/security/index.nix`, this module provides:
+
+- **Firewall Configuration**: Comprehensive network security
+- **Access Control**: User authentication and authorization
+- **Encryption**: Disk and file encryption capabilities
+- **Security Monitoring**: Real-time security event monitoring
+- **Network Security**: Advanced network security policies
+- **System Hardening**: Security best practices and hardening measures
 
 ## Module Metadata
 
@@ -128,38 +207,50 @@ Each module should include consistent metadata in comments:
 }
 ```
 
-## Gaming Modules
+## Template-Based Hardware Configuration
 
-### Using Gaming Modules
+The hardware configuration system uses a template-based approach:
 
-To use gaming modules in your configuration:
-
-```nix
-{
-  imports = [
-    nix-mox.nixosModules.gaming
-  ];
-}
-```
-
-### Available Gaming Modules
-
-- **steam.nix**: Configuration for Steam installation and updates
-- **wine.nix**: Configuration for Wine and Windows compatibility
-- **performance.nix**: Performance tuning for gaming VMs
+- **Template**: `config/hardware/hardware-configuration.nix` - Single source of truth for hardware configuration
+- **Generated**: `config/hardware/hardware-configuration-actual.nix` - Auto-generated from system detection
+- **Benefits**: Eliminates duplication, provides clear separation, enables easy migration and updates
 
 ## Platform-Specific Scripts
 
-The `scripts/` directory contains platform-specific automation scripts. The main entrypoint is now a bash wrapper for robust CLI usage:
+The main automation entrypoint is the bash wrapper script for robust CLI usage:
 
 ```bash
 # Main CLI entrypoint (robust argument passing)
-./scripts/nix-mox --script install --dry-run
+./nix-mox --script install --dry-run
 ```
 
-- **linux/**: Linux scripts (backup, update, ZFS, install, etc.)
-- **windows/**: Windows scripts
+**Available Scripts:**
+
 - **nix-mox**: Bash wrapper (recommended for all CLI usage)
 - **nix-mox.nu**: Nushell automation logic (called by the wrapper)
+- **setup-wizard.nu**: Interactive configuration wizard
+- **health-check.nu**: System health diagnostics
+- **linux/**: Linux-specific scripts (backup, update, ZFS, install, etc.)
+- **windows/**: Windows-specific scripts
 
 > The wrapper ensures all arguments are passed correctly to the automation logic, regardless of Nushell version or platform.
+
+## Benefits
+
+### For New Users
+
+- **Simplified Setup**: Interactive wizard guides through configuration
+- **Reduced Errors**: Template-based approach minimizes configuration mistakes
+- **Complete Coverage**: All major use cases supported with comprehensive modules
+
+### For Existing Users
+
+- **System Validation**: Health check ensures configuration integrity
+- **Easy Troubleshooting**: Comprehensive diagnostics and recommendations
+- **Modular Design**: Mix and match components as needed
+
+### For Developers
+
+- **Consistent Interface**: Standardized module structure and metadata
+- **Extensible Architecture**: Easy to add new modules and features
+- **Comprehensive Documentation**: Detailed guides and examples for all components
