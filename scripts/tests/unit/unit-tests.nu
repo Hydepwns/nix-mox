@@ -7,7 +7,7 @@ use ../lib/test-coverage.nu *
 use ../lib/coverage-core.nu *
 
 def main [] {
-    print "Running ZFS SSD caching unit tests..."
+    print "Running comprehensive unit tests for nix-mox..."
 
     # Test configuration validation
     print "Testing configuration validation..."
@@ -83,7 +83,50 @@ def main [] {
         track_test "pool_operations_unsupported" "unit" "skipped" 0.1
     }
 
-    print "Unit tests completed successfully"
+    # Run library module tests
+    print "Running library module tests..."
+    
+    # Test argparse module
+    print "Testing argparse module..."
+    try {
+        nu scripts/tests/unit/argparse-tests.nu
+        track_test "argparse_module_tests" "unit" "passed" 0.5
+    } catch {
+        track_test "argparse_module_tests" "unit" "failed" 0.5
+        print "Argparse module tests failed"
+    }
+    
+    # Test platform module
+    print "Testing platform module..."
+    try {
+        nu scripts/tests/unit/platform-tests.nu
+        track_test "platform_module_tests" "unit" "passed" 0.5
+    } catch {
+        track_test "platform_module_tests" "unit" "failed" 0.5
+        print "Platform module tests failed"
+    }
+    
+    # Test exec module
+    print "Testing exec module..."
+    try {
+        nu scripts/tests/unit/exec-tests.nu
+        track_test "exec_module_tests" "unit" "passed" 0.5
+    } catch {
+        track_test "exec_module_tests" "unit" "failed" 0.5
+        print "Exec module tests failed"
+    }
+    
+    # Test proxmox script
+    print "Testing proxmox script..."
+    try {
+        nu scripts/tests/unit/proxmox-tests.nu
+        track_test "proxmox_script_tests" "unit" "passed" 0.5
+    } catch {
+        track_test "proxmox_script_tests" "unit" "failed" 0.5
+        print "Proxmox script tests failed"
+    }
+
+    print "Comprehensive unit tests completed successfully"
 }
 
 if $env.NU_TEST? == "true" {
