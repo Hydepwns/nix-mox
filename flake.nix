@@ -156,6 +156,6 @@
         }
       ) // {
         # NixOS configurations - imported from config directory
-        nixosConfigurations = import ./config { inherit inputs; };
+        nixosConfigurations = import ./config { inherit inputs self; };
       };
 }

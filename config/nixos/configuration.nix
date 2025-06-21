@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, self, ... }:
 
 {
   imports = [
@@ -109,10 +109,10 @@
     alacritty
 
     # From nix-mox (access the packages)
-    inputs.nix-mox.packages.${pkgs.system}.proxmox-update
-    inputs.nix-mox.packages.${pkgs.system}.vzdump-backup
-    inputs.nix-mox.packages.${pkgs.system}.zfs-snapshot
-    inputs.nix-mox.packages.${pkgs.system}.nixos-flake-update
+    self.packages.${pkgs.system}.proxmox-update
+    self.packages.${pkgs.system}.vzdump-backup
+    self.packages.${pkgs.system}.zfs-snapshot
+    self.packages.${pkgs.system}.nixos-flake-update
 
     # Development tools
     vscode
