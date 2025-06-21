@@ -11,6 +11,17 @@ pkgs.mkShell {
     pkgs.fd
     pkgs.ripgrep
 
+    # Python development
+    pkgs.python3
+    pkgs.python3Packages.pip
+    pkgs.python3Packages.setuptools
+    pkgs.python3Packages.wheel
+    pkgs.python3Packages.virtualenv
+    pkgs.python3Packages.pytest
+    pkgs.python3Packages.black
+    pkgs.python3Packages.flake8
+    pkgs.python3Packages.mypy
+
     # Development tools
     pkgs.just           # Command runner
     pkgs.pre-commit     # Git hooks
@@ -31,6 +42,43 @@ pkgs.mkShell {
     # Function to show help menu
     show_help() {
       echo "Welcome to the nix-mox development shell!"
+      echo ""
+      echo "🐍 Python Development"
+      echo "-------------------"
+      echo "python3: (v${pkgs.python3.version})"
+      echo "    Commands:"
+      echo "    - python3 --version              # Check Python version"
+      echo "    - python3 -m pip --version       # Check pip version"
+      echo "    - python3 -m venv venv           # Create virtual environment"
+      echo "    - source venv/bin/activate       # Activate virtual environment"
+      echo ""
+      echo "pip: (v${pkgs.python3Packages.pip.version})"
+      echo "    Commands:"
+      echo "    - pip install package            # Install package"
+      echo "    - pip install -r requirements.txt # Install from requirements"
+      echo "    - pip list                       # List installed packages"
+      echo ""
+      echo "pytest: (v${pkgs.python3Packages.pytest.version})"
+      echo "    Commands:"
+      echo "    - pytest                         # Run all tests"
+      echo "    - pytest -v                      # Verbose output"
+      echo "    - pytest -k 'test_name'          # Run specific test"
+      echo ""
+      echo "black: (v${pkgs.python3Packages.black.version})"
+      echo "    Commands:"
+      echo "    - black .                        # Format all Python files"
+      echo "    - black --check .                # Check formatting"
+      echo "    - black --diff file.py           # Show formatting changes"
+      echo ""
+      echo "flake8: (v${pkgs.python3Packages.flake8.version})"
+      echo "    Commands:"
+      echo "    - flake8 .                       # Lint Python code"
+      echo "    - flake8 --max-line-length=88 .  # Custom line length"
+      echo ""
+      echo "mypy: (v${pkgs.python3Packages.mypy.version})"
+      echo "    Commands:"
+      echo "    - mypy .                         # Type check Python code"
+      echo "    - mypy --strict .                # Strict type checking"
       echo ""
       echo "🔧 Development Tools"
       echo "------------------"
@@ -115,12 +163,21 @@ pkgs.mkShell {
       echo "   pre-commit install            # Install git hooks"
       echo "   direnv allow                  # Enable directory environment"
       echo ""
-      echo "2. Development workflow:"
+      echo "2. Python development:"
+      echo "   python3 -m venv venv          # Create virtual environment"
+      echo "   source venv/bin/activate      # Activate environment"
+      echo "   pip install -r requirements.txt # Install dependencies"
+      echo "   pytest                        # Run tests"
+      echo "   black .                       # Format code"
+      echo "   flake8 .                      # Lint code"
+      echo "   mypy .                        # Type check"
+      echo ""
+      echo "3. Development workflow:"
       echo "   gh pr create                  # Create pull request"
       echo "   act -l                        # List GitHub Actions"
       echo "   just test                     # Run tests"
       echo ""
-      echo "3. Code quality:"
+      echo "4. Code quality:"
       echo "   pre-commit run               # Run all hooks"
       echo "   nixpkgs-fmt .                # Format Nix files"
       echo "   shellcheck scripts/          # Lint shell scripts"
