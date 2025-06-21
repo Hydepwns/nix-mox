@@ -4,6 +4,12 @@
 # --- Coverage Tracking ---
 export def track_test [name: string, category: string, status: string, duration: float] {
     let coverage_dir = $env.TEST_TEMP_DIR
+    
+    # Ensure coverage directory exists
+    if not ($coverage_dir | path exists) {
+        mkdir $coverage_dir
+    }
+    
     let test_result = {
         name: $name
         category: $category

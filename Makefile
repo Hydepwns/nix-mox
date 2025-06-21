@@ -85,16 +85,24 @@ health-check:
 	@echo "🏥 Running nix-mox Health Check..."
 	$(NUSHELL) scripts/health-check.nu
 
+# Add this at the top, after variable definitions
+check-nushell:
+	@command -v $(NUSHELL) >/dev/null 2>&1 || { \
+		echo >&2 "❌ Nushell (nu) is not installed or not in your PATH."; \
+		echo >&2 "💡 Run 'nix develop' to enter the dev shell, or install Nushell globally."; \
+		exit 127; \
+	}
+
 # Testing targets
-test: $(TEST_DIR)
+test: check-nushell $(TEST_DIR)
 	@echo "🧪 Running all tests..."
 	$(NUSHELL) -c "source scripts/tests/run-tests.nu; run []"
 
-unit: $(TEST_DIR)
+unit: check-nushell $(TEST_DIR)
 	@echo "🧪 Running unit tests..."
 	$(NUSHELL) scripts/tests/unit/unit-tests.nu
 
-integration: $(TEST_DIR)
+integration: check-nushell $(TEST_DIR)
 	@echo "🧪 Running integration tests..."
 	$(NUSHELL) scripts/tests/integration/integration-tests.nu
 
