@@ -14,7 +14,8 @@ PACKAGES = proxmox-update vzdump-backup zfs-snapshot nixos-flake-update install 
 # Phony targets
 .PHONY: help test unit integration clean format check build build-all \
         dev test-shell gaming-shell macos-shell services-shell monitoring-shell zfs-shell \
-        ci-test ci-local update lock clean-all packages shells analyze-sizes
+        ci-test ci-local update lock clean-all packages shells analyze-sizes \
+        setup-wizard health-check
 
 # Default target - show help
 help:
@@ -25,6 +26,8 @@ help:
 	@echo "  dev         - Enter development shell"
 	@echo "  build       - Build default package"
 	@echo "  test        - Run all tests"
+	@echo "  setup-wizard - Interactive configuration setup"
+	@echo "  health-check - System health validation"
 	@echo ""
 	@echo "🧪 Testing:"
 	@echo "  test        - Run all tests (unit + integration)"
@@ -70,6 +73,17 @@ help:
 	@echo "  - Use 'make format' to ensure consistent code style"
 	@echo "  - Use 'make analyze-sizes' to see performance tradeoffs"
 	@echo "  - Use 'make clean-all' if you encounter build issues"
+	@echo "  - Use 'make setup-wizard' for interactive configuration"
+	@echo "  - Use 'make health-check' to validate system health"
+
+# Setup and health check targets
+setup-wizard:
+	@echo "🔧 Starting nix-mox Configuration Wizard..."
+	$(NUSHELL) scripts/setup-wizard.nu
+
+health-check:
+	@echo "🏥 Running nix-mox Health Check..."
+	$(NUSHELL) scripts/health-check.nu
 
 # Testing targets
 test: $(TEST_DIR)
