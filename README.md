@@ -1,6 +1,6 @@
 # nix-mox
 
-> A comprehensive NixOS configuration framework with development tools, monitoring, system management utilities, and messaging support.
+> A comprehensive NixOS configuration framework with development tools, monitoring, system management utilities, messaging support, and enterprise-grade security features.
 
 [![NixOS](https://img.shields.io/badge/NixOS-21.11-blue.svg)](https://nixos.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -9,7 +9,7 @@
 [![Tests](https://github.com/Hydepwns/nix-mox/workflows/Tests/badge.svg)](https://github.com/Hydepwns/nix-mox/actions/workflows/tests.yml)
 [![Cachix Cache](https://img.shields.io/badge/cachix-nix--mox-blue.svg)](https://nix-mox.cachix.org)
 
-nix-mox provides a modular, composable approach to NixOS configuration with pre-built templates, development environments, and utility packages. Perfect for developers, system administrators, and power users who want a robust, reproducible system setup.
+nix-mox provides a modular, composable approach to NixOS configuration with pre-built templates, development environments, utility packages, and comprehensive security features. Perfect for developers, system administrators, and power users who want a robust, reproducible, and secure system setup.
 
 ## 📋 Table of Contents
 
@@ -21,6 +21,7 @@ nix-mox provides a modular, composable approach to NixOS configuration with pre-
   - [Messaging & Communication](#-messaging--communication)
   - [Gaming Support](#-gaming-support)
   - [System Management](#-system-management)
+  - [Security Features](#-security-features)
   - [Size Analysis & Performance](#-size-analysis--performance)
 - [Management Tools](#-management-tools)
   - [Main Automation Entrypoint](#main-automation-entrypoint)
@@ -142,7 +143,7 @@ Specialized development environments for different use cases:
 
 ```bash
 nix develop                    # Default development environment
-nix develop .#development      # Full development tools
+nix develop .#development      # Full development tools (Python 3, testing, linting)
 nix develop .#testing          # Testing and CI tools
 nix develop .#services         # Service deployment tools
 nix develop .#monitoring       # Monitoring and observability
@@ -150,6 +151,13 @@ nix develop .#gaming           # Gaming tools (Linux x86_64)
 nix develop .#zfs              # ZFS management tools (Linux)
 nix develop .#macos            # macOS development (macOS)
 ```
+
+**Development Shell Features:**
+- **Python 3.12**: Complete Python development environment with pip, pytest, black, flake8, mypy
+- **Testing Tools**: Comprehensive testing frameworks and CI/CD utilities
+- **Code Quality**: Linting, formatting, and type checking tools
+- **Version Control**: Git integration with pre-commit hooks
+- **Package Management**: Just, direnv, and dependency management tools
 
 ### 💬 Messaging & Communication
 
@@ -179,9 +187,102 @@ Comprehensive system management tools and utilities:
 - **Security:** Complete security module with firewall, encryption, and access control
 - **Storage:** ZFS management, backup systems, and storage optimization
 
+### 🔒 Security Features
+
+Comprehensive security module with enterprise-grade protection:
+
+- **Fail2ban**: Intrusion prevention with configurable jails and ban policies
+- **UFW Firewall**: Uncomplicated firewall with rule management and port control
+- **SSL/TLS Security**: Certificate management, modern ciphers, and security headers
+- **AppArmor**: Mandatory access control for application security
+- **System Auditing**: Comprehensive audit rules and log management
+- **SELinux Support**: Advanced mandatory access control (optional)
+- **Kernel Security**: Lockdown modes, YAMA, seccomp, and stack protection
+- **Network Hardening**: IPv6 privacy, TCP hardening, ICMP rate limiting
+- **File System Security**: Read-only mounts, noexec, nosuid options
+- **User Security**: Password policies, account lockout, and complexity requirements
+
+```bash
+# Enable all security features
+imports = [ modules.security.all ];
+
+# Or enable individual components
+imports = [
+  modules.security.fail2ban
+  modules.security.ufw
+  modules.security.ssl
+  modules.security.apparmor
+];
+```
+
 ### 📊 Size Analysis & Performance
 
 Analyze the actual size and performance tradeoffs of different templates and shells to make informed decisions about which components to use.
+
+#### Interactive Size Dashboard
+
+Generate a web-based interactive dashboard for comprehensive size analysis:
+
+```bash
+# Generate and serve interactive dashboard
+make size-dashboard
+
+# Generate HTML dashboard only
+make size-dashboard-html
+
+# Generate JSON API data
+make size-dashboard-api
+```
+
+The dashboard provides:
+- **Visual Charts**: Interactive bar charts and pie charts
+- **Package Details**: Comprehensive size breakdowns
+- **Dependency Analysis**: Dependency count and size analysis
+- **Build Type Classification**: Light vs heavy build identification
+- **Real-time Data**: Live package analysis
+
+#### Advanced Caching Strategy
+
+Optimize build performance with intelligent caching:
+
+```bash
+# Run complete caching optimization
+make cache-optimize
+
+# Warm cache with common packages
+make cache-warm
+
+# Maintain and clean cache
+make cache-maintain
+```
+
+Features:
+- **Multi-layer Caching**: Primary, secondary, and specialized caches
+- **Health Monitoring**: Cache availability and performance checks
+- **Intelligent Warming**: Pre-load frequently used packages
+- **Parallel Builds**: Optimized build scheduling with dependency analysis
+- **Cache Maintenance**: Automatic cleanup and optimization
+
+#### Software Bill of Materials (SBOM)
+
+Generate compliance-ready Software Bill of Materials:
+
+```bash
+# Generate all SBOM formats
+make sbom
+
+# Generate specific formats
+make sbom-spdx      # SPDX format
+make sbom-cyclonedx # CycloneDX format
+make sbom-csv       # CSV report
+```
+
+Compliance features:
+- **Multiple Formats**: SPDX, CycloneDX, and CSV
+- **Complete Metadata**: Licenses, versions, dependencies, hashes
+- **Compliance Ready**: Industry-standard formats for audits
+- **Automated Generation**: Integrated with build process
+- **Detailed Reports**: Comprehensive dependency analysis
 
 ## 🛠️ Management Tools
 

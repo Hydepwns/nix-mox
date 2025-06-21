@@ -82,6 +82,46 @@ The `health-check.nu` script validates system health and configuration integrity
 - Security settings validation
 - Color-coded reports with recommendations
 
+### Security Module Validation
+
+The security module provides comprehensive enterprise-grade security features:
+
+```bash
+# Validate security module configuration
+make security-check
+
+# Or manually check security module
+nix eval --impure --expr 'with import <nixpkgs> {}; callPackage ./modules/security/index.nix {}'
+```
+
+**Available Security Features:**
+
+- **Fail2ban**: Intrusion prevention with configurable jails and ban policies
+- **UFW Firewall**: Uncomplicated firewall with rule management and port control  
+- **SSL/TLS Security**: Certificate management, modern ciphers, and security headers
+- **AppArmor**: Mandatory access control for application security
+- **System Auditing**: Comprehensive audit rules and log management
+- **SELinux Support**: Advanced mandatory access control (optional)
+- **Kernel Security**: Lockdown modes, YAMA, seccomp, and stack protection
+- **Network Hardening**: IPv6 privacy, TCP hardening, ICMP rate limiting
+- **File System Security**: Read-only mounts, noexec, nosuid options
+- **User Security**: Password policies, account lockout, and complexity requirements
+
+**Usage:**
+
+```bash
+# Enable all security features
+imports = [ modules.security.all ];
+
+# Or enable individual components
+imports = [
+  modules.security.fail2ban
+  modules.security.ufw
+  modules.security.ssl
+  modules.security.apparmor
+];
+```
+
 ## Directory Structure
 
 - `nix-mox`             — Main automation entrypoint (bash wrapper)

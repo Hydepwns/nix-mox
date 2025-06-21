@@ -27,17 +27,19 @@ let
       };
     };
 
-    config = let
-      cfg = config.services.fail2ban;
-    in lib.mkIf cfg.enable {
-      services.fail2ban = {
-        enable = true;
-        maxretry = cfg.maxretry;
-        bantime = cfg.bantime;
-        findtime = cfg.findtime;
-        jails = cfg.jails;
+    config =
+      let
+        cfg = config.services.fail2ban;
+      in
+      lib.mkIf cfg.enable {
+        services.fail2ban = {
+          enable = true;
+          maxretry = cfg.maxretry;
+          bantime = cfg.bantime;
+          findtime = cfg.findtime;
+          jails = cfg.jails;
+        };
       };
-    };
   };
 
   # UFW firewall configuration
@@ -56,7 +58,7 @@ let
       };
       rules = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [];
+        default = [ ];
         description = "UFW rules to add";
       };
       allowedPorts = lib.mkOption {
@@ -66,19 +68,18 @@ let
       };
     };
 
-    config = let
-      cfg = config.services.ufw;
-    in lib.mkIf cfg.enable {
-      services.ufw = {
-        enable = true;
-        defaultIncomingPolicy = cfg.defaultIncomingPolicy;
-        defaultOutgoingPolicy = cfg.defaultOutgoingPolicy;
-        rules = cfg.rules;
+    config =
+      let
+        cfg = config.services.ufw;
+      in
+      lib.mkIf cfg.enable {
+        services.ufw = {
+          enable = true;
+          defaultIncomingPolicy = cfg.defaultIncomingPolicy;
+          defaultOutgoingPolicy = cfg.defaultOutgoingPolicy;
+          rules = lib.mkAfter (cfg.rules ++ (lib.forEach cfg.allowedPorts (port: "allow ${toString port}")));
+        };
       };
-
-      # Add allowed ports
-      services.ufw.rules = lib.mkAfter (lib.forEach cfg.allowedPorts (port: "allow ${toString port}"));
-    };
   };
 
   # SSL/TLS configuration
@@ -87,12 +88,12 @@ let
       enable = lib.mkEnableOption "Enable SSL/TLS security";
       certificates = lib.mkOption {
         type = lib.types.listOf lib.types.path;
-        default = [];
+        default = [ ];
         description = "SSL certificates to install";
       };
       privateKeys = lib.mkOption {
         type = lib.types.listOf lib.types.path;
-        default = [];
+        default = [ ];
         description = "SSL private keys to install";
       };
       dhparam = lib.mkOption {
@@ -105,20 +106,22 @@ let
       modernCiphers = lib.mkDefault true;
     };
 
-    config = let
-      cfg = config.security.ssl;
-    in lib.mkIf cfg.enable {
-      # Install certificates
-      security.pki.certificateFiles = cfg.certificates;
+    config =
+      let
+        cfg = config.security.ssl;
+      in
+      lib.mkIf cfg.enable {
+        # Install certificates
+        security.pki.certificateFiles = cfg.certificates;
 
-      # Configure SSL settings for nginx
-      services.nginx = lib.mkIf config.services.nginx.enable {
-        recommendedTlsSettings = cfg.modernCiphers;
-        recommendedGzipSettings = true;
-        recommendedOptimisation = true;
-        recommendedProxySettings = true;
+        # Configure SSL settings for nginx
+        services.nginx = lib.mkIf config.services.nginx.enable {
+          recommendedTlsSettings = cfg.modernCiphers;
+          recommendedGzipSettings = true;
+          recommendedOptimisation = true;
+          recommendedProxySettings = true;
+        };
       };
-    };
   };
 
   # AppArmor configuration
@@ -129,21 +132,23 @@ let
       killUnconfined = lib.mkDefault false;
       packages = lib.mkOption {
         type = lib.types.listOf lib.types.package;
-        default = [];
+        default = [ ];
         description = "Packages to enable AppArmor for";
       };
     };
 
-    config = let
-      cfg = config.security.apparmor;
-    in lib.mkIf cfg.enable {
-      security.apparmor = {
-        enable = true;
-        enableCache = cfg.enableCache;
-        killUnconfined = cfg.killUnconfined;
-        packages = cfg.packages;
+    config =
+      let
+        cfg = config.security.apparmor;
+      in
+      lib.mkIf cfg.enable {
+        security.apparmor = {
+          enable = true;
+          enableCache = cfg.enableCache;
+          killUnconfined = cfg.killUnconfined;
+          packages = cfg.packages;
+        };
       };
-    };
   };
 
   # Audit configuration
@@ -152,7 +157,7 @@ let
       enable = lib.mkEnableOption "Enable system auditing";
       rules = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [];
+        default = [ ];
         description = "Audit rules to add";
       };
       logFile = lib.mkOption {
@@ -162,15 +167,17 @@ let
       };
     };
 
-    config = let
-      cfg = config.security.audit;
-    in lib.mkIf cfg.enable {
-      services.auditd = {
-        enable = true;
-        rules = cfg.rules;
-        logFile = cfg.logFile;
+    config =
+      let
+        cfg = config.security.audit;
+      in
+      lib.mkIf cfg.enable {
+        services.auditd = {
+          enable = true;
+          rules = cfg.rules;
+          logFile = cfg.logFile;
+        };
       };
-    };
   };
 
   # SELinux configuration
@@ -189,15 +196,17 @@ let
       };
     };
 
-    config = let
-      cfg = config.security.selinux;
-    in lib.mkIf cfg.enable {
-      security.selinux = {
-        enable = true;
-        state = cfg.state;
-        type = cfg.type;
+    config =
+      let
+        cfg = config.security.selinux;
+      in
+      lib.mkIf cfg.enable {
+        security.selinux = {
+          enable = true;
+          state = cfg.state;
+          type = cfg.type;
+        };
       };
-    };
   };
 
   # Kernel security configuration
@@ -215,19 +224,21 @@ let
       aslr = lib.mkDefault true;
     };
 
-    config = let
-      cfg = config.security.kernel;
-    in lib.mkIf cfg.enable {
-      boot.kernelParams = lib.mkIf (cfg.lockdown != "none") [ "lockdown=${cfg.lockdown}" ];
+    config =
+      let
+        cfg = config.security.kernel;
+      in
+      lib.mkIf cfg.enable {
+        boot.kernelParams = lib.mkIf (cfg.lockdown != "none") [ "lockdown=${cfg.lockdown}" ];
 
-      security.yama = lib.mkIf cfg.yama {
-        enable = true;
-      };
+        security.yama = lib.mkIf cfg.yama {
+          enable = true;
+        };
 
-      security.seccomp = lib.mkIf cfg.seccomp {
-        enable = true;
+        security.seccomp = lib.mkIf cfg.seccomp {
+          enable = true;
+        };
       };
-    };
   };
 
   # Network security configuration
@@ -241,31 +252,31 @@ let
       rpFilter = lib.mkDefault true;
     };
 
-    config = let
-      cfg = config.security.network;
-    in lib.mkIf cfg.enable {
-      # IPv6 privacy extensions
-      networking.tempAddresses = lib.mkIf cfg.ipv6Privacy "enabled";
+    config =
+      let
+        cfg = config.security.network;
+      in
+      lib.mkIf cfg.enable {
+        # IPv6 privacy extensions
+        networking.tempAddresses = lib.mkIf cfg.ipv6Privacy "enabled";
 
-      # TCP hardening
-      boot.kernelParams = lib.mkIf cfg.tcpHardening [
-        "net.ipv4.tcp_syncookies=1"
-        "net.ipv4.tcp_timestamps=0"
-        "net.ipv4.tcp_max_syn_backlog=2048"
-      ];
-
-      # ICMP rate limiting
-      boot.kernelParams = lib.mkIf cfg.icmpRateLimit [
-        "net.ipv4.icmp_ratelimit=100"
-        "net.ipv4.icmp_ratemask=88089"
-      ];
-
-      # Reverse path filtering
-      boot.kernelParams = lib.mkIf cfg.rpFilter [
-        "net.ipv4.conf.all.rp_filter=1"
-        "net.ipv4.conf.default.rp_filter=1"
-      ];
-    };
+        # TCP hardening
+        boot.kernelParams = lib.mkMerge [
+          (lib.mkIf cfg.tcpHardening [
+            "net.ipv4.tcp_syncookies=1"
+            "net.ipv4.tcp_timestamps=0"
+            "net.ipv4.tcp_max_syn_backlog=2048"
+          ])
+          (lib.mkIf cfg.icmpRateLimit [
+            "net.ipv4.icmp_ratelimit=100"
+            "net.ipv4.icmp_ratemask=88089"
+          ])
+          (lib.mkIf cfg.rpFilter [
+            "net.ipv4.conf.all.rp_filter=1"
+            "net.ipv4.conf.default.rp_filter=1"
+          ])
+        ];
+      };
   };
 
   # File system security
@@ -277,29 +288,33 @@ let
       nodev = lib.mkDefault false;
       readOnly = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [];
+        default = [ ];
         description = "Directories to mount read-only";
       };
     };
 
-    config = let
-      cfg = config.security.filesystem;
-    in lib.mkIf cfg.enable {
-      # Add security options to file systems
-      fileSystems = lib.mapAttrs' (name: value: lib.nameValuePair name (value // {
-        options = (value.options or []) ++
-          (lib.optionals cfg.noexec [ "noexec" ]) ++
-          (lib.optionals cfg.nosuid [ "nosuid" ]) ++
-          (lib.optionals cfg.nodev [ "nodev" ]);
-      })) config.fileSystems;
-
-      # Read-only mounts
-      fileSystems = lib.mkIf (cfg.readOnly != []) (lib.listToAttrs (lib.forEach cfg.readOnly (dir: lib.nameValuePair dir {
-        device = "tmpfs";
-        fsType = "tmpfs";
-        options = [ "ro" "noexec" "nosuid" "nodev" "size=1M" ];
-      })));
-    };
+    config =
+      let
+        cfg = config.security.filesystem;
+      in
+      lib.mkIf cfg.enable {
+        # Add security options to file systems
+        fileSystems = lib.mkMerge [
+          (lib.mapAttrs'
+            (name: value: lib.nameValuePair name (value // {
+              options = (value.options or [ ]) ++
+                (lib.optionals cfg.noexec [ "noexec" ]) ++
+                (lib.optionals cfg.nosuid [ "nosuid" ]) ++
+                (lib.optionals cfg.nodev [ "nodev" ]);
+            }))
+            config.fileSystems)
+          (lib.mkIf (cfg.readOnly != [ ]) (lib.listToAttrs (lib.forEach cfg.readOnly (dir: lib.nameValuePair dir {
+            device = "tmpfs";
+            fsType = "tmpfs";
+            options = [ "ro" "noexec" "nosuid" "nodev" "size=1M" ];
+          }))))
+        ];
+      };
   };
 
   # User security configuration
@@ -324,28 +339,31 @@ let
       };
     };
 
-    config = let
-      cfg = config.security.users;
-    in lib.mkIf cfg.enable {
-      security.pam.services = lib.mkIf cfg.passwordComplexity {
-        login.pamAuth = [ "pam_pwquality.so" ];
-        sudo.pamAuth = [ "pam_pwquality.so" ];
-        passwd.pamAuth = [ "pam_pwquality.so" ];
-      };
+    config =
+      let
+        cfg = config.security.users;
+      in
+      lib.mkIf cfg.enable {
+        security.pam.services = lib.mkIf cfg.passwordComplexity {
+          login.pamAuth = [ "pam_pwquality.so" ];
+          sudo.pamAuth = [ "pam_pwquality.so" ];
+          passwd.pamAuth = [ "pam_pwquality.so" ];
+        };
 
-      security.pam.pwquality = {
-        enable = cfg.passwordComplexity;
-        settings = {
-          minlen = cfg.passwordMinLength;
-          minclass = 3;
-          maxrepeat = 3;
-          geoscheck = 1;
+        security.pam.pwquality = {
+          enable = cfg.passwordComplexity;
+          settings = {
+            minlen = cfg.passwordMinLength;
+            minclass = 3;
+            maxrepeat = 3;
+            geoscheck = 1;
+          };
         };
       };
-    };
   };
 
-in {
+in
+{
   # Export all security modules
   inherit fail2ban ufw ssl apparmor audit selinux kernel network filesystem users;
 

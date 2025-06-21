@@ -15,7 +15,7 @@ PACKAGES = proxmox-update vzdump-backup zfs-snapshot nixos-flake-update install 
 .PHONY: help test unit integration clean format check build build-all \
         dev test-shell gaming-shell macos-shell services-shell monitoring-shell zfs-shell \
         ci-test ci-local update lock clean-all packages shells analyze-sizes \
-        setup-wizard health-check
+        setup-wizard health-check security-check sbom cache-optimize size-dashboard
 
 # Default target - show help
 help:
@@ -52,8 +52,14 @@ help:
 	@echo "  monitoring-shell - Enter monitoring shell"
 	@echo "  zfs-shell   - Enter ZFS/storage shell (Linux only)"
 	@echo ""
-	@echo "📊 Analysis:"
+	@echo "📊 Analysis & Optimization:"
 	@echo "  analyze-sizes - Analyze size of packages, devshells, and templates"
+	@echo "  size-dashboard - Generate and serve web-based size analysis dashboard"
+	@echo "  cache-optimize - Run advanced caching strategy with optimization"
+	@echo ""
+	@echo "🔒 Compliance & Security:"
+	@echo "  security-check - Validate security module configuration"
+	@echo "  sbom         - Generate Software Bill of Materials (SPDX, CycloneDX, CSV)"
 	@echo ""
 	@echo "🔄 CI/CD:"
 	@echo "  ci-test     - Run quick CI test locally"
@@ -72,9 +78,13 @@ help:
 	@echo "  - Use 'make test' before committing changes"
 	@echo "  - Use 'make format' to ensure consistent code style"
 	@echo "  - Use 'make analyze-sizes' to see performance tradeoffs"
+	@echo "  - Use 'make size-dashboard' for interactive size analysis"
+	@echo "  - Use 'make cache-optimize' for faster builds"
+	@echo "  - Use 'make sbom' for compliance documentation"
 	@echo "  - Use 'make clean-all' if you encounter build issues"
 	@echo "  - Use 'make setup-wizard' for interactive configuration"
 	@echo "  - Use 'make health-check' to validate system health"
+	@echo "  - Use 'make security-check' to validate security configuration"
 
 # Setup and health check targets
 setup-wizard:
@@ -84,6 +94,23 @@ setup-wizard:
 health-check:
 	@echo "🏥 Running nix-mox Health Check..."
 	$(NUSHELL) scripts/health-check.nu
+
+security-check:
+	@echo "🔒 Validating security module configuration..."
+	@echo "✅ Checking security module syntax..."
+	$(NIX) eval --impure --expr 'with import <nixpkgs> {}; callPackage ./modules/security/index.nix {}' > /dev/null
+	@echo "✅ Security module validation passed!"
+	@echo "💡 Security features available:"
+	@echo "  - fail2ban: Intrusion prevention"
+	@echo "  - ufw: Firewall management"
+	@echo "  - ssl: SSL/TLS security"
+	@echo "  - apparmor: Application security"
+	@echo "  - audit: System auditing"
+	@echo "  - selinux: Advanced access control"
+	@echo "  - kernel: Kernel security features"
+	@echo "  - network: Network hardening"
+	@echo "  - filesystem: File system security"
+	@echo "  - users: User security policies"
 
 # Add this at the top, after variable definitions
 check-nushell:
@@ -182,6 +209,49 @@ analyze-sizes:
 	@echo "📊 Analyzing repository sizes..."
 	./scripts/analyze-sizes.sh
 
+# Size analysis dashboard
+size-dashboard: check-nushell
+	@echo "📊 Generating size analysis dashboard..."
+	$(NUSHELL) -c "source scripts/size-dashboard.nu; run"
+
+size-dashboard-html: check-nushell
+	@echo "📊 Generating HTML dashboard..."
+	$(NUSHELL) -c "source scripts/size-dashboard.nu; generate-html"
+
+size-dashboard-api: check-nushell
+	@echo "📊 Generating JSON API..."
+	$(NUSHELL) -c "source scripts/size-dashboard.nu; generate-api"
+
+# Advanced caching
+cache-optimize: check-nushell
+	@echo "🔄 Running advanced caching optimization..."
+	$(NUSHELL) -c "source scripts/advanced-cache.nu; run"
+
+cache-warm: check-nushell
+	@echo "🔥 Warming cache..."
+	$(NUSHELL) -c "source scripts/advanced-cache.nu; warm"
+
+cache-maintain: check-nushell
+	@echo "🔧 Maintaining cache..."
+	$(NUSHELL) -c "source scripts/advanced-cache.nu; maintain"
+
+# SBOM generation
+sbom: check-nushell
+	@echo "📋 Generating Software Bill of Materials..."
+	$(NUSHELL) -c "source scripts/generate-sbom.nu; run"
+
+sbom-spdx: check-nushell
+	@echo "📋 Generating SPDX format SBOM..."
+	$(NUSHELL) -c "source scripts/generate-sbom.nu; generate_spdx_sbom"
+
+sbom-cyclonedx: check-nushell
+	@echo "📋 Generating CycloneDX format SBOM..."
+	$(NUSHELL) -c "source scripts/generate-sbom.nu; generate_cyclonedx_sbom"
+
+sbom-csv: check-nushell
+	@echo "📋 Generating CSV format SBOM..."
+	$(NUSHELL) -c "source scripts/generate-sbom.nu; generate_csv_report"
+
 # CI/CD targets
 ci-test:
 	@echo "🔄 Running quick CI test..."
@@ -196,6 +266,10 @@ clean-all: clean
 	@echo "🧹 Cleaning all artifacts..."
 	rm -rf tmp/
 	rm -rf result/
+	rm -rf sbom/
+	rm -f size-dashboard.html
+	rm -f size-api.json
+	rm -f cache-report.json
 	$(NIX) store gc
 	@echo "✅ All artifacts cleaned!"
 
@@ -209,10 +283,10 @@ packages:
 shells:
 	@echo "💻 Available development shells:"
 	@echo "  - default (general development)"
-	@echo "  - development (full dev tools)"
-	@echo "  - testing (test tools)"
-	@echo "  - services (service deployment)"
-	@echo "  - monitoring (monitoring tools)"
-	@echo "  - gaming (Linux x86_64 only)"
-	@echo "  - macos (macOS only)"
-	@echo "  - zfs (Linux only)"
+	@echo "  - development (full development tools)"
+	@echo "  - testing (testing and CI tools)"
+	@echo "  - services (service deployment tools)"
+	@echo "  - monitoring (monitoring and observability)"
+	@echo "  - gaming (gaming tools - Linux x86_64 only)"
+	@echo "  - zfs (ZFS management tools - Linux only)"
+	@echo "  - macos (macOS development - macOS only)"
