@@ -22,10 +22,15 @@ jobs:
         run: |
           if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ]; then
             echo "Setting up Cachix..."
-            cachix use nix-mox
+            if command -v cachix &> /dev/null; then
+              cachix use nix-mox
+            else
+              echo "Cachix not available, skipping setup"
+            fi
           else
             echo "CACHIX_SIGNING_KEY not set, skipping Cachix setup"
           fi
+        continue-on-error: true
       - name: Cache Nix store
         uses: actions/cache@v4
         with:
@@ -56,10 +61,15 @@ jobs:
         run: |
           if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ]; then
             echo "Setting up Cachix..."
-            cachix use nix-mox
+            if command -v cachix &> /dev/null; then
+              cachix use nix-mox
+            else
+              echo "Cachix not available, skipping setup"
+            fi
           else
             echo "CACHIX_SIGNING_KEY not set, skipping Cachix setup"
           fi
+        continue-on-error: true
       - name: Cache Nix store
         uses: actions/cache@v4
         with:
@@ -86,10 +96,15 @@ jobs:
         run: |
           if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ]; then
             echo "Setting up Cachix..."
-            cachix use nix-mox
+            if command -v cachix &> /dev/null; then
+              cachix use nix-mox
+            else
+              echo "Cachix not available, skipping setup"
+            fi
           else
             echo "CACHIX_SIGNING_KEY not set, skipping Cachix setup"
           fi
+        continue-on-error: true
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
