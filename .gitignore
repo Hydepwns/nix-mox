@@ -37,6 +37,7 @@ desktop.ini
 *.tmp
 *.tempresult
 
+
 # Nix remote builder keys
 nix-mox-public.key
 nix-mox-secret.key
