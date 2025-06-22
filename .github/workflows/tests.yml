@@ -75,6 +75,7 @@ jobs:
         nix flake metadata --accept-flake-config
 
     - name: Find and prepare coverage report
+      if: runner.os == 'Linux'
       run: |
         # Find the coverage file in the temporary directory
         COVERAGE_FILE=$(find /tmp -name "coverage.json" -path "*/nix-mox-tests/*" 2>/dev/null | head -1)
@@ -118,6 +119,7 @@ jobs:
         fi
 
     - name: Upload coverage report to artifacts
+      if: runner.os == 'Linux'
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
@@ -125,7 +127,7 @@ jobs:
         if-no-files-found: ignore
 
     - name: Upload coverage to Codecov
-      if: always()
+      if: runner.os == 'Linux'
       uses: codecov/codecov-action@v4
       with:
         file: coverage-tmp/codecov.json
@@ -136,6 +138,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Check test coverage
+      if: runner.os == 'Linux'
       run: |
         # Find the coverage file and check it
         COVERAGE_FILE=$(find /tmp -name "coverage.json" -path "*/nix-mox-tests/*" 2>/dev/null | head -1)
