@@ -1,0 +1,43 @@
+{
+  "logging": {
+    "level": "INFO",
+    "file": null,
+    "format": "text",
+    "max_size": "10MB",
+    "retention_days": 30
+  },
+  "platform": {
+    "auto_detect": true,
+    "preferred": "auto",
+    "fallback": "linux"
+  },
+  "scripts": {
+    "timeout": 300,
+    "retry_attempts": 3,
+    "retry_delay": 5,
+    "parallel_limit": 4
+  },
+  "security": {
+    "validate_scripts": true,
+    "check_permissions": true,
+    "allowed_commands": [],
+    "blocked_patterns": [
+      "rm -rf",
+      "sudo",
+      "chmod 777",
+      "eval",
+      "exec"
+    ]
+  },
+  "performance": {
+    "enable_monitoring": true,
+    "log_performance": true,
+    "performance_threshold": 30
+  },
+  "paths": {
+    "logs": "logs",
+    "temp": "tmp",
+    "cache": "cache",
+    "config": "config"
+  }
+}
