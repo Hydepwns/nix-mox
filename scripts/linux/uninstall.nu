@@ -6,7 +6,7 @@
 # - Removes all files and directories listed in the manifest.
 # - Is idempotent and safe to re-run.
 
-use ../lib/common.nu *
+use ../lib/common.nu
 
 # --- Global Variables ---
 const MANIFEST_FILE = "/etc/nix-mox/install_manifest.txt"
@@ -29,7 +29,7 @@ def main [] {
     check_root
 
     if not ($MANIFEST_FILE | path exists) {
-        log_warn $"Install manifest not found at ($MANIFEST_FILE). Nothing to do."
+        log_warning $"Install manifest not found at ($MANIFEST_FILE). Nothing to do."
         exit 0
     }
 
@@ -63,11 +63,11 @@ def main [] {
                     rmdir $item
                     log_info $"Removing empty directory: ($item)"
                 } catch {
-                    log_warn $"Directory not empty or does not exist, skipping: ($item)"
+                    log_warning $"Directory not empty or does not exist, skipping: ($item)"
                 }
             }
         } else {
-            log_warn $"Item not found, skipping: ($item)"
+            log_warning $"Item not found, skipping: ($item)"
         }
     }
 

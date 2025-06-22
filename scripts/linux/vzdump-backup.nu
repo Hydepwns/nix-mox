@@ -6,49 +6,31 @@
 # - Maintains a backup log
 # - Is idempotent and safe to re-run
 
-use ../lib/common.nu *
-
-# Proxmox vzdump Backup Script
-# Usage: sudo nu vzdump-backup.nu [--dry-run] [--storage NAME] [--help]
-# Logs to /var/log/vzdump-backup.log
-#
-# Options:
-#   --dry-run         Show what would be done, but make no changes
-#   --storage NAME    Set backup storage name (default: backup or $STORAGE)
-#   --help            Show this help message
+use ../lib/common.nu
 
 # Script-specific variables
-const LOGFILE = "/var/log/vzdump-backup.log"
 $env.STORAGE = ($env.STORAGE? | default "backup")
 $env.DRY_RUN = false
-
-# Ensure log file exists and is writable
-try {
-    touch $LOGFILE
-} catch {
-    log_error $"Log file is not writable: ($LOGFILE)"
-    exit 1
-}
 
 # Function to list and back up items (VMs or CTs)
 def backup_items [list_cmd: string, item_type: string] {
     let ids = (do { nu -c $list_cmd } | complete | get stdout | lines | skip 1 | split column " " | get column1)
 
     if ($ids | length) == 0 {
-        log_info $"No ($item_type)s found to back up." $LOGFILE
+        log_info $"No ($item_type)s found to back up."
         return
     }
 
     for id in $ids {
-        log_info $"Processing backup for ($item_type) ($id)..." $LOGFILE
+        log_info $"Processing backup for ($item_type) ($id)..."
         if $env.DRY_RUN {
-            log_dryrun $"Would back up ($item_type) ($id) to storage '($env.STORAGE)'" $LOGFILE
+            log_dryrun $"Would back up ($item_type) ($id) to storage '($env.STORAGE)'"
         } else {
             try {
                 vzdump $id --storage $env.STORAGE --mode snapshot --compress zstd
-                log_success $"Successfully backed up ($item_type) ($id)." $LOGFILE
+                log_success $"Successfully backed up ($item_type) ($id)."
             } catch {
-                log_error $"Failed to back up ($item_type) ($id)." $LOGFILE
+                log_error $"Failed to back up ($item_type) ($id)."
                 return true
             }
         }
@@ -68,7 +50,7 @@ def main [] {
             }
             "--help" | "-h" => { usage }
             _ => {
-                log_error $"Unknown option: ($arg)" $LOGFILE
+                log_error $"Unknown option: ($arg)"
                 usage
             }
         }
@@ -79,35 +61,35 @@ def main [] {
     # Check for required commands
     for cmd in ["vzdump", "qm", "pct"] {
         if not ((which $cmd | length | into int) > 0) {
-            log_error $"Required command '($cmd)' not found." $LOGFILE
+            log_error $"Required command '($cmd)' not found."
             exit 1
         }
     }
 
-    log_info "Starting Proxmox backup process..." $LOGFILE
+    log_info "Starting Proxmox backup process..."
 
     let backup_failed = false
 
-    # Run backup process and redirect all output to the log file
+    # Run backup process
     try {
         $env.backup_failed = (backup_items "qm list" "VM")
         if not $env.backup_failed {
             $env.backup_failed = (backup_items "pct list" "CT")
         }
     } catch {
-        log_error $"An unexpected error occurred: ($env.LAST_ERROR)" $LOGFILE
+        log_error $"An unexpected error occurred: ($env.LAST_ERROR)"
         exit 1
     }
 
     # Final status reporting
     if $env.backup_failed {
-        log_error "vzdump backup completed with one or more errors." $LOGFILE
+        log_error "vzdump backup completed with one or more errors."
         exit 1
     } else {
         if $env.DRY_RUN {
-            log_dryrun "Dry run complete. No backups were performed." $LOGFILE
+            log_dryrun "Dry run complete. No backups were performed."
         } else {
-            log_success "vzdump backup completed successfully." $LOGFILE
+            log_success "vzdump backup completed successfully."
         }
     }
 }

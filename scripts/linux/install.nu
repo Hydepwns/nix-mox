@@ -6,7 +6,7 @@
 # - Creates an install manifest at /etc/nix-mox/install_manifest.txt
 # - Is idempotent and safe to re-run
 
-use ../lib/common.nu *
+use ../lib/common.nu
 
 # --- Global Variables ---
 const INSTALL_DIR = "/usr/local/bin"

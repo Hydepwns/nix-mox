@@ -1,27 +1,18 @@
 # NixOS Flake Update & Rebuild Script
 # Usage: sudo nu nixos-flake-update.nu [--dry-run] [--flake-path PATH] [--help]
-# Logs to /var/log/nixos-flake-update.log (
+# Logs to /var/log/nixos-flake-update.log
 #
 # Options:
 #   --dry-run         Show what would be done, but make no changes
 #   --flake-path PATH Set flake path (default: /etc/nixos or $FLAKE_PATH)
 #   --help            Show this help message
 
-use ./common.nu *
+use ../lib/common.nu
 
 # Script-specific variables
-$env.LOGFILE = "/var/log/nixos-flake-update.log"
 $env.FLAKE_PATH = ($env.FLAKE_PATH? | default "/etc/nixos")
 $env.HOSTNAME = (hostname)
 $env.DRY_RUN = false
-
-# Ensure log file exists and is writable
-try {
-    touch $env.LOGFILE
-} catch {
-    log_error $"Log file is not writable: ($env.LOGFILE)"
-    exit 1
-}
 
 def main [] {
     # Parse arguments
@@ -35,7 +26,7 @@ def main [] {
             }
             "--help" | "-h" => { usage }
             _ => {
-                log_error $"Unknown option: ($arg)" $env.LOGFILE
+                log_error $"Unknown option: ($arg)"
                 usage
             }
         }
@@ -46,15 +37,15 @@ def main [] {
     # Check for required commands
     for cmd in ["nix", "git"] {
         if not ((which $cmd | length | into int) > 0) {
-            log_error $"Required command '($cmd)' not found." $env.LOGFILE
+            log_error $"Required command '($cmd)' not found."
             exit 1
         }
     }
 
-    log_info $"Starting NixOS flake update process for ($env.FLAKE_PATH)..." $env.LOGFILE
+    log_info $"Starting NixOS flake update process for ($env.FLAKE_PATH)..."
 
     if not ($env.FLAKE_PATH + "/.git" | path exists) {
-        log_warn $"Flake path '($env.FLAKE_PATH)' is not a git repository. Cannot check for changes." $env.LOGFILE
+        log_warn $"Flake path '($env.FLAKE_PATH)' is not a git repository. Cannot check for changes."
     }
 
     # Get the state of the lock file before the update
@@ -68,15 +59,15 @@ def main [] {
     }
 
     if $env.DRY_RUN {
-        log_dryrun $"Dry-run mode: Would attempt to update flake inputs at '($env.FLAKE_PATH)'." $env.LOGFILE
-        log_dryrun "Dry-run mode: Would rebuild system if flake inputs changed." $env.LOGFILE
+        log_dryrun $"Dry-run mode: Would attempt to update flake inputs at '($env.FLAKE_PATH)'."
+        log_dryrun "Dry-run mode: Would rebuild system if flake inputs changed."
         exit 0
     }
 
     # Run update and rebuild, redirecting all output to the log file
-    log_info "Updating flake inputs..." $env.LOGFILE
+    log_info "Updating flake inputs..."
     try {
-        nix flake update $env.FLAKE_PATH | append-to-log $env.LOGFILE
+        nix flake update $env.FLAKE_PATH
 
         # Get the state of the lock file after the update
         $env.post_update_hash = ""
@@ -89,18 +80,18 @@ def main [] {
         }
 
         if $env.pre_update_hash == $env.post_update_hash {
-            log_info "No changes to flake.lock detected. System is up to date." $env.LOGFILE
+            log_info "No changes to flake.lock detected. System is up to date."
         } else {
-            log_info "flake.lock changed. Rebuilding system..." $env.LOGFILE
-            nixos-rebuild switch --flake $"($env.FLAKE_PATH)#($env.HOSTNAME)" | append-to-log $env.LOGFILE
-            log_success "NixOS system rebuild complete." $env.LOGFILE
+            log_info "flake.lock changed. Rebuilding system..."
+            nixos-rebuild switch --flake $"($env.FLAKE_PATH)#($env.HOSTNAME)"
+            log_success "NixOS system rebuild complete."
         }
     } catch {
-        log_error $"An unexpected error occurred: ($env.LAST_ERROR)" $env.LOGFILE
+        log_error $"An unexpected error occurred: ($env.LAST_ERROR)"
         exit 1
     }
 
-    log_success "NixOS flake update process finished." $env.LOGFILE
+    log_success "NixOS flake update process finished."
 }
 
 # --- Execution ---
