@@ -131,6 +131,11 @@ export def track_test [name: string, category: string, status: string, duration:
         timestamp: (date now | into int)
     }
 
+    # Create the test temp directory if it doesn't exist
+    if not ($env.TEST_TEMP_DIR | path exists) {
+        mkdir $env.TEST_TEMP_DIR
+    }
+
     let filename = $"($env.TEST_TEMP_DIR)/test_result_($name | str replace '.nu' '' | str replace '-' '_').json"
     $test_result | to json | save --force $filename
 }
