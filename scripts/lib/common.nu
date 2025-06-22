@@ -64,6 +64,15 @@ export def debug [message: string] {
     log "DEBUG" $message
 }
 
+# Additional logging functions for install/uninstall scripts
+export def log_success [message: string] {
+    log "SUCCESS" $message
+}
+
+export def log_dryrun [message: string] {
+    log "DRY RUN" $message
+}
+
 export def handle_error [message: string] {
     print $"ERROR: ($message)"
     exit 1
@@ -94,4 +103,10 @@ export def ensure_dir [path: string] {
 
 export def is_ci_mode [] {
     $env.CI? == "true"
+}
+
+# Usage function for scripts
+export def usage [] {
+    print "Usage: This script requires root privileges and supports --dry-run and --help options."
+    print "Run with --help for specific usage information."
 }
