@@ -94,11 +94,20 @@ in
     '';
   } else null;
 
-  proxmox-update = if isLinux pkgs.system then pkgs.writeTextFile {
+  proxmox-update = if isLinux pkgs.system then pkgs.symlinkJoin {
     name = "proxmox-update";
-    destination = "/bin/proxmox-update";
-    text = readScript "scripts/linux/proxmox-update.nu";
-    executable = true;
+    paths = [ (pkgs.writeScriptBin "proxmox-update" ''
+      #!${pkgs.nushell}/bin/nu
+      ${readScript "scripts/linux/proxmox-update.nu"}
+    '') ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/proxmox-update \
+        --prefix PATH : ${pkgs.lib.makeBinPath [
+          pkgs.bash
+          pkgs.coreutils
+        ]}
+    '';
   } else null;
 
   remote-builder-setup = if isLinux pkgs.system then pkgs.symlinkJoin {
