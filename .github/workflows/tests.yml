@@ -44,7 +44,7 @@ jobs:
       run: |
         nix flake check
 
-    - name: Find and upload coverage report
+    - name: Find and prepare coverage report
       run: |
         # Find the coverage file in the temporary directory
         COVERAGE_FILE=$(find /tmp -name "coverage.json" -path "*/nix-mox-tests/*" 2>/dev/null | head -1)
@@ -54,16 +54,56 @@ jobs:
           mkdir -p coverage-tmp/nix-mox-tests
           cp "$COVERAGE_FILE" coverage-tmp/nix-mox-tests/coverage.json
           echo "Coverage file copied to coverage-tmp/nix-mox-tests/coverage.json"
+
+          # Convert to codecov format
+          nix develop --command nu -c "
+            let coverage = (open 'coverage-tmp/nix-mox-tests/coverage.json' | from json)
+            let pass_rate = ($coverage | get summary.pass_rate)
+            let total_tests = ($coverage | get summary.total_tests)
+            let passed_tests = ($coverage | get summary.passed_tests)
+
+            # Create codecov-compatible format
+            let codecov_report = {
+              coverage: {
+                total: $total_tests
+                passed: $passed_tests
+                rate: $pass_rate
+                timestamp: (date now | into int)
+              }
+              results: ($coverage | get results | each { |test|
+                {
+                  name: $test.name
+                  status: $test.status
+                  duration: $test.duration
+                  category: $test.category
+                }
+              })
+            }
+
+            $codecov_report | to json | save --force 'coverage-tmp/codecov.json'
+          "
+          echo "Codecov report generated at coverage-tmp/codecov.json"
         else
           echo "No coverage file found"
         fi
 
-    - name: Upload coverage report
+    - name: Upload coverage report to artifacts
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: coverage-tmp/nix-mox-tests/coverage.json
         if-no-files-found: ignore
+
+    - name: Upload coverage to Codecov
+      if: always()
+      uses: codecov/codecov-action@v4
+      with:
+        file: coverage-tmp/codecov.json
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        verbose: true
+        token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Check test coverage
       run: |
