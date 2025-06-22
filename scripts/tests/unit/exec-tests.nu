@@ -71,6 +71,10 @@ def test_run_script_basic [] {
 
     track_test "run_script_success" "unit" "passed" 0.1
     try {
+        # Ensure TEST_TEMP_DIR exists before saving
+        if not ($env.TEST_TEMP_DIR | path exists) {
+            mkdir $env.TEST_TEMP_DIR
+        }
         echo "echo 'test'" | save --force $env.TEST_TEMP_DIR/test_script.nu
         assert_true ("scripts/linux/install.nu" | path exists) "Test script creation"
     } catch {

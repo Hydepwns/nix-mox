@@ -1,4 +1,3 @@
-
 use ../lib/test-utils.nu *
 use ../lib/test-coverage.nu
 use ../lib/coverage-core.nu
@@ -25,6 +24,10 @@ def test_logging_functions [] {
     track_test "log_file_write" "unit" "passed" 0.1
     let test_log = $env.TEST_TEMP_DIR + "/test.log"
     try {
+        # Ensure TEST_TEMP_DIR exists before saving
+        if not ($env.TEST_TEMP_DIR | path exists) {
+            mkdir $env.TEST_TEMP_DIR
+        }
         "test message" | save --append $test_log
         assert_true ($test_log | path exists) "Log file writing"
     } catch {
@@ -63,6 +66,10 @@ def test_append_to_log [] {
     track_test "append_to_log_basic" "unit" "passed" 0.1
     let test_log = $env.TEST_TEMP_DIR + "/append_test.log"
     try {
+        # Ensure TEST_TEMP_DIR exists before saving
+        if not ($env.TEST_TEMP_DIR | path exists) {
+            mkdir $env.TEST_TEMP_DIR
+        }
         "test content" | save --append $test_log
         assert_true ($test_log | path exists) "Append to log basic test"
     } catch {

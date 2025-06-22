@@ -1,4 +1,3 @@
-
 export def track_test [name: string, category: string, status: string, duration: float] {
 
     let test_result = {
@@ -7,6 +6,11 @@ export def track_test [name: string, category: string, status: string, duration:
         status: $status
         duration: $duration
         timestamp: (date now | into int)
+    }
+
+    # Ensure TEST_TEMP_DIR exists before saving
+    if not ($env.TEST_TEMP_DIR | path exists) {
+        mkdir $env.TEST_TEMP_DIR
     }
 
     let filename = $"($env.TEST_TEMP_DIR)/test_result_($name | str replace '.nu' '' | str replace '-' '_').json"
