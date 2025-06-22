@@ -49,7 +49,19 @@ jobs:
         # Set CI environment variable to disable NixOS configs
         export CI=true
         # Run flake check with timeout and accept flake config
-        timeout 300 nix flake check --accept-flake-config
+        # Use cross-platform timeout approach
+        if command -v timeout >/dev/null 2>&1; then
+          # Linux: use timeout command
+          timeout 300 nix flake check --accept-flake-config
+        else
+          # macOS: use gtimeout if available, otherwise run without timeout
+          if command -v gtimeout >/dev/null 2>&1; then
+            gtimeout 300 nix flake check --accept-flake-config
+          else
+            # No timeout available, run without timeout
+            nix flake check --accept-flake-config
+          fi
+        fi
 
     - name: Find and prepare coverage report
       run: |
