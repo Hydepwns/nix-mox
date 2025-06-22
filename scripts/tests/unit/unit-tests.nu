@@ -1,7 +1,3 @@
-export-env {
-    use ../lib/test-utils.nu *
-}
-
 use ../lib/test-utils.nu *
 use ../lib/test-coverage.nu *
 use ../lib/coverage-core.nu *
@@ -9,14 +5,12 @@ use ../lib/coverage-core.nu *
 def main [] {
     print "Running comprehensive unit tests for nix-mox..."
 
-    # Test configuration validation
     print "Testing configuration validation..."
     track_test "config_validation_pool" "unit" "passed" 0.1
     test_config_validation "rpool" "Pool name is not configured"
     track_test "config_validation_device" "unit" "passed" 0.1
     test_config_validation "/dev/nvme*n1" "Device pattern is not configured"
 
-    # Test logging
     print "Testing logging functionality..."
     track_test "logging_info" "unit" "passed" 0.1
     test_logging "INFO" "Test message" "[INFO] Test message"
@@ -27,18 +21,15 @@ def main [] {
     track_test "logging_debug" "unit" "passed" 0.1
     test_logging "DEBUG" "Debug message" "[DEBUG] Debug message"
 
-    # Test retry mechanism
     print "Testing retry mechanism..."
     track_test "retry_success" "unit" "passed" 0.1
     test_retry 3 1 { true } true
     track_test "retry_failure" "unit" "passed" 0.1
     test_retry 3 1 { false } false
 
-    # Test device detection
     print "Testing device detection..."
     let os = (sys host | get hostname)
     if $os == "Linux" {
-        # Linux-specific device checks
         if (ls /dev/nvme0n1 | default [] | length) > 0 {
             print "NVMe device found"
             track_test "device_detection_nvme" "unit" "passed" 0.1
@@ -50,7 +41,6 @@ def main [] {
             track_test "device_detection_none" "unit" "skipped" 0.1
         }
     } else if $os == "Darwin" {
-        # macOS-specific device checks
         if (ls /dev/disk* | default [] | length) > 0 {
             print "Storage device found"
             track_test "device_detection_darwin" "unit" "passed" 0.1
@@ -63,7 +53,6 @@ def main [] {
         track_test "device_detection_unsupported" "unit" "skipped" 0.1
     }
 
-    # Test pool operations
     print "Testing pool operations..."
     if $os == "Linux" {
         if (which zpool | length) > 0 {
@@ -83,10 +72,8 @@ def main [] {
         track_test "pool_operations_unsupported" "unit" "skipped" 0.1
     }
 
-    # Run library module tests
     print "Running library module tests..."
-    
-    # Test argparse module
+
     print "Testing argparse module..."
     try {
         nu scripts/tests/unit/argparse-tests.nu
@@ -95,8 +82,7 @@ def main [] {
         track_test "argparse_module_tests" "unit" "failed" 0.5
         print "Argparse module tests failed"
     }
-    
-    # Test platform module
+
     print "Testing platform module..."
     try {
         nu scripts/tests/unit/platform-tests.nu
@@ -105,8 +91,7 @@ def main [] {
         track_test "platform_module_tests" "unit" "failed" 0.5
         print "Platform module tests failed"
     }
-    
-    # Test exec module
+
     print "Testing exec module..."
     try {
         nu scripts/tests/unit/exec-tests.nu
@@ -115,8 +100,7 @@ def main [] {
         track_test "exec_module_tests" "unit" "failed" 0.5
         print "Exec module tests failed"
     }
-    
-    # Test proxmox script
+
     print "Testing proxmox script..."
     try {
         nu scripts/tests/unit/proxmox-tests.nu
@@ -129,6 +113,4 @@ def main [] {
     print "Comprehensive unit tests completed successfully"
 }
 
-if $env.NU_TEST? == "true" {
-    main
-}
+main
