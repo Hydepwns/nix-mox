@@ -31,6 +31,7 @@ cd nix-mox
 ## 🆕 Recent Improvements
 
 ### 🚀 **CI/CD Enhancements (Latest)**
+
 - **✅ Cachix Authentication:** Fixed private cache access with secure auth tokens
 - **✅ Build Resilience:** Improved error handling and graceful failure recovery
 - **✅ Extended Timeouts:** Optimized for heavy package builds (90min job timeout)
@@ -38,6 +39,7 @@ cd nix-mox
 - **✅ Test Reliability:** Comprehensive test suite with 100% success rate
 
 ### 📦 **Package Reliability**
+
 - **All Packages Building:** proxmox-update, vzdump-backup, zfs-snapshot, nixos-flake-update
 - **Cross-Platform Support:** x86_64-linux, aarch64-linux, macOS
 - **Nix Version Compatibility:** 2.19.2 and 2.20.1 fully supported
@@ -116,12 +118,14 @@ make sbom             # Generate Software Bill of Materials
 ## 🛡️ Quality Assurance
 
 ### ✅ **Comprehensive Testing**
+
 - **Unit Tests:** Core functionality validation
 - **Integration Tests:** End-to-end workflow testing
 - **Performance Tests:** Build time and resource optimization
 - **Cross-Platform Testing:** Linux (x86_64, aarch64) and macOS support
 
 ### 🔄 **CI/CD Pipeline**
+
 - **Automated Builds:** Triggered on every push and PR
 - **Matrix Testing:** Multiple platforms and Nix versions
 - **Cachix Integration:** Optimized caching for faster builds
@@ -129,6 +133,7 @@ make sbom             # Generate Software Bill of Materials
 - **Artifact Management:** Automated package distribution
 
 ### 📈 **Reliability Metrics**
+
 - **Build Success Rate:** 100% on main branch
 - **Test Coverage:** Comprehensive validation suite
 - **Platform Support:** Full compatibility matrix
@@ -166,7 +171,7 @@ make docs            # Generate documentation
 
 ## 📁 Project Structure
 
-```
+```bash
 nix-mox/
 ├── config/                    # User configurations
 ├── modules/                   # Modular configuration system
@@ -227,6 +232,7 @@ nix.settings.trusted-public-keys = [ "nix-mox.cachix.org-1:MVJZxC7ZyRFAxVsxDuq0n
 ```
 
 **Recent Improvements:**
+
 - ✅ **Private Cache Authentication:** Secure access with auth tokens
 - ✅ **Reliable Push/Pull:** Optimized CI/CD integration
 - ✅ **Multi-Platform Support:** Cached builds for all supported architectures
@@ -261,6 +267,7 @@ See [Contributing Guide](docs/CONTRIBUTING.md) for detailed guidelines.
 <summary><b>📊 CI/CD Pipeline Status</b></summary>
 
 ### ✅ **Recent Build Success**
+
 - **All Platforms:** x86_64-linux, aarch64-linux ✅
 - **All Nix Versions:** 2.19.2, 2.20.1 ✅
 - **All Packages:** proxmox-update, vzdump-backup, zfs-snapshot, nixos-flake-update ✅
@@ -268,12 +275,14 @@ See [Contributing Guide](docs/CONTRIBUTING.md) for detailed guidelines.
 - **Cachix Integration:** Private cache with authentication ✅
 
 ### 🚀 **Build Performance**
+
 - **Build Time:** ~3 minutes average
 - **Cache Hit Rate:** Optimized with Cachix
 - **Parallel Builds:** Matrix strategy across platforms
 - **Error Resilience:** Graceful failure handling
 
 ### 📦 **Package Status**
+
 | Package | x86_64-linux | aarch64-linux | Status |
 |---------|-------------|---------------|---------|
 | proxmox-update | ✅ | ✅ | Stable |
