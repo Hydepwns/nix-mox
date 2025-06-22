@@ -10,19 +10,19 @@
 [![Platforms](https://img.shields.io/badge/platforms-x86_64%20%7C%20aarch64%20%7C%20Linux%20%7C%20macOS-blue.svg)](https://github.com/Hydepwns/nix-mox/actions)
 [![Nix Versions](https://img.shields.io/badge/nix%20versions-2.19.2%20%7C%202.20.1-green.svg)](https://github.com/Hydepwns/nix-mox/actions)
 
-## 🎯 What is nix-mox?
+## What is nix-mox?
 
 nix-mox is a comprehensive NixOS configuration framework that provides:
 
-- 🧩 **Modular fragments** for easy customization
-- 🛠️ **Development shells** for different use cases  
-- 🎮 **Gaming support** with Wine/DXVK
-- 🔒 **Enterprise security** features
-- 📊 **Size analysis** and performance tools
-- 💬 **Messaging & communication** apps
-- 🛡️ **Quality assurance** with comprehensive testing
+- **Modular fragments** for easy customization
+- **Development shells** for different use cases  
+- **Gaming support** with Wine/DXVK
+- **Enterprise security** features
+- **Size analysis** and performance tools
+- **Messaging & communication** apps
+- **Quality assurance** with comprehensive testing
 
-## 📋 Requirements
+## Requirements
 
 ### System Requirements
 
@@ -37,9 +37,9 @@ nix-mox is a comprehensive NixOS configuration framework that provides:
 - **Git:** For repository management
 - **Internet Connection:** For package downloads
 
-## 🚀 Quick Start
+## Quick Start
 
-### 🎯 Interactive Setup (Recommended)
+### Interactive Setup (Recommended)
 
 ```bash
 git clone https://github.com/Hydepwns/nix-mox.git
@@ -50,7 +50,7 @@ cd nix-mox
 The wizard will guide you through platform detection, use case selection, and automatic configuration generation.
 
 <details>
-<summary><b>🔧 Alternative Setup Methods</b></summary>
+<summary><b>Alternative Setup Methods</b></summary>
 
 #### Manual Setup
 
@@ -71,13 +71,13 @@ inputs.nix-mox = {
 
 </details>
 
-## 🎯 Core Features
+## Core Features
 
-### 🧩 Fragment System
+### Fragment System
 
 Compose configurations from reusable fragments. Import complete base configurations or mix individual components.
 
-### 🛠️ Development Shells
+### Development Shells
 
 ```bash
 nix develop                    # Default development environment
@@ -86,28 +86,28 @@ nix develop .#gaming           # Gaming tools (Linux x86_64)
 nix develop .#monitoring       # Monitoring and observability
 ```
 
-### 🎮 Gaming Support
+### Gaming Support
 
 Full gaming environment with Wine, DXVK, and performance optimization (Steam, Lutris, Heroic, MangoHud, GameMode, Vulkan Tools)
 
-### 🔒 Security Features
+### Security Features
 
 Enterprise-grade security with fail2ban, UFW firewall, SSL/TLS security, AppArmor, and comprehensive audit rules.
 
-### 💬 Messaging & Communication
+### Messaging & Communication
 
 Signal Desktop, Telegram, Discord, Slack, WhatsApp for Linux, video calling apps, and more.
 
-### 📊 Size Analysis & Performance
+### Size Analysis & Performance
 
 ```bash
 make size-dashboard    # Generate interactive dashboard
 make sbom             # Generate Software Bill of Materials
 ```
 
-## 🛠️ Management Tools
+## Management Tools
 
-### 🚀 Main Entrypoint
+### Main Entrypoint
 
 ```bash
 ./scripts/nix-mox --script install --dry-run
@@ -115,14 +115,14 @@ make sbom             # Generate Software Bill of Materials
 ./scripts/nix-mox --script health-check
 ```
 
-### 🔍 Health Check System
+### Health Check System
 
 ```bash
 ./scripts/health-check.nu                    # Full system check
 ./scripts/health-check.nu --check nix-store  # Specific components
 ```
 
-### 🔨 Makefile Targets
+### Makefile Targets
 
 ```bash
 make setup-wizard    # Run interactive setup
@@ -131,22 +131,22 @@ make dev-shell       # Enter development shell
 make docs            # Generate documentation
 ```
 
-## 🛡️ Quality Assurance
+## Quality Assurance
 
-### ✅ Comprehensive Testing
+### Comprehensive Testing
 
 Unit tests, integration tests, performance tests, and cross-platform testing (Linux x86_64, aarch64, macOS)
 
-### 🔄 CI/CD Pipeline
+### CI/CD Pipeline
 
 Automated builds, matrix testing, Cachix integration, error resilience, and artifact management
 
-### 📈 Reliability Metrics
+### Reliability Metrics
 
 100% build success rate, comprehensive test coverage, full platform support, optimized build times
 
 <details>
-<summary><b>🚀 Cachix Cache (Recommended)</b></summary>
+<summary><b>Cachix Cache (Recommended)</b></summary>
 
 For faster builds, use our Cachix cache:
 
@@ -165,7 +165,7 @@ nix.settings.trusted-public-keys = [ "nix-mox.cachix.org-1:MVJZxC7ZyRFAxVsxDuq0n
 </details>
 
 <details>
-<summary><b>📁 Project Structure & Documentation</b></summary>
+<summary><b>Project Structure & Documentation</b></summary>
 
 #### Project Structure
 
@@ -188,15 +188,15 @@ nix-mox/
 
 #### Documentation
 
-- **[📖 Usage Guide](docs/USAGE.md)** - Comprehensive usage instructions and examples
-- **[🔧 Guides](docs/guides/)** - Feature-specific guides (gaming, drivers, proxmox, etc.)
-- **[📝 Examples](docs/examples/)** - Step-by-step examples for common use cases
-- **[🏗️ Architecture](docs/architecture/)** - Project architecture and design decisions
-- **[📋 API Reference](docs/api/)** - Technical reference documentation
+- **[Usage Guide](docs/USAGE.md)** - Comprehensive usage instructions and examples
+- **[Guides](docs/guides/)** - Feature-specific guides (gaming, drivers, proxmox, etc.)
+- **[Examples](docs/examples/)** - Step-by-step examples for common use cases
+- **[Architecture](docs/architecture/)** - Project architecture and design decisions
+- **[API Reference](docs/api/)** - Technical reference documentation
 
 </details>
 
-## 🤝 Contributing
+## Contributing
 
 ```bash
 # Setup development environment
@@ -207,7 +207,7 @@ make test
 
 See [Contributing Guide](docs/CONTRIBUTING.md) for detailed guidelines.
 
-## 📄 License & Links
+## License & Links
 
 **License:** MIT License - see [LICENSE](LICENSE)
 
