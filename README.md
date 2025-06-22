@@ -30,33 +30,22 @@ cd nix-mox
 
 ## 🆕 Recent Improvements
 
-<details>
-<summary><b>🚀 CI/CD Enhancements (Latest)</b></summary>
-
+**🚀 CI/CD Enhancements (Latest)**
 - **✅ Cachix Authentication:** Fixed private cache access with secure auth tokens
 - **✅ Build Resilience:** Improved error handling and graceful failure recovery
 - **✅ Extended Timeouts:** Optimized for heavy package builds (90min job timeout)
 - **✅ Matrix Stability:** All platforms and Nix versions building successfully
 - **✅ Test Reliability:** Comprehensive test suite with 100% success rate
 
-</details>
-
-<details>
-<summary><b>📦 Package Reliability</b></summary>
-
+**📦 Package Reliability**
 - **All Packages Building:** proxmox-update, vzdump-backup, zfs-snapshot, nixos-flake-update
 - **Cross-Platform Support:** x86_64-linux, aarch64-linux, macOS
 - **Nix Version Compatibility:** 2.19.2 and 2.20.1 fully supported
 
-</details>
-
 ## 🚀 Quick Start
 
-<details>
-<summary><b>🎯 Interactive Setup (Recommended)</b></summary>
-
+**🎯 Interactive Setup (Recommended)**
 ```bash
-# Clone and run the wizard
 git clone https://github.com/Hydepwns/nix-mox.git
 cd nix-mox
 ./scripts/setup-wizard.nu
@@ -64,23 +53,17 @@ cd nix-mox
 
 The wizard will guide you through platform detection, use case selection, and automatic configuration generation.
 
-</details>
-
 <details>
-<summary><b>🔧 Manual Setup</b></summary>
+<summary><b>🔧 Alternative Setup Methods</b></summary>
 
+**Manual Setup**
 ```bash
-# Use safe configuration template
 cp -r modules/templates/nixos/safe-configuration/* config/
 sudo nixos-generate-config --show-hardware-config > config/hardware/hardware-configuration-actual.nix
 sudo nixos-rebuild switch --flake .#nixos
 ```
 
-</details>
-
-<details>
-<summary><b>📦 Add to Existing Flake</b></summary>
-
+**Add to Existing Flake**
 ```nix
 inputs.nix-mox = {
   url = "github:Hydepwns/nix-mox";
@@ -92,16 +75,9 @@ inputs.nix-mox = {
 
 ## 🎯 Core Features
 
-<details>
-<summary><b>🧩 Fragment System</b></summary>
+**🧩 Fragment System** - Compose configurations from reusable fragments. Import complete base configurations or mix individual components.
 
-Compose configurations from reusable fragments. Import complete base configurations or mix individual components.
-
-</details>
-
-<details>
-<summary><b>🛠️ Development Shells</b></summary>
-
+**🛠️ Development Shells**
 ```bash
 nix develop                    # Default development environment
 nix develop .#development      # Full development tools
@@ -109,111 +85,42 @@ nix develop .#gaming           # Gaming tools (Linux x86_64)
 nix develop .#monitoring       # Monitoring and observability
 ```
 
-</details>
+**🎮 Gaming Support** - Full gaming environment with Wine, DXVK, and performance optimization (Steam, Lutris, Heroic, MangoHud, GameMode, Vulkan Tools)
 
-<details>
-<summary><b>🎮 Gaming Support</b></summary>
+**🔒 Security Features** - Enterprise-grade security with fail2ban, UFW firewall, SSL/TLS security, AppArmor, and comprehensive audit rules.
 
-Full gaming environment with Wine, DXVK, and performance optimization:
+**💬 Messaging & Communication** - Signal Desktop, Telegram, Discord, Slack, WhatsApp for Linux, video calling apps, and more.
 
-- **Game Launchers:** Steam, Lutris, Heroic
-- **Windows Compatibility:** Wine & DXVK
-- **Performance Tools:** MangoHud, GameMode, Vulkan Tools
-
-</details>
-
-<details>
-<summary><b>🔒 Security Features</b></summary>
-
-Enterprise-grade security with fail2ban, UFW firewall, SSL/TLS security, AppArmor, and comprehensive audit rules.
-
-</details>
-
-<details>
-<summary><b>💬 Messaging & Communication</b></summary>
-
-Signal Desktop, Telegram, Discord, Slack, WhatsApp for Linux, video calling apps, and more.
-
-</details>
-
-<details>
-<summary><b>📊 Size Analysis & Performance</b></summary>
-
-Interactive dashboard for analyzing package sizes and performance tradeoffs:
-
+**📊 Size Analysis & Performance**
 ```bash
 make size-dashboard    # Generate interactive dashboard
 make sbom             # Generate Software Bill of Materials
 ```
 
-</details>
-
 ## 🛡️ Quality Assurance
 
-<details>
-<summary><b>✅ Comprehensive Testing</b></summary>
+**✅ Comprehensive Testing** - Unit tests, integration tests, performance tests, and cross-platform testing (Linux x86_64, aarch64, macOS)
 
-- **Unit Tests:** Core functionality validation
-- **Integration Tests:** End-to-end workflow testing
-- **Performance Tests:** Build time and resource optimization
-- **Cross-Platform Testing:** Linux (x86_64, aarch64) and macOS support
+**🔄 CI/CD Pipeline** - Automated builds, matrix testing, Cachix integration, error resilience, and artifact management
 
-</details>
-
-<details>
-<summary><b>🔄 CI/CD Pipeline</b></summary>
-
-- **Automated Builds:** Triggered on every push and PR
-- **Matrix Testing:** Multiple platforms and Nix versions
-- **Cachix Integration:** Optimized caching for faster builds
-- **Error Resilience:** Graceful handling of build failures
-- **Artifact Management:** Automated package distribution
-
-</details>
-
-<details>
-<summary><b>📈 Reliability Metrics</b></summary>
-
-- **Build Success Rate:** 100% on main branch
-- **Test Coverage:** Comprehensive validation suite
-- **Platform Support:** Full compatibility matrix
-- **Performance:** Optimized build times with caching
-
-</details>
+**📈 Reliability Metrics** - 100% build success rate, comprehensive test coverage, full platform support, optimized build times
 
 ## 🎯 Management Tools
 
-<details>
-<summary><b>🚀 Main Entrypoint</b></summary>
-
+**🚀 Main Entrypoint**
 ```bash
 ./scripts/nix-mox --script install --dry-run
 ./scripts/nix-mox --script update
 ./scripts/nix-mox --script health-check
 ```
 
-</details>
-
-<details>
-<summary><b>⚙️ Configuration Wizard</b></summary>
-
-Interactive setup with platform detection, use case selection, and automatic file generation.
-
-</details>
-
-<details>
-<summary><b>🔍 Health Check System</b></summary>
-
+**🔍 Health Check System**
 ```bash
 ./scripts/health-check.nu                    # Full system check
 ./scripts/health-check.nu --check nix-store  # Specific components
 ```
 
-</details>
-
-<details>
-<summary><b>🔨 Makefile Targets</b></summary>
-
+**🔨 Makefile Targets**
 ```bash
 make setup-wizard    # Run interactive setup
 make health-check    # System diagnostics
@@ -221,11 +128,10 @@ make dev-shell       # Enter development shell
 make docs            # Generate documentation
 ```
 
-</details>
-
 <details>
-<summary><b>📁 Project Structure</b></summary>
+<summary><b>📁 Project Structure & Documentation</b></summary>
 
+**Project Structure**
 ```bash
 nix-mox/
 ├── config/                    # User configurations
@@ -243,11 +149,7 @@ nix-mox/
 └── docs/                     # Detailed documentation
 ```
 
-</details>
-
-<details>
-<summary><b>📚 Documentation</b></summary>
-
+**Documentation**
 - **[📖 Usage Guide](docs/USAGE.md)** - Comprehensive usage instructions and examples
 - **[🔧 Guides](docs/guides/)** - Feature-specific guides (gaming, drivers, proxmox, etc.)
 - **[📝 Examples](docs/examples/)** - Step-by-step examples for common use cases
