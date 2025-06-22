@@ -201,22 +201,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Nix
-        uses: cachix/install-nix-action@v25
+        uses: cachix/install-nix-action@v31
 
-      - name: Install Nushell
-        run: |
-          nix-env -iA nixpkgs.nushell
-
-      - name: Show Nix and Nushell versions
+      - name: Show Nix version
         run: |
           nix --version
-          nu --version
 
       - name: Run tests
-        run: nu -c "source scripts/tests/run-tests.nu; run ['--unit']"
+        run: nix develop --command nu -c "source scripts/tests/run-tests.nu; run ['--unit']"
 
       - name: Generate Project Status Dashboard
-        run: nu scripts/tools/project-dashboard.nu
+        run: nix develop --command nu scripts/tools/project-dashboard.nu
 
       - name: Upload Project Dashboard Artifacts
         uses: actions/upload-artifact@v4
