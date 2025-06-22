@@ -103,8 +103,8 @@ def test_get_platform_info [] {
     let platform_info = (sys host)
 
     assert_true ($platform_info | get -i name | is-not-empty) "Platform info contains name"
-    assert_true ($platform_info | get -i arch | is-not-empty) "Platform info contains arch"
-    assert_true ($platform_info | get -i version | is-not-empty) "Platform info contains version"
+    assert_true ($platform_info | get -i os_version | is-not-empty) "Platform info contains os_version"
+    assert_true ($platform_info | get -i long_os_version | is-not-empty) "Platform info contains long_os_version"
     assert_true ($platform_info | get -i kernel_version | is-not-empty) "Platform info contains kernel_version"
 }
 
