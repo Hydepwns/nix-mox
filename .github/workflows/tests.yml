@@ -24,12 +24,13 @@ jobs:
       id: cachix-key-check
       shell: bash
       run: |
-        if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ]; then
+        if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ] && [ -n "${{ secrets.CACHIX_AUTH_TOKEN }}" ]; then
           echo "present=true" >> $GITHUB_OUTPUT
+          echo "Cachix credentials found"
         else
           echo "present=false" >> $GITHUB_OUTPUT
+          echo "Cachix credentials missing - skipping Cachix operations"
         fi
-
 
     - name: Setup Cachix
       if: steps.cachix-key-check.outputs.present == 'true'

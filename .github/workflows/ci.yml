@@ -24,10 +24,12 @@ jobs:
         id: cachix-key-check
         shell: bash
         run: |
-          if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ]; then
+          if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ] && [ -n "${{ secrets.CACHIX_AUTH_TOKEN }}" ]; then
             echo "present=true" >> $GITHUB_OUTPUT
+            echo "Cachix credentials found"
           else
             echo "present=false" >> $GITHUB_OUTPUT
+            echo "Cachix credentials missing - skipping Cachix operations"
           fi
       - name: Push to Cachix
         if: steps.cachix-key-check.outputs.present == 'true'
@@ -75,10 +77,12 @@ jobs:
         id: cachix-key-check
         shell: bash
         run: |
-          if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ]; then
+          if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ] && [ -n "${{ secrets.CACHIX_AUTH_TOKEN }}" ]; then
             echo "present=true" >> $GITHUB_OUTPUT
+            echo "Cachix credentials found"
           else
             echo "present=false" >> $GITHUB_OUTPUT
+            echo "Cachix credentials missing - skipping Cachix operations"
           fi
       - name: Push to Cachix
         if: steps.cachix-key-check.outputs.present == 'true'
@@ -159,7 +163,7 @@ jobs:
         uses: cachix/install-nix-action@v31
       - name: Setup Cachix (optional)
         run: |
-          if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ]; then
+          if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ] && [ -n "${{ secrets.CACHIX_AUTH_TOKEN }}" ]; then
             echo "Setting up Cachix..."
             if command -v cachix &> /dev/null; then
               cachix use nix-mox
@@ -167,7 +171,7 @@ jobs:
               echo "Cachix not available, skipping setup"
             fi
           else
-            echo "CACHIX_SIGNING_KEY not set, skipping Cachix setup"
+            echo "Cachix credentials not set, skipping Cachix setup"
           fi
         continue-on-error: true
       - name: Create Release
