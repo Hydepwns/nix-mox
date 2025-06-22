@@ -1,7 +1,8 @@
 # Platform detection module for nix-mox
 # This replaces the bash platform.sh with a more robust Nushell implementation
 
-def detect_platform [] {
+# Export the main platform detection function
+export def detect_platform [] {
     let os = (sys).host.name
     match $os {
         "Linux" => "linux"
@@ -11,12 +12,12 @@ def detect_platform [] {
     }
 }
 
-def validate_platform [platform: string] {
+export def validate_platform [platform: string] {
     let valid_platforms = ["linux", "windows", "darwin", "auto"]
     $valid_platforms | any {|p| $p == $platform}
 }
 
-def get_platform_script [platform: string, script: string] {
+export def get_platform_script [platform: string, script: string] {
     let linux_scripts = {
         install: "install.sh"
         uninstall: "uninstall.sh"
@@ -50,7 +51,7 @@ def get_platform_script [platform: string, script: string] {
     }
 }
 
-def script_exists_for_platform [platform: string, script: string] {
+export def script_exists_for_platform [platform: string, script: string] {
     let script_file = get_platform_script $platform $script
     if $script_file != null {
         ($script_file | path exists)
@@ -59,7 +60,7 @@ def script_exists_for_platform [platform: string, script: string] {
     }
 }
 
-def get_platform_info [] {
+export def get_platform_info [] {
     {
         os: (sys).host.name
         arch: (sys).host.arch
@@ -70,7 +71,7 @@ def get_platform_info [] {
     }
 }
 
-def check_platform_requirements [platform: string] {
+export def check_platform_requirements [platform: string] {
     let info = get_platform_info
     match $platform {
         "linux" => {
@@ -98,7 +99,7 @@ def check_platform_requirements [platform: string] {
     }
 }
 
-def get_available_scripts [platform: string] {
+export def get_available_scripts [platform: string] {
     match $platform {
         "linux" => {
             ls scripts/linux/*.sh | each { |f| $f | path basename }
@@ -110,26 +111,26 @@ def get_available_scripts [platform: string] {
     }
 }
 
-def get_script_dependencies [script_path: string] {
+export def get_script_dependencies [script_path: string] {
     let content = open $script_path
     mut deps = []
-    
+
     # Look for common dependency patterns
     if ($content | find "#!/usr/bin/env" | length) > 0 {
         $deps = ($deps | append ($content | find "#!/usr/bin/env" | each { |l| $l | split row " " | get 1 }))
     }
-    
+
     if ($content | find "require" | length) > 0 {
         $deps = ($deps | append ($content | find "require" | each { |l| $l | split row " " | get 1 }))
     }
-    
+
     $deps | uniq
 }
 
-# Export the functions
+# Set environment variables
 export-env {
-    $env.PLATFORM = detect_platform
-    $env.PLATFORM_INFO = get_platform_info
+    $env.PLATFORM = (detect_platform)
+    $env.PLATFORM_INFO = (get_platform_info)
 }
 
 # Main function to handle platform operations
@@ -143,4 +144,4 @@ def main [] {
         "deps" => { get_script_dependencies $args.1 }
         _ => { print "Unknown platform operation" }
     }
-} 
+}

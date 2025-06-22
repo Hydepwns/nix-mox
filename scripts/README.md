@@ -1,6 +1,108 @@
 # nix-mox Scripts
 
-This directory contains all platform-specific and automation scripts for the nix-mox toolkit.
+This directory contains all platform-specific and automation scripts for the nix-mox toolkit, featuring enhanced error handling, logging, configuration management, and security validation.
+
+## 🚀 Enhanced Features
+
+### **New Architecture**
+
+- **Modular Design**: Separated core, platform, and tools scripts
+- **Enhanced Error Handling**: Structured error handling with recovery suggestions
+- **Advanced Logging**: Multi-format logging with rotation and context tracking
+- **Configuration Management**: Hierarchical configuration with validation
+- **Security Validation**: Script security scanning and threat detection
+- **Performance Monitoring**: Execution time and resource usage tracking
+- **Script Discovery**: Automatic script discovery with metadata extraction
+
+### **Key Improvements**
+
+#### **1. Enhanced Error Handling (`lib/error-handling.nu`)**
+
+- Structured error types with recovery strategies
+- Unique error IDs for tracking
+- Context-aware error reporting
+- Automatic error logging and statistics
+- Recovery suggestions based on error type
+
+```nushell
+# Example usage
+use lib/error-handling.nu *
+handle_script_error "Command failed" "COMMAND_NOT_FOUND" { command: "nix" }
+```
+
+#### **2. Advanced Configuration Management (`lib/config.nu`)**
+
+- Multi-source configuration loading (file, env, defaults)
+- Configuration validation and schema checking
+- Environment variable overrides
+- Hierarchical configuration merging
+
+```nushell
+# Example usage
+use lib/config.nu *
+let config = load_config
+show_config_summary $config
+```
+
+#### **3. Enhanced Logging (`lib/logging.nu`)**
+
+- Multiple output formats (text, JSON, structured)
+- Automatic log rotation
+- Context-aware logging
+- Performance and security event logging
+
+```nushell
+# Example usage
+use lib/logging.nu *
+setup_logging $config
+info "Operation started" { operation: "install", user: (whoami) }
+```
+
+#### **4. Security Validation (`lib/security.nu`)**
+
+- Dangerous pattern detection
+- File permission validation
+- Dependency security checking
+- Network access monitoring
+- Security threat classification
+
+```nushell
+# Example usage
+use lib/security.nu *
+let security_result = validate_script_security "scripts/install.nu"
+if not $security_result.secure {
+    warn "Security issues detected" { threats: $security_result.threats }
+}
+```
+
+#### **5. Performance Monitoring (`lib/performance.nu`)**
+
+- Execution time tracking
+- Resource usage monitoring
+- Performance threshold alerts
+- Performance reporting and recommendations
+
+```nushell
+# Example usage
+use lib/performance.nu *
+let monitor_id = start_performance_monitor "installation"
+# ... perform operation ...
+let metrics = end_performance_monitor $monitor_id
+```
+
+#### **6. Script Discovery (`lib/discovery.nu`)**
+
+- Automatic script discovery
+- Metadata extraction
+- Dependency analysis
+- Documentation generation
+
+```nushell
+# Example usage
+use lib/discovery.nu *
+let scripts = discover_scripts
+let core_scripts = get_scripts_by_category "core"
+```
 
 ## Main Entrypoint
 
@@ -37,164 +139,259 @@ Run the script with:
 ### Error Handling & Logging
 
 - All error handling and logging is robust and platform-aware.
-- Errors are clearly reported, and logs can be written to a file with `--log <file>`.
-
-## Key Scripts
-
-### Interactive Setup Wizard
-
-The `setup-wizard.nu` script provides an interactive, user-friendly setup experience:
-
-```bash
-./scripts/setup-wizard.nu
-```
-
-**Features:**
-
-- Platform detection and validation
-- Use case selection (Desktop, Server, Development, Gaming, etc.)
-- Feature selection with descriptions
-- Basic system configuration (hostname, timezone, username)
-- Hardware configuration guidance
-- Automatic file generation
-- Color-coded interface with clear instructions
-
-### Health Check System
-
-The `health-check.nu` script validates system health and configuration integrity:
-
-```bash
-./scripts/health-check.nu
-./scripts/health-check.nu --check nix-store
-./scripts/health-check.nu --check services
-```
-
-**Features:**
-
-- nix-mox environment validation
-- Configuration file syntax checking
-- Flake syntax and dependency validation
-- NixOS configuration validation
-- System services status monitoring
-- Disk and memory usage analysis
-- Network connectivity testing
-- Nix store integrity verification
-- Security settings validation
-- Color-coded reports with recommendations
-
-### Security Module Validation
-
-The security module provides comprehensive enterprise-grade security features:
-
-```bash
-# Validate security module configuration
-make security-check
-
-# Or manually check security module
-nix eval --impure --expr 'with import <nixpkgs> {}; callPackage ./modules/security/index.nix {}'
-```
-
-**Available Security Features:**
-
-- **Fail2ban**: Intrusion prevention with configurable jails and ban policies
-- **UFW Firewall**: Uncomplicated firewall with rule management and port control  
-- **SSL/TLS Security**: Certificate management, modern ciphers, and security headers
-- **AppArmor**: Mandatory access control for application security
-- **System Auditing**: Comprehensive audit rules and log management
-- **SELinux Support**: Advanced mandatory access control (optional)
-- **Kernel Security**: Lockdown modes, YAMA, seccomp, and stack protection
-- **Network Hardening**: IPv6 privacy, TCP hardening, ICMP rate limiting
-- **File System Security**: Read-only mounts, noexec, nosuid options
-- **User Security**: Password policies, account lockout, and complexity requirements
-
-**Usage:**
-
-```bash
-# Enable all security features
-imports = [ modules.security.all ];
-
-# Or enable individual components
-imports = [
-  modules.security.fail2ban
-  modules.security.ufw
-  modules.security.ssl
-  modules.security.apparmor
-];
-```
+- Errors are clearly reported with recovery suggestions.
+- Logs can be written to a file with `--log <file>`.
+- Structured error tracking with unique error IDs.
 
 ## Directory Structure
+
+### **Core Scripts (`core/`)**
+
+- `install.nu`          — Unified installation script with component selection
+- `update.nu`           — System update script
+- `uninstall.nu`        — Clean removal script
+- `validate.nu`         — Configuration validation
+
+### **Platform Scripts (`platform/`)**
+
+- `linux/`              — Linux-specific implementations
+- `darwin/`             — macOS-specific implementations  
+- `windows/`            — Windows-specific implementations
+
+### **Tools (`tools/`)**
+
+- `health-check.nu`     — Enhanced system health diagnostics
+- `setup-wizard.nu`     — Interactive configuration wizard
+- `generate-docs.nu`    — Automatic documentation generation
+- `security-scan.nu`    — Security validation and reporting
+- `performance-report.nu` — Performance analysis and recommendations
+
+### **Libraries (`lib/`)**
+
+- `common.nu`           — Common utilities and constants
+- `error-handling.nu`   — Enhanced error handling system
+- `config.nu`           — Configuration management
+- `logging.nu`          — Advanced logging system
+- `security.nu`         — Security validation
+- `performance.nu`      — Performance monitoring
+- `discovery.nu`        — Script discovery and metadata
+- `argparse.nu`         — Argument parsing utilities
+- `exec.nu`             — Execution helpers
+- `platform.nu`         — Platform detection
+
+### **Legacy Scripts**
 
 - `nix-mox`             — Main automation entrypoint (bash wrapper)
 - `nix-mox.nu`          — Nushell automation logic
 - `setup-wizard.nu`     — Interactive configuration wizard
 - `health-check.nu`     — System health diagnostics
 - `common/`             — Shared script utilities
-  - `nix-mox`           — Common nix-mox utilities
-  - `nix-mox-uninstall.sh` — Uninstall script
-  - `install-nix.sh`    — Nix installation script
 - `linux/`              — Linux-specific scripts (install, update, zfs, etc.)
 - `windows/`            — Windows-specific scripts
-- `lib/`                — Script libraries and helpers
-  - `argparse.nu`       — Argument parsing utilities
-  - `common.nu`         — Common utilities
-  - `exec.nu`           — Execution helpers
-  - `logging.nu`        — Logging utilities
-  - `platform.nu`       — Platform detection
+- `handlers/`           — Script handlers
+- `tests/`              — Test suite
+
+## Configuration
+
+### **Default Configuration (`nix-mox.json`)**
+
+```json
+{
+  "logging": {
+    "level": "INFO",
+    "file": "logs/nix-mox.log",
+    "format": "text"
+  },
+  "security": {
+    "validate_scripts": true,
+    "check_permissions": true
+  },
+  "performance": {
+    "enable_monitoring": true,
+    "log_performance": true
+  }
+}
+```
+
+### **Configuration Sources (in order of precedence)**
+
+1. `./nix-mox.json`
+2. `./config/nix-mox.json`
+3. `~/.config/nix-mox/config.json`
+4. `/etc/nix-mox/config.json`
+5. Environment variables (`NIXMOX_*`)
 
 ## Script Development
 
-- Use the utilities in `lib/common.nu` for logging, error handling, and platform detection.
-- Follow the argument parsing and error handling patterns in `nix-mox.nu` for new scripts.
-- See the [Script Development Guide](../../docs/guides/scripting.md) for best practices and advanced usage.
+### **Using Enhanced Modules**
+
+```nushell
+#!/usr/bin/env nu
+
+use lib/error-handling.nu *
+use lib/config.nu *
+use lib/logging.nu *
+use lib/security.nu *
+
+# Load configuration
+let config = load_config
+setup_logging $config
+
+# Main script logic
+try {
+    info "Starting operation"
+    # ... script logic ...
+    info "Operation completed"
+} catch { |err|
+    handle_script_error $"Operation failed: ($err)" "EXECUTION_FAILED"
+}
+```
+
+### **Best Practices**
+
+- Use the enhanced error handling for all error conditions
+- Implement structured logging with context
+- Validate configuration before use
+- Perform security validation for critical operations
+- Monitor performance for long-running operations
+- Include comprehensive metadata in script headers
+
+### **Script Metadata**
+
+```nushell
+export const SCRIPT_METADATA = {
+    name: "script-name"
+    description: "What this script does"
+    platform: "all"  # or "linux", "darwin", "windows"
+    requires_root: false
+    category: "core"  # or "tools", "development", etc.
+}
+```
+
+## Testing
+
+### **Running Tests**
+
+```bash
+# Run all tests
+./scripts/tests/run-tests.nu
+
+# Run specific test categories
+./scripts/tests/run-tests.nu --category unit
+./scripts/tests/run-tests.nu --category integration
+
+# Run with coverage
+./scripts/tests/run-tests.nu --coverage
+```
+
+### **Test Structure**
+
+- `tests/unit/` — Unit tests for individual functions
+- `tests/integration/` — Integration tests for script workflows
+- `tests/lib/` — Test utilities and helpers
 
 ## Troubleshooting
 
-- If you see `[ERROR] No script specified`, check your invocation method and ensure you are using the wrapper script.
-- For Nushell versions that do not support argument passing, the wrapper script will handle it for you.
-- Use `--debug` flag for detailed error information and troubleshooting.
+### **Common Issues**
+
+#### **Error Handling**
+
+- If you see structured error messages, follow the recovery suggestions
+- Check error logs for detailed context
+- Use error IDs for support requests
+
+#### **Configuration Issues**
+
+- Validate configuration with `validate.nu`
+- Check configuration file syntax
+- Verify environment variable overrides
+
+#### **Security Validation**
+
+- Review security warnings and recommendations
+- Address critical and high-priority threats
+- Use `--strict-security` for maximum security
+
+#### **Performance Issues**
+
+- Monitor script execution times
+- Check resource usage patterns
+- Review performance recommendations
+
+### **Debug Mode**
+
+```bash
+# Enable debug logging
+export NIXMOX_LOG_LEVEL=DEBUG
+./nix-mox --script install
+
+# Or use the debug flag
+./nix-mox --script install --debug
+```
+
+### **Log Analysis**
+
+```bash
+# View recent logs
+tail -f logs/nix-mox.log
+
+# Analyze error patterns
+./scripts/tools/analyze-logs.nu
+
+# Generate performance report
+./scripts/tools/performance-report.nu
+```
 
 ## Example Invocations
 
 ```bash
-# Install (dry run)
-./nix-mox --script install --dry-run
+# Install with enhanced features
+./nix-mox --script install --core --tools --verbose
 
-# Update packages
-./nix-mox --script update
+# Run health check with detailed reporting
+./nix-mox --script health-check --check all --format json
 
-# ZFS snapshot (Linux only)
-./nix-mox --script zfs-snapshot
+# Generate documentation
+./scripts/tools/generate-docs.nu --examples
 
-# Run setup wizard
-./scripts/setup-wizard.nu
+# Security scan
+./scripts/tools/security-scan.nu --strict
 
-# Run health check
-./scripts/health-check.nu
+# Performance analysis
+./scripts/tools/performance-report.nu
 
 # Or use Makefile targets
 make setup-wizard
 make health-check
+make generate-docs
 ```
 
 ## Benefits
 
-### For New Users
+### **For New Users**
 
 - **Simplified Onboarding:** Interactive wizard guides through setup
-- **Reduced Errors:** Automated configuration generation
-- **Better Understanding:** Clear explanations of each option
+- **Reduced Errors:** Enhanced error handling with recovery suggestions
+- **Better Understanding:** Clear explanations and structured logging
 - **Faster Setup:** Streamlined process with sensible defaults
 
-### For Existing Users
+### **For Existing Users**
 
-- **System Validation:** Health check ensures configuration integrity
-- **Easy Troubleshooting:** Comprehensive diagnostics and recommendations
-- **Better Organization:** Template-based hardware configuration
-- **Enhanced Modules:** Complete feature sets for development, security, and hardware
+- **System Validation:** Comprehensive health check with detailed reporting
+- **Easy Troubleshooting:** Structured error handling and logging
+- **Better Organization:** Modular script architecture
+- **Enhanced Security:** Built-in security validation and threat detection
 
-### For Developers
+### **For Developers**
 
-- **Consistent Interface:** Makefile targets for common operations
-- **Better Testing:** Health check validates system state
-- **Modular Design:** Complete, well-organized modules
-- **Clear Documentation:** Comprehensive guides and examples
+- **Consistent Interface:** Unified script architecture
+- **Better Testing:** Comprehensive test suite with coverage
+- **Modular Design:** Reusable components and libraries
+- **Clear Documentation:** Auto-generated documentation with examples
+
+### **For System Administrators**
+
+- **Security Focus:** Built-in security validation and monitoring
+- **Performance Insights:** Execution time and resource usage tracking
+- **Audit Trail:** Comprehensive logging and error tracking
+- **Configuration Management:** Hierarchical configuration with validation

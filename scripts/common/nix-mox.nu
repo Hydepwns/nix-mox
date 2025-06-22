@@ -1,7 +1,7 @@
 #!/usr/bin/env nu
 
 # Main script for nix-mox
-use ./lib/common.nu *
+use ../lib/common.nu *
 
 # Fallback log_error if not defined
 if (not (scope commands | where name == 'log_error' | is-not-empty)) {

@@ -153,6 +153,7 @@ nix develop .#macos            # macOS development (macOS)
 ```
 
 **Development Shell Features:**
+
 - **Python 3.12**: Complete Python development environment with pip, pytest, black, flake8, mypy
 - **Testing Tools**: Comprehensive testing frameworks and CI/CD utilities
 - **Code Quality**: Linting, formatting, and type checking tools
@@ -235,6 +236,7 @@ make size-dashboard-api
 ```
 
 The dashboard provides:
+
 - **Visual Charts**: Interactive bar charts and pie charts
 - **Package Details**: Comprehensive size breakdowns
 - **Dependency Analysis**: Dependency count and size analysis
@@ -257,6 +259,7 @@ make cache-maintain
 ```
 
 Features:
+
 - **Multi-layer Caching**: Primary, secondary, and specialized caches
 - **Health Monitoring**: Cache availability and performance checks
 - **Intelligent Warming**: Pre-load frequently used packages
@@ -278,6 +281,7 @@ make sbom-csv       # CSV report
 ```
 
 Compliance features:
+
 - **Multiple Formats**: SPDX, CycloneDX, and CSV
 - **Complete Metadata**: Licenses, versions, dependencies, hashes
 - **Compliance Ready**: Industry-standard formats for audits
