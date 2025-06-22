@@ -7,5 +7,6 @@
 
   # Platform-specific packages
   linux = import ./linux/default.nix;
+  macos = import ./macos/default.nix;
   windows = import ./windows/default.nix;
 }

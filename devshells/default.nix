@@ -9,6 +9,25 @@
   monitoring = import ./monitoring/default.nix { inherit pkgs; };
   gaming = import ./gaming/default.nix { inherit pkgs; };
   macos = import ./macos/default.nix { inherit pkgs; };
+  windows = pkgs.mkShell {
+    buildInputs = [
+      pkgs.nushell
+      pkgs.git
+      pkgs.nix
+      pkgs.coreutils
+      pkgs.fd
+      pkgs.ripgrep
+      pkgs.powershell
+      pkgs.python3
+    ];
+    shellHook = ''
+      echo "Welcome to the nix-mox Windows/WSL shell!"
+      echo "System: ${pkgs.system}"
+      echo "Platform: Windows/WSL"
+      echo "Type 'platform-info' for more info."
+      alias platform-info='echo "Platform: ${pkgs.system} | OS: Windows/WSL"'
+    '';
+  };
 
   # Default shell (inline mkShell definition)
   default = pkgs.mkShell {
@@ -21,11 +40,40 @@
       pkgs.coreutils
       pkgs.fd
       pkgs.ripgrep
-    ];
+    ] ++ (
+      # Platform-specific dependencies
+      if pkgs.stdenv.isDarwin then [
+        pkgs.darwin.apple_sdk.frameworks.CoreServices
+        pkgs.darwin.apple_sdk.frameworks.Foundation
+      ] else if pkgs.stdenv.isLinux then [
+        pkgs.zlib
+        pkgs.openssl
+      ] else []
+    );
+
+    # Platform-specific environment variables
     shellHook = ''
+      # Set platform-specific environment variables
+      export NIX_MOX_PLATFORM=${pkgs.system}
+      export NIX_MOX_IS_LINUX=${if pkgs.stdenv.isLinux then "true" else "false"}
+      export NIX_MOX_IS_DARWIN=${if pkgs.stdenv.isDarwin then "true" else "false"}
+      export NIX_MOX_ARCH=${pkgs.stdenv.hostPlatform.parsed.cpu.name}
+
+      # Platform-specific settings
+      ${if pkgs.stdenv.isDarwin then ''
+        export MACOSX_DEPLOYMENT_TARGET=11.0
+        export SDKROOT=${pkgs.darwin.apple_sdk.MacOSX-SDK}/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
+      '' else ""}
+
       # Function to show help menu
       show_help() {
         echo "Welcome to the nix-mox default shell!"
+        echo ""
+        echo "🖥️  Platform Information"
+        echo "----------------------"
+        echo "System: ${pkgs.system}"
+        echo "Architecture: ${pkgs.stdenv.hostPlatform.parsed.cpu.name}"
+        echo "Platform: ${if pkgs.stdenv.isDarwin then "macOS" else if pkgs.stdenv.isLinux then "Linux" else "Other"}"
         echo ""
         echo "🔧 Base Tools"
         echo "-----------"
@@ -76,12 +124,31 @@
         echo "   nix develop .#testing            # Testing tools"
         echo "   nix develop .#services           # Service tools"
         echo "   nix develop .#monitoring         # Monitoring tools"
+        ${if pkgs.stdenv.isLinux then ''
         echo "   nix develop .#zfs                # ZFS tools (Linux only)"
+        '' else ""}
+        ${if pkgs.stdenv.isDarwin then ''
+        echo "   nix develop .#macos              # macOS development (macOS only)"
+        '' else ""}
+        ${if pkgs.stdenv.isWindows or false then ''
+        echo "   nix develop .#windows            # Windows/WSL development (Windows only)"
+        '' else ""}
         echo ""
-        echo "2. Run packaged scripts [🐧 Linux only]:"
-        echo "   nix run .#proxmox-update         # Update Proxmox"
-        echo "   nix run .#vzdump-backup          # Backup VMs"
-        echo "   nix run .#zfs-snapshot           # Manage ZFS snapshots"
+        echo "2. Run packaged scripts:"
+        ${if pkgs.stdenv.isLinux then ''
+        echo "   nix run .#proxmox-update         # Update Proxmox (Linux only)"
+        echo "   nix run .#vzdump-backup          # Backup VMs (Linux only)"
+        echo "   nix run .#zfs-snapshot           # Manage ZFS snapshots (Linux only)"
+        '' else ""}
+        ${if pkgs.stdenv.isDarwin then ''
+        echo "   nix run .#homebrew-setup         # Setup Homebrew (macOS only)"
+        echo "   nix run .#macos-maintenance      # System maintenance (macOS only)"
+        echo "   nix run .#xcode-setup            # Setup Xcode tools (macOS only)"
+        echo "   nix run .#security-audit         # Security audit (macOS only)"
+        '' else ""}
+        ${if pkgs.stdenv.isWindows or false then ''
+        echo "   nix run .#install-steam-rust     # Install Steam + Rust (Windows only)"
+        '' else ""}
         echo ""
         echo "3. Format Nix code:"
         echo "   nix fmt"
@@ -96,9 +163,11 @@
       echo ""
       echo "💡 Tip: Type 'help' to show this menu again"
       echo "💡 Tip: Type 'which-shell' to see which shell you're in"
+      echo "💡 Tip: Type 'platform-info' to see platform information"
       echo ""
       alias help='show_help'
       alias which-shell='echo "You are in the nix-mox default shell"'
+      alias platform-info='echo "Platform: ${pkgs.system} | Architecture: ${pkgs.stdenv.hostPlatform.parsed.cpu.name} | OS: ${if pkgs.stdenv.isDarwin then "macOS" else if pkgs.stdenv.isLinux then "Linux" else if pkgs.stdenv.isWindows or false then "Windows/WSL" else "Other"}"'
     '';
   };
 }

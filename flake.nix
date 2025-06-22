@@ -2,12 +2,16 @@
   # Flake outputs:
   # - devShells.default: Development shell with common tools for working on this repo
   # - formatter: Nix code formatter (nixpkgs-fmt)
-  # - packages.<system>.proxmox-update: Proxmox update script as a Nix package
-  # - packages.<system>.vzdump-backup: Proxmox vzdump backup script as a Nix package
-  # - packages.<system>.zfs-snapshot: ZFS snapshot/prune script as a Nix package
-  # - packages.<system>.nixos-flake-update: NixOS flake update script as a Nix package
-  # - packages.<system>.install: nix-mox installation script as a Nix package
-  # - packages.<system>.uninstall: nix-mox uninstallation script as a Nix package
+  # - packages.<system>.proxmox-update: Proxmox update script as a Nix package (Linux only)
+  # - packages.<system>.vzdump-backup: Proxmox vzdump backup script as a Nix package (Linux only)
+  # - packages.<system>.zfs-snapshot: ZFS snapshot/prune script as a Nix package (Linux only)
+  # - packages.<system>.nixos-flake-update: NixOS flake update script as a Nix package (Linux only)
+  # - packages.<system>.install: nix-mox installation script as a Nix package (Platform-specific)
+  # - packages.<system>.uninstall: nix-mox uninstallation script as a Nix package (Platform-specific)
+  # - packages.<system>.homebrew-setup: Homebrew setup script (macOS only)
+  # - packages.<system>.macos-maintenance: macOS maintenance script (macOS only)
+  # - packages.<system>.xcode-setup: Xcode setup script (macOS only)
+  # - packages.<system>.security-audit: Security audit script (macOS only)
 
   description = "A comprehensive NixOS configuration framework with development tools, monitoring, and system management utilities";
 
@@ -46,82 +50,97 @@
       # Helper function to check if system is supported
       isSupported = system: builtins.elem system supportedSystems;
 
-      # Helper function to get system-specific packages
+      # Helper function to get system-specific packages with better error handling
       getSystemPackages = system: pkgs:
         if pkgs.stdenv.isLinux then
-          import ./modules/packages/linux/default.nix {
+          # Linux packages
+          builtins.tryEval (import ./modules/packages/linux/default.nix {
             inherit pkgs;
             config = import ./config/default.nix { inherit inputs; };
             helpers = {
               readScript = path: builtins.readFile (self + "/${path}");
               isLinux = system: builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
             };
-          }
+          })
+        else if pkgs.stdenv.isDarwin then
+          # macOS packages
+          builtins.tryEval (import ./modules/packages/macos/default.nix {
+            inherit pkgs;
+            config = import ./config/default.nix { inherit inputs; };
+            helpers = {
+              readScript = path: builtins.readFile (self + "/${path}");
+              isLinux = system: builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
+            };
+          })
         else {};
-    in
-      flake-utils.lib.eachSystem supportedSystems (system:
+
+      # Helper function to create packages with architecture checking
+      createPackages = system: pkgs: systemPackages:
+        if pkgs.stdenv.isLinux then
+          # Linux packages - only available on Linux systems
+          {
+            proxmox-update = systemPackages.proxmox-update or null;
+            vzdump-backup = systemPackages.vzdump-backup or null;
+            zfs-snapshot = systemPackages.zfs-snapshot or null;
+            nixos-flake-update = systemPackages.nixos-flake-update or null;
+            install = systemPackages.install or null;
+            uninstall = systemPackages.uninstall or null;
+            default = systemPackages.proxmox-update or null;
+            remote-builder-setup = systemPackages.remote-builder-setup or null;
+            test-remote-builder = systemPackages.test-remote-builder or null;
+          }
+        else if pkgs.stdenv.isDarwin then
+          # macOS packages - only available on macOS systems
+          {
+            install = systemPackages.install or null;
+            uninstall = systemPackages.uninstall or null;
+            homebrew-setup = systemPackages.homebrew-setup or null;
+            macos-maintenance = systemPackages.macos-maintenance or null;
+            xcode-setup = systemPackages.xcode-setup or null;
+            security-audit = systemPackages.security-audit or null;
+            default = systemPackages.install or null;
+          }
+        else
+          # Other platforms - no packages available
+          {};
+
+      # Helper function to create platform-specific devShells
+      createDevShells = system: pkgs: devShell:
         let
-          # Import nixpkgs with proper configuration
-          pkgs = import nixpkgs {
-            inherit system;
-            config.allowUnfree = true;
-            config.darwinConfig = if system == "aarch64-darwin" || system == "x86_64-darwin" then {
-              system = system;
-            } else {};
-          };
-
-          # Import development shell
-          devShell = import ./devshells/default.nix { inherit pkgs; };
-
-          # Get system-specific packages
-          systemPackages = getSystemPackages system pkgs;
-
-          # Helper functions
-          helpers = {
-            readScript = path: builtins.readFile (self + "/${path}");
-            isLinux = system: builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
-          };
-        in
-        {
-          # Development shells with platform-specific availability
-          devShells = {
+          # Common shells available on all platforms
+          commonShells = {
             default = devShell.default;
             development = devShell.development;
             testing = devShell.testing;
             services = devShell.services;
             monitoring = devShell.monitoring;
-          } // (
-            # Platform-specific shells
-            if pkgs.stdenv.isLinux && system == "x86_64-linux" then {
-              gaming = devShell.gaming;  # Gaming shell (Linux x86_64 only)
-              zfs = devShell.zfs;        # ZFS tools (Linux only)
-            } else if pkgs.stdenv.isLinux then {
-              zfs = devShell.zfs;        # ZFS tools (Linux only)
-            } else if pkgs.stdenv.isDarwin then {
-              macos = devShell.macos;    # macOS development (macOS only)
-            } else {}
-          );
+          };
+        in
+        if pkgs.stdenv.isLinux && system == "x86_64-linux" then
+          # Linux x86_64 - all shells including gaming
+          commonShells // {
+            gaming = devShell.gaming;  # Gaming shell (Linux x86_64 only)
+            zfs = devShell.zfs;        # ZFS tools (Linux only)
+          }
+        else if pkgs.stdenv.isLinux then
+          # Linux ARM - all shells except gaming
+          commonShells // {
+            zfs = devShell.zfs;        # ZFS tools (Linux only)
+          }
+        else if pkgs.stdenv.isDarwin then
+          # macOS - all shells including macOS-specific
+          commonShells // {
+            macos = devShell.macos;    # macOS development (macOS only)
+          }
+        else
+          # Other platforms - only common shells
+          commonShells;
 
-          # Code formatter
-          formatter = pkgs.nixpkgs-fmt;
-
-          # Packages (Linux only for system management tools)
-          packages = if pkgs.stdenv.isLinux then {
-            proxmox-update = systemPackages.proxmox-update;
-            vzdump-backup = systemPackages.vzdump-backup;
-            zfs-snapshot = systemPackages.zfs-snapshot;
-            nixos-flake-update = systemPackages.nixos-flake-update;
-            install = systemPackages.install;
-            uninstall = systemPackages.uninstall;
-            default = systemPackages.proxmox-update;
-            remote-builder-setup = systemPackages.remote-builder-setup;
-            test-remote-builder = systemPackages.test-remote-builder;
-          } else {};
-
-          # Test suite with proper error handling
-          checks = let
-            src = ./.;
-          in {
+      # Helper function to create platform-specific checks
+      createChecks = system: pkgs:
+        let
+          src = ./.;
+          baseChecks = {
             # Unit tests only
             unit = pkgs.runCommand "nix-mox-unit-tests" {
               buildInputs = [ pkgs.nushell ];
@@ -155,6 +174,89 @@
               touch $out
             '';
           };
+        in
+        if pkgs.stdenv.isLinux then
+          # Linux-specific checks
+          baseChecks // {
+            # Linux-specific tests
+            linux-specific = pkgs.runCommand "nix-mox-linux-tests" {
+              buildInputs = [ pkgs.nushell ];
+            } ''
+              cp -r ${src} $TMPDIR/src
+              cd $TMPDIR/src
+              export TEST_TEMP_DIR=$TMPDIR/nix-mox-linux
+              nu -c "source scripts/tests/linux/linux-tests.nu" || exit 1
+              touch $out
+            '';
+          }
+        else if pkgs.stdenv.isDarwin then
+          # macOS-specific checks
+          baseChecks // {
+            # macOS-specific tests
+            macos-specific = pkgs.runCommand "nix-mox-macos-tests" {
+              buildInputs = [ pkgs.nushell ];
+            } ''
+              cp -r ${src} $TMPDIR/src
+              cd $TMPDIR/src
+              export TEST_TEMP_DIR=$TMPDIR/nix-mox-macos
+              nu -c "source scripts/tests/macos/macos-tests.nu" || exit 1
+              touch $out
+            '';
+          }
+        else if pkgs.stdenv.isWindows or false then
+          # Windows-specific checks
+          baseChecks // {
+            # Windows-specific tests
+            windows-specific = pkgs.runCommand "nix-mox-windows-tests" {
+              buildInputs = [ pkgs.nushell ];
+            } ''
+              cp -r ${src} $TMPDIR/src
+              cd $TMPDIR/src
+              export TEST_TEMP_DIR=$TMPDIR/nix-mox-windows
+              nu -c "source scripts/tests/windows/windows-tests.nu" || exit 1
+              touch $out
+            '';
+          }
+        else
+          # Other platforms - only base checks
+          baseChecks;
+    in
+      flake-utils.lib.eachSystem supportedSystems (system:
+        let
+          # Import nixpkgs with proper configuration
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+            config.darwinConfig = if system == "aarch64-darwin" || system == "x86_64-darwin" then {
+              system = system;
+            } else {};
+          };
+
+          # Import development shell
+          devShell = import ./devshells/default.nix { inherit pkgs; };
+
+          # Get system-specific packages with error handling
+          systemPackagesResult = getSystemPackages system pkgs;
+          systemPackages = if systemPackagesResult.success then systemPackagesResult.value else {};
+
+          # Helper functions
+          helpers = {
+            readScript = path: builtins.readFile (self + "/${path}");
+            isLinux = system: builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
+          };
+        in
+        {
+          # Development shells with platform-specific availability
+          devShells = createDevShells system pkgs devShell;
+
+          # Code formatter
+          formatter = pkgs.nixpkgs-fmt;
+
+          # Packages with architecture checking
+          packages = createPackages system pkgs systemPackages;
+
+          # Test suite with platform-specific tests
+          checks = createChecks system pkgs;
         }
       ) // {
         # NixOS configurations - imported from config directory
