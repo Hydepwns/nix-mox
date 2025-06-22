@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2025-01-27
+
+### Fixed
+
+- **Test Import Issues**: Resolved circular import dependencies in test infrastructure
+  - Removed circular imports between `test-utils.nu`, `test-coverage.nu`, and `coverage-core.nu`
+  - Consolidated `track_test` function into `test-utils.nu`
+  - Consolidated `aggregate_coverage` function into `test-coverage.nu`
+  - Added `setup_test_env` and `cleanup_test_env` directly to `run-tests.nu`
+- **Test Function Availability**: Fixed "Command not found" errors for test functions
+- **Test Documentation**: Updated documentation to reflect new import structure
+- **Test Reliability**: Improved test execution consistency and reduced import errors
+
+### Changed
+
+- **Import Structure**: Simplified test module imports to avoid circular dependencies
+- **Function Locations**: Reorganized test functions for better maintainability
+- **Documentation**: Updated testing guides with correct import patterns and troubleshooting information
+
 ## [0.4.1] - 2025-01-27
 
 ### Added
