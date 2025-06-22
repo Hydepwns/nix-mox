@@ -1,4 +1,4 @@
-# Platform detection module for nix-mox
+# platform.nu - Platform detection module for nix-mox
 # This replaces the bash platform.sh with a more robust Nushell implementation
 
 # Export the main platform detection function
@@ -78,21 +78,53 @@ export def check_platform_requirements [platform: string] {
             if $info.os != "Linux" {
                 return false
             }
-            # Add more Linux-specific checks
+            # Check for essential Linux tools
+            let required_tools = ["nix", "curl", "git"]
+            let missing_tools = ($required_tools | where { |tool| not (which $tool | is-empty) })
+            if ($missing_tools | length) > 0 {
+                print $"Missing required tools: ($missing_tools | str join ', ')"
+                return false
+            }
+            # Check for sufficient memory (at least 2GB)
+            let mem_gb = ($info.memory.total | into int) / 1024 / 1024 / 1024
+            if $mem_gb < 2 {
+                print "Insufficient memory: at least 2GB required"
+                return false
+            }
             true
         }
         "windows" => {
             if $info.os != "Windows" {
                 return false
             }
-            # Add more Windows-specific checks
+            # Check for PowerShell 5.1+ or PowerShell Core
+            let ps_version = (powershell -Command "$PSVersionTable.PSVersion.Major" | into int)
+            if $ps_version < 5 {
+                print "PowerShell 5.1 or higher required"
+                return false
+            }
+            # Check for Windows 10/11 (build 10.0.17763 or higher)
+            let build = (sys).host.version | str replace "Windows " "" | str replace "." "" | into int
+            if $build < 10017763 {
+                print "Windows 10 (build 17763) or higher required"
+                return false
+            }
             true
         }
         "darwin" => {
             if $info.os != "Darwin" {
                 return false
             }
-            # Add more macOS-specific checks
+            # Check for macOS 10.15+ (Catalina)
+            let version = ($info.version | str replace "macOS " "" | str replace "." "" | into int)
+            if $version < 1015 {
+                print "macOS 10.15 (Catalina) or higher required"
+                return false
+            }
+            # Check for Homebrew (recommended for macOS)
+            if (which brew | is-empty) {
+                print "Warning: Homebrew not found. Consider installing it for better package management."
+            }
             true
         }
         _ => false

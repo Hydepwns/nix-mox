@@ -73,6 +73,49 @@ export def log_dryrun [message: string] {
     log "DRY RUN" $message
 }
 
+# Enhanced logging functions that support log files
+export def log_info [message: string, log_file: string = ""] {
+    let log_string = log "INFO" $message
+    if ($log_file | str length) > 0 {
+        try {
+            $log_string | save --append $log_file
+        } catch {
+            print $"Failed to write to log file ($log_file): ($env.LAST_ERROR)"
+        }
+    }
+}
+
+export def log_warn [message: string, log_file: string = ""] {
+    let log_string = log "WARN" $message
+    if ($log_file | str length) > 0 {
+        try {
+            $log_string | save --append $log_file
+        } catch {
+            print $"Failed to write to log file ($log_file): ($env.LAST_ERROR)"
+        }
+    }
+}
+
+export def log_error [message: string, log_file: string = ""] {
+    let log_string = log "ERROR" $message
+    if ($log_file | str length) > 0 {
+        try {
+            $log_string | save --append $log_file
+        } catch {
+            print $"Failed to write to log file ($log_file): ($env.LAST_ERROR)"
+        }
+    }
+}
+
+# Function to append command output to log file
+export def append-to-log [log_file: string] {
+    try {
+        $in | save --append $log_file
+    } catch {
+        print $"Failed to append to log file ($log_file): ($env.LAST_ERROR)"
+    }
+}
+
 export def handle_error [message: string] {
     print $"ERROR: ($message)"
     exit 1
