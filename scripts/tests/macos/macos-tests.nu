@@ -7,7 +7,7 @@ def main [] {
     print "🍎 Running macOS-specific tests..."
 
     # Check if we're on macOS
-    if (sys | get host.name) != "Darwin" {
+    if (sys host | get name) != "Darwin" {
         error make {msg: "These tests are only for macOS systems"}
     }
 

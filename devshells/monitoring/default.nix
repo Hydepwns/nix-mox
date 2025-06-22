@@ -3,7 +3,6 @@ let
   lib = pkgs.lib;
   isLinux = pkgs.stdenv.isLinux;
   isDarwin = pkgs.stdenv.isDarwin;
-  isAarch64 = pkgs.stdenv.isAarch64;
 
   # Common packages available on all platforms
   commonPackages = [
@@ -19,26 +18,13 @@ let
     pkgs.grafana
     pkgs.loki
     pkgs.promtail
-    pkgs.tempo
-    pkgs.zipkin
-    pkgs.logstash
   ];
 
-  # Linux-specific packages
-  linuxPackages = lib.optionals isLinux (
-    lib.filter (pkg: pkg != null) [
-      pkgs.alertmanager or null
-      pkgs.blackbox-exporter or null
-      pkgs.snmp-exporter or null
-      pkgs.pushgateway or null
-      pkgs.jaeger or null
-      pkgs.functionbeat or null
-      pkgs.journalbeat or null
-      pkgs.winlogbeat or null
-      pkgs.node-exporter or null
-      pkgs.cadvisor or null
-    ]
-  );
+  # Linux-specific packages (essential only)
+  linuxPackages = lib.optionals isLinux [
+    pkgs.alertmanager
+    pkgs.node-exporter
+  ];
 
   # Darwin-specific packages (disabled)
   darwinPackages = [];
@@ -57,15 +43,11 @@ pkgs.mkShell {
       echo "    Commands:"
       echo "    - prometheus                   # Start Prometheus"
       echo "    - promtool check rules         # Validate rules"
-      echo "    Configuration:"
-      echo "    - /etc/prometheus/prometheus.yml"
       echo ""
       echo "grafana: (v${pkgs.grafana.version})"
       echo "    Commands:"
       echo "    - grafana-server               # Start Grafana"
       echo "    - grafana-cli                  # CLI tool"
-      echo "    Configuration:"
-      echo "    - /etc/grafana/grafana.ini"
       echo ""
       echo "loki: (v${pkgs.loki.version})"
       echo "    Commands:"
@@ -77,25 +59,7 @@ pkgs.mkShell {
       echo "    - promtail                     # Start Promtail"
       echo "    - promtail --config.file=promtail.yml"
       echo ""
-      echo "tempo: (v${pkgs.tempo.version})"
-      echo "    Commands:"
-      echo "    - tempo                        # Start Tempo"
-      echo "    - tempo --config.file=tempo.yml"
-      echo ""
-      echo "zipkin: (v${pkgs.zipkin.version})"
-      echo "    Commands:"
-      echo "    - zipkin                       # Start Zipkin"
-      echo "    - zipkin --port 9411           # Specify port"
-      echo ""
-      echo "logstash: (v${pkgs.logstash.version})"
-      echo "    Commands:"
-      echo "    - logstash                     # Start Logstash"
-      echo "    - logstash-plugin install      # Install plugin"
-      echo "    Configuration:"
-      echo "    - /etc/logstash/logstash.yml"
-      echo ""
       ${if isLinux then ''
-      ${if !isAarch64 then ''
       ${if pkgs ? node-exporter then ''
       echo "node-exporter: (v${pkgs.node-exporter.version})"
       echo "    Commands:"
@@ -103,76 +67,11 @@ pkgs.mkShell {
       echo "    - node_exporter --web.listen-address=:9100"
       echo ""
       '' else ""}
-      ${if pkgs ? cadvisor then ''
-      echo "cadvisor: (v${pkgs.cadvisor.version})"
-      echo "    Commands:"
-      echo "    - cadvisor                     # Start cAdvisor"
-      echo "    - cadvisor -port 8080          # Specify port"
-      echo ""
-      '' else ""}
-      '' else ""}
       ${if pkgs ? alertmanager then ''
       echo "alertmanager: (v${pkgs.alertmanager.version})"
       echo "    Commands:"
       echo "    - alertmanager                 # Start Alertmanager"
       echo "    - amtool check-config          # Validate config"
-      echo "    Configuration:"
-      echo "    - /etc/alertmanager/alertmanager.yml"
-      echo ""
-      '' else ""}
-      ${if pkgs ? blackbox-exporter then ''
-      echo "blackbox-exporter: (v${pkgs.blackbox-exporter.version})"
-      echo "    Commands:"
-      echo "    - blackbox_exporter            # Start exporter"
-      echo "    - blackbox_exporter --config.file=blackbox.yml"
-      echo ""
-      '' else ""}
-      ${if pkgs ? snmp-exporter then ''
-      echo "snmp-exporter: (v${pkgs.snmp-exporter.version})"
-      echo "    Commands:"
-      echo "    - snmp_exporter                # Start exporter"
-      echo "    - snmp_exporter --config.file=snmp.yml"
-      echo ""
-      '' else ""}
-      ${if pkgs ? pushgateway then ''
-      echo "pushgateway: (v${pkgs.pushgateway.version})"
-      echo "    Commands:"
-      echo "    - pushgateway                  # Start Pushgateway"
-      echo "    - pushgateway --web.listen-address=:9091"
-      echo ""
-      '' else ""}
-      ${if pkgs ? jaeger then ''
-      echo "jaeger: (v${pkgs.jaeger.version})"
-      echo "    Commands:"
-      echo "    - jaeger-all-in-one            # Start Jaeger"
-      echo "    - jaeger-query                 # Query traces"
-      echo ""
-      '' else ""}
-      ${if pkgs ? functionbeat then ''
-      echo "functionbeat: (v${pkgs.functionbeat.version})"
-      echo "    Commands:"
-      echo "    - functionbeat                 # Start Functionbeat"
-      echo "    - functionbeat -e              # Log to stderr"
-      echo "    Configuration:"
-      echo "    - /etc/functionbeat/functionbeat.yml"
-      echo ""
-      '' else ""}
-      ${if pkgs ? journalbeat then ''
-      echo "journalbeat: (v${pkgs.journalbeat.version})"
-      echo "    Commands:"
-      echo "    - journalbeat                  # Start Journalbeat"
-      echo "    - journalbeat -e               # Log to stderr"
-      echo "    Configuration:"
-      echo "    - /etc/journalbeat/journalbeat.yml"
-      echo ""
-      '' else ""}
-      ${if pkgs ? winlogbeat then ''
-      echo "winlogbeat: (v${pkgs.winlogbeat.version})"
-      echo "    Commands:"
-      echo "    - winlogbeat                   # Start Winlogbeat"
-      echo "    - winlogbeat -e                # Log to stderr"
-      echo "    Configuration:"
-      echo "    - /etc/winlogbeat/winlogbeat.yml"
       echo ""
       '' else ""}
       '' else ""}
@@ -186,10 +85,6 @@ pkgs.mkShell {
       echo "   loki                            # Start Loki"
       echo "   promtail                        # Start Promtail"
       echo ""
-      echo "3. Start tracing:"
-      echo "   tempo                           # Start Tempo"
-      echo "   jaeger-all-in-one               # Start Jaeger"
-      echo ""
       echo "For more information, see docs/."
     }
 
@@ -202,6 +97,6 @@ pkgs.mkShell {
     echo "💡 Tip: Type 'which-shell' to see which shell you're in"
     echo ""
     alias help='show_help'
-    alias which-shell='echo "You are in the nix-mox Monitoring shell"'
+    alias which-shell='echo "You are in the nix-mox monitoring shell"'
   '';
 }

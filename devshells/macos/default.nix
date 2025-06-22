@@ -15,17 +15,13 @@ pkgs.mkShell {
     pkgs.darwin.apple_sdk.frameworks.CoreServices
     pkgs.darwin.apple_sdk.frameworks.Foundation
 
-    # Development tools
+    # Development tools (essential only)
     pkgs.vscode
     pkgs.jq
-    pkgs.yq
     pkgs.curl
-    pkgs.wget
     pkgs.htop
     pkgs.tmux
     pkgs.zsh
-    pkgs.oh-my-zsh
-    pkgs.code-cursor
   ];
 
   # Add macOS-specific environment variables
@@ -60,18 +56,10 @@ pkgs.mkShell {
       echo "    Commands:"
       echo "    - jq '.' file.json               # Pretty print JSON"
       echo ""
-      echo "yq: (v${pkgs.yq.version})"
-      echo "    Commands:"
-      echo "    - yq eval '.' file.yaml          # Pretty print YAML"
-      echo ""
       echo "curl: (v${pkgs.curl.version})"
       echo "    Commands:"
       echo "    - curl -O url                    # Download file"
       echo "    - curl -I url                    # Check headers"
-      echo ""
-      echo "wget: (v${pkgs.wget.version})"
-      echo "    Commands:"
-      echo "    - wget url                       # Download file"
       echo ""
       echo "htop: (v${pkgs.htop.version})"
       echo "    Commands:"
@@ -85,10 +73,6 @@ pkgs.mkShell {
       echo "zsh: (v${pkgs.zsh.version})"
       echo "    Commands:"
       echo "    - zsh                           # Start ZSH shell"
-      echo ""
-      echo "code-cursor: (v${pkgs.code-cursor.version})"
-      echo "    Commands:"
-      echo "    - code-cursor .                 # Launch code-cursor editor"
       echo ""
       echo "📝 Quick Start"
       echo "------------"

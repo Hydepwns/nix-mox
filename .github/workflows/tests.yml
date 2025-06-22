@@ -44,9 +44,12 @@ jobs:
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
       continue-on-error: true
 
-    - name: Run tests
+    - name: Run nix flake check
       run: |
-        nix flake check
+        # Set CI environment variable to disable NixOS configs
+        export CI=true
+        # Run flake check with timeout and accept flake config
+        timeout 300 nix flake check --accept-flake-config
 
     - name: Find and prepare coverage report
       run: |

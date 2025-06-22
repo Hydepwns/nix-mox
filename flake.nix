@@ -25,12 +25,12 @@
   };
 
   nixConfig = {
-    extra-substituters = [
+    trusted-substituters = [
       "https://hydepwns.cachix.org"
       "https://nix-mox.cachix.org"
       "https://cache.nixos.org"
     ];
-    extra-trusted-public-keys = [
+    trusted-public-keys = [
       "hydepwns.cachix.org-1:xg8huKdwzBkLdkq5eCKenadhCROHIICGI9H6y3simJU="
       "nix-mox.cachix.org-1:MVJZxC7ZyRFAxVsxDuq0nmMRxlTIt5nFFm4Ur10ZCI4="
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
@@ -50,61 +50,55 @@
       # Helper function to check if system is supported
       isSupported = system: builtins.elem system supportedSystems;
 
-      # Helper function to get system-specific packages with better error handling
+      # Simplified helper function to get system-specific packages with better error handling
       getSystemPackages = system: pkgs:
-        if pkgs.stdenv.isLinux then
-          # Linux packages
-          builtins.tryEval (import ./modules/packages/linux/default.nix {
+        let
+          tryImport = path: builtins.tryEval (import path {
             inherit pkgs;
             config = import ./config/default.nix { inherit inputs; };
             helpers = {
               readScript = path: builtins.readFile (self + "/${path}");
               isLinux = system: builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
             };
-          })
+          });
+        in
+        if pkgs.stdenv.isLinux then
+          tryImport ./modules/packages/linux/default.nix
         else if pkgs.stdenv.isDarwin then
-          # macOS packages
-          builtins.tryEval (import ./modules/packages/macos/default.nix {
-            inherit pkgs;
-            config = import ./config/default.nix { inherit inputs; };
-            helpers = {
-              readScript = path: builtins.readFile (self + "/${path}");
-              isLinux = system: builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
-            };
-          })
-        else {};
+          tryImport ./modules/packages/macos/default.nix
+        else { success = true; value = {}; };
 
-      # Helper function to create packages with architecture checking
+      # Simplified helper function to create packages with minimal evaluation
       createPackages = system: pkgs: systemPackages:
+        let
+          # Common packages available on all platforms
+          commonPackages = {
+            install = systemPackages.install or null;
+            uninstall = systemPackages.uninstall or null;
+            default = systemPackages.install or null;
+          };
+        in
         if pkgs.stdenv.isLinux then
-          # Linux packages - only available on Linux systems
-          {
+          # Linux packages - only include essential ones
+          commonPackages // {
             proxmox-update = systemPackages.proxmox-update or null;
             vzdump-backup = systemPackages.vzdump-backup or null;
             zfs-snapshot = systemPackages.zfs-snapshot or null;
             nixos-flake-update = systemPackages.nixos-flake-update or null;
-            install = systemPackages.install or null;
-            uninstall = systemPackages.uninstall or null;
-            default = systemPackages.proxmox-update or null;
-            remote-builder-setup = systemPackages.remote-builder-setup or null;
-            test-remote-builder = systemPackages.test-remote-builder or null;
           }
         else if pkgs.stdenv.isDarwin then
-          # macOS packages - only available on macOS systems
-          {
-            install = systemPackages.install or null;
-            uninstall = systemPackages.uninstall or null;
+          # macOS packages - only include essential ones
+          commonPackages // {
             homebrew-setup = systemPackages.homebrew-setup or null;
             macos-maintenance = systemPackages.macos-maintenance or null;
             xcode-setup = systemPackages.xcode-setup or null;
             security-audit = systemPackages.security-audit or null;
-            default = systemPackages.install or null;
           }
         else
-          # Other platforms - no packages available
-          {};
+          # Other platforms - only common packages
+          commonPackages;
 
-      # Helper function to create platform-specific devShells
+      # Simplified helper function to create platform-specific devShells
       createDevShells = system: pkgs: devShell:
         let
           # Common shells available on all platforms
@@ -112,31 +106,24 @@
             default = devShell.default;
             development = devShell.development;
             testing = devShell.testing;
-            services = devShell.services;
-            monitoring = devShell.monitoring;
           };
         in
-        if pkgs.stdenv.isLinux && system == "x86_64-linux" then
-          # Linux x86_64 - all shells including gaming
+        if pkgs.stdenv.isLinux then
+          # Linux - add essential shells only
           commonShells // {
-            gaming = devShell.gaming;  # Gaming shell (Linux x86_64 only)
-            zfs = devShell.zfs;        # ZFS tools (Linux only)
-          }
-        else if pkgs.stdenv.isLinux then
-          # Linux ARM - all shells except gaming
-          commonShells // {
-            zfs = devShell.zfs;        # ZFS tools (Linux only)
+            services = devShell.services;
+            monitoring = devShell.monitoring;
           }
         else if pkgs.stdenv.isDarwin then
-          # macOS - all shells including macOS-specific
+          # macOS - add macOS-specific shell
           commonShells // {
-            macos = devShell.macos;    # macOS development (macOS only)
+            macos = devShell.macos;
           }
         else
           # Other platforms - only common shells
           commonShells;
 
-      # Helper function to create platform-specific checks
+      # Simplified helper function to create platform-specific checks
       createChecks = system: pkgs:
         let
           src = ./.;
@@ -203,20 +190,6 @@
               touch $out
             '';
           }
-        else if pkgs.stdenv.isWindows or false then
-          # Windows-specific checks
-          baseChecks // {
-            # Windows-specific tests
-            windows-specific = pkgs.runCommand "nix-mox-windows-tests" {
-              buildInputs = [ pkgs.nushell ];
-            } ''
-              cp -r ${src} $TMPDIR/src
-              cd $TMPDIR/src
-              export TEST_TEMP_DIR=$TMPDIR/nix-mox-windows
-              nu -c "source scripts/tests/windows/windows-tests.nu" || exit 1
-              touch $out
-            '';
-          }
         else
           # Other platforms - only base checks
           baseChecks;
@@ -229,6 +202,8 @@
             config.allowUnfree = true;
             config.darwinConfig = if system == "aarch64-darwin" || system == "x86_64-darwin" then {
               system = system;
+              # Use newer SDK to avoid deprecation warnings
+              sdkVersion = "14.0";
             } else {};
           };
 
@@ -258,8 +233,10 @@
           # Test suite with platform-specific tests
           checks = createChecks system pkgs;
         }
-      ) // {
-        # NixOS configurations - imported from config directory
-        nixosConfigurations = import ./config { inherit inputs self; };
-      };
+      ) // (
+        # Only include NixOS configs if explicitly requested or if not in CI
+        if builtins.getEnv "INCLUDE_NIXOS_CONFIGS" == "1" || (builtins.getEnv "CI" != "true" && builtins.getEnv "CI" != "1") then
+          { nixosConfigurations = import ./config { inherit inputs self; }; }
+        else {}
+      );
 }

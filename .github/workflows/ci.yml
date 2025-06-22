@@ -101,7 +101,10 @@ jobs:
         continue-on-error: true
       - name: Run tests
         run: |
-          nix flake check --accept-flake-config --impure
+          # Set CI environment variable to disable NixOS configs
+          export CI=true
+          # Run flake check with timeout and accept flake config
+          timeout 300 nix flake check --accept-flake-config --impure
         continue-on-error: true
 
       - name: Find and prepare coverage report

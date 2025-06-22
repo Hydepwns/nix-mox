@@ -4,30 +4,9 @@
   # Import all shell configurations
   development = import ./development/default.nix { inherit pkgs; };
   testing = import ./testing/default.nix { inherit pkgs; };
-  zfs = import ./storage/zfs.nix { inherit pkgs; };
   services = import ./services/default.nix { inherit pkgs; };
   monitoring = import ./monitoring/default.nix { inherit pkgs; };
-  gaming = import ./gaming/default.nix { inherit pkgs; };
   macos = import ./macos/default.nix { inherit pkgs; };
-  windows = pkgs.mkShell {
-    buildInputs = [
-      pkgs.nushell
-      pkgs.git
-      pkgs.nix
-      pkgs.coreutils
-      pkgs.fd
-      pkgs.ripgrep
-      pkgs.powershell
-      pkgs.python3
-    ];
-    shellHook = ''
-      echo "Welcome to the nix-mox Windows/WSL shell!"
-      echo "System: ${pkgs.system}"
-      echo "Platform: Windows/WSL"
-      echo "Type 'platform-info' for more info."
-      alias platform-info='echo "Platform: ${pkgs.system} | OS: Windows/WSL"'
-    '';
-  };
 
   # Default shell (inline mkShell definition)
   default = pkgs.mkShell {
@@ -124,14 +103,8 @@
         echo "   nix develop .#testing            # Testing tools"
         echo "   nix develop .#services           # Service tools"
         echo "   nix develop .#monitoring         # Monitoring tools"
-        ${if pkgs.stdenv.isLinux then ''
-        echo "   nix develop .#zfs                # ZFS tools (Linux only)"
-        '' else ""}
         ${if pkgs.stdenv.isDarwin then ''
         echo "   nix develop .#macos              # macOS development (macOS only)"
-        '' else ""}
-        ${if pkgs.stdenv.isWindows or false then ''
-        echo "   nix develop .#windows            # Windows/WSL development (Windows only)"
         '' else ""}
         echo ""
         echo "2. Run packaged scripts:"
@@ -145,9 +118,6 @@
         echo "   nix run .#macos-maintenance      # System maintenance (macOS only)"
         echo "   nix run .#xcode-setup            # Setup Xcode tools (macOS only)"
         echo "   nix run .#security-audit         # Security audit (macOS only)"
-        '' else ""}
-        ${if pkgs.stdenv.isWindows or false then ''
-        echo "   nix run .#install-steam-rust     # Install Steam + Rust (Windows only)"
         '' else ""}
         echo ""
         echo "3. Format Nix code:"
@@ -167,7 +137,7 @@
       echo ""
       alias help='show_help'
       alias which-shell='echo "You are in the nix-mox default shell"'
-      alias platform-info='echo "Platform: ${pkgs.system} | Architecture: ${pkgs.stdenv.hostPlatform.parsed.cpu.name} | OS: ${if pkgs.stdenv.isDarwin then "macOS" else if pkgs.stdenv.isLinux then "Linux" else if pkgs.stdenv.isWindows or false then "Windows/WSL" else "Other"}"'
+      alias platform-info='echo "Platform: ${pkgs.system} | Architecture: ${pkgs.stdenv.hostPlatform.parsed.cpu.name} | OS: ${if pkgs.stdenv.isDarwin then "macOS" else if pkgs.stdenv.isLinux then "Linux" else "Other"}"'
     '';
   };
 }
