@@ -7,7 +7,8 @@ def main [] {
     print "🐧 Running Linux-specific tests..."
 
     # Check if we're on Linux
-    if (sys host | get name) != "Linux" {
+    let os_info = (sys host | get long_os_version)
+    if not ($os_info | str contains "Linux") {
         error make {msg: "These tests are only for Linux systems"}
     }
 

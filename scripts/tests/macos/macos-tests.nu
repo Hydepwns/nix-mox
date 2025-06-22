@@ -7,7 +7,8 @@ def main [] {
     print "🍎 Running macOS-specific tests..."
 
     # Check if we're on macOS
-    if (sys host | get name) != "Darwin" {
+    let os_info = (sys host | get long_os_version)
+    if not ($os_info | str contains "macOS") {
         error make {msg: "These tests are only for macOS systems"}
     }
 
