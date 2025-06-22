@@ -1,36 +1,21 @@
-# Test utilities for nix-mox
-# This module provides common functions for testing
-
-export-env {
-    use ./shared.nu *
-    use ./coverage-core.nu *
-}
-
-use ./shared.nu *
-use ./coverage-core.nu *
-
-# --- Environment Setup ---
 export-env {
     # Base directories
     $env.TEST_DIR = "."
     $env.UNIT_TEST_DIR = $"($env.TEST_DIR)/scripts/tests/unit"
     $env.INTEGRATION_TEST_DIR = $"($env.TEST_DIR)/scripts/tests/integration"
     $env.FIXTURES_DIR = $"($env.TEST_DIR)/scripts/tests/fixtures"
-
     # Test environment
     $env.LOG_LEVEL = "INFO"
     $env.TEST_TEMP_DIR = (if ($env.TMPDIR? | is-empty) { "coverage-tmp/nix-mox-tests" } else { $env.TMPDIR + "/nix-mox-tests" })
     $env.PLATFORM = (sys host | get hostname | str downcase)
     $env.COMPONENT_NAME = "nix-mox"
     $env.LAST_ERROR = ""
-
     # ANSI colors for output
     $env.GREEN = (ansi green)
     $env.YELLOW = (ansi yellow)
     $env.RED = (ansi red)
     $env.NC = (ansi reset)
 }
-
 # --- Platform Detection ---
 export def is_linux [] {
     $env.PLATFORM == "linux"
@@ -39,7 +24,6 @@ export def is_linux [] {
 export def is_darwin [] {
     $env.PLATFORM == "darwin"
 }
-
 # --- Test Environment Management ---
 export def setup_test_env [] {
     print $"DEBUG: TEST_TEMP_DIR is ($env.TEST_TEMP_DIR)"
@@ -55,7 +39,6 @@ export def cleanup_test_env [] {
     rm -rf $env.TEST_TEMP_DIR
     print $"($env.GREEN)Test environment cleaned up($env.NC)"
 }
-
 # --- Test Assertions ---
 export def assert_equal [expected: any, actual: any, message: string] {
     if $expected == $actual {
@@ -88,7 +71,6 @@ export def assert_false [condition: bool, message: string] {
         false
     }
 }
-
 # --- Test Retry Mechanism ---
 export def test_retry [max_retries: int, retry_delay: int, operation: closure, expected_result: bool] {
     mut retries = 0
@@ -110,7 +92,6 @@ export def test_retry [max_retries: int, retry_delay: int, operation: closure, e
 
     assert_equal $expected_result $success $"Retry test after ($max_retries) attempts"
 }
-
 # --- Test Logging ---
 export def test_logging [level: string, message: string, expected_output: string] {
     let output = $"[($level)] ($message)"
@@ -120,7 +101,6 @@ export def test_logging [level: string, message: string, expected_output: string
 export def log_error [message: string] {
     print $"($env.RED)Error: ($message)($env.NC)"
 }
-
 # --- Test Configuration Validation ---
 export def test_config_validation [config: string, expected_error: string] {
     if ($config | is-empty) {
@@ -130,7 +110,6 @@ export def test_config_validation [config: string, expected_error: string] {
         true
     }
 }
-
 # --- Test Performance ---
 export def test_performance [operation: closure, max_duration: int] {
     let start_time = (date now | into int)
@@ -140,6 +119,20 @@ export def test_performance [operation: closure, max_duration: int] {
     let duration = ($duration_ms | into float) / 1000000000
 
     assert_true ($duration <= $max_duration) $"Performance test completed in ($duration) seconds (max: ($max_duration) seconds)"
+}
+
+# --- Test Tracking ---
+export def track_test [name: string, category: string, status: string, duration: float] {
+    let test_result = {
+        name: $name
+        category: $category
+        status: $status
+        duration: $duration
+        timestamp: (date now | into int)
+    }
+
+    let filename = $"($env.TEST_TEMP_DIR)/test_result_($name | str replace '.nu' '' | str replace '-' '_').json"
+    $test_result | to json | save --force $filename
 }
 
 # --- Test Runner ---

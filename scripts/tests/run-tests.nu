@@ -9,11 +9,6 @@ export-env {
     use ./lib/test-common.nu *
 }
 
-use ./lib/test-utils.nu *
-use ./lib/test-coverage.nu *
-use ./lib/coverage-core.nu *
-use ./lib/test-common.nu *
-
 # --- Test Configuration ---
 def setup_test_config [] {
     {
@@ -25,10 +20,25 @@ def setup_test_config [] {
         export_format: "json"
         verbose: false
         parallel: false
-        timeout: 300  # 5 minutes default timeout
+        timeout: 300
         retry_failed: false
         max_retries: 3
     }
+}
+
+# --- Test Environment Management ---
+def setup_test_env [] {
+    print $"($env.GREEN)Setting up test environment...($env.NC)"
+    if not ($env.TEST_TEMP_DIR | path exists) {
+        mkdir $env.TEST_TEMP_DIR
+    }
+    print $"($env.GREEN)Test environment ready at: ($env.TEST_TEMP_DIR)($env.NC)"
+}
+
+def cleanup_test_env [] {
+    print $"($env.YELLOW)Cleaning up test environment...($env.NC)"
+    rm -rf $env.TEST_TEMP_DIR
+    print $"($env.GREEN)Test environment cleaned up($env.NC)"
 }
 
 # --- Test Execution with Better Error Handling ---
@@ -61,7 +71,32 @@ def run_test_suite [suite_name: string, test_func: closure, config: record] {
     }
 }
 
+def run_unit_tests [] {
+    print "Running unit tests..."
+    nu scripts/tests/unit/unit-tests.nu
+    true
+}
+
+def run_integration_tests [] {
+    print "Running integration tests..."
+    nu scripts/tests/integration/integration-tests.nu
+    true
+}
+
+def run_storage_tests [] {
+    print "Running storage tests..."
+    nu scripts/tests/storage/storage-tests.nu
+    true
+}
+
+def run_performance_tests [] {
+    print "Running performance tests..."
+    nu scripts/tests/performance/performance-tests.nu
+    true
+}
+
 def run_all_test_suites [config: record] {
+    # Call setup_test_env from the imported module
     setup_test_env
 
     mut overall_success = true
@@ -198,7 +233,6 @@ def parse_args [args: list, config: record] {
             $config
         }
 
-        # If specific test types are requested, disable others
         let test_flags = ["--unit", "--integration", "--storage", "--performance"]
         let has_specific_tests = ($args | any { |arg| $test_flags | any { |flag| $arg == $flag } })
 
@@ -208,7 +242,6 @@ def parse_args [args: list, config: record] {
             $config
         }
 
-        # Only disable coverage if --no-coverage is explicitly passed
         let config = if ($args | any { |arg| $arg == "--no-coverage" }) {
             $config | upsert generate_coverage false
         } else {
@@ -272,15 +305,11 @@ def print_help [] {
 
 # --- Main Runner ---
 def main [args: list] {
-    # Set up the test temp directory globally
-    # $env.TEST_TEMP_DIR = "coverage-tmp"
-
     let config = setup_test_config
     let config = parse_args $args $config
     run_all_test_suites $config
 }
 
-# To run tests, use: nu -c "source scripts/tests/run-tests.nu; run ['--unit']"
 export def run [args: list] {
     main $args
 }
