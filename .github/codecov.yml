@@ -1,0 +1,44 @@
+# Codecov configuration for nix-mox
+coverage:
+  status:
+    project:
+      default:
+        target: 90%    # Minimum coverage threshold
+        threshold: 5%  # Allow 5% decrease
+    patch:
+      default:
+        target: 80%    # Minimum coverage for patches
+        threshold: 10% # Allow 10% decrease
+
+# Coverage reporting settings
+codecov:
+  require_ci_to_pass: yes
+  notify:
+    wait_for_ci: yes
+
+# File coverage settings
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
+
+# Comment settings
+comment:
+  layout: "reach,diff,flags,files,footer"
+  behavior: default
+  require_changes: no
+
+# Ignore patterns
+ignore:
+  - "docs/**/*"
+  - "examples/**/*"
+  - "tests/**/*"
+  - "scripts/tests/**/*"
+  - "*.md"
+  - "*.txt"
+  - "flake.lock"
+  - "coverage-tmp/**/*"
+  - "tmp/**/*"
