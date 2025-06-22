@@ -804,10 +804,39 @@ Pre-built configurations for common use cases:
 ## 🧪 Testing
 
 ```bash
+# Run all tests
+nix flake check .#checks.x86_64-linux.test-suite
+
+# Run specific test types
 nix flake check .#checks.x86_64-linux.unit
 nix flake check .#checks.x86_64-linux.integration
-nix flake check .#checks.x86_64-linux.test-suite
+
+# Run tests locally
+make test
+make unit
+make integration
+
+# Run with coverage
+./scripts/tests/run-tests.nu --coverage
 ```
+
+### Test Categories
+
+- **Unit Tests:** Core functionality, libraries, and utilities
+- **Integration Tests:** End-to-end workflows and system interactions
+- **Performance Tests:** Performance benchmarking and optimization
+- **Platform Tests:** Cross-platform compatibility testing
+
+### Test Coverage
+
+The test suite covers:
+
+- Configuration validation
+- Platform detection and compatibility
+- Script execution and error handling
+- Proxmox update workflows
+- Logging and monitoring systems
+- Cross-platform script handling
 
 [⬆️ Return to Top](#-table-of-contents)
 
