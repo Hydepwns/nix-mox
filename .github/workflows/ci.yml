@@ -189,3 +189,36 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Nix
+        uses: cachix/install-nix-action@v25
+
+      - name: Install Nushell
+        run: |
+          nix-env -iA nixpkgs.nushell
+
+      - name: Show Nix and Nushell versions
+        run: |
+          nix --version
+          nu --version
+
+      - name: Run tests
+        run: nu -c "source scripts/tests/run-tests.nu; run ['--unit']"
+
+      - name: Generate Project Status Dashboard
+        run: nu scripts/tools/project-dashboard.nu
+
+      - name: Upload Project Dashboard Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-dashboard
+          path: |
+            tmp/dashboard.json
+            tmp/dashboard.md
