@@ -30,14 +30,15 @@ jobs:
           echo "present=false" >> $GITHUB_OUTPUT
         fi
 
-    - name: Setup Cachix
-      if: steps.cachix-key-check.outputs.present == 'true'
-      uses: cachix/cachix-action@v15
-      with:
-        name: nix-mox
-        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-        signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-      continue-on-error: true
+    # Temporarily disabled due to signing key mismatch
+    # - name: Setup Cachix
+    #   if: steps.cachix-key-check.outputs.present == 'true'
+    #   uses: cachix/cachix-action@v15
+    #   with:
+    #     name: nix-mox
+    #     authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+    #     signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+    #   continue-on-error: true
 
     - name: Run tests
       run: |

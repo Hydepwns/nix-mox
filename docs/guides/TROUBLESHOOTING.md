@@ -1,6 +1,61 @@
 # Troubleshooting Guide
 
-Common issues and solutions for `nix-mox` templates.
+This guide provides solutions to common issues encountered while working with the `nix-mox` repository.
+
+## Table of Contents
+
+- [CI/CD Failures](#cicd-failures)
+  - [Cachix Signature Verification Failed](#cachix-signature-verification-failed)
+- [Build Failures](#build-failures)
+- [Local Development Issues](#local-development-issues)
+
+---
+
+## CI/CD Failures
+
+### Cachix Signature Verification Failed
+
+**Symptom:**
+
+The CI job fails during the "Push to Cachix" or "Setup Cachix" step with an error similar to this:
+
+```
+[Error] FailureResponse ... {"error":"Signature verification failed. The signing key you're using doesn't match any of the public keys for binary cache nix-mox..."}
+```
+
+**Cause:**
+
+This error occurs when the `CACHIX_SIGNING_KEY` used by the GitHub Actions workflow is missing, incorrect, or does not correspond to the public key configured for the `nix-mox` Cachix cache.
+
+The `nix-mox` cache is configured to require signed uploads, and the public key is defined in `flake.nix` and other configuration files within this repository.
+
+**Solution:**
+
+You need to ensure that the correct private signing key is stored in your repository's GitHub Actions secrets.
+
+1. **Retrieve your Cachix Signing Key:**
+
+    If you have the `cachix` CLI tool installed and configured, you can retrieve your signing key with the following command:
+
+    ```bash
+    cachix signing-key nix-mox
+    ```
+
+    This will print the private key to your terminal. Copy this key.
+
+    If you have lost the key, you may need to regenerate it. Be aware that this will invalidate the old public key, and you will need to update it in all places it is used (like `flake.nix`). You can regenerate it with `cachix signing-key nix-mox --regenerate`.
+
+2. **Add the Signing Key to GitHub Secrets:**
+
+    - Navigate to your GitHub repository's page.
+    - Go to **Settings** > **Secrets and variables** > **Actions**.
+    - Click on the **Secrets** tab.
+    - Click **New repository secret**.
+    - Set the **Name** to `CACHIX_SIGNING_KEY`.
+    - Paste the private key you copied into the **Secret** field.
+    - Click **Add secret**.
+
+After adding the secret, re-run the failed CI job. It should now be able to authenticate and push to the Cachix cache successfully.
 
 ## Common Issues
 

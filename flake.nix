@@ -114,6 +114,8 @@
             install = systemPackages.install;
             uninstall = systemPackages.uninstall;
             default = systemPackages.proxmox-update;
+            remote-builder-setup = systemPackages.remote-builder-setup;
+            test-remote-builder = systemPackages.test-remote-builder;
           } else {};
 
           # Test suite with proper error handling

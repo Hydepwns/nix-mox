@@ -15,7 +15,8 @@ PACKAGES = proxmox-update vzdump-backup zfs-snapshot nixos-flake-update install 
 .PHONY: help test unit integration clean format check build build-all \
         dev test-shell gaming-shell macos-shell services-shell monitoring-shell zfs-shell \
         ci-test ci-local update lock clean-all packages shells analyze-sizes \
-        setup-wizard health-check security-check sbom cache-optimize size-dashboard
+        setup-wizard health-check security-check sbom cache-optimize size-dashboard \
+        remote-builder-setup test-remote-builder
 
 # Default target - show help
 help:
@@ -85,6 +86,8 @@ help:
 	@echo "  - Use 'make setup-wizard' for interactive configuration"
 	@echo "  - Use 'make health-check' to validate system health"
 	@echo "  - Use 'make security-check' to validate security configuration"
+	@echo "  - Use 'make remote-builder-setup' to set up remote builder"
+	@echo "  - Use 'make test-remote-builder' to test remote builder"
 
 # Setup and health check targets
 setup-wizard:
@@ -260,6 +263,15 @@ ci-test:
 ci-local:
 	@echo "🔄 Running comprehensive CI test..."
 	./scripts/test-ci-local.sh
+
+# Remote builder targets
+remote-builder-setup:
+	@echo "🔧 Setting up remote builder..."
+	./scripts/setup-remote-builder.sh
+
+test-remote-builder:
+	@echo "🔧 Testing remote builder..."
+	./scripts/test-remote-builder.sh
 
 # Maintenance targets
 clean-all: clean
