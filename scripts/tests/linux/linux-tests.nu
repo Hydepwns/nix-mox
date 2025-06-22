@@ -7,7 +7,7 @@ def main [] {
     print "🐧 Running Linux-specific tests..."
 
     # Check if we're on Linux
-    if (sys | get host.name) != "Linux" {
+    if (sys host | get name) != "Linux" {
         error make {msg: "These tests are only for Linux systems"}
     }
 
