@@ -62,10 +62,21 @@ in
     '';
   } else null;
 
-  install = if isLinux pkgs.system then pkgs.writeScriptBin "nix-mox-install" ''
-    #!${pkgs.bash}/bin/bash
-    ${readScript "scripts/linux/install.nu"}
-  '' else null;
+  install = if isLinux pkgs.system then pkgs.symlinkJoin {
+    name = "nix-mox-install";
+    paths = [ (pkgs.writeScriptBin "nix-mox-install" ''
+      #!${pkgs.nushell}/bin/nu
+      ${readScript "scripts/linux/install.nu"}
+    '') ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/nix-mox-install \
+        --prefix PATH : ${pkgs.lib.makeBinPath [
+          pkgs.bash
+          pkgs.coreutils
+        ]}
+    '';
+  } else null;
 
   uninstall = if isLinux pkgs.system then pkgs.symlinkJoin {
     name = "nix-mox-uninstall";
