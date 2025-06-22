@@ -10,23 +10,32 @@
 [![Platforms](https://img.shields.io/badge/platforms-x86_64%20%7C%20aarch64%20%7C%20Linux%20%7C%20macOS-blue.svg)](https://github.com/Hydepwns/nix-mox/actions)
 [![Nix Versions](https://img.shields.io/badge/nix%20versions-2.19.2%20%7C%202.20.1-green.svg)](https://github.com/Hydepwns/nix-mox/actions)
 
-## TL;DR
+## 🎯 What is nix-mox?
 
-nix-mox = NixOS configuration framework with:
+nix-mox is a comprehensive NixOS configuration framework that provides:
 
 - 🧩 **Modular fragments** for easy customization
 - 🛠️ **Development shells** for different use cases  
 - 🎮 **Gaming support** with Wine/DXVK
 - 🔒 **Enterprise security** features
 - 📊 **Size analysis** and performance tools
+- 💬 **Messaging & communication** apps
+- 🛡️ **Quality assurance** with comprehensive testing
 
-**Get started in 5 minutes:**
+## 📋 Requirements
 
-```bash
-git clone https://github.com/Hydepwns/nix-mox.git
-cd nix-mox
-./scripts/setup-wizard.nu
-```
+### System Requirements
+
+- **OS:** NixOS, or Linux with Nix package manager
+- **Architecture:** x86_64 (Linux/macOS), aarch64 (Linux)
+- **Memory:** 4GB RAM minimum (8GB+ recommended)
+- **Storage:** 10GB free space minimum
+
+### Prerequisites
+
+- **Nix Package Manager:** Version 2.4+ with flakes enabled
+- **Git:** For repository management
+- **Internet Connection:** For package downloads
 
 ## 🚀 Quick Start
 
@@ -96,21 +105,7 @@ make size-dashboard    # Generate interactive dashboard
 make sbom             # Generate Software Bill of Materials
 ```
 
-## 🛡️ Quality Assurance
-
-### ✅ Comprehensive Testing
-
-Unit tests, integration tests, performance tests, and cross-platform testing (Linux x86_64, aarch64, macOS)
-
-### 🔄 CI/CD Pipeline
-
-Automated builds, matrix testing, Cachix integration, error resilience, and artifact management
-
-### 📈 Reliability Metrics
-
-100% build success rate, comprehensive test coverage, full platform support, optimized build times
-
-## 🎯 Management Tools
+## 🛠️ Management Tools
 
 ### 🚀 Main Entrypoint
 
@@ -135,6 +130,39 @@ make health-check    # System diagnostics
 make dev-shell       # Enter development shell
 make docs            # Generate documentation
 ```
+
+## 🛡️ Quality Assurance
+
+### ✅ Comprehensive Testing
+
+Unit tests, integration tests, performance tests, and cross-platform testing (Linux x86_64, aarch64, macOS)
+
+### 🔄 CI/CD Pipeline
+
+Automated builds, matrix testing, Cachix integration, error resilience, and artifact management
+
+### 📈 Reliability Metrics
+
+100% build success rate, comprehensive test coverage, full platform support, optimized build times
+
+<details>
+<summary><b>🚀 Cachix Cache (Recommended)</b></summary>
+
+For faster builds, use our Cachix cache:
+
+```bash
+nix-env -iA cachix -f https://cachix.org/api/v1/install
+cachix use nix-mox
+```
+
+Or add to your NixOS configuration:
+
+```bash
+nix.settings.substituters = [ "https://nix-mox.cachix.org" ];
+nix.settings.trusted-public-keys = [ "nix-mox.cachix.org-1:MVJZxC7ZyRFAxVsxDuq0nmMRxlTIt5nFFm4Ur10ZCI4=" ];
+```
+
+</details>
 
 <details>
 <summary><b>📁 Project Structure & Documentation</b></summary>
@@ -165,43 +193,6 @@ nix-mox/
 - **[📝 Examples](docs/examples/)** - Step-by-step examples for common use cases
 - **[🏗️ Architecture](docs/architecture/)** - Project architecture and design decisions
 - **[📋 API Reference](docs/api/)** - Technical reference documentation
-
-</details>
-
-<details>
-<summary><b>📋 Requirements</b></summary>
-
-### System Requirements
-
-- **OS:** NixOS, or Linux with Nix package manager
-- **Architecture:** x86_64 (Linux/macOS), aarch64 (Linux)
-- **Memory:** 4GB RAM minimum (8GB+ recommended)
-- **Storage:** 10GB free space minimum
-
-### Prerequisites
-
-- **Nix Package Manager:** Version 2.4+ with flakes enabled
-- **Git:** For repository management
-- **Internet Connection:** For package downloads
-
-</details>
-
-<details>
-<summary><b>🚀 Cachix Cache (Recommended)</b></summary>
-
-For faster builds, use our Cachix cache:
-
-```bash
-nix-env -iA cachix -f https://cachix.org/api/v1/install
-cachix use nix-mox
-```
-
-Or add to your NixOS configuration:
-
-```bash
-nix.settings.substituters = [ "https://nix-mox.cachix.org" ];
-nix.settings.trusted-public-keys = [ "nix-mox.cachix.org-1:MVJZxC7ZyRFAxVsxDuq0nmMRxlTIt5nFFm4Ur10ZCI4=" ];
-```
 
 </details>
 
