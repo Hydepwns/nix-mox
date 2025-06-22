@@ -4,6 +4,9 @@ let
   isLinux = pkgs.stdenv.isLinux;
   isDarwin = pkgs.stdenv.isDarwin;
 
+  # Helper function to safely get package if it exists
+  safeGet = attr: pkgSet: if pkgSet ? ${attr} then [ pkgSet.${attr} ] else [];
+
   # Common packages available on all platforms
   commonPackages = [
     pkgs.nushell
@@ -14,17 +17,16 @@ let
     pkgs.coreutils
     pkgs.fd
     pkgs.ripgrep
-    pkgs.prometheus
-    pkgs.grafana
-    pkgs.loki
-    pkgs.promtail
-  ];
+  ] ++ safeGet "prometheus" pkgs
+    ++ safeGet "grafana" pkgs
+    ++ safeGet "loki" pkgs
+    ++ safeGet "promtail" pkgs;
 
   # Linux-specific packages (essential only)
-  linuxPackages = lib.optionals isLinux [
-    pkgs.alertmanager
-    pkgs.node-exporter
-  ];
+  linuxPackages = lib.optionals isLinux (
+    safeGet "alertmanager" pkgs
+    ++ safeGet "node-exporter" pkgs
+  );
 
   # Darwin-specific packages (disabled)
   darwinPackages = [];
@@ -39,26 +41,34 @@ pkgs.mkShell {
       echo ""
       echo "🔧 Monitoring Tools"
       echo "----------------"
+      ${if pkgs ? prometheus then ''
       echo "prometheus: (v${pkgs.prometheus.version})"
       echo "    Commands:"
       echo "    - prometheus                   # Start Prometheus"
       echo "    - promtool check rules         # Validate rules"
       echo ""
+      '' else ""}
+      ${if pkgs ? grafana then ''
       echo "grafana: (v${pkgs.grafana.version})"
       echo "    Commands:"
       echo "    - grafana-server               # Start Grafana"
       echo "    - grafana-cli                  # CLI tool"
       echo ""
+      '' else ""}
+      ${if pkgs ? loki then ''
       echo "loki: (v${pkgs.loki.version})"
       echo "    Commands:"
       echo "    - loki                        # Start Loki"
       echo "    - loki --config.file=loki.yml"
       echo ""
+      '' else ""}
+      ${if pkgs ? promtail then ''
       echo "promtail: (v${pkgs.promtail.version})"
       echo "    Commands:"
       echo "    - promtail                     # Start Promtail"
       echo "    - promtail --config.file=promtail.yml"
       echo ""
+      '' else ""}
       ${if isLinux then ''
       ${if pkgs ? node-exporter then ''
       echo "node-exporter: (v${pkgs.node-exporter.version})"
@@ -78,12 +88,12 @@ pkgs.mkShell {
       echo "📝 Quick Start"
       echo "------------"
       echo "1. Start core services:"
-      echo "   prometheus                      # Start Prometheus"
-      echo "   grafana-server                  # Start Grafana"
+      ${if pkgs ? prometheus then "echo \"   prometheus                      # Start Prometheus\"" else ""}
+      ${if pkgs ? grafana then "echo \"   grafana-server                  # Start Grafana\"" else ""}
       echo ""
       echo "2. Start logging stack:"
-      echo "   loki                            # Start Loki"
-      echo "   promtail                        # Start Promtail"
+      ${if pkgs ? loki then "echo \"   loki                            # Start Loki\"" else ""}
+      ${if pkgs ? promtail then "echo \"   promtail                        # Start Promtail\"" else ""}
       echo ""
       echo "For more information, see docs/."
     }
