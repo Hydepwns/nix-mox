@@ -229,7 +229,7 @@ export def validate_config [config: record] {
     }
 
     {
-        valid: ($errors | length) == 0
+        valid: (($errors | length) == 0)
         errors: $errors
     }
 }
@@ -305,12 +305,15 @@ export def create_default_config [path: string = "./nix-mox.json"] {
 export def show_config_summary [config: record] {
     print $"\n(ansi cyan_bold)Configuration Summary:(ansi reset)"
     print $"  Log Level: ($config.logging.level)"
-    print $"  Log File: ($(if $config.logging.file != null { $config.logging.file } else { "stdout" }))"
+    let logfile = if $config.logging.file != null { $config.logging.file } else { "stdout" }
+    print $"  Log File: ($logfile)"
     print $"  Platform: ($config.platform.preferred)"
     print $"  Script Timeout: ($config.scripts.timeout)s"
     print $"  Retry Attempts: ($config.scripts.retry_attempts)"
-    print $"  Security Validation: ($(if $config.security.validate_scripts { "enabled" } else { "disabled" }))"
-    print $"  Performance Monitoring: ($(if $config.performance.enable_monitoring { "enabled" } else { "disabled" }))"
+    let security_validation = if $config.security.validate_scripts { "enabled" } else { "disabled" }
+    print $"  Security Validation: ($security_validation)"
+    let performance_monitoring = if $config.performance.enable_monitoring { "enabled" } else { "disabled" }
+    print $"  Performance Monitoring: ($performance_monitoring)"
 }
 
 # Export configuration as environment variables
