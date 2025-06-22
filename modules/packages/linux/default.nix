@@ -100,4 +100,44 @@ in
     text = readScript "scripts/linux/proxmox-update.nu";
     executable = true;
   } else null;
+
+  remote-builder-setup = if isLinux pkgs.system then pkgs.symlinkJoin {
+    name = "remote-builder-setup";
+    paths = [ (pkgs.writeScriptBin "remote-builder-setup" ''
+      #!${pkgs.bash}/bin/bash
+      ${readScript "scripts/setup-remote-builder.sh"}
+    '') ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/remote-builder-setup \
+        --prefix PATH : ${pkgs.lib.makeBinPath [
+          pkgs.bash
+          pkgs.coreutils
+          pkgs.openssh
+          pkgs.curl
+          pkgs.gnugrep
+          pkgs.gnused
+        ]}
+    '';
+  } else null;
+
+  test-remote-builder = if isLinux pkgs.system then pkgs.symlinkJoin {
+    name = "test-remote-builder";
+    paths = [ (pkgs.writeScriptBin "test-remote-builder" ''
+      #!${pkgs.bash}/bin/bash
+      ${readScript "scripts/test-remote-builder.sh"}
+    '') ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/test-remote-builder \
+        --prefix PATH : ${pkgs.lib.makeBinPath [
+          pkgs.bash
+          pkgs.coreutils
+          pkgs.openssh
+          pkgs.nix
+          pkgs.gnugrep
+          pkgs.gnused
+        ]}
+    '';
+  } else null;
 }
