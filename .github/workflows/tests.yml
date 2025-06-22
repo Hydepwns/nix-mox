@@ -44,7 +44,8 @@ jobs:
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
       continue-on-error: true
 
-    - name: Run nix flake check
+    - name: Run nix flake check (Linux only)
+      if: runner.os == 'Linux'
       run: |
         # Set CI environment variable to disable NixOS configs
         export CI=true
@@ -62,6 +63,16 @@ jobs:
             nix flake check --accept-flake-config
           fi
         fi
+
+    - name: Run basic flake evaluation (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        # Set CI environment variable to disable NixOS configs
+        export CI=true
+        # On macOS, only evaluate the flake without building packages
+        # This avoids architecture mismatch errors
+        nix flake show --accept-flake-config
+        nix flake metadata --accept-flake-config
 
     - name: Find and prepare coverage report
       run: |
