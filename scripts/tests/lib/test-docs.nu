@@ -26,9 +26,10 @@
 # Test Utilities
 # -------------
 # Common test utilities are available in:
-# - test-utils.nu: Core test functions
-# - test-common.nu: Common test patterns
-# - test-fixtures.nu: Test fixtures and mocks
+# - test-utils.nu: Core test functions (includes track_test, setup_test_env, cleanup_test_env)
+# - test-coverage.nu: Coverage reporting (includes aggregate_coverage, generate_coverage_report)
+# - test-common.nu Common test patterns
+# - shared.nu: Shared test functions (assert_equal, assert_true, etc.)
 
 # Writing Tests
 # ------------

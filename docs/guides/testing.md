@@ -60,7 +60,11 @@ scripts/tests/
 ├── unit/           # Unit tests
 ├── integration/    # Integration tests
 ├── lib/           # Test utilities
-└── run-tests.nu   # Main test runner
+│   ├── test-utils.nu    # Core test utilities (includes track_test)
+│   ├── test-coverage.nu # Coverage reporting (includes aggregate_coverage)
+│   ├── test-common.nu   # Common test functions
+│   └── shared.nu        # Shared test functions
+└── run-tests.nu   # Main test runner (includes setup_test_env, cleanup_test_env)
 ```
 
 ## Test Categories
@@ -86,14 +90,14 @@ scripts/tests/
 ```nushell
 #!/usr/bin/env nu
 
+# Import test utilities (no longer need to import coverage-core.nu separately)
 use ../lib/test-utils.nu *
 use ../lib/test-coverage.nu *
-use ../lib/coverage-core.nu *
 
 def main [] {
     print "Running tests..."
     
-    # Track test results
+    # Track test results (now available from test-utils.nu)
     track_test "test_name" "unit" "passed" 0.1
     
     # Your test logic here
@@ -268,10 +272,22 @@ jobs:
 
 ### Common Issues
 
-1. **Permission Errors**: Ensure `TEST_TEMP_DIR` is writable
-2. **OS Detection**: Use `sys host | get long_os_version` for accurate detection
-3. **Coverage Reports**: Check `TEST_TEMP_DIR` for generated reports
-4. **Build Failures**: Run `make build-all` to identify package-specific issues
+1. **Import Errors**: If you see "Command not found" errors for test functions:
+   - Ensure you're importing from the correct modules
+   - `track_test` is now in `test-utils.nu` (not `coverage-core.nu`)
+   - `setup_test_env` and `cleanup_test_env` are in `run-tests.nu`
+   - `aggregate_coverage` is now in `test-coverage.nu`
+
+2. **Circular Import Issues**: If you encounter import loops:
+   - Functions have been consolidated to avoid circular dependencies
+   - `test-utils.nu` contains core test functions
+   - `test-coverage.nu` contains coverage reporting functions
+   - No longer need to import `coverage-core.nu` separately
+
+3. **Permission Errors**: Ensure `TEST_TEMP_DIR` is writable
+4. **OS Detection**: Use `sys host | get long_os_version` for accurate detection
+5. **Coverage Reports**: Check `TEST_TEMP_DIR` for generated reports
+6. **Build Failures**: Run `make build-all` to identify package-specific issues
 
 ### Debug Mode
 
@@ -290,5 +306,14 @@ If you encounter persistent issues:
 make clean-all
 make test
 ```
+
+### Test Function Locations
+
+After the recent fixes, test functions are located as follows:
+
+- **`setup_test_env`**, **`cleanup_test_env`**: `run-tests.nu`
+- **`track_test`**: `test-utils.nu`
+- **`aggregate_coverage`**, **`generate_coverage_report`**: `test-coverage.nu`
+- **`assert_equal`**, **`assert_true`**, etc.: `shared.nu`
 
 For more detailed information, see [Testing Documentation](./../scripting/TESTING.md).

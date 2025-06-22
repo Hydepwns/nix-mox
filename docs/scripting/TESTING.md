@@ -27,12 +27,11 @@ scripts/tests/
 │   ├── zfs_tests.nu
 │   └── performance_tests.nu
 ├── lib/           # Test utilities
-│   ├── test-utils.nu    # Core test utilities
-│   ├── test-coverage.nu # Coverage reporting
-│   ├── coverage-core.nu # Coverage tracking
+│   ├── test-utils.nu    # Core test utilities (includes track_test)
+│   ├── test-coverage.nu # Coverage reporting (includes aggregate_coverage)
 │   ├── shared.nu        # Shared test functions
 │   └── test-common.nu   # Common test functions
-└── run-tests.nu   # Main test runner
+└── run-tests.nu   # Main test runner (includes setup_test_env, cleanup_test_env)
 ```
 
 ## Running Tests
@@ -94,14 +93,14 @@ make ci-local
 ```nushell
 #!/usr/bin/env nu
 
+# Import test utilities (no longer need to import coverage-core.nu separately)
 use ../lib/test-utils.nu *
 use ../lib/test-coverage.nu *
-use ../lib/coverage-core.nu *
 
 def main [] {
     print "Running tests..."
     
-    # Track test results
+    # Track test results (now available from test-utils.nu)
     track_test "test_name" "unit" "passed" 0.1
     
     # Your test logic here
