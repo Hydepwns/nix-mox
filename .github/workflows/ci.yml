@@ -51,7 +51,8 @@ jobs:
         if: matrix.system == 'aarch64-linux'
         run: |
           echo "Building heavy packages for aarch64 with reduced parallelism..."
-          NIX_BUILD_CORES=1 nix build .#vzdump-backup .#zfs-snapshot --system ${{ matrix.system }} --accept-flake-config --timeout 5400
+          echo "Note: Some packages may not be available for aarch64-linux"
+          NIX_BUILD_CORES=1 nix build .#vzdump-backup .#zfs-snapshot --system ${{ matrix.system }} --accept-flake-config --timeout 5400 --keep-going
         continue-on-error: true
       - name: Build heavy packages (x86_64)
         if: matrix.system == 'x86_64-linux'
