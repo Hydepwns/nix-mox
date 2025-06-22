@@ -29,15 +29,14 @@ jobs:
           else
             echo "present=false" >> $GITHUB_OUTPUT
           fi
-      # Temporarily disabled due to signing key mismatch
-      # - name: Push to Cachix
-      #   if: steps.cachix-key-check.outputs.present == 'true'
-      #   uses: cachix/cachix-action@v15
-      #   with:
-      #     name: nix-mox
-      #     authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-      #     signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-      #   continue-on-error: true
+      - name: Push to Cachix
+        if: steps.cachix-key-check.outputs.present == 'true'
+        uses: cachix/cachix-action@v15
+        with:
+          name: nix-mox
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+        continue-on-error: true
       - name: Build lightweight packages first
         run: |
           echo "Building lightweight packages for ${{ matrix.system }}..."
@@ -81,15 +80,14 @@ jobs:
           else
             echo "present=false" >> $GITHUB_OUTPUT
           fi
-      # Temporarily disabled due to signing key mismatch
-      # - name: Push to Cachix
-      #   if: steps.cachix-key-check.outputs.present == 'true'
-      #   uses: cachix/cachix-action@v15
-      #   with:
-      #     name: nix-mox
-      #     authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-      #     signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-      #   continue-on-error: true
+      - name: Push to Cachix
+        if: steps.cachix-key-check.outputs.present == 'true'
+        uses: cachix/cachix-action@v15
+        with:
+          name: nix-mox
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+        continue-on-error: true
       - name: Run tests
         run: |
           nix flake check --accept-flake-config --impure
