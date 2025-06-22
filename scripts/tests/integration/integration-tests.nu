@@ -5,6 +5,9 @@ use ../lib/coverage-core.nu *
 def main [] {
     print "Running comprehensive integration tests for nix-mox..."
 
+    # Set required environment variable for library tests
+    $env.NU_TEST = "true"
+
     # Test CI/CD integration
     print "Testing CI/CD integration..."
     if $env.CI? == "true" {
@@ -73,7 +76,7 @@ def main [] {
     # Test platform detection integration
     print "Testing platform detection integration..."
     track_test "platform_detection_integration" "integration" "passed" 0.3
-    let platform = (sys host | get name | str downcase)
+    let platform = (sys host | get long_os_version | str downcase)
     assert_true ($platform | is-not-empty) "Platform detection integration"
 
     # Test argument parsing integration
