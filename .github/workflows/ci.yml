@@ -19,28 +19,21 @@ jobs:
         uses: actions/checkout@v4
       - name: Install Nix
         uses: cachix/install-nix-action@v31
-      - name: Setup Cachix (optional)
+      - name: Check for Cachix Key
+        id: cachix-key-check
+        shell: bash
         run: |
           if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ]; then
-            echo "Setting up Cachix..."
-            if command -v cachix &> /dev/null; then
-              cachix use nix-mox
-            else
-              echo "Cachix not available, skipping setup"
-            fi
+            echo "present=true" >> $GITHUB_OUTPUT
           else
-            echo "CACHIX_SIGNING_KEY not set, skipping Cachix setup"
+            echo "present=false" >> $GITHUB_OUTPUT
           fi
-        continue-on-error: true
-      - name: Cache Nix store
-        uses: actions/cache@v4
+      - name: Push to Cachix
+        if: steps.cachix-key-check.outputs.present == 'true'
+        uses: cachix/cachix-action@v15
         with:
-          path: |
-            /nix/store
-            ~/.cache/nix
-          key: nix-store-${{ runner.os }}-${{ matrix.nix-version }}-${{ hashFiles('**/*.nix') }}
-          restore-keys: |
-            nix-store-${{ runner.os }}-${{ matrix.nix-version }}-
+          name: nix-mox
+          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
       - name: Build lightweight packages first
         run: |
           echo "Building lightweight packages for ${{ matrix.system }}..."
@@ -73,28 +66,21 @@ jobs:
         uses: actions/checkout@v4
       - name: Install Nix
         uses: cachix/install-nix-action@v31
-      - name: Setup Cachix (optional)
+      - name: Check for Cachix Key
+        id: cachix-key-check
+        shell: bash
         run: |
           if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ]; then
-            echo "Setting up Cachix..."
-            if command -v cachix &> /dev/null; then
-              cachix use nix-mox
-            else
-              echo "Cachix not available, skipping setup"
-            fi
+            echo "present=true" >> $GITHUB_OUTPUT
           else
-            echo "CACHIX_SIGNING_KEY not set, skipping Cachix setup"
+            echo "present=false" >> $GITHUB_OUTPUT
           fi
-        continue-on-error: true
-      - name: Cache Nix store
-        uses: actions/cache@v4
+      - name: Push to Cachix
+        if: steps.cachix-key-check.outputs.present == 'true'
+        uses: cachix/cachix-action@v15
         with:
-          path: |
-            /nix/store
-            ~/.cache/nix
-          key: nix-store-${{ runner.os }}-${{ hashFiles('**/*.nix') }}
-          restore-keys: |
-            nix-store-${{ runner.os }}-
+          name: nix-mox
+          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
       - name: Run tests
         run: |
           nix flake check --accept-flake-config --impure

@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 0
       - name: Validate version format
         run: |
-          if ! [[ $(cat VERSION) =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if ! [[ $(cat version/VERSION.txt) =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Invalid version format in VERSION file"
             exit 1
           fi
@@ -46,8 +46,8 @@ jobs:
         uses: TriPSs/conventional-changelog-action@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          version-file: './VERSION'
-          output-file: 'CHANGELOG.md'
+          version-file: './version/VERSION.txt'
+          output-file: 'version/CHANGELOG.md'
           skip-version-file: true
           skip-commit: true
           release-count: 0
@@ -69,7 +69,7 @@ jobs:
       - name: Bump version and create tag
         id: bump_version
         run: |
-          current_version=$(cat VERSION)
+          current_version=$(cat version/VERSION.txt)
           # Split version into components
           IFS='.' read -r -a version_parts <<< "$current_version"
           major=${version_parts[0]}
@@ -94,24 +94,24 @@ jobs:
 
           new_version="$major.$minor.$patch"
           echo "New version: $new_version"
-          echo "$new_version" > VERSION
-          echo "new_version=$new_version" >> $GITHUB_ENV
-      
+          echo "$new_version" > version/VERSION.txt
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+
       - name: Commit and push changes
         run: |
-          git add VERSION CHANGELOG.md
-          git commit -m "chore: release v${{ env.new_version }}"
-          git tag "v${{ env.new_version }}"
+          git add version/VERSION.txt version/CHANGELOG.md
+          git commit -m "chore: release v${{ steps.bump_version.outputs.new_version }}"
+          git tag "v${{ steps.bump_version.outputs.new_version }}"
           git push origin main --follow-tags
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            CHANGELOG.md
-            VERSION
-          tag_name: v${{ env.new_version }}
-          name: Release v${{ env.new_version }}
-          body_path: CHANGELOG.md
+            version/CHANGELOG.md
+            version/VERSION.txt
+          tag_name: v${{ steps.bump_version.outputs.new_version }}
+          name: Release v${{ steps.bump_version.outputs.new_version }}
+          body_path: version/CHANGELOG.md
           draft: false
-          prerelease: ${{ github.event.inputs.pre_release }} 
+          prerelease: ${{ github.event.inputs.pre_release }}
