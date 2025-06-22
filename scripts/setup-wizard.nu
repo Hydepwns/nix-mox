@@ -3,6 +3,8 @@
 # nix-mox Configuration Wizard
 # Interactive setup script for nix-mox configuration
 
+use lib/common.nu *
+
 def show_banner [] {
     print $"\n(ansi green_bold)╔══════════════════════════════════════════════════════════════╗"
     print $"║                    (ansi yellow_bold)nix-mox Configuration Wizard(ansi green_bold)                    ║"

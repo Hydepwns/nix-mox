@@ -3,28 +3,14 @@
 # nix-mox Health Check Script
 # Comprehensive system health validation for nix-mox configurations
 
+use lib/common.nu *
+
 def show_banner [] {
     print $"\n(ansi green_bold)╔══════════════════════════════════════════════════════════════╗"
     print $"║                    (ansi yellow_bold)nix-mox Health Check(ansi green_bold)                    ║"
     print $"║                                                                    ║"
     print $"║  Checking system health and configuration validity...             ║"
     print $"╚══════════════════════════════════════════════════════════════════╝(ansi reset)\n"
-}
-
-def log_info [message: string] {
-    print $"(ansi cyan)[INFO](ansi reset) ($message)"
-}
-
-def log_success [message: string] {
-    print $"(ansi green)[✓](ansi reset) ($message)"
-}
-
-def log_warning [message: string] {
-    print $"(ansi yellow)[⚠](ansi reset) ($message)"
-}
-
-def log_error [message: string] {
-    print $"(ansi red)[✗](ansi reset) ($message)"
 }
 
 def check_command [cmd: string] {

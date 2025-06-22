@@ -3,21 +3,7 @@
 # nix-mox SBOM Generator
 # Generates Software Bill of Materials for compliance and security auditing
 
-def log_info [message: string] {
-    print $"📋 ($message)"
-}
-
-def log_success [message: string] {
-    print $"✅ ($message)"
-}
-
-def log_warning [message: string] {
-    print $"⚠️  ($message)"
-}
-
-def log_error [message: string] {
-    print $"❌ ($message)"
-}
+use lib/common.nu *
 
 # List of supported systems
 let supported_systems = ["x86_64-linux", "aarch64-linux"]
@@ -81,7 +67,7 @@ def get_package_info [system: string, package_name: string] {
 def generate_spdx_sbom [packages: list] {
     let timestamp = (date now | format date "%Y-%m-%dT%H:%M:%SZ")
     let sbom_id = $"SPDXRef-DOCUMENT-($timestamp | str replace ":" "-" | str replace "T" "-" | str replace "Z" "")"
-    
+
     let spdx_header = {
         spdxVersion: "SPDX-2.3"
         dataLicense: "CC0-1.0"
@@ -92,7 +78,7 @@ def generate_spdx_sbom [packages: list] {
         created: $timestamp
         documentComment: "Generated automatically by nix-mox SBOM generator"
     }
-    
+
     let package_elements = ($packages | each { |pkg|
         let pkg_id = $"SPDXRef-Package-($pkg.name | str replace "-" "_")"
         {
@@ -116,7 +102,7 @@ def generate_spdx_sbom [packages: list] {
             packageOriginator: "Organization: Hydepwns"
         }
     })
-    
+
     {
         header: $spdx_header
         packages: $package_elements
@@ -126,7 +112,7 @@ def generate_spdx_sbom [packages: list] {
 def generate_cyclonedx_sbom [packages: list] {
     let timestamp = (date now | format date "%Y-%m-%dT%H:%M:%SZ")
     let bom_ref = $"nix-mox-bom-($timestamp | str replace ":" "-" | str replace "T" "-" | str replace "Z" "")"
-    
+
     let metadata = {
         timestamp: $timestamp
         tools: [{
@@ -142,7 +128,7 @@ def generate_cyclonedx_sbom [packages: list] {
             bomRef: $bom_ref
         }
     }
-    
+
     let components = ($packages | each { |pkg|
         {
             type: "library"
@@ -171,7 +157,7 @@ def generate_cyclonedx_sbom [packages: list] {
             ]
         }
     })
-    
+
     {
         bomFormat: "CycloneDX"
         specVersion: "1.5"
@@ -186,36 +172,36 @@ def generate_csv_report [packages: list] {
     let rows = ($packages | each { |pkg|
         $"($pkg.name),($pkg.version),($pkg.description),($pkg.license),($pkg.size),($pkg.dependencies | into string),($pkg.build_inputs | into string),($pkg.source)"
     })
-    
+
     $headers | append $rows | str join "\n"
 }
 
 def main [] {
     log_info "Generating Software Bill of Materials for nix-mox..."
-    
+
     log_info "Collecting package information..."
     let packages = ($supported_systems | each { |system|
         $available_packages | each { |pkg| get_package_info $system $pkg }
     } | flatten)
-    
+
     mkdir sbom
-    
+
     log_info "Generating SPDX format SBOM..."
     let spdx_sbom = (generate_spdx_sbom $packages)
     $spdx_sbom | to json --indent 2 | save --force sbom/nix-mox.spdx.json
-    
+
     log_info "Generating CycloneDX format SBOM..."
     let cyclonedx_sbom = (generate_cyclonedx_sbom $packages)
     $cyclonedx_sbom | to json --indent 2 | save --force sbom/nix-mox.cyclonedx.json
-    
+
     log_info "Generating CSV report..."
     let csv_report = (generate_csv_report $packages)
     $csv_report | save --force sbom/nix-mox-packages.csv
-    
+
     let total_packages = ($packages | length)
     let total_size = ($packages | get raw_size | math sum | into filesize)
     let total_dependencies = ($packages | get dependencies | math sum)
-    
+
     let summary = {
         generated_at: (date now | format date "%Y-%m-%d %H:%M:%S")
         total_packages: $total_packages
@@ -228,9 +214,9 @@ def main [] {
             "sbom/nix-mox-packages.csv"
         ]
     }
-    
+
     $summary | to json --indent 2 | save --force sbom/sbom-summary.json
-    
+
     log_success "SBOM generation completed!"
     log_info $"Generated ($total_packages) package-system pairs with ($total_dependencies) total dependencies"
     log_info $"Total size: ($total_size)"
@@ -248,4 +234,4 @@ if ($env | get -i SCRIPT_NAME | default "" | str contains "generate-sbom.nu") {
 
 export def run [] {
     main
-} 
+}
