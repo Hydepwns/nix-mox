@@ -30,7 +30,8 @@ cd nix-mox
 
 ## 🆕 Recent Improvements
 
-### 🚀 **CI/CD Enhancements (Latest)**
+<details>
+<summary><b>🚀 CI/CD Enhancements (Latest)</b></summary>
 
 - **✅ Cachix Authentication:** Fixed private cache access with secure auth tokens
 - **✅ Build Resilience:** Improved error handling and graceful failure recovery
@@ -38,15 +39,21 @@ cd nix-mox
 - **✅ Matrix Stability:** All platforms and Nix versions building successfully
 - **✅ Test Reliability:** Comprehensive test suite with 100% success rate
 
-### 📦 **Package Reliability**
+</details>
+
+<details>
+<summary><b>📦 Package Reliability</b></summary>
 
 - **All Packages Building:** proxmox-update, vzdump-backup, zfs-snapshot, nixos-flake-update
 - **Cross-Platform Support:** x86_64-linux, aarch64-linux, macOS
 - **Nix Version Compatibility:** 2.19.2 and 2.20.1 fully supported
 
+</details>
+
 ## 🚀 Quick Start
 
-### Interactive Setup (Recommended)
+<details>
+<summary><b>🎯 Interactive Setup (Recommended)</b></summary>
 
 ```bash
 # Clone and run the wizard
@@ -57,7 +64,10 @@ cd nix-mox
 
 The wizard will guide you through platform detection, use case selection, and automatic configuration generation.
 
-### Manual Setup
+</details>
+
+<details>
+<summary><b>🔧 Manual Setup</b></summary>
 
 ```bash
 # Use safe configuration template
@@ -66,7 +76,10 @@ sudo nixos-generate-config --show-hardware-config > config/hardware/hardware-con
 sudo nixos-rebuild switch --flake .#nixos
 ```
 
-### Add to Existing Flake
+</details>
+
+<details>
+<summary><b>📦 Add to Existing Flake</b></summary>
 
 ```nix
 inputs.nix-mox = {
@@ -75,13 +88,19 @@ inputs.nix-mox = {
 };
 ```
 
+</details>
+
 ## 🎯 Core Features
 
-### 🧩 Fragment System
+<details>
+<summary><b>🧩 Fragment System</b></summary>
 
 Compose configurations from reusable fragments. Import complete base configurations or mix individual components.
 
-### 🛠️ Development Shells
+</details>
+
+<details>
+<summary><b>🛠️ Development Shells</b></summary>
 
 ```bash
 nix develop                    # Default development environment
@@ -90,7 +109,10 @@ nix develop .#gaming           # Gaming tools (Linux x86_64)
 nix develop .#monitoring       # Monitoring and observability
 ```
 
-### 🎮 Gaming Support
+</details>
+
+<details>
+<summary><b>🎮 Gaming Support</b></summary>
 
 Full gaming environment with Wine, DXVK, and performance optimization:
 
@@ -98,15 +120,24 @@ Full gaming environment with Wine, DXVK, and performance optimization:
 - **Windows Compatibility:** Wine & DXVK
 - **Performance Tools:** MangoHud, GameMode, Vulkan Tools
 
-### 🔒 Security Features
+</details>
+
+<details>
+<summary><b>🔒 Security Features</b></summary>
 
 Enterprise-grade security with fail2ban, UFW firewall, SSL/TLS security, AppArmor, and comprehensive audit rules.
 
-### 💬 Messaging & Communication
+</details>
+
+<details>
+<summary><b>💬 Messaging & Communication</b></summary>
 
 Signal Desktop, Telegram, Discord, Slack, WhatsApp for Linux, video calling apps, and more.
 
-### 📊 Size Analysis & Performance
+</details>
+
+<details>
+<summary><b>📊 Size Analysis & Performance</b></summary>
 
 Interactive dashboard for analyzing package sizes and performance tradeoffs:
 
@@ -115,16 +146,22 @@ make size-dashboard    # Generate interactive dashboard
 make sbom             # Generate Software Bill of Materials
 ```
 
+</details>
+
 ## 🛡️ Quality Assurance
 
-### ✅ **Comprehensive Testing**
+<details>
+<summary><b>✅ Comprehensive Testing</b></summary>
 
 - **Unit Tests:** Core functionality validation
 - **Integration Tests:** End-to-end workflow testing
 - **Performance Tests:** Build time and resource optimization
 - **Cross-Platform Testing:** Linux (x86_64, aarch64) and macOS support
 
-### 🔄 **CI/CD Pipeline**
+</details>
+
+<details>
+<summary><b>🔄 CI/CD Pipeline</b></summary>
 
 - **Automated Builds:** Triggered on every push and PR
 - **Matrix Testing:** Multiple platforms and Nix versions
@@ -132,16 +169,22 @@ make sbom             # Generate Software Bill of Materials
 - **Error Resilience:** Graceful handling of build failures
 - **Artifact Management:** Automated package distribution
 
-### 📈 **Reliability Metrics**
+</details>
+
+<details>
+<summary><b>📈 Reliability Metrics</b></summary>
 
 - **Build Success Rate:** 100% on main branch
 - **Test Coverage:** Comprehensive validation suite
 - **Platform Support:** Full compatibility matrix
 - **Performance:** Optimized build times with caching
 
+</details>
+
 ## 🎯 Management Tools
 
-### Main Entrypoint
+<details>
+<summary><b>🚀 Main Entrypoint</b></summary>
 
 ```bash
 ./scripts/nix-mox --script install --dry-run
@@ -149,18 +192,27 @@ make sbom             # Generate Software Bill of Materials
 ./scripts/nix-mox --script health-check
 ```
 
-### Configuration Wizard
+</details>
+
+<details>
+<summary><b>⚙️ Configuration Wizard</b></summary>
 
 Interactive setup with platform detection, use case selection, and automatic file generation.
 
-### Health Check System
+</details>
+
+<details>
+<summary><b>🔍 Health Check System</b></summary>
 
 ```bash
 ./scripts/health-check.nu                    # Full system check
 ./scripts/health-check.nu --check nix-store  # Specific components
 ```
 
-### Makefile Targets
+</details>
+
+<details>
+<summary><b>🔨 Makefile Targets</b></summary>
 
 ```bash
 make setup-wizard    # Run interactive setup
@@ -169,7 +221,10 @@ make dev-shell       # Enter development shell
 make docs            # Generate documentation
 ```
 
-## 📁 Project Structure
+</details>
+
+<details>
+<summary><b>📁 Project Structure</b></summary>
 
 ```bash
 nix-mox/
@@ -188,13 +243,18 @@ nix-mox/
 └── docs/                     # Detailed documentation
 ```
 
-## 📚 Documentation
+</details>
+
+<details>
+<summary><b>📚 Documentation</b></summary>
 
 - **[📖 Usage Guide](docs/USAGE.md)** - Comprehensive usage instructions and examples
 - **[🔧 Guides](docs/guides/)** - Feature-specific guides (gaming, drivers, proxmox, etc.)
 - **[📝 Examples](docs/examples/)** - Step-by-step examples for common use cases
 - **[🏗️ Architecture](docs/architecture/)** - Project architecture and design decisions
 - **[📋 API Reference](docs/api/)** - Technical reference documentation
+
+</details>
 
 <details>
 <summary><b>📋 Requirements</b></summary>
