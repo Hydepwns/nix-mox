@@ -1,15 +1,6 @@
-# Core coverage logic for nix-mox
-# This file provides file-based coverage tracking
 
-# --- Coverage Tracking ---
 export def track_test [name: string, category: string, status: string, duration: float] {
-    let coverage_dir = $env.TEST_TEMP_DIR
-    
-    # Ensure coverage directory exists
-    if not ($coverage_dir | path exists) {
-        mkdir $coverage_dir
-    }
-    
+
     let test_result = {
         name: $name
         category: $category
@@ -18,21 +9,12 @@ export def track_test [name: string, category: string, status: string, duration:
         timestamp: (date now | into int)
     }
 
-    # Write individual test result to a file
-    let filename = $"($coverage_dir)/test_result_($name | str replace '.nu' '' | str replace '-' '_').json"
+    let filename = $"($env.TEST_TEMP_DIR)/test_result_($name | str replace '.nu' '' | str replace '-' '_').json"
     $test_result | to json | save --force $filename
-    print $"DEBUG: Created coverage file: ($filename)"
 }
 
-# --- Coverage Aggregation ---
 export def aggregate_coverage [] {
-    let coverage_dir = $env.TEST_TEMP_DIR
-    print $"DEBUG: aggregate_coverage called with coverage_dir = ($coverage_dir)"
-
-    let all_files = (ls $coverage_dir | get name)
-    print $"DEBUG: All files in ($coverage_dir): ($all_files)"
-
-    let result_files = (ls $coverage_dir | where { |it| ($it.name | path basename) | str starts-with 'test_result_' } | get name)
+    let result_files = (ls $env.TEST_TEMP_DIR | where { |it| ($it.name | path basename) | str starts-with 'test_result_' } | get name)
     mut test_results = ([])
     for file in $result_files {
         let file_content = (open --raw $file)
