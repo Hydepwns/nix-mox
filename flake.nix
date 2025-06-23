@@ -127,11 +127,13 @@
       createChecks = system: pkgs:
         let
           src = ./.;
+          # Use system Nushell if available, otherwise use nixpkgs version
+          nushell = if builtins.pathExists "/usr/local/bin/nu" || builtins.pathExists "/opt/homebrew/bin/nu" then null else pkgs.nushell;
           baseChecks = {
             # Unit tests only
             unit = pkgs.runCommand "nix-mox-unit-tests"
               {
-                buildInputs = [ pkgs.nushell ];
+                buildInputs = [ nushell ];
               } ''
               cp -r ${src} $TMPDIR/src
               cd $TMPDIR/src
@@ -143,7 +145,7 @@
             # Integration tests only
             integration = pkgs.runCommand "nix-mox-integration-tests"
               {
-                buildInputs = [ pkgs.nushell ];
+                buildInputs = [ nushell ];
               } ''
               cp -r ${src} $TMPDIR/src
               cd $TMPDIR/src
@@ -155,7 +157,7 @@
             # Full test suite
             test-suite = pkgs.runCommand "nix-mox-tests"
               {
-                buildInputs = [ pkgs.nushell ];
+                buildInputs = [ nushell ];
               } ''
               cp -r ${src} $TMPDIR/src
               cd $TMPDIR/src
@@ -171,7 +173,7 @@
             # Linux-specific tests
             linux-specific = pkgs.runCommand "nix-mox-linux-tests"
               {
-                buildInputs = [ pkgs.nushell ];
+                buildInputs = [ nushell ];
               } ''
               cp -r ${src} $TMPDIR/src
               cd $TMPDIR/src
@@ -186,7 +188,7 @@
             # macOS-specific tests
             macos-specific = pkgs.runCommand "nix-mox-macos-tests"
               {
-                buildInputs = [ pkgs.nushell ];
+                buildInputs = [ nushell ];
               } ''
               cp -r ${src} $TMPDIR/src
               cd $TMPDIR/src
