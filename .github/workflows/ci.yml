@@ -147,7 +147,7 @@ jobs:
         shell: nu {0}
         run: |
           # Find the coverage file in the temporary directory
-          let coverage_file = (find /tmp -name "coverage.json" -path "*/nix-mox-tests/*" | first)
+          let coverage_file = (ls /tmp/nix-mox-tests/coverage.json | get name | first)
           if ($coverage_file | is-empty) {
             print "No coverage file found"
           } else {

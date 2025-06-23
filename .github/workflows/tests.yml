@@ -67,7 +67,7 @@ jobs:
       shell: nu {0}
       run: |
         # Find the coverage file in the temporary directory
-        let coverage_file = (find /tmp -name "coverage.json" -path "*/nix-mox-tests/*" | first)
+        let coverage_file = (ls /tmp/nix-mox-tests/coverage.json | get name | first)
         if ($coverage_file | is-empty) {
           print "No coverage file found - tests may not have generated coverage data"
           # Create a minimal coverage report to prevent failure
@@ -143,7 +143,7 @@ jobs:
       shell: nu {0}
       run: |
         # Find the coverage file and check it
-        let coverage_file = (find /tmp -name "coverage.json" -path "*/nix-mox-tests/*" | first)
+        let coverage_file = (ls /tmp/nix-mox-tests/coverage.json | get name | first)
         if ($coverage_file | is-empty) {
           print "No coverage file found, skipping coverage check"
           print "This is normal if tests don't generate coverage data"
