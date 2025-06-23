@@ -1,6 +1,7 @@
 # Build artifacts
 result/
 result-*/
+result
 coverage-tmp/
 tmp/
 *.log
@@ -9,6 +10,9 @@ tmp/
 coverage.*
 coverage.yaml
 coverage.toml
+
+# Size analysis reports
+nix-mox-size-analysis-*.json
 
 # IDE and editor files
 .vscode/
