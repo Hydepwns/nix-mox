@@ -81,7 +81,7 @@
           # Helper function to filter out null packages and ensure we have at least one package
           filterNullPackages = attrs:
             let
-              nullPackages = builtins.filterAttrs (name: value: value == null) attrs;
+              nullPackages = pkgs.lib.filterAttrs (name: value: value == null) attrs;
               nullNames = builtins.attrNames nullPackages;
               filtered = builtins.removeAttrs attrs nullNames;
             in
