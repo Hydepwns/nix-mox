@@ -56,7 +56,8 @@ runs:
           print $"Using script path: ($script_path)"
           print $"Script exists: (ls $script_path | length | $in > 0)"
 
-          nu -c $"source ($script_path); run $verbose_flag"
+          let verbose_args = if $env.VERBOSE == "true" { "--verbose" } else { "" }
+          nu -c $"source ($script_path); run ($verbose_args)"
           print "✅ All test suites completed successfully"
         } catch { |err|
           print $"❌ Test execution failed: ($err)"
