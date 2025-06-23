@@ -76,7 +76,7 @@ def main [] {
 
     print "Testing argparse module..."
     try {
-        nu scripts/tests/unit/argparse-tests.nu
+        source "argparse-tests.nu"
         track_test "argparse_module_tests" "unit" "passed" 0.5
     } catch {
         track_test "argparse_module_tests" "unit" "failed" 0.5
@@ -85,7 +85,7 @@ def main [] {
 
     print "Testing platform module..."
     try {
-        nu scripts/tests/unit/platform-tests.nu
+        source "platform-tests.nu"
         track_test "platform_module_tests" "unit" "passed" 0.5
     } catch {
         track_test "platform_module_tests" "unit" "failed" 0.5
@@ -94,7 +94,7 @@ def main [] {
 
     print "Testing exec module..."
     try {
-        nu scripts/tests/unit/exec-tests.nu
+        source "exec-tests.nu"
         track_test "exec_module_tests" "unit" "passed" 0.5
     } catch {
         track_test "exec_module_tests" "unit" "failed" 0.5
@@ -103,7 +103,7 @@ def main [] {
 
     print "Testing proxmox script..."
     try {
-        nu scripts/tests/unit/proxmox-tests.nu
+        source "proxmox-tests.nu"
         track_test "proxmox_script_tests" "unit" "passed" 0.5
     } catch {
         track_test "proxmox_script_tests" "unit" "failed" 0.5
