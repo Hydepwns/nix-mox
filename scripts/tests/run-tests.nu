@@ -5,13 +5,11 @@
 export-env {
     use ./lib/test-utils.nu *
     use ./lib/test-coverage.nu *
-    use ./lib/coverage-core.nu *
     use ./lib/test-common.nu *
 }
 
 # Import functions for direct use in this script
 use ./lib/test-coverage.nu *
-use ./lib/coverage-core.nu *
 
 # --- Test Configuration ---
 def setup_test_config [] {
@@ -47,6 +45,13 @@ def ensure_test_env [] {
 
 # --- Test Environment Management ---
 def setup_test_env [] {
+    # Ensure TEST_TEMP_DIR is set correctly for CI
+    if ($env.CI? == "true") {
+        $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
+    } else if not ($env | get -i TEST_TEMP_DIR | is-not-empty) {
+        $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
+    }
+
     print $"($env.GREEN)Setting up test environment...($env.NC)"
     if not ($env.TEST_TEMP_DIR | path exists) {
         mkdir $env.TEST_TEMP_DIR
@@ -92,25 +97,29 @@ def run_test_suite [suite_name: string, test_func: closure, config: record] {
 
 def run_unit_tests [] {
     print "Running unit tests..."
-    nu scripts/tests/unit/unit-tests.nu
+    # Run unit tests in the same process to ensure test result files are available
+    source "unit/unit-tests.nu"
     true
 }
 
 def run_integration_tests [] {
     print "Running integration tests..."
-    nu scripts/tests/integration/integration-tests.nu
+    # Run integration tests in the same process to ensure test result files are available
+    source "integration/integration-tests.nu"
     true
 }
 
 def run_storage_tests [] {
     print "Running storage tests..."
-    nu scripts/tests/storage/storage-tests.nu
+    # Run storage tests in the same process to ensure test result files are available
+    source "storage/storage-tests.nu"
     true
 }
 
 def run_performance_tests [] {
     print "Running performance tests..."
-    nu scripts/tests/performance/performance-tests.nu
+    # Run performance tests in the same process to ensure test result files are available
+    source "performance/performance-tests.nu"
     true
 }
 
