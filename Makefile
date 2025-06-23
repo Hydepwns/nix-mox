@@ -16,7 +16,8 @@ PACKAGES = proxmox-update vzdump-backup zfs-snapshot nixos-flake-update install 
         dev test-shell gaming-shell macos-shell services-shell monitoring-shell zfs-shell \
         ci-test ci-local update lock clean-all packages shells analyze-sizes \
         setup-wizard health-check security-check sbom cache-optimize size-dashboard \
-        remote-builder-setup test-remote-builder
+        remote-builder-setup test-remote-builder performance-analyze performance-optimize performance-report perf \
+        code-quality code-syntax code-security quality
 
 # Default target - show help
 help:
@@ -57,6 +58,14 @@ help:
 	@echo "  analyze-sizes - Analyze size of packages, devshells, and templates"
 	@echo "  size-dashboard - Generate and serve web-based size analysis dashboard"
 	@echo "  cache-optimize - Run advanced caching strategy with optimization"
+	@echo "  performance-analyze - Comprehensive performance analysis"
+	@echo "  performance-optimize - Apply performance optimizations"
+	@echo "  performance-report - Generate performance report"
+	@echo "  perf - Quick performance check"
+	@echo "  code-quality - Comprehensive code quality analysis"
+	@echo "  code-syntax - Check syntax of all files"
+	@echo "  code-security - Check for security issues"
+	@echo "  quality - Quick code quality check"
 	@echo ""
 	@echo "🔒 Compliance & Security:"
 	@echo "  security-check - Validate security module configuration"
@@ -302,3 +311,35 @@ shells:
 	@echo "  - gaming (gaming tools - Linux x86_64 only)"
 	@echo "  - zfs (ZFS management tools - Linux only)"
 	@echo "  - macos (macOS development - macOS only)"
+
+# Performance optimization targets
+performance-analyze: check-nushell
+	@echo "📊 Analyzing performance..."
+	$(NUSHELL) -c "source scripts/performance-optimize.nu; analyze"
+
+performance-optimize: check-nushell
+	@echo "⚡ Optimizing performance..."
+	$(NUSHELL) -c "source scripts/performance-optimize.nu; optimize"
+
+performance-report: check-nushell
+	@echo "📋 Generating performance report..."
+	$(NUSHELL) -c "source scripts/performance-optimize.nu; report"
+
+# Quick performance check
+perf: performance-report
+
+# Code quality targets
+code-quality: check-nushell
+	@echo "🔍 Analyzing code quality..."
+	$(NUSHELL) -c "source scripts/code-quality.nu; analyze"
+
+code-syntax: check-nushell
+	@echo "✅ Checking syntax..."
+	$(NUSHELL) -c "source scripts/code-quality.nu; check-syntax"
+
+code-security: check-nushell
+	@echo "🔒 Checking security..."
+	$(NUSHELL) -c "source scripts/code-quality.nu; check-security"
+
+# Quick code quality check
+quality: code-quality

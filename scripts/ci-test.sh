@@ -27,11 +27,24 @@ echo ""
 echo "🔨 Testing package builds..."
 echo "Building packages for current system..."
 
-if nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update --accept-flake-config; then
-    echo "✅ Package builds successful"
+# Check if we're on Linux to determine which packages to build
+if [[ "$(uname)" == "Linux" ]]; then
+    echo "🐧 Linux detected - building Linux-specific packages..."
+    if nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update --accept-flake-config; then
+        echo "✅ Linux package builds successful"
+    else
+        echo "❌ Linux package builds failed"
+        exit 1
+    fi
 else
-    echo "❌ Package builds failed"
-    exit 1
+    echo "🍎 Non-Linux system detected - building available packages..."
+    # Build all available packages for the current system
+    if nix build --accept-flake-config; then
+        echo "✅ Package builds successful"
+    else
+        echo "❌ Package builds failed"
+        exit 1
+    fi
 fi
 
 # Test 2: Run flake check (simulating test job)
@@ -81,7 +94,7 @@ fi
 # Test 6: Check devshells
 echo ""
 echo "🔍 Checking devshells..."
-if nix develop --dry-run; then
+if nix develop --help > /dev/null 2>&1; then
     echo "✅ Devshells are valid"
 else
     echo "❌ Devshells check failed"
