@@ -23,6 +23,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Install Nix
         uses: cachix/install-nix-action@v31
+      - name: Setup Nushell
+        uses: hustcer/setup-nu@v3
+        with:
+          version: "0.90"
+          check-latest: false
       - name: Check for Cachix Key
         id: cachix-key-check
         shell: bash
@@ -30,13 +35,6 @@ jobs:
           # Temporarily disable Cachix until credentials are properly configured
           echo "present=false" >> $GITHUB_OUTPUT
           echo "Cachix temporarily disabled - skipping Cachix operations"
-          # if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ] && [ -n "${{ secrets.CACHIX_AUTH_TOKEN }}" ]; then
-          #   echo "present=true" >> $GITHUB_OUTPUT
-          #   echo "Cachix credentials found"
-          # else
-          #   echo "present=false" >> $GITHUB_OUTPUT
-          #   echo "Cachix credentials missing - skipping Cachix operations"
-          # fi
       - name: Push to Cachix
         if: steps.cachix-key-check.outputs.present == 'true'
         uses: cachix/cachix-action@v16
@@ -46,14 +44,16 @@ jobs:
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
         continue-on-error: true
       - name: Build lightweight packages first
+        shell: nu {0}
         run: |
-          echo "Building lightweight packages for ${{ matrix.system }}..."
-          nix build .#proxmox-update .#nixos-flake-update --system ${{ matrix.system }} --accept-flake-config --timeout 1800
+          print $"Building lightweight packages for ($env.matrix.system)..."
+          nix build .#proxmox-update .#nixos-flake-update --system $env.matrix.system --accept-flake-config --timeout 1800
         continue-on-error: true
       - name: Build additional packages
+        shell: nu {0}
         run: |
-          echo "Building additional packages for ${{ matrix.system }}..."
-          nix build .#install .#uninstall .#remote-builder-setup .#test-remote-builder --system ${{ matrix.system }} --accept-flake-config --timeout 1800
+          print $"Building additional packages for ($env.matrix.system)..."
+          nix build .#install .#uninstall .#remote-builder-setup .#test-remote-builder --system $env.matrix.system --accept-flake-config --timeout 1800
         continue-on-error: true
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -65,7 +65,7 @@ jobs:
 
   build_macos_packages:
     runs-on: macos-latest
-    timeout-minutes: 60
+    timeout-minutes: 45  # Reduced timeout since we're not building Nushell from source
     strategy:
       matrix:
         system: [x86_64-darwin, aarch64-darwin]
@@ -76,6 +76,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Install Nix
         uses: cachix/install-nix-action@v31
+      - name: Setup Nushell
+        uses: hustcer/setup-nu@v3
+        with:
+          version: "0.90"
+          check-latest: false
       - name: Check for Cachix Key
         id: cachix-key-check
         shell: bash
@@ -92,14 +97,16 @@ jobs:
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
         continue-on-error: true
       - name: Build macOS packages
+        shell: nu {0}
         run: |
-          echo "Building macOS packages for ${{ matrix.system }}..."
-          nix build .#homebrew-setup .#macos-maintenance .#xcode-setup .#security-audit --system ${{ matrix.system }} --accept-flake-config --timeout 1800
+          print $"Building macOS packages for ($env.matrix.system)..."
+          nix build .#homebrew-setup .#macos-maintenance .#xcode-setup .#security-audit --system $env.matrix.system --accept-flake-config --timeout 1800
         continue-on-error: true
       - name: Build common packages
+        shell: nu {0}
         run: |
-          echo "Building common packages for ${{ matrix.system }}..."
-          nix build .#install .#uninstall --system ${{ matrix.system }} --accept-flake-config --timeout 1800
+          print $"Building common packages for ($env.matrix.system)..."
+          nix build .#install .#uninstall --system $env.matrix.system --accept-flake-config --timeout 1800
         continue-on-error: true
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -118,6 +125,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Install Nix
         uses: cachix/install-nix-action@v31
+      - name: Setup Nushell
+        uses: hustcer/setup-nu@v3
+        with:
+          version: "0.90"
+          check-latest: false
       - name: Check for Cachix Key
         id: cachix-key-check
         shell: bash
@@ -125,13 +137,6 @@ jobs:
           # Temporarily disable Cachix until credentials are properly configured
           echo "present=false" >> $GITHUB_OUTPUT
           echo "Cachix temporarily disabled - skipping Cachix operations"
-          # if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ] && [ -n "${{ secrets.CACHIX_AUTH_TOKEN }}" ]; then
-          #   echo "present=true" >> $GITHUB_OUTPUT
-          #   echo "Cachix credentials found"
-          # else
-          #   echo "present=false" >> $GITHUB_OUTPUT
-          #   echo "Cachix credentials missing - skipping Cachix operations"
-          # fi
       - name: Push to Cachix
         if: steps.cachix-key-check.outputs.present == 'true'
         uses: cachix/cachix-action@v16
@@ -141,56 +146,60 @@ jobs:
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
         continue-on-error: true
       - name: Run tests
+        shell: nu {0}
         run: |
           # Set CI environment variable to disable NixOS configs
-          export CI=true
+          $env.CI = "true"
           # Run flake check with timeout and accept flake config
-          timeout 300 nix flake check --accept-flake-config --impure
+          if (which timeout | is-empty) {
+            nix flake check --accept-flake-config --impure
+          } else {
+            timeout 300 nix flake check --accept-flake-config --impure
+          }
         continue-on-error: true
 
       - name: Find and prepare coverage report
         if: always()
+        shell: nu {0}
         run: |
           # Find the coverage file in the temporary directory
-          COVERAGE_FILE=$(find /tmp -name "coverage.json" -path "*/nix-mox-tests/*" 2>/dev/null | head -1)
-          if [ -n "$COVERAGE_FILE" ]; then
-            echo "Found coverage file at: $COVERAGE_FILE"
+          let coverage_file = (find /tmp -name "coverage.json" -path "*/nix-mox-tests/*" | first)
+          if ($coverage_file | is-empty) {
+            print "No coverage file found"
+          } else {
+            print $"Found coverage file at: ($coverage_file)"
             # Copy to a known location for upload
             mkdir -p coverage-tmp/nix-mox-tests
-            cp "$COVERAGE_FILE" coverage-tmp/nix-mox-tests/coverage.json
-            echo "Coverage file copied to coverage-tmp/nix-mox-tests/coverage.json"
+            cp $coverage_file coverage-tmp/nix-mox-tests/coverage.json
+            print "Coverage file copied to coverage-tmp/nix-mox-tests/coverage.json"
 
             # Convert to codecov format
-            nix develop --command nu -c "
-              let coverage = (open 'coverage-tmp/nix-mox-tests/coverage.json' | from json)
-              let pass_rate = ($coverage | get summary.pass_rate)
-              let total_tests = ($coverage | get summary.total_tests)
-              let passed_tests = ($coverage | get summary.passed_tests)
+            let coverage = (open 'coverage-tmp/nix-mox-tests/coverage.json' | from json)
+            let pass_rate = ($coverage | get summary.pass_rate)
+            let total_tests = ($coverage | get summary.total_tests)
+            let passed_tests = ($coverage | get summary.passed_tests)
 
-              # Create codecov-compatible format
-              let codecov_report = {
-                coverage: {
-                  total: $total_tests
-                  passed: $passed_tests
-                  rate: $pass_rate
-                  timestamp: (date now | into int)
-                }
-                results: ($coverage | get results | each { |test|
-                  {
-                    name: $test.name
-                    status: $test.status
-                    duration: $test.duration
-                    category: $test.category
-                  }
-                })
+            # Create codecov-compatible format
+            let codecov_report = {
+              coverage: {
+                total: $total_tests
+                passed: $passed_tests
+                rate: $pass_rate
+                timestamp: (date now | into int)
               }
+              results: ($coverage | get results | each { |test|
+                {
+                  name: $test.name
+                  status: $test.status
+                  duration: $test.duration
+                  category: $test.category
+                }
+              })
+            }
 
-              $codecov_report | to json | save --force 'coverage-tmp/codecov.json'
-            "
-            echo "Codecov report generated at coverage-tmp/codecov.json"
-          else
-            echo "No coverage file found"
-          fi
+            $codecov_report | to json | save --force 'coverage-tmp/codecov.json'
+            print "Codecov report generated at coverage-tmp/codecov.json"
+          }
 
       - name: Upload test results to Codecov
         if: always()
@@ -198,10 +207,6 @@ jobs:
         with:
           files: coverage-tmp/codecov.json
           flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-          verbose: true
-          token: ${{ secrets.CODECOV_TOKEN }}
 
   coverage:
     needs: [test]
