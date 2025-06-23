@@ -31,12 +31,15 @@ runs:
 
     - name: Run test suites
       shell: nu {0}
+      env:
+        TEST_SUITES: ${{ inputs.test-suites }}
+        VERBOSE: ${{ inputs.verbose }}
       run: |
         $env.CI = "true"
         $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
 
-        let test_suites = ("${{ inputs.test-suites }}" | split row ",")
-        let verbose_flag = if "${{ inputs.verbose }}" == "true" { "--verbose" } else { "" }
+        let test_suites = ($env.TEST_SUITES | split row ",")
+        let verbose_flag = if $env.VERBOSE == "true" { "--verbose" } else { "" }
 
         print "🧪 Running test suites: ($test_suites | str join ', ')"
 
