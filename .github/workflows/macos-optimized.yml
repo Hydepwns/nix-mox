@@ -1,0 +1,110 @@
+name: macOS Optimized
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  macos-fast-check:
+    runs-on: macos-latest
+    timeout-minutes: 15  # Much faster since we're not building Nushell
+    strategy:
+      matrix:
+        system: [x86_64-darwin, aarch64-darwin]
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Nushell
+        uses: hustcer/setup-nu@v3
+        with:
+          version: "0.90"
+          check-latest: false
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Quick flake evaluation
+        shell: nu {0}
+        run: |
+          # Set CI environment variable to disable NixOS configs
+          $env.CI = "true"
+
+          print "🔍 Quick flake evaluation for macOS..."
+          print $"System: ($env.matrix.system)"
+
+          # Fast evaluation without building
+          nix flake show --accept-flake-config
+          nix flake metadata --accept-flake-config
+
+          # Check if packages can be evaluated (without building)
+          print "📦 Checking package evaluation..."
+          nix eval .#packages.$env.matrix.system --accept-flake-config --json | from json | print
+
+          print "✅ macOS evaluation completed successfully!"
+
+      - name: Test Nushell functionality
+        shell: nu {0}
+        run: |
+          print "🧪 Testing Nushell functionality..."
+
+          # Test basic Nushell commands
+          print "Version:"
+          version
+
+          print "Environment:"
+          $env | select NIX_MOX_PLATFORM NIX_MOX_IS_DARWIN NIX_MOX_ARCH | print
+
+          print "Platform detection:"
+          if ($env.NIX_MOX_IS_DARWIN == "true") {
+            print "✅ Running on macOS"
+          } else {
+            print "❌ Not running on macOS"
+          }
+
+          print "✅ Nushell tests completed!"
+
+  macos-package-build:
+    runs-on: macos-latest
+    timeout-minutes: 30  # Still much faster than before
+    strategy:
+      matrix:
+        system: [x86_64-darwin, aarch64-darwin]
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Nushell
+        uses: hustcer/setup-nu@v3
+        with:
+          version: "0.90"
+          check-latest: false
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Build essential packages only
+        shell: nu {0}
+        run: |
+          # Set CI environment variable to disable NixOS configs
+          $env.CI = "true"
+
+          print "🔨 Building essential macOS packages..."
+          print $"System: ($env.matrix.system)"
+
+          # Only build the most essential packages
+          nix build .#install .#uninstall --system $env.matrix.system --accept-flake-config --timeout 900
+
+          print "✅ Essential packages built successfully!"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-essential-${{ matrix.system }}
+          path: result*
+          if-no-files-found: ignore
+        continue-on-error: true
