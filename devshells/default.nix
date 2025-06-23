@@ -11,7 +11,8 @@
   # Default shell (inline mkShell definition)
   default = pkgs.mkShell {
     buildInputs = [
-      pkgs.nushell
+      # Use system Nushell if available, otherwise fall back to nixpkgs version
+      (if builtins.pathExists "/usr/local/bin/nu" || builtins.pathExists "/opt/homebrew/bin/nu" then null else pkgs.nushell)
       pkgs.git
       pkgs.nix
       pkgs.nixpkgs-fmt
@@ -56,7 +57,7 @@
         echo ""
         echo "🔧 Base Tools"
         echo "-----------"
-        echo "nu: (v${pkgs.nushell.version})"
+        echo "nu: $(which nu 2>/dev/null || echo "not found")"
         echo "    Commands:"
         echo "    - nu -c 'ls | where size > 1mb'    # List large files"
         echo "    - nu -c 'ps | where cpu > 50'      # Show high CPU processes"
