@@ -1,0 +1,90 @@
+name: 'Run nix-mox Tests'
+description: 'Run comprehensive tests for nix-mox with coverage reporting'
+inputs:
+  test-suites:
+    description: 'Test suites to run (unit, integration, storage, performance)'
+    required: false
+    default: 'unit,integration'
+  verbose:
+    description: 'Enable verbose output'
+    required: false
+    default: 'false'
+  generate-coverage:
+    description: 'Generate coverage report'
+    required: false
+    default: 'true'
+runs:
+  using: "composite"
+  steps:
+    - name: Setup test environment
+      shell: nu {0}
+      run: |
+        $env.CI = "true"
+        $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
+
+        print "🧪 Setting up test environment..."
+        if not ($env.TEST_TEMP_DIR | path exists) {
+          mkdir $env.TEST_TEMP_DIR
+        }
+
+        print "✅ Test environment ready"
+
+    - name: Run test suites
+      shell: nu {0}
+      run: |
+        $env.CI = "true"
+        $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
+
+        let test_suites = (${{ inputs.test-suites }} | split row ",")
+        let verbose_flag = if ${{ inputs.verbose }} == "true" { "--verbose" } else { "" }
+
+        print "🧪 Running test suites: ($test_suites | str join ', ')"
+
+        try {
+          source scripts/tests/run-tests.nu
+          run $verbose_flag
+          print "✅ All test suites completed successfully"
+        } catch {
+          print $"❌ Test execution failed: ($env.LAST_ERROR)"
+          exit 1
+        }
+
+    - name: Generate coverage report
+      if: inputs.generate-coverage == 'true'
+      shell: nu {0}
+      run: |
+        print "📊 Generating coverage report..."
+
+        let coverage_file = (try { ls /tmp/nix-mox-tests/coverage.json | get name | first } catch { "" })
+
+        if ($coverage_file | is-empty) {
+          print "⚠️ No coverage file found, creating minimal report"
+
+          let minimal_coverage = {
+            summary: {
+              total_tests: 0
+              passed_tests: 0
+              failed_tests: 0
+              skipped_tests: 0
+              test_duration: 0
+              pass_rate: 0.0
+              timestamp: (date now | format date "%Y-%m-%d %H:%M:%S")
+            }
+            categories: {}
+            results: []
+          }
+
+          if not ("coverage-tmp/nix-mox-tests" | path exists) {
+            mkdir "coverage-tmp/nix-mox-tests"
+          }
+          $minimal_coverage | to json | save --force 'coverage-tmp/nix-mox-tests/coverage.json'
+        } else {
+          print $"📄 Found coverage file: ($coverage_file)"
+
+          if not ("coverage-tmp/nix-mox-tests" | path exists) {
+            mkdir "coverage-tmp/nix-mox-tests"
+          }
+          cp $coverage_file coverage-tmp/nix-mox-tests/coverage.json
+        }
+
+        print "✅ Coverage report generated"
