@@ -18,26 +18,14 @@ cd nix-mox
 ./scripts/setup-wizard.nu
 ```
 
-See the [Quick Start Guide](docs/USAGE.md) for more options.
-
-## Features
-
-- Modular NixOS fragments
-- Dev shells for all platforms
-- Gaming, security, messaging, and more
-- [Full feature list →](docs/USAGE.md)
-
-## Project Structure
-
-```mermaid
-graph TD
-  A[config/] --> B[modules/]
-  A --> C[devshells/]
-  A --> D[scripts/]
-  A --> E[docs/]
+```bash
+nix-mox/
+├── config/ # <Your NixOS configuration>
+├── modules/
+├── devshells/ # Dev shells for different use cases (gaming, security, messaging, etc.)
+├── scripts/
+├── docs/
 ```
-
-See [Architecture](docs/architecture/ARCHITECTURE.md) for details.
 
 ## Documentation
 

@@ -179,51 +179,6 @@ graph TD
     E --> E4[Email Clients]
 ```
 
-## Project Structure
-
-### Core Directories
-
-```mermaid
-graph TD
-    A[nix-mox/] --> B[config/]
-    A --> C[modules/]
-    A --> D[devshells/]
-    A --> E[scripts/]
-    A --> F[docs/]
-    
-    B --> B1[default.nix]
-    B --> B2[nixos/]
-    B --> B3[home/]
-    B --> B4[hardware/]
-    B --> B5[build/]
-    
-    C --> C1[templates/]
-    C --> C2[packages/]
-    C --> C3[services/]
-    C --> C4[monitoring/]
-    C --> C5[gaming/]
-    C --> C6[storage/]
-    C --> C7[security/]
-    C --> C8[core/]
-    
-    D --> D1[default.nix]
-    D --> D2[development/]
-    D --> D3[testing/]
-    D --> D4[services/]
-    D --> D5[monitoring/]
-    D --> D6[gaming/]
-    D --> D7[zfs/]
-    D --> D8[macos/]
-    D --> D9[storage/]
-    
-    E --> E1[linux/]
-    E --> E2[windows/]
-    E --> E3[common/]
-    E --> E4[handlers/]
-    E --> E5[lib/]
-    E --> E6[tests/]
-```
-
 ### Template System
 
 ```mermaid
