@@ -52,9 +52,9 @@ runs:
           print $"Changed to directory: (pwd)"
           print $"Test script exists after cd: (ls scripts/tests/run-tests.nu | length | $in > 0)"
 
-          let script_path = $"(${{ github.workspace }})/scripts/tests/run-tests.nu"
+          let script_path = "scripts/tests/run-tests.nu"
           print $"Using script path: ($script_path)"
-          print $"Absolute path exists: (ls $script_path | length | $in > 0)"
+          print $"Script exists: (ls $script_path | length | $in > 0)"
 
           nu -c $"source ($script_path); run ($verbose_flag)"
           print "✅ All test suites completed successfully"
