@@ -51,8 +51,12 @@ jobs:
         shell: nu {0}
         run: |
           print $"Pushing packages to Cachix for ($env.matrix.system)..."
-          nix build .#install .#uninstall --system $env.matrix.system --accept-flake-config --no-link
-          nix path-info --recursive result | cachix push nix-mox
+          # Build packages and get their store paths
+          let install_path = (nix build .#install --system $env.matrix.system --accept-flake-config --no-link --print-out-paths --quiet)
+          let uninstall_path = (nix build .#uninstall --system $env.matrix.system --accept-flake-config --no-link --print-out-paths --quiet)
+          # Push to Cachix using store paths
+          echo $install_path | cachix push nix-mox
+          echo $uninstall_path | cachix push nix-mox
         continue-on-error: true
 
   build_macos_packages:
@@ -71,7 +75,7 @@ jobs:
       - name: Setup Nushell
         uses: hustcer/setup-nu@v3
         with:
-          version: "0.90"
+          version: "0.104"
           check-latest: false
       - name: Setup Cachix
         uses: cachix/cachix-action@v16
@@ -96,8 +100,12 @@ jobs:
         shell: nu {0}
         run: |
           print $"Pushing packages to Cachix for ($env.matrix.system)..."
-          nix build .#install .#uninstall --system $env.matrix.system --accept-flake-config --no-link
-          nix path-info --recursive result | cachix push nix-mox
+          # Build packages and get their store paths
+          let install_path = (nix build .#install --system $env.matrix.system --accept-flake-config --no-link --print-out-paths --quiet)
+          let uninstall_path = (nix build .#uninstall --system $env.matrix.system --accept-flake-config --no-link --print-out-paths --quiet)
+          # Push to Cachix using store paths
+          echo $install_path | cachix push nix-mox
+          echo $uninstall_path | cachix push nix-mox
         continue-on-error: true
 
   test:
@@ -112,7 +120,7 @@ jobs:
       - name: Setup Nushell
         uses: hustcer/setup-nu@v3
         with:
-          version: "0.90"
+          version: "0.104"
           check-latest: false
       - name: Setup Cachix
         uses: cachix/cachix-action@v16
