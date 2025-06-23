@@ -127,8 +127,8 @@
       createChecks = system: pkgs:
         let
           src = ./.;
-          # Use system Nushell if available, otherwise use nixpkgs version
-          nushell = if builtins.pathExists "/usr/local/bin/nu" || builtins.pathExists "/opt/homebrew/bin/nu" then null else pkgs.nushell;
+          # Always use nixpkgs Nushell for checks to ensure availability in CI
+          nushell = pkgs.nushell;
           baseChecks = {
             # Unit tests only
             unit = pkgs.runCommand "nix-mox-unit-tests"
