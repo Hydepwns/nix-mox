@@ -57,6 +57,42 @@ jobs:
           print "✅ Package builds completed"
         continue-on-error: true
 
+      - name: Push packages to Cachix
+        if: success() && github.event_name == 'push'
+        shell: nu {0}
+        run: |
+          print "📦 Pushing packages to Cachix..."
+
+          if ${{ matrix.os }} == 'macOS' {
+            # Push macOS-specific packages
+            let homebrew_path = (nix build .#homebrew-setup --accept-flake-config --no-link --print-out-paths --quiet)
+            let maintenance_path = (nix build .#macos-maintenance --accept-flake-config --no-link --print-out-paths --quiet)
+            let xcode_path = (nix build .#xcode-setup --accept-flake-config --no-link --print-out-paths --quiet)
+            let security_path = (nix build .#security-audit --accept-flake-config --no-link --print-out-paths --quiet)
+
+            echo $homebrew_path | cachix push nix-mox
+            echo $maintenance_path | cachix push nix-mox
+            echo $xcode_path | cachix push nix-mox
+            echo $security_path | cachix push nix-mox
+          } else {
+            # Push Linux packages
+            let proxmox_path = (nix build .#proxmox-update --accept-flake-config --no-link --print-out-paths --quiet)
+            let flake_path = (nix build .#nixos-flake-update --accept-flake-config --no-link --print-out-paths --quiet)
+
+            echo $proxmox_path | cachix push nix-mox
+            echo $flake_path | cachix push nix-mox
+          }
+
+          # Push common packages
+          let install_path = (nix build .#install --accept-flake-config --no-link --print-out-paths --quiet)
+          let uninstall_path = (nix build .#uninstall --accept-flake-config --no-link --print-out-paths --quiet)
+
+          echo $install_path | cachix push nix-mox
+          echo $uninstall_path | cachix push nix-mox
+
+          print "✅ Packages pushed to Cachix successfully"
+        continue-on-error: true
+
       - name: Run comprehensive tests
         uses: ./.github/actions/run-tests
         with:
@@ -123,6 +159,20 @@ jobs:
             echo "Building $pkg..."
             nix build .#$pkg --accept-flake-config --timeout 7200 || echo "Failed to build $pkg"
           done
+        continue-on-error: true
+
+      - name: Push heavy packages to Cachix
+        if: success() && github.event_name == 'push'
+        run: |
+          echo "📦 Pushing heavy packages to Cachix..."
+
+          # Push heavy packages if they built successfully
+          for pkg in vzdump-backup zfs-snapshot; do
+            echo "Pushing $pkg to Cachix..."
+            nix build .#$pkg --accept-flake-config --no-link --print-out-paths --quiet | cachix push nix-mox || echo "Failed to push $pkg"
+          done
+
+          echo "✅ Heavy packages pushed to Cachix"
         continue-on-error: true
 
       - name: Upload heavy package artifacts
