@@ -31,7 +31,7 @@ in
         fi
       '';
     in
-    pkgs.runCommand "test-queue" {} ''
+    pkgs.runCommand "test-queue" { } ''
       ${queueScript}
       touch $out
     '';
@@ -64,7 +64,7 @@ in
         done
       '';
     in
-    pkgs.runCommand "test-parallel" {} ''
+    pkgs.runCommand "test-parallel" { } ''
       ${parallelScript}
       touch $out
     '';
@@ -87,7 +87,7 @@ in
         exit 1
       '';
     in
-    pkgs.runCommand "test-retry" {} ''
+    pkgs.runCommand "test-retry" { } ''
       ${retryScript}
       touch $out
     '';
@@ -111,8 +111,8 @@ in
         fi
       '';
     in
-    pkgs.runCommand "test-logging" {} ''
+    pkgs.runCommand "test-logging" { } ''
       ${logScript}
       touch $out
     '';
-} 
+}

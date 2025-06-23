@@ -127,7 +127,7 @@ in
       description = "Tailscale Health Check Timer";
       wantedBy = [ "timers.target" ];
       timerConfig = {
-        OnCalendar = "*/5:00";  # Every 5 minutes
+        OnCalendar = "*/5:00"; # Every 5 minutes
         Persistent = true;
       };
     };

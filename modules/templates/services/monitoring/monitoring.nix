@@ -11,7 +11,7 @@
   networking.firewall = {
     allowedTCPPorts = [ 9090 3000 9100 9093 ];
     allowedTCPPortRanges = [
-      { from = 9100; to = 9100; }  # node_exporter default port
+      { from = 9100; to = 9100; } # node_exporter default port
     ];
   };
 
@@ -22,7 +22,7 @@
     description = "Monitoring services user";
   };
 
-  users.groups.monitoring = {};
+  users.groups.monitoring = { };
 
   # Ensure required directories exist
   systemd.tmpfiles.rules = [

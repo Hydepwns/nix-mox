@@ -1,4 +1,4 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import <nixpkgs> { } }:
 
 let
   inherit (pkgs) lib;
@@ -24,4 +24,4 @@ pkgs.stdenv.mkDerivation {
     mkdir -p $out/bin
     cp -r * $out/bin/
   '';
-} 
+}

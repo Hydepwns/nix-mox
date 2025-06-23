@@ -5,10 +5,10 @@
 
   services.ci-runner = {
     enable = true;
-    maxParallelJobs = 2;  # Lower parallel jobs for development
+    maxParallelJobs = 2; # Lower parallel jobs for development
     retryAttempts = 2;
     retryDelay = 5;
-    logLevel = "debug";   # Detailed logging for development
+    logLevel = "debug"; # Detailed logging for development
     enableMetrics = true;
   };
 
@@ -71,4 +71,4 @@
       "netstat"
     ];
   };
-} 
+}

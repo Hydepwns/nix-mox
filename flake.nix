@@ -41,10 +41,10 @@
     let
       # Supported systems with clear documentation
       supportedSystems = [
-        "aarch64-darwin"   # Apple Silicon Macs
-        "x86_64-darwin"    # Intel Macs
-        "x86_64-linux"     # Intel/AMD Linux
-        "aarch64-linux"    # ARM Linux (Raspberry Pi, etc.)
+        "aarch64-darwin" # Apple Silicon Macs
+        "x86_64-darwin" # Intel Macs
+        "x86_64-linux" # Intel/AMD Linux
+        "aarch64-linux" # ARM Linux (Raspberry Pi, etc.)
       ];
 
       # Helper function to check if system is supported
@@ -66,7 +66,7 @@
           tryImport ./modules/packages/linux/default.nix
         else if pkgs.stdenv.isDarwin then
           tryImport ./modules/packages/macos/default.nix
-        else { success = true; value = {}; };
+        else { success = true; value = { }; };
 
       # Simplified helper function to create packages with minimal evaluation
       createPackages = system: pkgs: systemPackages:
@@ -79,7 +79,7 @@
           };
         in
         if pkgs.stdenv.isLinux then
-          # Linux packages - only include essential ones
+        # Linux packages - only include essential ones
           commonPackages // {
             proxmox-update = systemPackages.proxmox-update or null;
             vzdump-backup = systemPackages.vzdump-backup or null;
@@ -87,7 +87,7 @@
             nixos-flake-update = systemPackages.nixos-flake-update or null;
           }
         else if pkgs.stdenv.isDarwin then
-          # macOS packages - only include essential ones
+        # macOS packages - only include essential ones
           commonPackages // {
             homebrew-setup = systemPackages.homebrew-setup or null;
             macos-maintenance = systemPackages.macos-maintenance or null;
@@ -95,7 +95,7 @@
             security-audit = systemPackages.security-audit or null;
           }
         else
-          # Other platforms - only common packages
+        # Other platforms - only common packages
           commonPackages;
 
       # Simplified helper function to create platform-specific devShells
@@ -109,18 +109,18 @@
           };
         in
         if pkgs.stdenv.isLinux then
-          # Linux - add essential shells only
+        # Linux - add essential shells only
           commonShells // {
             services = devShell.services;
             monitoring = devShell.monitoring;
           }
         else if pkgs.stdenv.isDarwin then
-          # macOS - add macOS-specific shell
+        # macOS - add macOS-specific shell
           commonShells // {
             macos = devShell.macos;
           }
         else
-          # Other platforms - only common shells
+        # Other platforms - only common shells
           commonShells;
 
       # Simplified helper function to create platform-specific checks
@@ -129,9 +129,10 @@
           src = ./.;
           baseChecks = {
             # Unit tests only
-            unit = pkgs.runCommand "nix-mox-unit-tests" {
-              buildInputs = [ pkgs.nushell ];
-            } ''
+            unit = pkgs.runCommand "nix-mox-unit-tests"
+              {
+                buildInputs = [ pkgs.nushell ];
+              } ''
               cp -r ${src} $TMPDIR/src
               cd $TMPDIR/src
               export TEST_TEMP_DIR=$TMPDIR/nix-mox-unit
@@ -140,9 +141,10 @@
             '';
 
             # Integration tests only
-            integration = pkgs.runCommand "nix-mox-integration-tests" {
-              buildInputs = [ pkgs.nushell ];
-            } ''
+            integration = pkgs.runCommand "nix-mox-integration-tests"
+              {
+                buildInputs = [ pkgs.nushell ];
+              } ''
               cp -r ${src} $TMPDIR/src
               cd $TMPDIR/src
               export TEST_TEMP_DIR=$TMPDIR/nix-mox-integration
@@ -151,9 +153,10 @@
             '';
 
             # Full test suite
-            test-suite = pkgs.runCommand "nix-mox-tests" {
-              buildInputs = [ pkgs.nushell ];
-            } ''
+            test-suite = pkgs.runCommand "nix-mox-tests"
+              {
+                buildInputs = [ pkgs.nushell ];
+              } ''
               cp -r ${src} $TMPDIR/src
               cd $TMPDIR/src
               export TEST_TEMP_DIR=$TMPDIR/nix-mox-tests
@@ -163,12 +166,13 @@
           };
         in
         if pkgs.stdenv.isLinux then
-          # Linux-specific checks
+        # Linux-specific checks
           baseChecks // {
             # Linux-specific tests
-            linux-specific = pkgs.runCommand "nix-mox-linux-tests" {
-              buildInputs = [ pkgs.nushell ];
-            } ''
+            linux-specific = pkgs.runCommand "nix-mox-linux-tests"
+              {
+                buildInputs = [ pkgs.nushell ];
+              } ''
               cp -r ${src} $TMPDIR/src
               cd $TMPDIR/src
               export TEST_TEMP_DIR=$TMPDIR/nix-mox-linux
@@ -177,12 +181,13 @@
             '';
           }
         else if pkgs.stdenv.isDarwin then
-          # macOS-specific checks
+        # macOS-specific checks
           baseChecks // {
             # macOS-specific tests
-            macos-specific = pkgs.runCommand "nix-mox-macos-tests" {
-              buildInputs = [ pkgs.nushell ];
-            } ''
+            macos-specific = pkgs.runCommand "nix-mox-macos-tests"
+              {
+                buildInputs = [ pkgs.nushell ];
+              } ''
               cp -r ${src} $TMPDIR/src
               cd $TMPDIR/src
               export TEST_TEMP_DIR=$TMPDIR/nix-mox-macos
@@ -191,20 +196,22 @@
             '';
           }
         else
-          # Other platforms - only base checks
+        # Other platforms - only base checks
           baseChecks;
     in
-      flake-utils.lib.eachSystem supportedSystems (system:
+    flake-utils.lib.eachSystem supportedSystems
+      (system:
         let
           # Import nixpkgs with proper configuration
           pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
-            config.darwinConfig = if system == "aarch64-darwin" || system == "x86_64-darwin" then {
-              system = system;
-              # Use newer SDK to avoid deprecation warnings
-              sdkVersion = "14.0";
-            } else {};
+            config.darwinConfig =
+              if system == "aarch64-darwin" || system == "x86_64-darwin" then {
+                system = system;
+                # Use newer SDK to avoid deprecation warnings
+                sdkVersion = "14.0";
+              } else { };
           };
 
           # Import development shell
@@ -212,7 +219,7 @@
 
           # Get system-specific packages with error handling
           systemPackagesResult = getSystemPackages system pkgs;
-          systemPackages = if systemPackagesResult.success then systemPackagesResult.value else {};
+          systemPackages = if systemPackagesResult.success then systemPackagesResult.value else { };
 
           # Helper functions
           helpers = {
@@ -234,9 +241,9 @@
           checks = createChecks system pkgs;
         }
       ) // (
-        # Only include NixOS configs if explicitly requested or if not in CI
-        if builtins.getEnv "INCLUDE_NIXOS_CONFIGS" == "1" || (builtins.getEnv "CI" != "true" && builtins.getEnv "CI" != "1") then
-          { nixosConfigurations = import ./config { inherit inputs self; }; }
-        else {}
-      );
+      # Only include NixOS configs if explicitly requested or if not in CI
+      if builtins.getEnv "INCLUDE_NIXOS_CONFIGS" == "1" || (builtins.getEnv "CI" != "true" && builtins.getEnv "CI" != "1") then
+        { nixosConfigurations = import ./config { inherit inputs self; }; }
+      else { }
+    );
 }

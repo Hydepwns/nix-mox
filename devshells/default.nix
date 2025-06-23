@@ -27,7 +27,7 @@
       ] else if pkgs.stdenv.isLinux then [
         pkgs.zlib
         pkgs.openssl
-      ] else []
+      ] else [ ]
     );
 
     # Platform-specific environment variables

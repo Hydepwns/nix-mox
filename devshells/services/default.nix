@@ -13,28 +13,28 @@ pkgs.mkShell {
     pkgs.ripgrep
 
     # Service tools (essential only)
-    pkgs.docker           # Container platform
-    pkgs.docker-compose   # Multi-container orchestration
-    pkgs.kubectl         # Kubernetes CLI
-    pkgs.terraform       # Infrastructure as code
-    pkgs.ansible         # Configuration management
+    pkgs.docker # Container platform
+    pkgs.docker-compose # Multi-container orchestration
+    pkgs.kubectl # Kubernetes CLI
+    pkgs.terraform # Infrastructure as code
+    pkgs.ansible # Configuration management
 
     # Service development tools (essential only)
-    pkgs.just           # Command runner
-    pkgs.direnv         # Directory environment manager
-    pkgs.pre-commit     # Git hooks
-    pkgs.gh             # GitHub CLI
-    pkgs.bat            # Better cat
-    pkgs.eza            # Modern ls
-    pkgs.jq             # JSON processor
+    pkgs.just # Command runner
+    pkgs.direnv # Directory environment manager
+    pkgs.pre-commit # Git hooks
+    pkgs.gh # GitHub CLI
+    pkgs.bat # Better cat
+    pkgs.eza # Modern ls
+    pkgs.jq # JSON processor
 
     # Service testing tools (essential only)
-    pkgs.curl           # HTTP client
-    pkgs.httpie         # User-friendly HTTP client
+    pkgs.curl # HTTP client
+    pkgs.httpie # User-friendly HTTP client
   ] ++ (if pkgs.stdenv.isLinux then [
     # Linux-specific packages (essential only)
-    pkgs.minikube        # Local Kubernetes
-  ] else []);
+    pkgs.minikube # Local Kubernetes
+  ] else [ ]);
 
   shellHook = ''
     echo "Welcome to the nix-mox services shell!"

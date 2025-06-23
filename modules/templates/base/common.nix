@@ -63,12 +63,20 @@
 
   # System packages (add user/system-specific packages in the importing config)
   environment.systemPackages = with pkgs; [
-    vim wget git htop firefox kitty alacritty
+    vim
+    wget
+    git
+    htop
+    firefox
+    kitty
+    alacritty
     inputs.nix-mox.packages.${pkgs.system}.proxmox-update
     inputs.nix-mox.packages.${pkgs.system}.vzdump-backup
     inputs.nix-mox.packages.${pkgs.system}.zfs-snapshot
     inputs.nix-mox.packages.${pkgs.system}.nixos-flake-update
-    vscode docker docker-compose
+    vscode
+    docker
+    docker-compose
   ];
 
   # Programs

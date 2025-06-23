@@ -67,7 +67,7 @@ in
     };
     customConfig = lib.mkOption {
       type = lib.types.attrs;
-      default = {};
+      default = { };
       description = "Custom cache server configuration";
     };
   };

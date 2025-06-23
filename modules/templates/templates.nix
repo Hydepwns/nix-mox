@@ -490,7 +490,7 @@ let
         };
         customConfig = {
           type = "attrs";
-          default = {};
+          default = { };
           description = "Additional message queue configuration";
         };
       };
@@ -547,94 +547,96 @@ let
   # Create template packages
   templatePackages =
     let
-      resolvedTemplates = lib.foldl (acc: name: acc // { ${name} = allTemplates.${name}; }) {} finalTemplates;
+      resolvedTemplates = lib.foldl (acc: name: acc // { ${name} = allTemplates.${name}; }) { } finalTemplates;
     in
-    lib.mapAttrs (name: template:
-      pkgs.stdenv.mkDerivation {
-        name = "nix-mox-template-${name}";
-        version = "1.0.0";
-        src = ./../templates/${name};
-        buildInputs = with pkgs; [
-          jq
-          yq
-          nix
-        ];
-        installPhase = ''
-          mkdir -p $out/bin
-          mkdir -p $out/share/nix-mox/templates/${name}
+    lib.mapAttrs
+      (name: template:
+        pkgs.stdenv.mkDerivation {
+          name = "nix-mox-template-${name}";
+          version = "1.0.0";
+          src = ./../templates/${name};
+          buildInputs = with pkgs; [
+            jq
+            yq
+            nix
+          ];
+          installPhase = ''
+            mkdir -p $out/bin
+            mkdir -p $out/share/nix-mox/templates/${name}
 
-          # Generate config.json from customOptions for windows-gaming template
-          ${lib.optionalString (name == "windows-gaming") ''
-            cat > $out/share/nix-mox/templates/${name}/config.json <<EOF
-            ${lib.generators.toJSON {} cfg.customOptions.windows-gaming}
-            EOF
-          ''}
+            # Generate config.json from customOptions for windows-gaming template
+            ${lib.optionalString (name == "windows-gaming") ''
+              cat > $out/share/nix-mox/templates/${name}/config.json <<EOF
+              ${lib.generators.toJSON {} cfg.customOptions.windows-gaming}
+              EOF
+            ''}
 
-          # Generate config.json from customOptions for safe-configuration template
-          ${lib.optionalString (name == "safe-configuration") ''
-            cat > $out/share/nix-mox/templates/${name}/config.json <<EOF
-            ${lib.generators.toJSON {} cfg.customOptions.safe-configuration}
-            EOF
-          ''}
+            # Generate config.json from customOptions for safe-configuration template
+            ${lib.optionalString (name == "safe-configuration") ''
+              cat > $out/share/nix-mox/templates/${name}/config.json <<EOF
+              ${lib.generators.toJSON {} cfg.customOptions.safe-configuration}
+              EOF
+            ''}
 
-          # Apply overrides first
-          ${lib.optionalString (lib.hasAttr name cfg.templateOverrides) ''
-            cp -r ${cfg.templateOverrides.${name}}/* $out/share/nix-mox/templates/${name}/
-          ''}
+            # Apply overrides first
+            ${lib.optionalString (lib.hasAttr name cfg.templateOverrides) ''
+              cp -r ${cfg.templateOverrides.${name}}/* $out/share/nix-mox/templates/${name}/
+            ''}
 
-          # Copy base template files without overwriting existing (overridden) files
-          cp -rn ./_ $out/share/nix-mox/templates/${name}/
+            # Copy base template files without overwriting existing (overridden) files
+            cp -rn ./_ $out/share/nix-mox/templates/${name}/
 
-          ${lib.optionalString (cfg.templateVariables != {}) ''
-            # Substitute variables
-            shopt -s globstar
-            cd $out/share/nix-mox/templates/${name}/
-            for item in **/*; do
-              # Only substitute in files, not directories
-              if [ -f "$item" ]; then
-                substituteInPlace "$item" \
-                  ${lib.concatStringsSep " \\\n                    " (lib.mapAttrsToList (n: v: "--replace '@${n}@' '${v}'") cfg.templateVariables)}
+            ${lib.optionalString (cfg.templateVariables != {}) ''
+              # Substitute variables
+              shopt -s globstar
+              cd $out/share/nix-mox/templates/${name}/
+              for item in **/*; do
+                # Only substitute in files, not directories
+                if [ -f "$item" ]; then
+                  substituteInPlace "$item" \
+                    ${lib.concatStringsSep " \\\n                    " (lib.mapAttrsToList (n: v: "--replace '@${n}@' '${v}'") cfg.templateVariables)}
+                fi
+              done
+              cd -
+            ''}
+            # Create template script
+            cat > $out/bin/nix-mox-template-${name} <<EOF
+            #!/bin/sh
+            set -e
+
+            # Source error handling
+            . ${pkgs.nix-mox.error-handling}/bin/template-error-handler
+
+            # Template configuration
+            TEMPLATE_DIR="$out/share/nix-mox/templates/${name}"
+            TEMPLATE_NAME="${template.name}"
+            TEMPLATE_DESC="${template.description}"
+
+            # Check dependencies
+            for dep in ${lib.concatStringsSep " " template.dependencies}; do
+              if ! command -v \$dep >/dev/null 2>&1; then
+                ${lib.getAttr "handleError" pkgs.nix-mox.error-handling} 5 "Dependency \$dep not found"
               fi
             done
-            cd -
-          ''}
-          # Create template script
-          cat > $out/bin/nix-mox-template-${name} <<EOF
-          #!/bin/sh
-          set -e
 
-          # Source error handling
-          . ${pkgs.nix-mox.error-handling}/bin/template-error-handler
+            # Execute template scripts
+            for script in ${lib.concatStringsSep " " template.scripts}; do
+              if [ -f "\$TEMPLATE_DIR/\$script" ]; then
+                ${lib.getAttr "logMessage" pkgs.nix-mox.error-handling} "INFO" "Executing \$script"
+                nix-instantiate --eval "\$TEMPLATE_DIR/\$script"
+              else
+                ${lib.getAttr "logMessage" pkgs.nix-mox.error-handling} "WARN" "Script \$script not found"
+              fi
+            done
 
-          # Template configuration
-          TEMPLATE_DIR="$out/share/nix-mox/templates/${name}"
-          TEMPLATE_NAME="${template.name}"
-          TEMPLATE_DESC="${template.description}"
+            ${lib.getAttr "logMessage" pkgs.nix-mox.error-handling} "INFO" "Template ${template.name} completed successfully"
+            EOF
 
-          # Check dependencies
-          for dep in ${lib.concatStringsSep " " template.dependencies}; do
-            if ! command -v \$dep >/dev/null 2>&1; then
-              ${lib.getAttr "handleError" pkgs.nix-mox.error-handling} 5 "Dependency \$dep not found"
-            fi
-          done
-
-          # Execute template scripts
-          for script in ${lib.concatStringsSep " " template.scripts}; do
-            if [ -f "\$TEMPLATE_DIR/\$script" ]; then
-              ${lib.getAttr "logMessage" pkgs.nix-mox.error-handling} "INFO" "Executing \$script"
-              nix-instantiate --eval "\$TEMPLATE_DIR/\$script"
-            else
-              ${lib.getAttr "logMessage" pkgs.nix-mox.error-handling} "WARN" "Script \$script not found"
-            fi
-          done
-
-          ${lib.getAttr "logMessage" pkgs.nix-mox.error-handling} "INFO" "Template ${template.name} completed successfully"
-          EOF
-
-          chmod +x $out/bin/nix-mox-template-${name}
-        '';
-      }
-    ) resolvedTemplates;
+            chmod +x $out/bin/nix-mox-template-${name}
+          '';
+        }
+      )
+      resolvedTemplates;
 
   # Update test fixture references
   testFixtures = {
@@ -653,18 +655,18 @@ in
     };
     customOptions = lib.mkOption {
       type = lib.types.attrs;
-      default = {};
+      default = { };
       description = "Custom options for templates";
     };
     templateVariables = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
-      default = {};
+      default = { };
       description = "Global variables to be substituted in all template files. Use @key@ syntax in files.";
       example = { domain = "example.com"; user = "admin"; };
     };
     templateOverrides = lib.mkOption {
       type = lib.types.attrsOf lib.types.path;
-      default = {};
+      default = { };
       description = "Override files in a template. The key is the template name and the value is the path to the directory with override files.";
       example = { "web-server" = ./my-web-server-overrides; };
     };

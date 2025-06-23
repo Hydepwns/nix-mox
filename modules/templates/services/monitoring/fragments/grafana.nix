@@ -74,7 +74,7 @@ in
         {
           title = "Sample Node Exporter Dashboard";
           uid = "node-exporter-sample";
-          panels = [];
+          panels = [ ];
         }
       ];
     };

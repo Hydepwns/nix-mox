@@ -43,12 +43,12 @@ in
           };
           exclude = lib.mkOption {
             type = lib.types.listOf lib.types.str;
-            default = [];
+            default = [ ];
             description = "Patterns to exclude from backup";
           };
         };
       }));
-      default = {};
+      default = { };
       description = "Configuration for storage backup targets";
       example = lib.literalExpression ''
         {

@@ -18,13 +18,13 @@ pkgs.mkShell {
     pkgs.python3Packages.black
 
     # Development tools (essential only)
-    pkgs.just           # Command runner
-    pkgs.pre-commit     # Git hooks
-    pkgs.direnv        # Directory environment manager
-    pkgs.gh            # GitHub CLI
-    pkgs.bat           # Better cat
-    pkgs.eza           # Modern ls
-    pkgs.jq            # JSON processor
+    pkgs.just # Command runner
+    pkgs.pre-commit # Git hooks
+    pkgs.direnv # Directory environment manager
+    pkgs.gh # GitHub CLI
+    pkgs.bat # Better cat
+    pkgs.eza # Modern ls
+    pkgs.jq # JSON processor
   ];
 
   shellHook = ''

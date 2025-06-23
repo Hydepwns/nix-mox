@@ -13,18 +13,18 @@ pkgs.mkShell {
     pkgs.ripgrep
 
     # Testing tools (essential only)
-    pkgs.bats           # Bash Automated Testing System
-    pkgs.shellspec      # Shell script testing framework
-    pkgs.bash           # Bash shell for testing
-    pkgs.python3        # Python for testing
-    pkgs.python3Packages.pytest  # Python testing framework
+    pkgs.bats # Bash Automated Testing System
+    pkgs.shellspec # Shell script testing framework
+    pkgs.bash # Bash shell for testing
+    pkgs.python3 # Python for testing
+    pkgs.python3Packages.pytest # Python testing framework
     pkgs.python3Packages.coverage # Python code coverage
 
     # Code quality tools
-    pkgs.shellcheck     # Shell script analysis
+    pkgs.shellcheck # Shell script analysis
 
     # Test reporting
-    pkgs.jq             # JSON processor
+    pkgs.jq # JSON processor
   ];
 
   shellHook = ''

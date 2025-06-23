@@ -39,12 +39,12 @@ in
           };
           frequency = lib.mkOption {
             type = lib.types.str;
-            default = "*/2:00";  # Every 2 minutes
+            default = "*/2:00"; # Every 2 minutes
             description = "How often to check the service";
           };
         };
       }));
-      default = {};
+      default = { };
       description = "Configuration for service monitoring";
       example = lib.literalExpression ''
         {

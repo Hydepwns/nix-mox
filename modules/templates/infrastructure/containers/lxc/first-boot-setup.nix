@@ -15,4 +15,4 @@
       systemctl disable first-boot-setup.service
     '';
   };
-} 
+}

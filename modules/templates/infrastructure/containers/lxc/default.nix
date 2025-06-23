@@ -3,7 +3,7 @@ let
   # CI/CD specific configuration
   isCI = builtins.getEnv "CI" == "true";
   logLevel = if isCI then "debug" else "info";
-  
+
   # Container configuration
   cfg = {
     hostname = "nixos-lxc";
@@ -102,4 +102,4 @@ in
       }];
     }
   ];
-} 
+}

@@ -19,7 +19,8 @@
           inherit system;
           overlays = [ nix-mox.overlays.default ];
         };
-      in {
+      in
+      {
         nixosConfigurations = {
           # Basic VM with minimal configuration
           basic-vm = nixpkgs.lib.nixosSystem {

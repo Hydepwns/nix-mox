@@ -85,11 +85,12 @@
   # services.xserver.videoDrivers = [ "amdgpu" ];
 
   # Users
-  users.users.droo = {  # Change "droo" to your username
+  users.users.droo = {
+    # Change "droo" to your username
     isNormalUser = true;
     description = "Droo";
     extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
-    shell = pkgs.zsh;  # or pkgs.bash
+    shell = pkgs.zsh; # or pkgs.bash
   };
 
   # Enable sudo

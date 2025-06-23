@@ -38,47 +38,49 @@ let
       };
     };
 
-    config = let
-      cfg = config.hardware.gpu;
-    in lib.mkIf cfg.enable {
-      # NVIDIA configuration
-      hardware.nvidia = lib.mkIf (cfg.type == "nvidia" || cfg.nvidia.enable) {
-        enable = true;
-        modesetting.enable = cfg.nvidia.modesetting.enable;
-        powerManagement.enable = cfg.nvidia.powerManagement.enable;
-        open = cfg.nvidia.open;
-        prime = lib.mkIf cfg.nvidia.prime.enable {
+    config =
+      let
+        cfg = config.hardware.gpu;
+      in
+      lib.mkIf cfg.enable {
+        # NVIDIA configuration
+        hardware.nvidia = lib.mkIf (cfg.type == "nvidia" || cfg.nvidia.enable) {
           enable = true;
-          intelBusId = cfg.nvidia.prime.intelBusId;
-          nvidiaBusId = cfg.nvidia.prime.nvidiaBusId;
+          modesetting.enable = cfg.nvidia.modesetting.enable;
+          powerManagement.enable = cfg.nvidia.powerManagement.enable;
+          open = cfg.nvidia.open;
+          prime = lib.mkIf cfg.nvidia.prime.enable {
+            enable = true;
+            intelBusId = cfg.nvidia.prime.intelBusId;
+            nvidiaBusId = cfg.nvidia.prime.nvidiaBusId;
+          };
+        };
+
+        # AMD configuration
+        hardware.opengl.extraPackages = lib.mkIf (cfg.type == "amd" || cfg.amd.enable) (with pkgs; [
+          amdvlk
+          rocm-opencl-icd
+          rocm-opencl-runtime
+        ]);
+
+        # Intel configuration
+        hardware.opengl.extraPackages = lib.mkIf (cfg.type == "intel" || cfg.intel.enable) (with pkgs; [
+          intel-media-driver
+          vaapiIntel
+          vaapiVdpau
+        ]);
+
+        # OpenGL configuration
+        hardware.opengl = {
+          enable = true;
+          driSupport = true;
+          driSupport32Bit = true;
+          extraPackages = with pkgs; [
+            vaapiVdpau
+            libvdpau-va-gl
+          ];
         };
       };
-
-      # AMD configuration
-      hardware.opengl.extraPackages = lib.mkIf (cfg.type == "amd" || cfg.amd.enable) (with pkgs; [
-        amdvlk
-        rocm-opencl-icd
-        rocm-opencl-runtime
-      ]);
-
-      # Intel configuration
-      hardware.opengl.extraPackages = lib.mkIf (cfg.type == "intel" || cfg.intel.enable) (with pkgs; [
-        intel-media-driver
-        vaapiIntel
-        vaapiVdpau
-      ]);
-
-      # OpenGL configuration
-      hardware.opengl = {
-        enable = true;
-        driSupport = true;
-        driSupport32Bit = true;
-        extraPackages = with pkgs; [
-          vaapiVdpau
-          libvdpau-va-gl
-        ];
-      };
-    };
   };
 
   # Audio configurations
@@ -103,7 +105,7 @@ let
         support32Bit = lib.mkDefault true;
         extraModules = lib.mkOption {
           type = lib.types.listOf lib.types.str;
-          default = [];
+          default = [ ];
           description = "Extra PulseAudio modules to load";
         };
       };
@@ -118,33 +120,35 @@ let
       };
     };
 
-    config = let
-      cfg = config.hardware.audio;
-    in lib.mkIf cfg.enable {
-      # PipeWire configuration
-      services.pipewire = lib.mkIf (cfg.type == "pipewire" || cfg.pipewire.enable) {
-        enable = true;
-        alsa.enable = cfg.pipewire.alsa.enable;
-        alsa.support32Bit = cfg.pipewire.alsa.support32Bit;
-        pulse.enable = cfg.pipewire.pulse.enable;
-        jack.enable = cfg.pipewire.jack.enable;
-        bluetooth.enable = cfg.pipewire.bluetooth.enable;
+    config =
+      let
+        cfg = config.hardware.audio;
+      in
+      lib.mkIf cfg.enable {
+        # PipeWire configuration
+        services.pipewire = lib.mkIf (cfg.type == "pipewire" || cfg.pipewire.enable) {
+          enable = true;
+          alsa.enable = cfg.pipewire.alsa.enable;
+          alsa.support32Bit = cfg.pipewire.alsa.support32Bit;
+          pulse.enable = cfg.pipewire.pulse.enable;
+          jack.enable = cfg.pipewire.jack.enable;
+          bluetooth.enable = cfg.pipewire.bluetooth.enable;
+        };
+
+        # PulseAudio configuration
+        services.pulseaudio = lib.mkIf (cfg.type == "pulseaudio" || cfg.pulseaudio.enable) {
+          enable = true;
+          support32Bit = cfg.pulseaudio.support32Bit;
+          extraModules = cfg.pulseaudio.extraModules;
+        };
+
+        # ALSA configuration
+        sound.enable = lib.mkIf (cfg.type == "alsa" || cfg.alsa.enable) true;
+        hardware.pulseaudio.support32Bit = cfg.alsa.support32Bit;
+
+        # Security for audio
+        security.rtkit.enable = true;
       };
-
-      # PulseAudio configuration
-      services.pulseaudio = lib.mkIf (cfg.type == "pulseaudio" || cfg.pulseaudio.enable) {
-        enable = true;
-        support32Bit = cfg.pulseaudio.support32Bit;
-        extraModules = cfg.pulseaudio.extraModules;
-      };
-
-      # ALSA configuration
-      sound.enable = lib.mkIf (cfg.type == "alsa" || cfg.alsa.enable) true;
-      hardware.pulseaudio.support32Bit = cfg.alsa.support32Bit;
-
-      # Security for audio
-      security.rtkit.enable = true;
-    };
   };
 
   # Storage configurations
@@ -157,7 +161,7 @@ let
         autoSnapshot = lib.mkDefault true;
         pools = lib.mkOption {
           type = lib.types.listOf lib.types.str;
-          default = [];
+          default = [ ];
           description = "ZFS pools to manage";
         };
       };
@@ -170,7 +174,7 @@ let
         };
         devices = lib.mkOption {
           type = lib.types.listOf lib.types.str;
-          default = [];
+          default = [ ];
           description = "RAID devices";
         };
       };
@@ -182,27 +186,31 @@ let
       };
     };
 
-    config = let
-      cfg = config.hardware.storage;
-    in lib.mkIf cfg.enable {
-      # ZFS configuration
-      boot.supportedFilesystems = lib.mkIf cfg.zfs.enable [ "zfs" ];
-      services.zfs = lib.mkIf cfg.zfs.enable {
-        autoScrub.enable = cfg.zfs.autoScrub;
-        autoSnapshot.enable = cfg.zfs.autoSnapshot;
+    config =
+      let
+        cfg = config.hardware.storage;
+      in
+      lib.mkIf cfg.enable {
+        # ZFS configuration
+        boot.supportedFilesystems = lib.mkIf cfg.zfs.enable [ "zfs" ];
+        services.zfs = lib.mkIf cfg.zfs.enable {
+          autoScrub.enable = cfg.zfs.autoScrub;
+          autoSnapshot.enable = cfg.zfs.autoSnapshot;
+        };
+
+        # RAID configuration
+        boot.initrd.availableKernelModules = lib.mkIf cfg.raid.enable [ "raid0" "raid1" "raid10" "raid456" ];
+
+        # SSD optimizations
+        fileSystems = lib.mkIf cfg.ssd.enable (lib.mapAttrs'
+          (name: value: lib.nameValuePair name (value // {
+            options = (value.options or [ ]) ++ (lib.optionals cfg.ssd.noatime [ "noatime" ]) ++ (lib.optionals cfg.ssd.discard [ "discard" ]);
+          }))
+          config.fileSystems);
+
+        # TRIM support
+        services.fstrim.enable = cfg.ssd.trim;
       };
-
-      # RAID configuration
-      boot.initrd.availableKernelModules = lib.mkIf cfg.raid.enable [ "raid0" "raid1" "raid10" "raid456" ];
-
-      # SSD optimizations
-      fileSystems = lib.mkIf cfg.ssd.enable (lib.mapAttrs' (name: value: lib.nameValuePair name (value // {
-        options = (value.options or []) ++ (lib.optionals cfg.ssd.noatime [ "noatime" ]) ++ (lib.optionals cfg.ssd.discard [ "discard" ]);
-      })) config.fileSystems);
-
-      # TRIM support
-      services.fstrim.enable = cfg.ssd.trim;
-    };
   };
 
   # Network configurations
@@ -213,7 +221,7 @@ let
         enable = lib.mkEnableOption "Enable WiFi support";
         firmware = lib.mkOption {
           type = lib.types.listOf lib.types.str;
-          default = [];
+          default = [ ];
           description = "WiFi firmware packages";
         };
       };
@@ -222,7 +230,7 @@ let
         powerOnBoot = lib.mkDefault true;
         settings = lib.mkOption {
           type = lib.types.attrs;
-          default = {};
+          default = { };
           description = "Bluetooth configuration";
         };
       };
@@ -232,30 +240,34 @@ let
       };
     };
 
-    config = let
-      cfg = config.hardware.network;
-    in lib.mkIf cfg.enable {
-      # WiFi configuration
-      hardware.wirelessRegulatoryDatabase = lib.mkIf cfg.wifi.enable true;
-      hardware.firmware = lib.mkIf cfg.wifi.enable (with pkgs; [
-        linux-firmware
-        wireless-regdb
-      ] ++ cfg.wifi.firmware);
+    config =
+      let
+        cfg = config.hardware.network;
+      in
+      lib.mkIf cfg.enable {
+        # WiFi configuration
+        hardware.wirelessRegulatoryDatabase = lib.mkIf cfg.wifi.enable true;
+        hardware.firmware = lib.mkIf cfg.wifi.enable (with pkgs; [
+          linux-firmware
+          wireless-regdb
+        ] ++ cfg.wifi.firmware);
 
-      # Bluetooth configuration
-      hardware.bluetooth = lib.mkIf cfg.bluetooth.enable {
-        enable = true;
-        powerOnBoot = cfg.bluetooth.powerOnBoot;
-        settings = cfg.bluetooth.settings;
-      };
-
-      # Ethernet configuration
-      networking.interfaces = lib.mkIf cfg.ethernet.enable (lib.mapAttrs' (name: value: lib.nameValuePair name (value // {
-        wakeOnLan = lib.mkIf cfg.ethernet.wakeOnLan {
+        # Bluetooth configuration
+        hardware.bluetooth = lib.mkIf cfg.bluetooth.enable {
           enable = true;
+          powerOnBoot = cfg.bluetooth.powerOnBoot;
+          settings = cfg.bluetooth.settings;
         };
-      })) config.networking.interfaces);
-    };
+
+        # Ethernet configuration
+        networking.interfaces = lib.mkIf cfg.ethernet.enable (lib.mapAttrs'
+          (name: value: lib.nameValuePair name (value // {
+            wakeOnLan = lib.mkIf cfg.ethernet.wakeOnLan {
+              enable = true;
+            };
+          }))
+          config.networking.interfaces);
+      };
   };
 
   # Input device configurations
@@ -291,32 +303,35 @@ let
       };
     };
 
-    config = let
-      cfg = config.hardware.input;
-    in lib.mkIf cfg.enable {
-      # Keyboard configuration
-      services.xserver = lib.mkIf cfg.keyboard.enable {
-        layout = cfg.keyboard.layout;
-        xkbVariant = cfg.keyboard.variant;
-      };
+    config =
+      let
+        cfg = config.hardware.input;
+      in
+      lib.mkIf cfg.enable {
+        # Keyboard configuration
+        services.xserver = lib.mkIf cfg.keyboard.enable {
+          layout = cfg.keyboard.layout;
+          xkbVariant = cfg.keyboard.variant;
+        };
 
-      # Mouse configuration
-      services.xserver = lib.mkIf cfg.mouse.enable {
-        libinput.mouse.accelProfile = cfg.mouse.accelProfile;
-      };
+        # Mouse configuration
+        services.xserver = lib.mkIf cfg.mouse.enable {
+          libinput.mouse.accelProfile = cfg.mouse.accelProfile;
+        };
 
-      # Touchpad configuration
-      services.xserver = lib.mkIf cfg.touchpad.enable {
-        libinput.touchpad = {
-          naturalScrolling = cfg.touchpad.naturalScrolling;
-          tapToClick = cfg.touchpad.tapToClick;
-          scrollMethod = lib.mkIf cfg.touchpad.twoFingerScroll "twofinger";
+        # Touchpad configuration
+        services.xserver = lib.mkIf cfg.touchpad.enable {
+          libinput.touchpad = {
+            naturalScrolling = cfg.touchpad.naturalScrolling;
+            tapToClick = cfg.touchpad.tapToClick;
+            scrollMethod = lib.mkIf cfg.touchpad.twoFingerScroll "twofinger";
+          };
         };
       };
-    };
   };
 
-in {
+in
+{
   # Export all hardware modules
   inherit gpu audio storage network input;
 

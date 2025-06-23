@@ -5,10 +5,10 @@
 
   services.ci-runner = {
     enable = true;
-    maxParallelJobs = 8;  # Higher parallel job limit
+    maxParallelJobs = 8; # Higher parallel job limit
     retryAttempts = 3;
-    retryDelay = 2;       # Shorter retry delay
-    logLevel = "debug";   # More detailed logging
+    retryDelay = 2; # Shorter retry delay
+    logLevel = "debug"; # More detailed logging
     enableMetrics = true;
   };
 
@@ -38,4 +38,4 @@
       systemctl start ci-runner
     '')
   ];
-} 
+}

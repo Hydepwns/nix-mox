@@ -109,7 +109,7 @@ in
           };
         };
       }));
-      default = {};
+      default = { };
       description = "Attribute set defining the secrets to fetch from Infisical.";
       example = lib.literalExpression ''
         "my-app" = {
@@ -141,7 +141,7 @@ in
       let
         setsWithTimers = lib.filter (name: infisicalCfg.secrets.${name}.update_timer.enable) (builtins.attrNames infisicalCfg.secrets);
       in
-        map (name: createSecretTimer name infisicalCfg.secrets.${name}) setsWithTimers
+      map (name: createSecretTimer name infisicalCfg.secrets.${name}) setsWithTimers
     );
   };
 }

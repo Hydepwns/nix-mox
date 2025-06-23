@@ -249,7 +249,8 @@ let
     julia
   ];
 
-in {
+in
+{
   # Export all development packages
   inherit ide compilers debuggers utilities databases webdev mobile gamedev aiml;
 

@@ -10,24 +10,27 @@ let
   isCorrectArch = system: builtins.elem system windows;
 
   # Get architecture-specific dependencies
-  getArchDeps = system: let
-    commonDeps = [
-      pkgs.bash
-      pkgs.coreutils
-      pkgs.gawk
-      pkgs.gnugrep
-      pkgs.gnused
-      pkgs.curl
-      pkgs.jq
-    ];
-    archSpecificDeps = if system == "x86_64-windows" then [
-      (safeGetPkg "powershell")
-      (safeGetPkg "python3")
-    ] else if system == "aarch64-windows" then [
-      (safeGetPkg "powershell")
-    ] else [];
-    filteredDeps = builtins.filter (pkg: pkg != null) archSpecificDeps;
-  in commonDeps ++ filteredDeps;
+  getArchDeps = system:
+    let
+      commonDeps = [
+        pkgs.bash
+        pkgs.coreutils
+        pkgs.gawk
+        pkgs.gnugrep
+        pkgs.gnused
+        pkgs.curl
+        pkgs.jq
+      ];
+      archSpecificDeps =
+        if system == "x86_64-windows" then [
+          (safeGetPkg "powershell")
+          (safeGetPkg "python3")
+        ] else if system == "aarch64-windows" then [
+          (safeGetPkg "powershell")
+        ] else [ ];
+      filteredDeps = builtins.filter (pkg: pkg != null) archSpecificDeps;
+    in
+    commonDeps ++ filteredDeps;
 
   # Create a package with proper architecture checking
   createWindowsPackage = name: scriptPath: deps:
@@ -38,10 +41,12 @@ let
     else
       pkgs.symlinkJoin {
         inherit name;
-        paths = [ (pkgs.writeScriptBin name ''
-          #!${pkgs.bash}/bin/bash
-          ${readScript scriptPath}
-        '') ];
+        paths = [
+          (pkgs.writeScriptBin name ''
+            #!${pkgs.bash}/bin/bash
+            ${readScript scriptPath}
+          '')
+        ];
         buildInputs = [ pkgs.makeWrapper ];
         postBuild = ''
           wrapProgram $out/bin/${name} \
@@ -66,17 +71,20 @@ in
     pkgs.curl
   ];
 
-  windows-automation-assets-sources = if isDarwin pkgs.system then pkgs.stdenv.mkDerivation {
-    name = "windows-automation-assets-sources";
-    src = ./../scripts/windows;
-    installPhase = ''
-      mkdir -p $out
-      cp $src/install-steam-rust.nu $out/
-      cp $src/run-steam-rust.bat $out/
-      cp $src/InstallSteamRust.xml $out/
-    '';
-    meta = {
-      description = "Source files for Windows automation (Steam, Rust NuShell script, .bat, .xml). Requires Nushell on the Windows host.";
-    };
-  } else null;
+  windows-automation-assets-sources =
+    if isDarwin pkgs.system then
+      pkgs.stdenv.mkDerivation
+        {
+          name = "windows-automation-assets-sources";
+          src = ./../scripts/windows;
+          installPhase = ''
+            mkdir -p $out
+            cp $src/install-steam-rust.nu $out/
+            cp $src/run-steam-rust.bat $out/
+            cp $src/InstallSteamRust.xml $out/
+          '';
+          meta = {
+            description = "Source files for Windows automation (Steam, Rust NuShell script, .bat, .xml). Requires Nushell on the Windows host.";
+          };
+        } else null;
 }

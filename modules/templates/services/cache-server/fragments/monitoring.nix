@@ -85,17 +85,17 @@ in
     systemd.services."nix-mox-cache-server-${cfg.cacheType}".serviceConfig.ExecStart =
       lib.mkIf (cfg.enable && cfg.cacheType == "redis" || cfg.cacheType == "memcached")
         pkgs.writeScript "cache-server-with-monitoring" ''
-          #!${pkgs.bash}/bin/bash
-          set -e
+        #!${pkgs.bash}/bin/bash
+        set -e
 
-          # Source error handling
-          . ${errorHandling}/bin/template-error-handler
+        # Source error handling
+        . ${errorHandling}/bin/template-error-handler
 
-          # Set up monitoring
-          ${setupMonitoring cfg.cacheType}
+        # Set up monitoring
+        ${setupMonitoring cfg.cacheType}
 
-          # Check monitoring health
-          ${checkMonitoring cfg.cacheType}
-        '';
+        # Check monitoring health
+        ${checkMonitoring cfg.cacheType}
+      '';
   };
 }

@@ -125,7 +125,7 @@ in
     };
     customConfig = lib.mkOption {
       type = lib.types.attrs;
-      default = {};
+      default = { };
       description = "Custom database configuration";
     };
   };
@@ -188,4 +188,4 @@ in
       };
     };
   };
-} 
+}

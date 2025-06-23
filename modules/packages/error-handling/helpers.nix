@@ -35,4 +35,5 @@ let
     # Expose platform detection functions
     inherit isLinux isDarwin;
   };
-in self
+in
+self

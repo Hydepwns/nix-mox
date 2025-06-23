@@ -52,7 +52,7 @@ in
           };
         };
       }));
-      default = {};
+      default = { };
       description = "Configuration for disk monitoring";
       example = lib.literalExpression ''
         {
@@ -93,7 +93,7 @@ in
           };
         };
       }));
-      default = {};
+      default = { };
       description = "Configuration for storage pool monitoring";
     };
   };

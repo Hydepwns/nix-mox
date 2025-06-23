@@ -225,12 +225,12 @@ in
           };
         };
       });
-      default = [];
+      default = [ ];
       description = "List of virtual hosts to configure";
     };
     customConfig = lib.mkOption {
       type = lib.types.attrs;
-      default = {};
+      default = { };
       description = "Custom server configuration";
     };
   };
@@ -289,4 +289,4 @@ in
       };
     };
   };
-} 
+}

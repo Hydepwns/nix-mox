@@ -10,7 +10,7 @@
     # Additional popular messaging platforms
     discord
     slack
-    element-desktop  # Matrix client
+    element-desktop # Matrix client
     whatsapp-for-linux
 
     # Video calling and conferencing
@@ -54,7 +54,7 @@
     video4linux2.enable = true;
 
     # Enable audio support for voice calls
-    pulseaudio.enable = false;  # Disable if using PipeWire
+    pulseaudio.enable = false; # Disable if using PipeWire
   };
 
   # Configure PipeWire for audio/video calls (if not already configured)
@@ -64,6 +64,6 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-    jack.enable = true;  # For professional audio applications
+    jack.enable = true; # For professional audio applications
   };
 }

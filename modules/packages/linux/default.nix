@@ -10,33 +10,36 @@ let
   isCorrectArch = system: builtins.elem system linux;
 
   # Get architecture-specific dependencies
-  getArchDeps = system: let
-    # Common dependencies available on all Linux architectures
-    commonDeps = [
-      pkgs.bash
-      pkgs.coreutils
-      pkgs.gawk
-      pkgs.gnugrep
-      pkgs.gnused
-      pkgs.gnutar
-    ];
+  getArchDeps = system:
+    let
+      # Common dependencies available on all Linux architectures
+      commonDeps = [
+        pkgs.bash
+        pkgs.coreutils
+        pkgs.gawk
+        pkgs.gnugrep
+        pkgs.gnused
+        pkgs.gnutar
+      ];
 
-    # Architecture-specific dependencies
-    archSpecificDeps = if system == "x86_64-linux" then [
-      (safeGetPkg "proxmox-backup-client")
-      (safeGetPkg "qemu")
-      (safeGetPkg "lxc")
-      (safeGetPkg "zfs")
-    ] else if system == "aarch64-linux" then [
-      # For aarch64, use more basic alternatives or skip problematic packages
-      (safeGetPkg "qemu")
-      (safeGetPkg "lxc")
-      (safeGetPkg "zfs")
-    ] else [];
+      # Architecture-specific dependencies
+      archSpecificDeps =
+        if system == "x86_64-linux" then [
+          (safeGetPkg "proxmox-backup-client")
+          (safeGetPkg "qemu")
+          (safeGetPkg "lxc")
+          (safeGetPkg "zfs")
+        ] else if system == "aarch64-linux" then [
+          # For aarch64, use more basic alternatives or skip problematic packages
+          (safeGetPkg "qemu")
+          (safeGetPkg "lxc")
+          (safeGetPkg "zfs")
+        ] else [ ];
 
-    # Filter out null values
-    filteredDeps = builtins.filter (pkg: pkg != null) archSpecificDeps;
-  in commonDeps ++ filteredDeps;
+      # Filter out null values
+      filteredDeps = builtins.filter (pkg: pkg != null) archSpecificDeps;
+    in
+    commonDeps ++ filteredDeps;
 
   # Create a package with proper architecture checking
   createLinuxPackage = name: scriptPath: deps:
@@ -47,10 +50,12 @@ let
     else
       pkgs.symlinkJoin {
         inherit name;
-        paths = [ (pkgs.writeScriptBin name ''
-          #!${pkgs.nushell}/bin/nu
-          ${readScript scriptPath}
-        '') ];
+        paths = [
+          (pkgs.writeScriptBin name ''
+            #!${pkgs.nushell}/bin/nu
+            ${readScript scriptPath}
+          '')
+        ];
         buildInputs = [ pkgs.makeWrapper ];
         postBuild = ''
           wrapProgram $out/bin/${name} \

@@ -12,34 +12,37 @@ let
   isCorrectArch = system: builtins.elem system macos;
 
   # Get architecture-specific dependencies
-  getArchDeps = system: let
-    # Common dependencies available on all macOS architectures
-    commonDeps = [
-      pkgs.bash
-      pkgs.coreutils
-      pkgs.gawk
-      pkgs.gnugrep
-      pkgs.gnused
-      pkgs.gnutar
-      pkgs.curl
-      pkgs.jq
-    ];
+  getArchDeps = system:
+    let
+      # Common dependencies available on all macOS architectures
+      commonDeps = [
+        pkgs.bash
+        pkgs.coreutils
+        pkgs.gawk
+        pkgs.gnugrep
+        pkgs.gnused
+        pkgs.gnutar
+        pkgs.curl
+        pkgs.jq
+      ];
 
-    # Architecture-specific dependencies
-    archSpecificDeps = if system == "x86_64-darwin" then [
-      # Intel Mac specific packages
-      (safeGetPkg "homebrew")
-      (safeGetPkg "mas")
-    ] else if system == "aarch64-darwin" then [
-      # Apple Silicon specific packages
-      (safeGetPkg "homebrew")
-      (safeGetPkg "mas")
-      (safeGetPkg "cocoapods")
-    ] else [];
+      # Architecture-specific dependencies
+      archSpecificDeps =
+        if system == "x86_64-darwin" then [
+          # Intel Mac specific packages
+          (safeGetPkg "homebrew")
+          (safeGetPkg "mas")
+        ] else if system == "aarch64-darwin" then [
+          # Apple Silicon specific packages
+          (safeGetPkg "homebrew")
+          (safeGetPkg "mas")
+          (safeGetPkg "cocoapods")
+        ] else [ ];
 
-    # Filter out null values
-    filteredDeps = builtins.filter (pkg: pkg != null) archSpecificDeps;
-  in commonDeps ++ filteredDeps;
+      # Filter out null values
+      filteredDeps = builtins.filter (pkg: pkg != null) archSpecificDeps;
+    in
+    commonDeps ++ filteredDeps;
 
   # Create a package with proper architecture checking
   createMacOSPackage = name: scriptPath: deps:
@@ -50,10 +53,12 @@ let
     else
       pkgs.symlinkJoin {
         inherit name;
-        paths = [ (pkgs.writeScriptBin name ''
-          #!${pkgs.nushell}/bin/nu
-          ${readScript scriptPath}
-        '') ];
+        paths = [
+          (pkgs.writeScriptBin name ''
+            #!${pkgs.nushell}/bin/nu
+            ${readScript scriptPath}
+          '')
+        ];
         buildInputs = [ pkgs.makeWrapper ];
         postBuild = ''
           wrapProgram $out/bin/${name} \

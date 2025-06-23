@@ -238,12 +238,12 @@ in
           };
         };
       });
-      default = [];
+      default = [ ];
       description = "List of backends to configure";
     };
     customConfig = lib.mkOption {
       type = lib.types.attrs;
-      default = {};
+      default = { };
       description = "Custom load balancer configuration";
     };
   };
@@ -302,4 +302,4 @@ in
       };
     };
   };
-} 
+}

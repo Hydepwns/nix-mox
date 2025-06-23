@@ -79,7 +79,7 @@ in
           };
         };
       }));
-      default = {};
+      default = { };
       description = "Attribute set defining the secrets to fetch from Infisical.";
       example = ''
         "my-app" = {
@@ -111,7 +111,7 @@ in
       let
         setsWithTimers = filter (name: cfg.secrets.${name}.update_timer.enable) (builtins.attrNames cfg.secrets);
       in
-        map (name: createSecretTimer name cfg.secrets.${name}) setsWithTimers
+      map (name: createSecretTimer name cfg.secrets.${name}) setsWithTimers
     );
   };
-} 
+}

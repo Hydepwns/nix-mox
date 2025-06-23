@@ -10,9 +10,9 @@
   # Grafana-only configuration (assumes external Prometheus)
   services.grafana.settings.security = {
     admin_user = "admin";
-    admin_password = "admin";  # Change in production
-    secret_key = "your-secret-key-here";  # Change in production
-    cookie_secure = false;  # Set to true in production with HTTPS
+    admin_password = "admin"; # Change in production
+    secret_key = "your-secret-key-here"; # Change in production
+    cookie_secure = false; # Set to true in production with HTTPS
     allow_embedding = false;
     disable_initial_admin_creation = false;
   };
@@ -23,7 +23,7 @@
       name = "External Prometheus";
       type = "prometheus";
       access = "proxy";
-      url = "http://prometheus-server:9090";  # Change to your Prometheus URL
+      url = "http://prometheus-server:9090"; # Change to your Prometheus URL
       isDefault = true;
       editable = false;
       jsonData = {

@@ -40,7 +40,7 @@ in
           };
         };
       }));
-      default = {};
+      default = { };
       description = "Configuration for ZFS pools/datasets to snapshot.";
       example = lib.literalExpression ''
         {

@@ -12,4 +12,4 @@
     hostname: my-nixos-lxc  # Change to your desired hostname
     # Add more cloud-init options as needed
   '';
-} 
+}

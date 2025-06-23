@@ -12,4 +12,4 @@
     hostname: my-nixos-vm  # Change to your desired hostname
     # Add more cloud-init options as needed
   '';
-} 
+}

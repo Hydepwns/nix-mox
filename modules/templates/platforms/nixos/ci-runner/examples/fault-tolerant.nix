@@ -6,9 +6,9 @@
   services.ci-runner = {
     enable = true;
     maxParallelJobs = 4;
-    retryAttempts = 5;    # More retry attempts
-    retryDelay = 10;      # Longer retry delay
-    logLevel = "debug";   # Detailed logging for debugging
+    retryAttempts = 5; # More retry attempts
+    retryDelay = 10; # Longer retry delay
+    logLevel = "debug"; # Detailed logging for debugging
     enableMetrics = true;
   };
 
@@ -59,4 +59,4 @@
       systemctl start ci-runner
     '')
   ];
-} 
+}

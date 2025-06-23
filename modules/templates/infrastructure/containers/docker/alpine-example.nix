@@ -3,7 +3,7 @@ let
   # CI/CD specific configuration
   isCI = builtins.getEnv "CI" == "true";
   logLevel = if isCI then "debug" else "info";
-  
+
   # Container configuration
   cfg = {
     name = "alpine";
@@ -38,11 +38,11 @@ in
   virtualisation.oci-containers.containers.${cfg.name} = {
     image = cfg.image;
     autoStart = true;
-    
+
     # Enhanced command with logging
-    command = [ 
-      "sh" 
-      "-c" 
+    command = [
+      "sh"
+      "-c"
       "echo 'Container started at $(date)' > /logs/startup.log && sleep infinity"
     ];
 
@@ -62,7 +62,7 @@ in
 
     # Improved health check
     healthcheck = {
-      test = ["CMD" "sh" "-c" "echo ok > /logs/health.log && echo ok"];
+      test = [ "CMD" "sh" "-c" "echo ok > /logs/health.log && echo ok" ];
       interval = "30s";
       timeout = "3s";
       retries = 3;
@@ -126,4 +126,4 @@ in
   # Note: Create the Docker network on the host with:
   #   docker network create --subnet=172.28.0.0/16 alpine-net
   # And ensure /tmp/alpine-data and /tmp/alpine-logs exist and are writable by Docker.
-} 
+}

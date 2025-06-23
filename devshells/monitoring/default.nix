@@ -5,7 +5,7 @@ let
   isDarwin = pkgs.stdenv.isDarwin;
 
   # Helper function to safely get package if it exists
-  safeGet = attr: pkgSet: if pkgSet ? ${attr} then [ pkgSet.${attr} ] else [];
+  safeGet = attr: pkgSet: if pkgSet ? ${attr} then [ pkgSet.${attr} ] else [ ];
 
   # Common packages available on all platforms
   commonPackages = [
@@ -18,9 +18,9 @@ let
     pkgs.fd
     pkgs.ripgrep
   ] ++ safeGet "prometheus" pkgs
-    ++ safeGet "grafana" pkgs
-    ++ safeGet "loki" pkgs
-    ++ safeGet "promtail" pkgs;
+  ++ safeGet "grafana" pkgs
+  ++ safeGet "loki" pkgs
+  ++ safeGet "promtail" pkgs;
 
   # Linux-specific packages (essential only)
   linuxPackages = lib.optionals isLinux (
@@ -29,10 +29,10 @@ let
   );
 
   # Darwin-specific packages (disabled)
-  darwinPackages = [];
+  darwinPackages = [ ];
 in
 pkgs.mkShell {
-  buildInputs = if isDarwin then [] else (commonPackages ++ linuxPackages);
+  buildInputs = if isDarwin then [ ] else (commonPackages ++ linuxPackages);
 
   shellHook = ''
     # Function to show help menu
