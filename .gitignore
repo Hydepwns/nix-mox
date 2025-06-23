@@ -1,5 +1,6 @@
 # Build artifacts
 result/
+result-*/
 coverage-tmp/
 tmp/
 *.log
