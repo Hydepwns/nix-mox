@@ -55,8 +55,8 @@ runs:
           print $"Using script path: ($script_path)"
           print $"Absolute path exists: (ls $script_path | length | $in > 0)"
 
-          source $script_path
-          run $verbose_flag
+          # Fix: Use nu -c instead of source to avoid parse-time constant requirement
+          nu -c $"source ($script_path); run ($verbose_flag)"
           print "✅ All test suites completed successfully"
         } catch {
           print $"❌ Test execution failed: ($env.LAST_ERROR)"
