@@ -39,7 +39,7 @@ runs:
         $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
 
         let test_suites = ($env.TEST_SUITES | split row ",")
-        let verbose_flag = if $env.VERBOSE == "true" { "--verbose" } else { "" }
+        let verbose_flag = if $env.VERBOSE == "true" { ["--verbose"] } else { [] }
 
         print "🧪 Running test suites: ($test_suites | str join ', ')"
 
@@ -56,7 +56,7 @@ runs:
           print $"Using script path: ($script_path)"
           print $"Script exists: (ls $script_path | length | $in > 0)"
 
-          nu -c $"source ($script_path); run ($verbose_flag)"
+          nu -c $"source ($script_path); run ($verbose_flag | str join ' ')"
           print "✅ All test suites completed successfully"
         } catch { |err|
           print $"❌ Test execution failed: ($err)"
