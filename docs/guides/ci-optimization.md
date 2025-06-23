@@ -69,7 +69,7 @@ Created new workflow files with better performance:
 - name: Setup Nushell
   uses: hustcer/setup-nu@v3
   with:
-    version: "0.90"
+    version: "0.104"
     check-latest: false
 
 - name: Run tests
@@ -159,7 +159,7 @@ baseChecks = {
    - name: Setup Nushell
      uses: hustcer/setup-nu@v3
      with:
-       version: "0.90"
+       version: "0.104"
        check-latest: false
    ```
 

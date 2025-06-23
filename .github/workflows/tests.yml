@@ -24,7 +24,7 @@ jobs:
     - name: Setup Nushell
       uses: hustcer/setup-nu@v3
       with:
-        version: "0.90"  # Use a stable version
+        version: "0.104"  # Use a valid stable version
         check-latest: false
 
     - name: Check for Cachix Key

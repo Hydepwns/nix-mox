@@ -6,7 +6,7 @@ This guide covers the optimized macOS development environment for nix-mox, inclu
 
 ### Using the Optimized Setup
 
-The nix-mox project now uses the [setup-nu GitHub Action](https://github.com/marketplace/actions/setup-nu) for fast Nushell installation on macOS, avoiding the slow build-from-source process.
+The nix-mox project now uses the [setup-nu GitHub Action](https://github.com/marketplace/actions/setup-nu) for fast Nushell installation on macOS, avoiding the slow build-from-source process. The project uses Nushell version 0.104 for stability and compatibility.
 
 ```bash
 # Enter the default development shell
