@@ -34,7 +34,7 @@ jobs:
           $env.CI = "true"
 
           print "🔍 Quick flake evaluation for macOS..."
-          print $"System: ($env.matrix.system)"
+          print $"System: ${{ matrix.system }}"
 
           # Fast evaluation without building
           nix flake show --accept-flake-config
@@ -42,7 +42,7 @@ jobs:
 
           # Check if packages can be evaluated (without building)
           print "📦 Checking package evaluation..."
-          nix eval .#packages.$env.matrix.system --accept-flake-config --json | from json | print
+          nix eval .#packages.${{ matrix.system }} --accept-flake-config --json | from json | print
 
           print "✅ macOS evaluation completed successfully!"
 
@@ -94,10 +94,10 @@ jobs:
           $env.CI = "true"
 
           print "🔨 Building essential macOS packages..."
-          print $"System: ($env.matrix.system)"
+          print $"System: ${{ matrix.system }}"
 
           # Only build the most essential packages
-          nix build .#install .#uninstall --system $env.matrix.system --accept-flake-config --timeout 900
+          nix build .#install .#uninstall --system ${{ matrix.system }} --accept-flake-config --timeout 900
 
           print "✅ Essential packages built successfully!"
 
