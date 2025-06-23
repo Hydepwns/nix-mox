@@ -1,138 +1,135 @@
-# macOS Development Shell
+# macOS Shell Guide
 
-> **⚠️ Note:**
-> As of Nixpkgs 25.11, the macOS SDK stubs (CoreServices, Foundation, MacOSX-SDK) used in this shell are deprecated and will be removed in a future release. The shell will continue to work for now, but you should monitor the [Nixpkgs Darwin documentation](https://nixos.org/manual/nixpkgs/stable/#sec-darwin) for migration instructions and update your configuration accordingly when new methods are available.
+This guide covers the optimized macOS development environment for nix-mox, including fast Nushell setup and CI improvements.
 
-The macOS development shell provides a comprehensive development environment for macOS users, with tools and configurations optimized for macOS development.
+## Quick Start
 
-## Features
+### Using the Optimized Setup
 
-### Core Development Tools
-
-- Git for version control
-- Nix and Nixpkgs-fmt for package management and formatting
-- Shellcheck for shell script validation
-- Coreutils for basic Unix commands
-- fd and ripgrep for efficient file searching
-
-### macOS Specific Tools
-
-- CoreServices framework for macOS system integration
-- Foundation framework for macOS development
-
-### Development Tools
-
-- Visual Studio Code for code editing
-- nixpkgs-code-cursor for AI-powered code navigation and editing
-- jq and yq for JSON and YAML processing
-- curl and wget for network operations
-- htop for system monitoring
-- tmux for terminal multiplexing
-- zsh with oh-my-zsh for enhanced shell experience
-
-## Usage
-
-### Entering the Shell
+The nix-mox project now uses the [setup-nu GitHub Action](https://github.com/marketplace/actions/setup-nu) for fast Nushell installation on macOS, avoiding the slow build-from-source process.
 
 ```bash
+# Enter the default development shell
+nix develop
+
+# Or enter the macOS-specific shell
 nix develop .#macos
 ```
 
-### Available Commands
+### Manual Nushell Installation (Alternative)
 
-#### Git
-
-```bash
-git status                       # Check repository status
-git log --oneline               # View commit history
-```
-
-#### Nix
+If you prefer to install Nushell manually:
 
 ```bash
-nix develop                     # Enter development shell
-nix build                       # Build packages
+# Using Homebrew (recommended for macOS)
+brew install nushell
+
+# Or using the official installer
+curl -sSf https://get.nushell.sh | sh
 ```
 
-#### Using Development Tools
+## CI/CD Optimizations
+
+### Fast macOS Workflows
+
+The project includes optimized CI workflows for macOS:
+
+1. **macos-optimized.yml**: Fast evaluation and essential package builds
+2. **tests.yml**: Updated to use setup-nu action
+3. **ci.yml**: Optimized with reduced timeouts
+
+### Performance Improvements
+
+- **Before**: 60+ minutes for macOS builds (building Nushell from source)
+- **After**: 15-30 minutes for macOS builds (using pre-built Nushell)
+
+### Key Changes
+
+1. **setup-nu Action**: Uses pre-built Nushell binaries
+2. **Reduced Timeouts**: macOS builds now timeout at 15-30 minutes instead of 60+
+3. **Smart Dependencies**: Uses system Nushell when available
+4. **Fast Evaluation**: Quick flake evaluation without building packages
+
+## Development Workflow
+
+### Local Development
 
 ```bash
-code .                          # Open current directory in VS Code
-jq '.' file.json               # Pretty print JSON
-yq eval '.' file.yaml          # Pretty print YAML
-curl -O url                    # Download file
-wget url                       # Download file
-htop                           # System monitor
-tmux new -s session           # New tmux session
-tmux attach -t session        # Attach to tmux session
-zsh                           # Start ZSH shell
+# Enter development shell with all tools
+nix develop .#development
+
+# Run tests
+nix flake check
+
+# Build packages
+nix build .#install .#uninstall
 ```
 
-#### Cursor (nixpkgs-code-cursor)
+### Testing
 
 ```bash
-cursor .   # Launch Cursor editor in the current directory
+# Run unit tests
+nix flake check .#checks.unit
+
+# Run integration tests
+nix flake check .#checks.integration
+
+# Run full test suite
+nix flake check .#checks.test-suite
 ```
 
-### Help Menu
+## Platform-Specific Features
 
-The shell provides a built-in help menu that can be accessed by typing:
+### macOS-Specific Tools
+
+- **homebrew-setup**: Automated Homebrew installation and configuration
+- **macos-maintenance**: System maintenance scripts
+- **xcode-setup**: Xcode command line tools setup
+- **security-audit**: Security auditing tools
+
+### Environment Variables
+
+The shell automatically sets these environment variables:
 
 ```bash
-help
+NIX_MOX_PLATFORM=x86_64-darwin  # or aarch64-darwin
+NIX_MOX_IS_DARWIN=true
+NIX_MOX_ARCH=x86_64  # or aarch64
 ```
-
-This will show:
-
-- Available tools and their versions
-- Common commands for each tool
-- Quick start guide
-- Additional information
-
-## Tips and Tricks
-
-1. **Customizing the Shell**
-   - The shell uses zsh with oh-my-zsh, which can be customized through your `.zshrc`
-   - VS Code settings can be customized through the settings UI or `settings.json`
-
-2. **Using tmux**
-   - Create a new session: `tmux new -s mysession`
-   - Attach to a session: `tmux attach -t mysession`
-   - List sessions: `tmux ls`
-   - Detach from session: `Ctrl+b d`
-
-3. **System Monitoring**
-   - Use `htop` for real-time system monitoring
-   - Press `F1` in htop to see all available commands
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **VS Code Not Found**
-   - Ensure you're in the macOS shell: `which-shell`
-   - Try reinstalling the shell: `nix develop .#macos`
+1. **Slow CI Builds**: Ensure you're using the optimized workflows
+2. **Nushell Not Found**: The shell will automatically use system Nushell if available
+3. **Architecture Mismatches**: The optimized workflows handle cross-architecture builds
 
-2. **Framework Issues**
-   - If you encounter framework-related errors, ensure you're on macOS
-   - The shell is only available on macOS systems
+### Performance Tips
 
-3. **Shell Integration**
-   - If oh-my-zsh isn't loading properly, check your `.zshrc`
-   - You may need to source the Nix profile: `source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh`
+1. **Use setup-nu Action**: Always use the setup-nu action in CI workflows
+2. **Limit Package Builds**: Only build essential packages on macOS
+3. **Fast Evaluation**: Use `nix flake show` and `nix flake metadata` for quick checks
+
+## Migration from Old Setup
+
+If you were using the old setup that built Nushell from source:
+
+1. **Update Workflows**: Use the new optimized workflows
+2. **Remove Manual Builds**: No need to manually build Nushell
+3. **Update Dependencies**: The flake now uses system Nushell when available
 
 ## Contributing
 
-If you'd like to add more tools or features to the macOS shell:
+When contributing to the macOS support:
 
-1. Edit `devshells/macos/default.nix`
-2. Add your tools to the `buildInputs` list
-3. Update the help menu in the `shellHook`
-4. Test your changes: `nix develop .#macos`
-5. Submit a pull request
+1. **Test with setup-nu**: Always test with the setup-nu action
+2. **Keep Builds Fast**: Avoid adding heavy dependencies to macOS builds
+3. **Use Pre-built Binaries**: Prefer pre-built binaries over source builds
+4. **Document Changes**: Update this guide when making changes
 
-## Related Documentation
+## References
 
-- [Main README](../README.md)
-- [Development Guide](../CONTRIBUTING.md)
-- [Usage Guide](../USAGE.md)
+- [setup-nu GitHub Action](https://github.com/marketplace/actions/setup-nu)
+- [Nushell Installation Guide](https://www.nushell.sh/book/installation.html)
+- [GitHub Actions macOS Runners](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software)
