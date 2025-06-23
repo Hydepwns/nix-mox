@@ -40,7 +40,9 @@ jobs:
         run: |
           print $"Building packages for ${{ matrix.os }}..."
           print $"Matrix OS value: '${{ matrix.os }}'"
-          print $"Is macOS? (${{ matrix.os }} == 'macos-latest')"
+
+          let is_macos = (${{ matrix.os }} == 'macos-latest')
+          print $"Is macOS? ($is_macos)"
 
           if ${{ matrix.os }} == 'macos-latest' {
             print "🍎 Building macOS-specific packages..."
