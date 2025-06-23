@@ -16,14 +16,14 @@ runs:
       shell: bash
       run: |
         echo "Installing Nix ${{ inputs.nix-version }}..."
-        sh <(curl -L https://nixos.org/nix/install) --daemon --yes
+        sh <(curl -L https://nixos.org/nix/install) --yes
 
         # Source nix environment
-        . /etc/profile.d/nix.sh
+        . $HOME/.nix-profile/etc/profile.d/nix.sh
 
         # Configure Nix
-        mkdir -p /etc/nix
-        cat > /etc/nix/nix.conf << EOF
+        mkdir -p $HOME/.config/nix
+        cat > $HOME/.config/nix/nix.conf << EOF
         experimental-features = nix-command flakes
         accept-flake-config = true
         extra-trusted-public-keys = ${{ inputs.extra-trusted-public-keys }}
