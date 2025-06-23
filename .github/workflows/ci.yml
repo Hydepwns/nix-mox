@@ -15,6 +15,9 @@ jobs:
         system: [x86_64-linux, aarch64-linux]
         nix-version: ['2.19.2', '2.20.1']
       fail-fast: false
+    env:
+      CI: true
+      DISABLE_HEAVY_PACKAGES: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -47,18 +50,10 @@ jobs:
           echo "Building lightweight packages for ${{ matrix.system }}..."
           nix build .#proxmox-update .#nixos-flake-update --system ${{ matrix.system }} --accept-flake-config --timeout 1800
         continue-on-error: true
-      - name: Build heavy packages (aarch64 with reduced parallelism)
-        if: matrix.system == 'aarch64-linux'
+      - name: Build additional packages
         run: |
-          echo "Building heavy packages for aarch64 with reduced parallelism..."
-          echo "Note: Some packages may not be available for aarch64-linux"
-          NIX_BUILD_CORES=1 nix build .#vzdump-backup .#zfs-snapshot --system ${{ matrix.system }} --accept-flake-config --timeout 5400 --keep-going
-        continue-on-error: true
-      - name: Build heavy packages (x86_64)
-        if: matrix.system == 'x86_64-linux'
-        run: |
-          echo "Building heavy packages for x86_64..."
-          nix build .#vzdump-backup .#zfs-snapshot --system ${{ matrix.system }} --accept-flake-config --timeout 5400
+          echo "Building additional packages for ${{ matrix.system }}..."
+          nix build .#install .#uninstall .#remote-builder-setup .#test-remote-builder --system ${{ matrix.system }} --accept-flake-config --timeout 1800
         continue-on-error: true
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -199,14 +194,14 @@ jobs:
 
       - name: Upload test results to Codecov
         if: always()
-        uses: codecov/test-results-action@v1
+        uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage-tmp/codecov.json
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   coverage:
     needs: [test]
@@ -253,14 +248,14 @@ jobs:
 
       - name: Upload coverage report to Codecov
         if: always()
-        uses: codecov/test-results-action@v1
+        uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage-report.json
           flags: coverage
           name: codecov-coverage
           fail_ci_if_error: false
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
@@ -320,3 +315,55 @@ jobs:
           path: |
             tmp/dashboard.json
             tmp/dashboard.md
+
+  build_heavy_packages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      matrix:
+        system: [x86_64-linux]
+        nix-version: ['2.20.1']
+      fail-fast: false
+    env:
+      CI: true
+      # Allow heavy packages for this job
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+      - name: Check for Cachix Key
+        id: cachix-key-check
+        shell: bash
+        run: |
+          # Temporarily disable Cachix until credentials are properly configured
+          echo "present=false" >> $GITHUB_OUTPUT
+          echo "Cachix temporarily disabled - skipping Cachix operations"
+      - name: Push to Cachix
+        if: steps.cachix-key-check.outputs.present == 'true'
+        uses: cachix/cachix-action@v15
+        with:
+          name: nix-mox
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+        continue-on-error: true
+      - name: Build heavy packages
+        run: |
+          echo "Building heavy packages for ${{ matrix.system }}..."
+          # Build heavy packages individually with longer timeouts
+          for pkg in vzdump-backup zfs-snapshot; do
+            echo "Building $pkg..."
+            if nix build .#$pkg --system ${{ matrix.system }} --accept-flake-config --timeout 7200; then
+              echo "Successfully built $pkg"
+            else
+              echo "Failed to build $pkg - continuing with other packages"
+            fi
+          done
+        continue-on-error: true
+      - name: Upload heavy package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nix-mox-heavy-${{ matrix.system }}-${{ matrix.nix-version }}
+          path: result*
+          if-no-files-found: ignore
+        continue-on-error: true
