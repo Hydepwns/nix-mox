@@ -56,6 +56,30 @@ jobs:
           timeout 300 nix flake check --accept-flake-config --no-write-lock-file --no-update-lock-file
         }
 
+    - name: Run tests directly (Linux only)
+      if: runner.os == 'Linux'
+      shell: nu {0}
+      timeout-minutes: 10  # Add step timeout
+      run: |
+        # Set CI environment variable to disable NixOS configs
+        $env.CI = "true"
+        # Run tests directly to see what's happening
+        print "Running tests directly..."
+        try {
+          nu -c "source scripts/tests/run-tests.nu; run ['--unit']"
+          print "Unit tests completed successfully"
+        } catch {
+          print $"Unit tests failed: ($env.LAST_ERROR)"
+        }
+
+        # Check if coverage files were generated
+        print "Checking for coverage files..."
+        if ("/tmp/nix-mox-tests" | path exists) {
+          ls /tmp/nix-mox-tests/
+        } else {
+          print "No /tmp/nix-mox-tests directory found"
+        }
+
     - name: Run basic flake evaluation (macOS)
       if: runner.os == 'macOS'
       shell: nu {0}
