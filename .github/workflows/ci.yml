@@ -40,7 +40,7 @@ jobs:
         run: |
           print $"Building packages for ${{ matrix.os }}..."
 
-          if ${{ matrix.os }} == 'macOS' {
+          if ${{ matrix.os }} == 'macos-latest' {
             print "🍎 Building macOS-specific packages..."
             # Build macOS-specific packages only
             try {
@@ -81,7 +81,7 @@ jobs:
         run: |
           print "📦 Pushing packages to Cachix..."
 
-          if ${{ matrix.os }} == 'macOS' {
+          if ${{ matrix.os }} == 'macos-latest' {
             print "🍎 Pushing macOS-specific packages..."
             # Push macOS-specific packages
             try {
