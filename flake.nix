@@ -78,9 +78,18 @@
             default = systemPackages.install or null;
           };
 
-          # Helper function to filter out null packages
+          # Helper function to filter out null packages and ensure we have at least one package
           filterNullPackages = attrs:
-            builtins.removeAttrs attrs (builtins.attrNames (builtins.filterAttrs (name: value: value == null) attrs));
+            let
+              nullPackages = builtins.filterAttrs (name: value: value == null) attrs;
+              nullNames = builtins.attrNames nullPackages;
+              filtered = builtins.removeAttrs attrs nullNames;
+            in
+            # If all packages are null, provide a minimal fallback
+            if builtins.length (builtins.attrNames filtered) == 0 then
+              { default = pkgs.hello; }  # Fallback package
+            else
+              filtered;
         in
         if pkgs.stdenv.isLinux then
         # Linux packages - only include essential ones
