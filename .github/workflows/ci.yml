@@ -108,7 +108,7 @@ jobs:
             nix flake check --accept-flake-config --impure
             print "✅ Flake check completed successfully"
           } catch {
-            print $"⚠️ Flake check failed: ($env.LAST_ERROR)"
+            print $"⚠️ Flake check failed: ($env.LAST_EXIT_CODE)"
           }
         continue-on-error: true
 

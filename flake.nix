@@ -77,26 +77,30 @@
             uninstall = systemPackages.uninstall or null;
             default = systemPackages.install or null;
           };
+
+          # Helper function to filter out null packages
+          filterNullPackages = attrs:
+            builtins.removeAttrs attrs (builtins.attrNames (builtins.filterAttrs (name: value: value == null) attrs));
         in
         if pkgs.stdenv.isLinux then
         # Linux packages - only include essential ones
-          commonPackages // {
+          filterNullPackages (commonPackages // {
             proxmox-update = systemPackages.proxmox-update or null;
             vzdump-backup = systemPackages.vzdump-backup or null;
             zfs-snapshot = systemPackages.zfs-snapshot or null;
             nixos-flake-update = systemPackages.nixos-flake-update or null;
-          }
+          })
         else if pkgs.stdenv.isDarwin then
         # macOS packages - only include essential ones
-          commonPackages // {
+          filterNullPackages (commonPackages // {
             homebrew-setup = systemPackages.homebrew-setup or null;
             macos-maintenance = systemPackages.macos-maintenance or null;
             xcode-setup = systemPackages.xcode-setup or null;
             security-audit = systemPackages.security-audit or null;
-          }
+          })
         else
         # Other platforms - only common packages
-          commonPackages;
+          filterNullPackages commonPackages;
 
       # Simplified helper function to create platform-specific devShells
       createDevShells = system: pkgs: devShell:
