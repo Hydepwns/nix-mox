@@ -27,16 +27,7 @@ jobs:
         version: "0.104"  # Use a valid stable version
         check-latest: false
 
-    - name: Check for Cachix Key
-      id: cachix-key-check
-      shell: bash
-      run: |
-        # Temporarily disable Cachix until credentials are properly configured
-        echo "present=false" >> $GITHUB_OUTPUT
-        echo "Cachix temporarily disabled - skipping Cachix operations"
-
     - name: Setup Cachix
-      if: steps.cachix-key-check.outputs.present == 'true'
       uses: cachix/cachix-action@v16
       with:
         name: nix-mox

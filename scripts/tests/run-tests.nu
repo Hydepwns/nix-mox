@@ -153,6 +153,12 @@ def run_all_test_suites [config: record] {
             let coverage_path = $"($env.TEST_TEMP_DIR)/coverage.($config.export_format)"
             export_coverage_report $config.export_format | save --force $coverage_path
             print $"($env.GREEN)Coverage report saved as ($coverage_path)($env.NC)"
+
+            # Also save to /tmp for CI workflows to find
+            let ci_coverage_path = $"/tmp/nix-mox-tests/coverage.($config.export_format)"
+            mkdir "/tmp/nix-mox-tests"
+            export_coverage_report $config.export_format | save --force $ci_coverage_path
+            print $"($env.GREEN)CI coverage report saved as ($ci_coverage_path)($env.NC)"
         } catch {
             print $"($env.YELLOW)Warning: Failed to generate coverage report: ($env.LAST_ERROR)($env.NC)"
         }

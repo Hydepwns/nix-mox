@@ -28,15 +28,7 @@ jobs:
         with:
           version: "0.104"
           check-latest: false
-      - name: Check for Cachix Key
-        id: cachix-key-check
-        shell: bash
-        run: |
-          # Temporarily disable Cachix until credentials are properly configured
-          echo "present=false" >> $GITHUB_OUTPUT
-          echo "Cachix temporarily disabled - skipping Cachix operations"
-      - name: Push to Cachix
-        if: steps.cachix-key-check.outputs.present == 'true'
+      - name: Setup Cachix
         uses: cachix/cachix-action@v16
         with:
           name: nix-mox
@@ -47,20 +39,20 @@ jobs:
         shell: nu {0}
         run: |
           print $"Building lightweight packages for ($env.matrix.system)..."
-          nix build .#proxmox-update .#nixos-flake-update --system $env.matrix.system --accept-flake-config --timeout 1800
+          nix build .#proxmox-update .#nixos-flake-update --system $env.matrix.system --accept-flake-config --no-link --timeout 1800
         continue-on-error: true
       - name: Build additional packages
         shell: nu {0}
         run: |
           print $"Building additional packages for ($env.matrix.system)..."
-          nix build .#install .#uninstall .#remote-builder-setup .#test-remote-builder --system $env.matrix.system --accept-flake-config --timeout 1800
+          nix build .#install .#uninstall .#remote-builder-setup .#test-remote-builder --system $env.matrix.system --accept-flake-config --no-link --timeout 1800
         continue-on-error: true
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: nix-mox-${{ matrix.system }}-${{ matrix.nix-version }}
-          path: result*
-          if-no-files-found: ignore
+      - name: Push to Cachix
+        shell: nu {0}
+        run: |
+          print $"Pushing packages to Cachix for ($env.matrix.system)..."
+          nix build .#install .#uninstall --system $env.matrix.system --accept-flake-config --no-link
+          nix path-info --recursive result | cachix push nix-mox
         continue-on-error: true
 
   build_macos_packages:
@@ -81,15 +73,7 @@ jobs:
         with:
           version: "0.90"
           check-latest: false
-      - name: Check for Cachix Key
-        id: cachix-key-check
-        shell: bash
-        run: |
-          # Temporarily disable Cachix until credentials are properly configured
-          echo "present=false" >> $GITHUB_OUTPUT
-          echo "Cachix temporarily disabled - skipping Cachix operations"
-      - name: Push to Cachix
-        if: steps.cachix-key-check.outputs.present == 'true'
+      - name: Setup Cachix
         uses: cachix/cachix-action@v16
         with:
           name: nix-mox
@@ -100,20 +84,20 @@ jobs:
         shell: nu {0}
         run: |
           print $"Building macOS packages for ($env.matrix.system)..."
-          nix build .#homebrew-setup .#macos-maintenance .#xcode-setup .#security-audit --system $env.matrix.system --accept-flake-config --timeout 1800
+          nix build .#homebrew-setup .#macos-maintenance .#xcode-setup .#security-audit --system $env.matrix.system --accept-flake-config --no-link --timeout 1800
         continue-on-error: true
       - name: Build common packages
         shell: nu {0}
         run: |
           print $"Building common packages for ($env.matrix.system)..."
-          nix build .#install .#uninstall --system $env.matrix.system --accept-flake-config --timeout 1800
+          nix build .#install .#uninstall --system $env.matrix.system --accept-flake-config --no-link --timeout 1800
         continue-on-error: true
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: nix-mox-${{ matrix.system }}-${{ matrix.nix-version }}
-          path: result*
-          if-no-files-found: ignore
+      - name: Push to Cachix
+        shell: nu {0}
+        run: |
+          print $"Pushing packages to Cachix for ($env.matrix.system)..."
+          nix build .#install .#uninstall --system $env.matrix.system --accept-flake-config --no-link
+          nix path-info --recursive result | cachix push nix-mox
         continue-on-error: true
 
   test:
@@ -130,15 +114,7 @@ jobs:
         with:
           version: "0.90"
           check-latest: false
-      - name: Check for Cachix Key
-        id: cachix-key-check
-        shell: bash
-        run: |
-          # Temporarily disable Cachix until credentials are properly configured
-          echo "present=false" >> $GITHUB_OUTPUT
-          echo "Cachix temporarily disabled - skipping Cachix operations"
-      - name: Push to Cachix
-        if: steps.cachix-key-check.outputs.present == 'true'
+      - name: Setup Cachix
         uses: cachix/cachix-action@v16
         with:
           name: nix-mox
