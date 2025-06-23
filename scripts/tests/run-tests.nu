@@ -9,6 +9,10 @@ export-env {
     use ./lib/test-common.nu *
 }
 
+# Import functions for direct use in this script
+use ./lib/test-coverage.nu *
+use ./lib/coverage-core.nu *
+
 # --- Test Configuration ---
 def setup_test_config [] {
     {
@@ -149,15 +153,23 @@ def run_all_test_suites [config: record] {
     if $config.generate_coverage {
         try {
             print $"($env.GREEN)Generating coverage report...($env.NC)"
-            generate_coverage_report
+            print "DEBUG: About to call generate_coverage_report"
+            let result = do { generate_coverage_report }
+            print "DEBUG: generate_coverage_report completed"
+
+            # Export coverage report once and save to both locations
+            print "DEBUG: About to export coverage report"
+            let coverage_data = do { export_coverage_report $config.export_format }
+            print $"DEBUG: Coverage data length: ($coverage_data | str length)"
+
             let coverage_path = $"($env.TEST_TEMP_DIR)/coverage.($config.export_format)"
-            export_coverage_report $config.export_format | save --force $coverage_path
+            $coverage_data | save --force $coverage_path
             print $"($env.GREEN)Coverage report saved as ($coverage_path)($env.NC)"
 
             # Also save to /tmp for CI workflows to find
             let ci_coverage_path = $"/tmp/nix-mox-tests/coverage.($config.export_format)"
             mkdir "/tmp/nix-mox-tests"
-            export_coverage_report $config.export_format | save --force $ci_coverage_path
+            $coverage_data | save --force $ci_coverage_path
             print $"($env.GREEN)CI coverage report saved as ($ci_coverage_path)($env.NC)"
         } catch {
             print $"($env.YELLOW)Warning: Failed to generate coverage report: ($env.LAST_ERROR)($env.NC)"
