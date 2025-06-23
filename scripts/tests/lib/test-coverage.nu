@@ -1,7 +1,19 @@
 # Enhanced Test Coverage System
 # Provides comprehensive test coverage analysis and reporting
 
+export-env {
+    if ($env.GREEN? | is-empty) { $env.GREEN = (ansi green) }
+    if ($env.YELLOW? | is-empty) { $env.YELLOW = (ansi yellow) }
+    if ($env.RED? | is-empty) { $env.RED = (ansi red) }
+    if ($env.NC? | is-empty) { $env.NC = (ansi reset) }
+}
+
 export def aggregate_coverage [] {
+    # Set default TEST_TEMP_DIR if not already set
+    if not ($env | get -i TEST_TEMP_DIR | is-not-empty) {
+        $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
+    }
+
     # Ensure TEST_TEMP_DIR exists
     if not ($env.TEST_TEMP_DIR | path exists) {
         print "Warning: TEST_TEMP_DIR does not exist, creating it"
@@ -152,9 +164,9 @@ export def generate_coverage_report [] {
     print $"Slowest Test: ($perf_metrics.slowest_test | into string | str substring 0..6)s"
     print $"Fastest Test: ($perf_metrics.fastest_test | into string | str substring 0..6)s"
     print $"Test Distribution:"
-    print $"  Fast (<0.1s): ($perf_metrics.test_distribution.fast)"
-    print $"  Medium (0.1-1s): ($perf_metrics.test_distribution.medium)"
-    print $"  Slow (>1s): ($perf_metrics.test_distribution.slow)"
+    print $"  Fast ('<0.1s'): ($perf_metrics.test_distribution.fast)"
+    print $"  Medium ('0.1-1s'): ($perf_metrics.test_distribution.medium)"
+    print $"  Slow ('>1s'): ($perf_metrics.test_distribution.slow)"
     print ""
 
     print $"($env.GREEN)=== Test Categories ===($env.NC)"
