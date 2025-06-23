@@ -35,8 +35,8 @@ runs:
         $env.CI = "true"
         $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
 
-        let test_suites = (${{ inputs.test-suites }} | split row ",")
-        let verbose_flag = if ${{ inputs.verbose }} == "true" { "--verbose" } else { "" }
+        let test_suites = ("${{ inputs.test-suites }}" | split row ",")
+        let verbose_flag = if "${{ inputs.verbose }}" == "true" { "--verbose" } else { "" }
 
         print "🧪 Running test suites: ($test_suites | str join ', ')"
 
