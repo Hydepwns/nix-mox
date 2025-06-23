@@ -68,8 +68,54 @@ jobs:
           if-no-files-found: ignore
         continue-on-error: true
 
+  build_macos_packages:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        system: [x86_64-darwin, aarch64-darwin]
+        nix-version: ['2.19.2', '2.20.1']
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+      - name: Check for Cachix Key
+        id: cachix-key-check
+        shell: bash
+        run: |
+          # Temporarily disable Cachix until credentials are properly configured
+          echo "present=false" >> $GITHUB_OUTPUT
+          echo "Cachix temporarily disabled - skipping Cachix operations"
+      - name: Push to Cachix
+        if: steps.cachix-key-check.outputs.present == 'true'
+        uses: cachix/cachix-action@v15
+        with:
+          name: nix-mox
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+        continue-on-error: true
+      - name: Build macOS packages
+        run: |
+          echo "Building macOS packages for ${{ matrix.system }}..."
+          nix build .#homebrew-setup .#macos-maintenance .#xcode-setup .#security-audit --system ${{ matrix.system }} --accept-flake-config --timeout 1800
+        continue-on-error: true
+      - name: Build common packages
+        run: |
+          echo "Building common packages for ${{ matrix.system }}..."
+          nix build .#install .#uninstall --system ${{ matrix.system }} --accept-flake-config --timeout 1800
+        continue-on-error: true
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nix-mox-${{ matrix.system }}-${{ matrix.nix-version }}
+          path: result*
+          if-no-files-found: ignore
+        continue-on-error: true
+
   test:
-    needs: [build_packages]
+    needs: [build_packages, build_macos_packages]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -164,7 +210,7 @@ jobs:
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build_packages, test]
+    needs: [build_packages, build_macos_packages, test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
