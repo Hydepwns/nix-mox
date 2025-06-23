@@ -41,6 +41,7 @@ runs:
         print "🧪 Running test suites: ($test_suites | str join ', ')"
 
         try {
+          cd ${{ github.workspace }}
           source scripts/tests/run-tests.nu
           run $verbose_flag
           print "✅ All test suites completed successfully"
