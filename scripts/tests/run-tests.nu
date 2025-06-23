@@ -26,6 +26,21 @@ def setup_test_config [] {
     }
 }
 
+# --- Environment Setup ---
+def ensure_test_env [] {
+    # Set default TEST_TEMP_DIR if not already set
+    if not ($env | get -i TEST_TEMP_DIR | is-not-empty) {
+        $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
+    }
+
+    # Ensure the test directory exists
+    if not ($env.TEST_TEMP_DIR | path exists) {
+        mkdir $env.TEST_TEMP_DIR
+    }
+
+    print $"($env.GREEN)Test environment configured at: ($env.TEST_TEMP_DIR)($env.NC)"
+}
+
 # --- Test Environment Management ---
 def setup_test_env [] {
     print $"($env.GREEN)Setting up test environment...($env.NC)"
@@ -146,7 +161,12 @@ def run_all_test_suites [config: record] {
     # Print summary
     print_summary $test_results
 
-    cleanup_test_env
+    # Only clean up if coverage generation is disabled
+    if not $config.generate_coverage {
+        cleanup_test_env
+    } else {
+        print $"($env.YELLOW)Test environment preserved for coverage analysis at: ($env.TEST_TEMP_DIR)($env.NC)"
+    }
 
     # Exit with appropriate code
     if $overall_success {
@@ -307,6 +327,10 @@ def print_help [] {
 def main [args: list] {
     let config = setup_test_config
     let config = parse_args $args $config
+
+    # Ensure test environment is properly set up
+    ensure_test_env
+
     run_all_test_suites $config
 }
 
