@@ -40,9 +40,22 @@ runs:
 
         print "🧪 Running test suites: ($test_suites | str join ', ')"
 
+        # Debug: Check current directory and file existence
+        print $"Current directory: (pwd)"
+        print $"GitHub workspace: ${{ github.workspace }}"
+        print $"Test script exists: (ls scripts/tests/run-tests.nu | is-empty | not)"
+
         try {
           cd ${{ github.workspace }}
-          source scripts/tests/run-tests.nu
+          print $"Changed to directory: (pwd)"
+          print $"Test script exists after cd: (ls scripts/tests/run-tests.nu | is-empty | not)"
+
+          # Use absolute path to be extra sure
+          let script_path = $"(${{ github.workspace }})/scripts/tests/run-tests.nu"
+          print $"Using script path: ($script_path)"
+          print $"Absolute path exists: (ls $script_path | is-empty | not)"
+
+          source $script_path
           run $verbose_flag
           print "✅ All test suites completed successfully"
         } catch {
