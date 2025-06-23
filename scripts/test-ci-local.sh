@@ -47,27 +47,75 @@ check_flake() {
     log_success "Found flake.nix"
 }
 
-# Simulate build_packages job
+# Simulate build job
 build_packages() {
     log_info "Running build_packages job..."
 
-    # Test different systems and Nix versions
-    local systems=("x86_64-linux" "aarch64-linux")
-    local nix_versions=("2.19.2" "2.20.1")
+    # Get current system
+    local current_system
+    current_system=$(uname -s)
+    local current_arch
+    current_arch=$(uname -m)
+    local nix_system=""
 
-    for system in "${systems[@]}"; do
-        for nix_version in "${nix_versions[@]}"; do
-            log_info "Building packages for system: $system, Nix version: $nix_version"
+    # Map to Nix system format
+    case "$current_system" in
+        "Darwin")
+            case "$current_arch" in
+                "arm64") nix_system="aarch64-darwin" ;;
+                "x86_64") nix_system="x86_64-darwin" ;;
+                *) log_error "Unsupported macOS architecture: $current_arch"; return 1 ;;
+            esac
+            ;;
+        "Linux")
+            case "$current_arch" in
+                "x86_64") nix_system="x86_64-linux" ;;
+                "aarch64") nix_system="aarch64-linux" ;;
+                *) log_error "Unsupported Linux architecture: $current_arch"; return 1 ;;
+            esac
+            ;;
+        *)
+            log_error "Unsupported operating system: $current_system"
+            return 1
+            ;;
+    esac
 
-            # Build all packages as specified in CI
-            if nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update --system "$system" --accept-flake-config; then
-                log_success "Successfully built packages for $system with Nix $nix_version"
-            else
-                log_error "Failed to build packages for $system with Nix $nix_version"
-                return 1
-            fi
-        done
-    done
+    log_info "Detected system: $nix_system"
+
+    # Check Nix version
+    local nix_version
+    nix_version=$(nix --version | head -n1)
+    log_info "Using Nix: $nix_version"
+
+    # Build packages based on platform
+    if [[ "$current_system" == "Linux" ]]; then
+        # Linux-specific packages
+        log_info "Building Linux-specific packages..."
+        if nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update --system "$nix_system" --accept-flake-config; then
+            log_success "Successfully built Linux packages with Nix $nix_version"
+        else
+            log_error "Failed to build Linux packages with Nix $nix_version"
+            return 1
+        fi
+    elif [[ "$current_system" == "Darwin" ]]; then
+        # macOS-specific packages
+        log_info "Building macOS-specific packages..."
+        if nix build .#homebrew-setup .#macos-maintenance .#xcode-setup .#security-audit --system "$nix_system" --accept-flake-config; then
+            log_success "Successfully built macOS packages with Nix $nix_version"
+        else
+            log_error "Failed to build macOS packages with Nix $nix_version"
+            return 1
+        fi
+    fi
+
+    # Build common packages (available on all platforms)
+    log_info "Building common packages..."
+    if nix build .#install .#uninstall --system "$nix_system" --accept-flake-config; then
+        log_success "Successfully built common packages with Nix $nix_version"
+    else
+        log_error "Failed to build common packages with Nix $nix_version"
+        return 1
+    fi
 
     log_success "build_packages job completed successfully"
 }
@@ -148,7 +196,7 @@ run_checks() {
 
     # Check devshells
     log_info "Checking devshells..."
-    if nix develop --dry-run; then
+    if nix develop --command echo "Devshell is valid"; then
         log_success "Devshells are valid"
     else
         log_error "Devshells check failed"
