@@ -29,7 +29,7 @@ jobs:
           echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
       - name: Configure Git for local testing
         run: |
-          git config --global --add safe.directory /Users/droo/Documents/CODE/nix-mox
+          git config --global --add safe.directory $GITHUB_WORKSPACE
           git config --global user.email "test@example.com"
           git config --global user.name "Test User"
 
@@ -72,4 +72,4 @@ jobs:
           path: |
             *.log
             test-results/
-          if-no-files-found: warn 
+          if-no-files-found: warn

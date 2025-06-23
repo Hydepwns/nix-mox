@@ -26,10 +26,8 @@ def main [
     }
 
     try {
-        # Change to project root and run tests
-        cd (pwd)
-        source scripts/tests/run-tests.nu
-        run ['--unit', '--integration']
+        # Run tests from project root
+        nu -c "source scripts/tests/run-tests.nu; run ['--unit', '--integration']"
     } catch {
         if $verbose {
             print $"Warning: Some tests failed: ($env.LAST_ERROR)"
@@ -41,10 +39,9 @@ def main [
         print "Generating coverage report..."
     }
 
-    # Change to project root and generate coverage
-    cd (pwd)
-    source scripts/tests/lib/test-coverage.nu
-    let coverage = aggregate_coverage
+    # Generate coverage from project root
+    nu -c "source scripts/tests/lib/test-coverage.nu; let coverage = aggregate_coverage; $coverage | to json | save --force coverage-data.json"
+    let coverage = (open coverage-data.json | from json)
 
     let report = {
         summary: {
@@ -87,20 +84,19 @@ def main [
         print $"Pass rate: ($pass_rate | into string -d 2)%"
     }
 
+    # Clean up temporary file
+    rm -f coverage-data.json
+
     # Also generate a human-readable summary
-    generate_coverage_report
+    nu -c "source scripts/tests/lib/test-coverage.nu; generate_coverage_report"
 }
 
 # Helper function to show coverage summary
 export def show_coverage_summary [] {
-    cd (pwd)
-    source scripts/tests/lib/test-coverage.nu
-    generate_coverage_report
+    nu -c "source scripts/tests/lib/test-coverage.nu; generate_coverage_report"
 }
 
 # Helper function to export coverage for CI
 export def export_for_ci [format: string = "json"] {
-    cd (pwd)
-    source scripts/tests/lib/test-coverage.nu
-    export_coverage_report $format
+    nu -c "source scripts/tests/lib/test-coverage.nu; export_coverage_report $format"
 }
