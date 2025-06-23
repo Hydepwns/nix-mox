@@ -42,17 +42,38 @@ jobs:
           print $"Building packages for ${{ matrix.os }}..."
 
           if ${{ matrix.os }} == 'macOS' {
-            # Build macOS-specific packages
-            nix build .#homebrew-setup .#macos-maintenance .#xcode-setup .#security-audit --accept-flake-config --no-link --timeout 1800
+            print "🍎 Building macOS-specific packages..."
+            # Build macOS-specific packages only
+            try {
+              nix build .#homebrew-setup .#macos-maintenance .#xcode-setup .#security-audit --accept-flake-config --no-link --timeout 1800
+              print "✅ macOS packages built successfully"
+            } catch {
+              print $"❌ Failed to build macOS packages: ($env.LAST_EXIT_CODE)"
+              exit 1
+            }
           } else {
-            # Build Linux packages
-            nix build .#proxmox-update .#nixos-flake-update --accept-flake-config --no-link --timeout 1800
+            print "🐧 Building Linux packages..."
+            # Build Linux packages only
+            try {
+              nix build .#proxmox-update .#nixos-flake-update --accept-flake-config --no-link --timeout 1800
+              print "✅ Linux packages built successfully"
+            } catch {
+              print $"❌ Failed to build Linux packages: ($env.LAST_EXIT_CODE)"
+              exit 1
+            }
           }
 
-          # Build common packages
-          nix build .#install .#uninstall --accept-flake-config --no-link --timeout 1800
+          print "🔧 Building common packages..."
+          # Build common packages (available on all platforms)
+          try {
+            nix build .#install .#uninstall --accept-flake-config --no-link --timeout 1800
+            print "✅ Common packages built successfully"
+          } catch {
+            print $"❌ Failed to build common packages: ($env.LAST_EXIT_CODE)"
+            exit 1
+          }
 
-          print "✅ Package builds completed"
+          print "✅ All package builds completed"
         continue-on-error: true
 
       - name: Push packages to Cachix
@@ -62,33 +83,51 @@ jobs:
           print "📦 Pushing packages to Cachix..."
 
           if ${{ matrix.os }} == 'macOS' {
+            print "🍎 Pushing macOS-specific packages..."
             # Push macOS-specific packages
-            let homebrew_path = (nix build .#homebrew-setup --accept-flake-config --no-link --print-out-paths --quiet)
-            let maintenance_path = (nix build .#macos-maintenance --accept-flake-config --no-link --print-out-paths --quiet)
-            let xcode_path = (nix build .#xcode-setup --accept-flake-config --no-link --print-out-paths --quiet)
-            let security_path = (nix build .#security-audit --accept-flake-config --no-link --print-out-paths --quiet)
+            try {
+              let homebrew_path = (nix build .#homebrew-setup --accept-flake-config --no-link --print-out-paths --quiet)
+              let maintenance_path = (nix build .#macos-maintenance --accept-flake-config --no-link --print-out-paths --quiet)
+              let xcode_path = (nix build .#xcode-setup --accept-flake-config --no-link --print-out-paths --quiet)
+              let security_path = (nix build .#security-audit --accept-flake-config --no-link --print-out-paths --quiet)
 
-            echo $homebrew_path | cachix push nix-mox
-            echo $maintenance_path | cachix push nix-mox
-            echo $xcode_path | cachix push nix-mox
-            echo $security_path | cachix push nix-mox
+              echo $homebrew_path | cachix push nix-mox
+              echo $maintenance_path | cachix push nix-mox
+              echo $xcode_path | cachix push nix-mox
+              echo $security_path | cachix push nix-mox
+              print "✅ macOS packages pushed successfully"
+            } catch {
+              print $"❌ Failed to push macOS packages: ($env.LAST_EXIT_CODE)"
+            }
           } else {
+            print "🐧 Pushing Linux packages..."
             # Push Linux packages
-            let proxmox_path = (nix build .#proxmox-update --accept-flake-config --no-link --print-out-paths --quiet)
-            let flake_path = (nix build .#nixos-flake-update --accept-flake-config --no-link --print-out-paths --quiet)
+            try {
+              let proxmox_path = (nix build .#proxmox-update --accept-flake-config --no-link --print-out-paths --quiet)
+              let flake_path = (nix build .#nixos-flake-update --accept-flake-config --no-link --print-out-paths --quiet)
 
-            echo $proxmox_path | cachix push nix-mox
-            echo $flake_path | cachix push nix-mox
+              echo $proxmox_path | cachix push nix-mox
+              echo $flake_path | cachix push nix-mox
+              print "✅ Linux packages pushed successfully"
+            } catch {
+              print $"❌ Failed to push Linux packages: ($env.LAST_EXIT_CODE)"
+            }
           }
 
+          print "🔧 Pushing common packages..."
           # Push common packages
-          let install_path = (nix build .#install --accept-flake-config --no-link --print-out-paths --quiet)
-          let uninstall_path = (nix build .#uninstall --accept-flake-config --no-link --print-out-paths --quiet)
+          try {
+            let install_path = (nix build .#install --accept-flake-config --no-link --print-out-paths --quiet)
+            let uninstall_path = (nix build .#uninstall --accept-flake-config --no-link --print-out-paths --quiet)
 
-          echo $install_path | cachix push nix-mox
-          echo $uninstall_path | cachix push nix-mox
+            echo $install_path | cachix push nix-mox
+            echo $uninstall_path | cachix push nix-mox
+            print "✅ Common packages pushed successfully"
+          } catch {
+            print $"❌ Failed to push common packages: ($env.LAST_EXIT_CODE)"
+          }
 
-          print "✅ Packages pushed to Cachix successfully"
+          print "✅ All packages pushed to Cachix successfully"
         continue-on-error: true
 
       - name: Run comprehensive tests
