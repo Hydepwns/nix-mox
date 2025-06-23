@@ -43,7 +43,6 @@ runs:
 
         print "🧪 Running test suites: ($test_suites | str join ', ')"
 
-        # Debug: Check current directory and file existence
         print $"Current directory: (pwd)"
         print $"GitHub workspace: ${{ github.workspace }}"
         print $"Test script exists: (ls scripts/tests/run-tests.nu | length | $in > 0)"
@@ -53,16 +52,14 @@ runs:
           print $"Changed to directory: (pwd)"
           print $"Test script exists after cd: (ls scripts/tests/run-tests.nu | length | $in > 0)"
 
-          # Use absolute path to be extra sure
           let script_path = $"(${{ github.workspace }})/scripts/tests/run-tests.nu"
           print $"Using script path: ($script_path)"
           print $"Absolute path exists: (ls $script_path | length | $in > 0)"
 
-          # Fix: Use nu -c instead of source to avoid parse-time constant requirement
           nu -c $"source ($script_path); run ($verbose_flag)"
           print "✅ All test suites completed successfully"
-        } catch {
-          print $"❌ Test execution failed: ($env.LAST_ERROR)"
+        } catch { |err|
+          print $"❌ Test execution failed: ($err)"
           exit 1
         }
 
