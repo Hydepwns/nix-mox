@@ -47,10 +47,13 @@ jobs:
         # Use cross-platform timeout approach
         if (which timeout | is-empty) {
           # No timeout available, run without timeout
-          nix flake check --accept-flake-config
+          # Use --no-write-lock-file to avoid lock file updates
+          # Use --accept-flake-config to avoid prompts
+          # Use --no-update-lock-file to avoid network calls
+          nix flake check --accept-flake-config --no-write-lock-file --no-update-lock-file
         } else {
           # Use timeout command
-          timeout 300 nix flake check --accept-flake-config
+          timeout 300 nix flake check --accept-flake-config --no-write-lock-file --no-update-lock-file
         }
 
     - name: Run basic flake evaluation (macOS)
@@ -63,8 +66,11 @@ jobs:
         # On macOS, only evaluate the flake without building packages
         # This avoids architecture mismatch errors and slow builds
         try {
-          nix flake show --accept-flake-config
-          nix flake metadata --accept-flake-config
+          # Use --no-write-lock-file to avoid lock file updates
+          # Use --accept-flake-config to avoid prompts
+          # Use --no-update-lock-file to avoid network calls
+          nix flake show --accept-flake-config --no-write-lock-file --no-update-lock-file
+          nix flake metadata --accept-flake-config --no-write-lock-file --no-update-lock-file
         } catch {
           print "Warning: Flake evaluation failed, but continuing..."
           print $"Error: ($env.LAST_ERROR)"
