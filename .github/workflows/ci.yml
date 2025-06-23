@@ -197,20 +197,74 @@ jobs:
             echo "No coverage file found"
           fi
 
-      - name: Upload coverage to Codecov
+      - name: Upload test results to Codecov
         if: always()
-        uses: codecov/codecov-action@v5
+        uses: codecov/test-results-action@v1
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage-tmp/codecov.json
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
           verbose: true
+
+  coverage:
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+      - name: Run comprehensive coverage tests
+        run: |
+          # Set CI environment variable
+          export CI=true
+          export TEST_TEMP_DIR="/tmp/nix-mox-coverage"
+
+          # Run tests with coverage tracking
+          nix develop --command nu -c "
+            source scripts/tests/run-tests.nu
+            run ['--unit', '--integration']
+          "
+
+          # Generate coverage report
+          nix develop --command nu -c "
+            source scripts/tests/lib/test-coverage.nu
+            let coverage = aggregate_coverage
+            let report = {
+              summary: {
+                total_tests: $coverage.total_tests
+                passed_tests: $coverage.passed_tests
+                failed_tests: $coverage.failed_tests
+                skipped_tests: $coverage.skipped_tests
+                test_duration: $coverage.test_duration
+                pass_rate: (if $coverage.total_tests == 0 { 0 } else { (($coverage.passed_tests | into float) / ($coverage.total_tests | into float) * 100) })
+              }
+              categories: $coverage.test_categories
+              results: $coverage.test_results
+            }
+
+            $report | to json | save --force 'coverage-report.json'
+          "
+
+          echo "Coverage report generated"
+
+      - name: Upload coverage report to Codecov
+        if: always()
+        uses: codecov/test-results-action@v1
+        with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage-report.json
+          flags: coverage
+          name: codecov-coverage
+          fail_ci_if_error: false
+          verbose: true
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build_packages, build_macos_packages, test]
+    needs: [build_packages, build_macos_packages, test, coverage]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
