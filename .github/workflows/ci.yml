@@ -39,6 +39,8 @@ jobs:
         shell: nu {0}
         run: |
           print $"Building packages for ${{ matrix.os }}..."
+          print $"Matrix OS value: '${{ matrix.os }}'"
+          print $"Is macOS? (${{ matrix.os }} == 'macos-latest')"
 
           if ${{ matrix.os }} == 'macos-latest' {
             print "🍎 Building macOS-specific packages..."
