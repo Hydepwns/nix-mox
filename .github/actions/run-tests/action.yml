@@ -55,7 +55,7 @@ runs:
           print $"Using script path: ($script_path)"
           print $"Absolute path exists: (ls $script_path | length | $in > 0)"
 
-          source $script_path
+          source scripts/tests/run-tests.nu
           run $verbose_flag
           print "✅ All test suites completed successfully"
         } catch {
