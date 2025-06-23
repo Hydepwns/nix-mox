@@ -56,10 +56,19 @@ jobs:
           version
 
           print "Environment:"
-          $env | select NIX_MOX_PLATFORM NIX_MOX_IS_DARWIN NIX_MOX_ARCH | print
+          # Check for NIX_MOX environment variables with fallbacks
+          let platform = ($env | get -i NIX_MOX_PLATFORM | default ${{ matrix.system }})
+          let is_darwin = ($env | get -i NIX_MOX_IS_DARWIN | default "true")
+          let arch = ($env | get -i NIX_MOX_ARCH | default (${{ matrix.system }} | str replace "-darwin" ""))
+
+          {
+            NIX_MOX_PLATFORM: $platform
+            NIX_MOX_IS_DARWIN: $is_darwin
+            NIX_MOX_ARCH: $arch
+          } | print
 
           print "Platform detection:"
-          if ($env.NIX_MOX_IS_DARWIN == "true") {
+          if ($is_darwin == "true") {
             print "✅ Running on macOS"
           } else {
             print "❌ Not running on macOS"
