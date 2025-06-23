@@ -118,10 +118,11 @@ let
   };
 
   # Heavy packages (conditional based on environment)
-  heavyPackages = if shouldBuildHeavyPackages then {
-    vzdump-backup = createLinuxPackage "vzdump-backup" "scripts/linux/vzdump-backup.nu" (getArchDeps pkgs.system);
-    zfs-snapshot = createLinuxPackage "zfs-snapshot" "scripts/linux/zfs-snapshot.nu" (getArchDeps pkgs.system);
-  } else {};
+  heavyPackages =
+    if shouldBuildHeavyPackages then {
+      vzdump-backup = createLinuxPackage "vzdump-backup" "scripts/linux/vzdump-backup.nu" (getArchDeps pkgs.system);
+      zfs-snapshot = createLinuxPackage "zfs-snapshot" "scripts/linux/zfs-snapshot.nu" (getArchDeps pkgs.system);
+    } else { };
 
 in
 basePackages // heavyPackages
