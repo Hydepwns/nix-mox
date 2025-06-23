@@ -168,7 +168,9 @@ def run_all_test_suites [config: record] {
 
             # Also save to /tmp for CI workflows to find
             let ci_coverage_path = $"/tmp/nix-mox-tests/coverage.($config.export_format)"
-            mkdir "/tmp/nix-mox-tests"
+            if not ("/tmp/nix-mox-tests" | path exists) {
+              mkdir "/tmp/nix-mox-tests"
+            }
             $coverage_data | save --force $ci_coverage_path
             print $"($env.GREEN)CI coverage report saved as ($ci_coverage_path)($env.NC)"
         } catch {

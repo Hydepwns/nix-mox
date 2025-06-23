@@ -80,14 +80,20 @@ jobs:
             }
             results: []
           }
-          mkdir -p coverage-tmp/nix-mox-tests
+          # Create directory if it doesn't exist (Nushell compatible)
+          if not ("coverage-tmp/nix-mox-tests" | path exists) {
+            mkdir "coverage-tmp/nix-mox-tests"
+          }
           $minimal_coverage | to json | save --force 'coverage-tmp/nix-mox-tests/coverage.json'
           $minimal_coverage | to json | save --force 'coverage-tmp/codecov.json'
           print "Created minimal coverage report"
         } else {
           print $"Found coverage file at: ($coverage_file)"
           # Copy to a known location for upload
-          mkdir -p coverage-tmp/nix-mox-tests
+          # Create directory if it doesn't exist (Nushell compatible)
+          if not ("coverage-tmp/nix-mox-tests" | path exists) {
+            mkdir "coverage-tmp/nix-mox-tests"
+          }
           cp $coverage_file coverage-tmp/nix-mox-tests/coverage.json
           print "Coverage file copied to coverage-tmp/nix-mox-tests/coverage.json"
 
