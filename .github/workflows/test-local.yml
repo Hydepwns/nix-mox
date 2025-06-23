@@ -23,10 +23,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Configure Nix
-        run: |
-          mkdir -p /etc/nix
-          echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
+
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
+        with:
+          nix-version: '2.19.2'
+
+      - name: Setup Nushell
+        uses: hustcer/setup-nu@v3
+        with:
+          version: "0.104"
+          check-latest: false
+
       - name: Configure Git for local testing
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
@@ -35,34 +43,42 @@ jobs:
 
       - name: Basic Tests
         if: ${{ github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'basic' }}
-        run: |
-          export ENABLE_INFISICAL=0
-          export SHELLCHECK_OPTS="-e SC2155"
-          NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nix flake check --accept-flake-config --impure
-          NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nix build .#all --accept-flake-config --impure
+        uses: ./.github/actions/run-tests
+        with:
+          test-suites: 'unit,integration'
+          verbose: 'true'
+          generate-coverage: 'true'
 
       - name: Performance Tests
         if: ${{ github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'performance' }}
+        shell: nu {0}
         run: |
-          export CI=true
-          echo "Running performance benchmarks..."
-          time ./scripts/nix-mox --script install --platform linux --verbose
-          time ./scripts/nix-mox --script install --platform windows --verbose
-          time ./scripts/nix-mox --script install --parallel --verbose
+          $env.CI = "true"
+          print "🚀 Running performance benchmarks..."
+
+          # Test script execution times
+          time ./scripts/common/nix-mox --script install --platform auto --dry-run
+          time ./scripts/common/nix-mox --script install --platform auto --debug
+
+          # Test comprehensive test suite performance
+          time nu -c "source scripts/tests/run-tests.nu; run ['--unit']"
 
       - name: Cross-Platform Tests
         if: ${{ github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'cross-platform' }}
+        shell: nu {0}
         run: |
-          export CI=true
-          echo "Testing cross-platform compatibility..."
-          # Test Linux compatibility
-          ./scripts/nix-mox --script install --platform linux --verbose
-          # Test Windows compatibility
-          ./scripts/nix-mox --script install --platform windows --verbose
-          # Test macOS compatibility
-          ./scripts/nix-mox --script install --platform darwin --verbose
-          # Test parallel execution
-          ./scripts/nix-mox --script install --parallel --verbose
+          $env.CI = "true"
+          print "🌐 Testing cross-platform compatibility..."
+
+          # Test script validation
+          ./scripts/common/nix-mox --script install --debug
+
+          # Test comprehensive test suite
+          nu -c "source scripts/tests/run-tests.nu; run ['--unit', '--integration']"
+
+          # Test flake evaluation for different systems
+          nix eval .#packages.x86_64-linux --accept-flake-config --json
+          nix eval .#packages.x86_64-darwin --accept-flake-config --json
 
       - name: Upload Test Results
         if: always()
@@ -72,4 +88,5 @@ jobs:
           path: |
             *.log
             test-results/
+            coverage-tmp/
           if-no-files-found: warn

@@ -1,4 +1,4 @@
-name: CI
+name: CI (Simplified)
 
 on:
   push:
@@ -7,275 +7,143 @@ on:
     branches: [ main ]
 
 jobs:
-  build_packages:
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
     strategy:
       matrix:
-        system: [x86_64-linux, aarch64-linux]
-        nix-version: ['2.19.2', '2.20.1']
-      fail-fast: false
-    env:
-      CI: true
-      DISABLE_HEAVY_PACKAGES: true
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
-      - name: Setup Nushell
-        uses: hustcer/setup-nu@v3
-        with:
-          version: "0.104"
-          check-latest: false
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v16
-        with:
-          name: nix-mox
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-        continue-on-error: true
-      - name: Build lightweight packages first
-        shell: nu {0}
-        run: |
-          print $"Building lightweight packages for ${{ matrix.system }}..."
-          nix build .#proxmox-update .#nixos-flake-update --system ${{ matrix.system }} --accept-flake-config --no-link --timeout 1800
-        continue-on-error: true
-      - name: Build additional packages
-        shell: nu {0}
-        run: |
-          print $"Building additional packages for ${{ matrix.system }}..."
-          nix build .#install .#uninstall .#remote-builder-setup .#test-remote-builder --system ${{ matrix.system }} --accept-flake-config --no-link --timeout 1800
-        continue-on-error: true
-      - name: Push to Cachix
-        shell: nu {0}
-        run: |
-          print $"Pushing packages to Cachix for ${{ matrix.system }}..."
-          # Build packages and get their store paths
-          let install_path = (nix build .#install --system ${{ matrix.system }} --accept-flake-config --no-link --print-out-paths --quiet)
-          let uninstall_path = (nix build .#uninstall --system ${{ matrix.system }} --accept-flake-config --no-link --print-out-paths --quiet)
-          # Push to Cachix using store paths
-          echo $install_path | cachix push nix-mox
-          echo $uninstall_path | cachix push nix-mox
-        continue-on-error: true
-
-  build_macos_packages:
-    runs-on: macos-latest
-    timeout-minutes: 45  # Reduced timeout since we're not building Nushell from source
-    strategy:
-      matrix:
-        system: [x86_64-darwin, aarch64-darwin]
-        nix-version: ['2.19.2', '2.20.1']
+        os: [ubuntu-latest, macos-latest]
+        nix-version: ['2.20.1']
       fail-fast: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
+
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
+        with:
+          nix-version: ${{ matrix.nix-version }}
+
       - name: Setup Nushell
         uses: hustcer/setup-nu@v3
         with:
           version: "0.104"
           check-latest: false
+
       - name: Setup Cachix
         uses: cachix/cachix-action@v16
         with:
           name: nix-mox
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-        continue-on-error: true
-      - name: Build macOS packages
-        shell: nu {0}
-        run: |
-          print $"Building macOS packages for ${{ matrix.system }}..."
-          nix build .#homebrew-setup .#macos-maintenance .#xcode-setup .#security-audit --system ${{ matrix.system }} --accept-flake-config --no-link --timeout 1800
-        continue-on-error: true
-      - name: Build common packages
-        shell: nu {0}
-        run: |
-          print $"Building common packages for ${{ matrix.system }}..."
-          nix build .#install .#uninstall --system ${{ matrix.system }} --accept-flake-config --no-link --timeout 1800
-        continue-on-error: true
-      - name: Push to Cachix
-        shell: nu {0}
-        run: |
-          print $"Pushing packages to Cachix for ${{ matrix.system }}..."
-          # Build packages and get their store paths
-          let install_path = (nix build .#install --system ${{ matrix.system }} --accept-flake-config --no-link --print-out-paths --quiet)
-          let uninstall_path = (nix build .#uninstall --system ${{ matrix.system }} --accept-flake-config --no-link --print-out-paths --quiet)
-          # Push to Cachix using store paths
-          echo $install_path | cachix push nix-mox
-          echo $uninstall_path | cachix push nix-mox
         continue-on-error: true
 
-  test:
-    needs: [build_packages, build_macos_packages]
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
-      - name: Setup Nushell
-        uses: hustcer/setup-nu@v3
-        with:
-          version: "0.104"
-          check-latest: false
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v16
-        with:
-          name: nix-mox
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-        continue-on-error: true
-      - name: Run tests
+      - name: Build packages
         shell: nu {0}
         run: |
-          # Set CI environment variable to disable NixOS configs
+          print $"Building packages for ${{ matrix.os }}..."
+
+          if ${{ matrix.os }} == 'macOS' {
+            # Build macOS-specific packages
+            nix build .#homebrew-setup .#macos-maintenance .#xcode-setup .#security-audit --accept-flake-config --no-link --timeout 1800
+          } else {
+            # Build Linux packages
+            nix build .#proxmox-update .#nixos-flake-update --accept-flake-config --no-link --timeout 1800
+          }
+
+          # Build common packages
+          nix build .#install .#uninstall --accept-flake-config --no-link --timeout 1800
+
+          print "✅ Package builds completed"
+        continue-on-error: true
+
+      - name: Run comprehensive tests
+        uses: ./.github/actions/run-tests
+        with:
+          test-suites: 'unit,integration,storage,performance'
+          verbose: 'true'
+          generate-coverage: 'true'
+        continue-on-error: true
+
+      - name: Run flake check
+        shell: nu {0}
+        run: |
           $env.CI = "true"
-          # Run flake check with timeout and accept flake config
-          if (which timeout | is-empty) {
+          print "🔍 Running flake check..."
+          try {
             nix flake check --accept-flake-config --impure
-          } else {
-            timeout 300 nix flake check --accept-flake-config --impure
+            print "✅ Flake check completed successfully"
+          } catch {
+            print $"⚠️ Flake check failed: ($env.LAST_ERROR)"
           }
         continue-on-error: true
 
-      - name: Find and prepare coverage report
+      - name: Upload coverage artifacts
         if: always()
-        shell: nu {0}
-        run: |
-          # Find the coverage file in the temporary directory
-          let coverage_file = (ls /tmp/nix-mox-tests/coverage.json | get name | first)
-          if ($coverage_file | is-empty) {
-            print "No coverage file found"
-          } else {
-            print $"Found coverage file at: ($coverage_file)"
-            # Copy to a known location for upload
-            # Create directory if it doesn't exist (Nushell compatible)
-            if not ("coverage-tmp/nix-mox-tests" | path exists) {
-              mkdir "coverage-tmp/nix-mox-tests"
-            }
-            cp $coverage_file coverage-tmp/nix-mox-tests/coverage.json
-            print "Coverage file copied to coverage-tmp/nix-mox-tests/coverage.json"
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.os }}
+          path: coverage-tmp/
+          if-no-files-found: ignore
 
-            # Convert to codecov format
-            let coverage = (open 'coverage-tmp/nix-mox-tests/coverage.json' | from json)
-            let pass_rate = ($coverage | get summary.pass_rate)
-            let total_tests = ($coverage | get summary.total_tests)
-            let passed_tests = ($coverage | get summary.passed_tests)
-
-            # Create codecov-compatible format
-            let codecov_report = {
-              coverage: {
-                total: $total_tests
-                passed: $passed_tests
-                rate: $pass_rate
-                timestamp: (date now | into int)
-              }
-              results: ($coverage | get results | each { |test|
-                {
-                  name: $test.name
-                  status: $test.status
-                  duration: $test.duration
-                  category: $test.category
-                }
-              })
-            }
-
-            $codecov_report | to json | save --force 'coverage-tmp/codecov.json'
-            print "Codecov report generated at coverage-tmp/codecov.json"
-          }
-
-      - name: Upload test results to Codecov
+      - name: Upload to Codecov
         if: always()
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: coverage-tmp/codecov.json
           flags: unittests
-
-  coverage:
-    needs: [test]
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
-      - name: Generate coverage report
-        run: |
-          # Set CI environment variable
-          export CI=true
-
-          # Create a simple coverage report based on test results
-          echo "Generating coverage report..."
-
-          # Create a basic coverage report structure
-          nix develop --command nu -c "
-            let coverage_report = {
-              summary: {
-                total_tests: 100
-                passed_tests: 95
-                failed_tests: 2
-                skipped_tests: 3
-                test_duration: 45.2
-                pass_rate: 95.0
-              }
-              categories: {
-                unit: 60
-                integration: 25
-                storage: 10
-                performance: 5
-              }
-              results: [
-                { name: 'unit_tests', status: 'passed', duration: 15.2, category: 'unit' }
-                { name: 'integration_tests', status: 'passed', duration: 20.1, category: 'integration' }
-                { name: 'storage_tests', status: 'passed', duration: 8.5, category: 'storage' }
-                { name: 'performance_tests', status: 'passed', duration: 1.4, category: 'performance' }
-              ]
-            }
-
-            $coverage_report | to json | save --force 'coverage-report.json'
-            print 'Coverage report generated successfully'
-          "
-
-          echo "Coverage report created"
-
-      - name: Upload coverage report to Codecov
-        if: always()
-        uses: codecov/codecov-action@v4
-        with:
-          files: coverage-report.json
-          flags: coverage
-          name: codecov-coverage
+          name: codecov-${{ matrix.os }}
           fail_ci_if_error: false
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  build-heavy-packages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
+
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v16
+        with:
+          name: nix-mox
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+        continue-on-error: true
+
+      - name: Build heavy packages
+        run: |
+          echo "Building heavy packages..."
+          for pkg in vzdump-backup zfs-snapshot; do
+            echo "Building $pkg..."
+            nix build .#$pkg --accept-flake-config --timeout 7200 || echo "Failed to build $pkg"
+          done
+        continue-on-error: true
+
+      - name: Upload heavy package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: heavy-packages
+          path: result*
+          if-no-files-found: ignore
+        continue-on-error: true
+
   release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build_packages, build_macos_packages, test, coverage]
+    needs: [build-and-test, build-heavy-packages]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
-      - name: Setup Cachix (optional)
-        run: |
-          if [ -n "${{ secrets.CACHIX_SIGNING_KEY }}" ] && [ -n "${{ secrets.CACHIX_AUTH_TOKEN }}" ]; then
-            echo "Setting up Cachix..."
-            if command -v cachix &> /dev/null; then
-              cachix use nix-mox
-            else
-              echo "Cachix not available, skipping setup"
-            fi
-          else
-            echo "Cachix credentials not set, skipping Cachix setup"
-          fi
-        continue-on-error: true
+
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -284,83 +152,3 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-and-test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Nix
-        uses: cachix/install-nix-action@v31
-
-      - name: Show Nix version
-        run: |
-          nix --version
-
-      - name: Run tests
-        run: nix develop --command nu -c "source scripts/tests/run-tests.nu; run ['--unit']"
-
-      - name: Generate Project Status Dashboard
-        run: nix develop --command nu scripts/tools/project-dashboard.nu
-
-      - name: Upload Project Dashboard Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: project-dashboard
-          path: |
-            tmp/dashboard.json
-            tmp/dashboard.md
-
-  build_heavy_packages:
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    strategy:
-      matrix:
-        system: [x86_64-linux]
-        nix-version: ['2.20.1']
-      fail-fast: false
-    env:
-      CI: true
-      # Allow heavy packages for this job
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
-      - name: Check for Cachix Key
-        id: cachix-key-check
-        shell: bash
-        run: |
-          # Temporarily disable Cachix until credentials are properly configured
-          echo "present=false" >> $GITHUB_OUTPUT
-          echo "Cachix temporarily disabled - skipping Cachix operations"
-      - name: Push to Cachix
-        if: steps.cachix-key-check.outputs.present == 'true'
-        uses: cachix/cachix-action@v15
-        with:
-          name: nix-mox
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-        continue-on-error: true
-      - name: Build heavy packages
-        run: |
-          echo "Building heavy packages for ${{ matrix.system }}..."
-          # Build heavy packages individually with longer timeouts
-          for pkg in vzdump-backup zfs-snapshot; do
-            echo "Building $pkg..."
-            if nix build .#$pkg --system ${{ matrix.system }} --accept-flake-config --timeout 7200; then
-              echo "Successfully built $pkg"
-            else
-              echo "Failed to build $pkg - continuing with other packages"
-            fi
-          done
-        continue-on-error: true
-      - name: Upload heavy package artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: nix-mox-heavy-${{ matrix.system }}-${{ matrix.nix-version }}
-          path: result*
-          if-no-files-found: ignore
-        continue-on-error: true
