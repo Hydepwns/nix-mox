@@ -33,7 +33,6 @@ jobs:
         with:
           name: nix-mox
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
         continue-on-error: true
 
       - name: Build packages
@@ -186,7 +185,6 @@ jobs:
         with:
           name: nix-mox
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
         continue-on-error: true
 
       - name: Build heavy packages
