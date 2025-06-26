@@ -67,6 +67,14 @@ help:
 	@echo "  code-security - Check for security issues"
 	@echo "  quality - Quick code quality check"
 	@echo ""
+	@echo "📊 Coverage & Testing:"
+	@echo "  coverage - Set up LCOV coverage (recommended for Codecov)"
+	@echo "  coverage-grcov - Set up grcov coverage (Rust-based)"
+	@echo "  coverage-tarpaulin - Set up tarpaulin coverage (Rust-based)"
+	@echo "  coverage-custom - Set up custom test-based coverage"
+	@echo "  coverage-ci - Set up coverage for CI environments"
+	@echo "  coverage-local - Set up coverage for local development"
+	@echo ""
 	@echo "🔒 Compliance & Security:"
 	@echo "  security-check - Validate security module configuration"
 	@echo "  sbom         - Generate Software Bill of Materials (SPDX, CycloneDX, CSV)"
@@ -343,3 +351,28 @@ code-security: check-nushell
 
 # Quick code quality check
 quality: code-quality
+
+# Coverage targets
+coverage: check-nushell
+	@echo "📊 Setting up coverage..."
+	$(NUSHELL) scripts/tests/setup-coverage.nu --approach lcov --verbose
+
+coverage-grcov: check-nushell
+	@echo "📊 Setting up grcov coverage..."
+	$(NUSHELL) scripts/tests/setup-coverage.nu --approach grcov --verbose
+
+coverage-tarpaulin: check-nushell
+	@echo "📊 Setting up tarpaulin coverage..."
+	$(NUSHELL) scripts/tests/setup-coverage.nu --approach tarpaulin --verbose
+
+coverage-custom: check-nushell
+	@echo "📊 Setting up custom coverage..."
+	$(NUSHELL) scripts/tests/setup-coverage.nu --approach custom --verbose
+
+coverage-ci: check-nushell
+	@echo "📊 Setting up coverage for CI..."
+	$(NUSHELL) -c "source scripts/tests/setup-coverage.nu; ci_setup_coverage"
+
+coverage-local: check-nushell
+	@echo "📊 Setting up coverage for local development..."
+	$(NUSHELL) -c "source scripts/tests/setup-coverage.nu; local_setup_coverage"
