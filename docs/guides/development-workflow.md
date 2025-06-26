@@ -121,7 +121,7 @@ nix-mox provides several specialized development shells:
 ### Available Shells
 
 ```bash
-make dev              # Default development shell
+make dev              # Default shell with Cursor IDE, Kitty terminal, Proxmox tools
 make test-shell       # Testing environment
 make services-shell   # Service development
 make monitoring-shell # Monitoring tools
@@ -147,6 +147,31 @@ Each shell includes:
 - Development utilities
 - Documentation and examples
 - Helpful shell hooks
+
+### Default Shell Features
+
+The default shell (`make dev`) now includes:
+
+- **🔧 Base Tools**: git, nix, nixpkgs-fmt, shellcheck, coreutils, fd, ripgrep
+- **📝 Cursor AI IDE**: Modern AI-powered code editor
+- **🖥️ Kitty Terminal**: Fast, feature-rich terminal emulator (set as default)
+- **🖥️ Proxmox Tools** (Linux only): QEMU, virt-manager, libvirt for VM management
+
+#### Quick Commands
+
+```bash
+# Open Cursor IDE
+cursor .
+
+# Open new Kitty terminal
+kitty
+open-terminal
+
+# Proxmox management (Linux only)
+virt-manager                    # Open VM manager GUI
+virsh list --all               # List all VMs
+nix run .#proxmox-update       # Update Proxmox host
+```
 
 ## Package Development
 
