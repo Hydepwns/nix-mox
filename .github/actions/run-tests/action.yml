@@ -75,6 +75,10 @@ runs:
       run: |
         print "📊 Generating LCOV coverage report for Codecov..."
 
+        # Ensure we're in the right directory
+        cd ${{ github.workspace }}
+        print $"Current directory: (pwd)"
+
         # Ensure coverage-tmp directory exists
         if not ("coverage-tmp" | path exists) {
           mkdir "coverage-tmp"
@@ -86,10 +90,13 @@ runs:
         if $test_results_exist > 0 {
           print "✅ Test results found, generating LCOV report..."
           
-          # Run the LCOV generation script
+          # Run the LCOV generation script with absolute path
           try {
-            cd ${{ github.workspace }}
-            source "scripts/tests/generate-lcov.nu"
+            let script_path = $"(${{ github.workspace }})/scripts/tests/generate-lcov.nu"
+            print $"Using absolute script path: ($script_path)"
+            print $"Script exists: (ls $script_path | length | $in > 0)"
+            
+            source $script_path
             print "✅ LCOV coverage report generated successfully"
           } catch { |err|
             print $"⚠️ Failed to generate LCOV report: ($err)"
