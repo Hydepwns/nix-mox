@@ -20,6 +20,8 @@
       pkgs.coreutils
       pkgs.fd
       pkgs.ripgrep
+      pkgs.code-cursor # Cursor AI IDE
+      pkgs.kitty # Terminal emulator
     ] ++ (
       # Platform-specific dependencies
       if pkgs.stdenv.isDarwin then [
@@ -28,6 +30,10 @@
       ] else if pkgs.stdenv.isLinux then [
         pkgs.zlib
         pkgs.openssl
+        # Proxmox tools (Linux only)
+        pkgs.qemu # QEMU for VM management
+        pkgs.virt-manager # Virtual machine manager
+        pkgs.libvirt # Virtualization API
       ] else [ ]
     );
 
@@ -38,6 +44,10 @@
       export NIX_MOX_IS_LINUX=${if pkgs.stdenv.isLinux then "true" else "false"}
       export NIX_MOX_IS_DARWIN=${if pkgs.stdenv.isDarwin then "true" else "false"}
       export NIX_MOX_ARCH=${pkgs.stdenv.hostPlatform.parsed.cpu.name}
+
+      # Set default terminal to Kitty
+      export TERMINAL=kitty
+      export TERM=xterm-kitty
 
       # Platform-specific settings
       ${if pkgs.stdenv.isDarwin then ''
@@ -54,6 +64,7 @@
         echo "System: ${pkgs.system}"
         echo "Architecture: ${pkgs.stdenv.hostPlatform.parsed.cpu.name}"
         echo "Platform: ${if pkgs.stdenv.isDarwin then "macOS" else if pkgs.stdenv.isLinux then "Linux" else "Other"}"
+        echo "Terminal: kitty"
         echo ""
         echo "🔧 Base Tools"
         echo "-----------"
@@ -97,6 +108,41 @@
         echo "    - rg 'TODO'                      # Find TODOs"
         echo "    - rg -t py 'def '                # Find Python functions"
         echo ""
+        echo "📝 Development Tools"
+        echo "------------------"
+        echo "code-cursor: (v${pkgs.code-cursor.version})"
+        echo "    Commands:"
+        echo "    - cursor file                    # Open file in Cursor"
+        echo "    - cursor .                       # Open current directory"
+        echo "    - cursor --help                  # Show Cursor options"
+        echo ""
+        echo "kitty: (v${pkgs.kitty.version})"
+        echo "    Commands:"
+        echo "    - kitty                          # Open new terminal"
+        echo "    - kitty +kitten themes           # List themes"
+        echo "    - kitty +kitten ssh user@host    # SSH in new tab"
+        echo ""
+        ${if pkgs.stdenv.isLinux then ''
+        echo "🖥️  Proxmox Tools (Linux only)"
+        echo "---------------------------"
+        echo "qemu: (v${pkgs.qemu.version})"
+        echo "    Commands:"
+        echo "    - qemu-system-x86_64 -hda disk.img  # Start VM"
+        echo "    - qemu-img create disk.img 10G      # Create disk image"
+        echo ""
+        echo "virt-manager: (v${pkgs.virt-manager.version})"
+        echo "    Commands:"
+        echo "    - virt-manager                    # Open GUI"
+        echo "    - virsh list                      # List VMs"
+        echo "    - virsh start vm-name             # Start VM"
+        echo ""
+        echo "libvirt: (v${pkgs.libvirt.version})"
+        echo "    Commands:"
+        echo "    - virsh list --all               # List all VMs"
+        echo "    - virsh dominfo vm-name          # VM info"
+        echo "    - virsh shutdown vm-name         # Shutdown VM"
+        echo ""
+        '' else ""}
         echo "📝 Quick Start"
         echo "------------"
         echo "1. Enter specialized shells:"
@@ -121,9 +167,18 @@
         echo "   nix run .#security-audit         # Security audit (macOS only)"
         '' else ""}
         echo ""
-        echo "3. Format Nix code:"
-        echo "   nix fmt"
+        echo "3. Development workflow:"
+        echo "   cursor .                          # Open in Cursor"
+        echo "   kitty                             # Open new terminal"
+        echo "   nix fmt                           # Format Nix code"
         echo ""
+        ${if pkgs.stdenv.isLinux then ''
+        echo "4. Proxmox workflow:"
+        echo "   virt-manager                      # Open VM manager"
+        echo "   virsh list --all                  # List VMs"
+        echo "   nix run .#proxmox-update          # Update Proxmox"
+        echo ""
+        '' else ""}
         echo "For more information, see docs/."
       }
 
@@ -135,10 +190,12 @@
       echo "💡 Tip: Type 'help' to show this menu again"
       echo "💡 Tip: Type 'which-shell' to see which shell you're in"
       echo "💡 Tip: Type 'platform-info' to see platform information"
+      echo "💡 Tip: Type 'open-terminal' to open a new Kitty terminal"
       echo ""
       alias help='show_help'
       alias which-shell='echo "You are in the nix-mox default shell"'
       alias platform-info='echo "Platform: ${pkgs.system} | Architecture: ${pkgs.stdenv.hostPlatform.parsed.cpu.name} | OS: ${if pkgs.stdenv.isDarwin then "macOS" else if pkgs.stdenv.isLinux then "Linux" else "Other"}"'
+      alias open-terminal='kitty'
     '';
   };
 }
