@@ -11,7 +11,7 @@
 2. Enter development environment:
 
    ```bash
-   # Default development environment
+   # Default development environment with Cursor IDE and Kitty terminal
    nix develop
 
    # Or use specific development shells
@@ -20,6 +20,22 @@
    nix develop .#services    # For service development
    nix develop .#monitoring  # For monitoring tools
    nix develop .#zfs         # For ZFS-related development (Linux only)
+   ```
+
+3. Quick development commands:
+
+   ```bash
+   # Open Cursor IDE
+   cursor .
+
+   # Open new terminal
+   kitty
+   open-terminal
+
+   # Proxmox management (Linux only)
+   virt-manager
+   virsh list --all
+   nix run .#proxmox-update
    ```
 
 ## Package Structure
