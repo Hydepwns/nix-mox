@@ -144,7 +144,7 @@ Compose configurations from reusable fragments for maximum flexibility:
 Specialized development environments for different use cases:
 
 ```bash
-nix develop                    # Default development environment
+nix develop                    # Default development environment (Cursor IDE, Kitty terminal, Proxmox tools)
 nix develop .#development      # Full development tools
 nix develop .#testing          # Testing and CI tools
 nix develop .#services         # Service deployment tools
@@ -152,6 +152,33 @@ nix develop .#monitoring       # Monitoring and observability
 nix develop .#gaming           # Gaming tools (Linux x86_64)
 nix develop .#zfs              # ZFS management tools (Linux)
 nix develop .#macos            # macOS development (macOS)
+```
+
+#### Default Shell Features
+
+The default shell (`nix develop`) now includes:
+
+- **🔧 Base Tools**: git, nix, nixpkgs-fmt, shellcheck, coreutils, fd, ripgrep
+- **📝 Cursor AI IDE**: Modern AI-powered code editor
+- **🖥️ Kitty Terminal**: Fast, feature-rich terminal emulator (set as default)
+- **🖥️ Proxmox Tools** (Linux only): QEMU, virt-manager, libvirt for VM management
+- **📊 Platform Detection**: Automatic platform-specific optimizations
+
+#### Quick Commands
+
+```bash
+# Open Cursor IDE
+cursor .
+
+# Open new Kitty terminal
+kitty
+# or use the alias
+open-terminal
+
+# Proxmox management (Linux only)
+virt-manager                    # Open VM manager GUI
+virsh list --all               # List all VMs
+nix run .#proxmox-update       # Update Proxmox host
 ```
 
 ### 💬 Messaging & Communication
@@ -245,7 +272,7 @@ make analyze-sizes
 ----------------------------
   gaming              | 2047.3 MB | 45s
   development         |  892.1 MB | 23s
-  default             |  156.7 MB |  8s
+  default             |  245.3 MB | 12s
 
 📈 Summary Report
 ----------------
@@ -259,7 +286,7 @@ make analyze-sizes
 
 - **Gaming shell** is typically the largest due to Wine, DXVK, and game tools
 - **Development shell** includes comprehensive dev tools
-- **Default shell** provides minimal overhead for basic tasks
+- **Default shell** now includes Cursor IDE, Kitty terminal, and Proxmox tools (Linux)
 - **Templates** show the actual system configuration complexity
 
 This helps users make informed decisions about which components to use based on their storage constraints and performance requirements.
@@ -286,10 +313,20 @@ sudo nixos-rebuild switch --flake .#nixos
 ### Development Environment
 
 ```bash
-# Enter development shell
+# Enter default shell with Cursor IDE and Kitty terminal
+nix develop
+
+# Available tools: git, nix, cursor, kitty, ripgrep, fd
+# Linux only: qemu, virt-manager, libvirt for Proxmox management
+```
+
+### Enhanced Development Environment
+
+```bash
+# Enter full development shell
 nix develop .#development
 
-# Available tools: git, vscode, docker, nodejs, python3, rustc, cargo
+# Available tools: git, vscode, docker, nodejs, python3, rustc, cargo, neovim, tmux
 ```
 
 ### Gaming Setup
@@ -459,10 +496,10 @@ services.nix-mox.templates = {
 
 ```bash
 # Enter development environment
-nix develop
+nix develop                    # Default shell with Cursor IDE, Kitty terminal, Proxmox tools
 
 # Enter specific development shells
-nix develop .#default        # Basic development environment (all platforms)
+nix develop .#default        # Basic development environment with Cursor IDE and Kitty terminal (all platforms)
 nix develop .#development    # Enhanced development environment (all platforms)
 nix develop .#testing        # Testing environment (all platforms)
 nix develop .#services       # Service development and management (all platforms)
@@ -470,6 +507,13 @@ nix develop .#monitoring     # Monitoring and observability (all platforms)
 nix develop .#gaming         # Gaming environment (Linux x86_64 only)
 nix develop .#zfs            # ZFS development and testing (Linux only)
 nix develop .#macos          # macOS development environment (macOS only)
+
+# Quick development commands
+cursor .                      # Open current directory in Cursor IDE
+kitty                         # Open new Kitty terminal
+open-terminal                 # Alias for opening Kitty terminal
+virsh list --all             # List Proxmox VMs (Linux only)
+virt-manager                  # Open Proxmox VM manager (Linux only)
 
 # Run tests
 make test              # All tests
@@ -522,6 +566,26 @@ make test          # Run all tests
 make format        # Format code
 make check         # Run flake checks
 make build-all     # Build all packages
+```
+
+**Default Shell Workflow:**
+
+```bash
+# Enter default shell with Cursor IDE and Kitty terminal
+nix develop
+
+# Open Cursor IDE for development
+cursor .
+
+# Open new terminal tabs/windows
+kitty
+open-terminal
+
+# Proxmox management (Linux only)
+virt-manager                    # Manage VMs via GUI
+virsh list --all               # List all VMs
+nix run .#proxmox-update       # Update Proxmox host
+nix run .#vzdump-backup        # Backup VMs
 ```
 
 [⬆️ Return to Top](#-table-of-contents)
