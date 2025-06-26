@@ -32,11 +32,13 @@ export def aggregate_coverage [] {
     let passed_tests = ($test_results | where { |it| $it.status == "passed" } | length)
     let failed_tests = ($test_results | where { |it| $it.status == "failed" } | length)
     let skipped_tests = ($test_results | where { |it| $it.status == "skipped" } | length)
-    let total_duration = ($test_results | where { |it| $it.duration != null } | get duration | math sum)
+    let durations = ($test_results | where { |it| $it.duration != null } | get duration)
+    let total_duration = if ($durations | length) > 0 { $durations | math sum } else { 0 }
 
-    let categories = ($test_results | group-by category | transpose category tests | each { |row|
+    let grouped = ($test_results | group-by category | transpose category tests | each { |row|
         { ($row.category): ($row.tests | length) }
-    } | reduce { |acc, item| $acc | merge $item })
+    })
+    let categories = if ($grouped | length) > 0 { $grouped | reduce { |acc, item| $acc | merge $item } } else { {} }
 
     {
         total_tests: $total_tests
