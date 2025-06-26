@@ -22,9 +22,26 @@ cd nix-mox
 nix-mox/
 ├── config/ # <Your NixOS configuration>
 ├── modules/
-├── devshells/ # Dev shells for different use cases (gaming, security, messaging, etc.)
+├── devshells/ # Dev shells for different use cases (default includes Cursor IDE, Kitty terminal, Proxmox tools)
 ├── scripts/
 ├── docs/
+```
+
+## Quick Development
+
+```bash
+# Enter default shell with Cursor IDE and Kitty terminal
+nix develop
+
+# Open Cursor IDE
+cursor .
+
+# Open new terminal
+kitty
+
+# Proxmox management (Linux only)
+virt-manager
+nix run .#proxmox-update
 ```
 
 ## Documentation
