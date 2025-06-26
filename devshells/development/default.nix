@@ -9,15 +9,19 @@ pkgs.mkShell {
     pkgs.shellcheck
     pkgs.coreutils
     pkgs.fd
-    pkgs.ripgrep
-
-    # Python development (essential only)
+    pkgs.ripgrep # File search
+    pkgs.neovim  # Editor
+    pkgs.tmux # Terminal multiplexer
+    pkgs.tmuxinator # Tmuxinator
+    pkgs.code-cursor # Cursor AI IDE
+ 
+    # Python development
     pkgs.python3
     pkgs.python3Packages.pip
     pkgs.python3Packages.pytest
     pkgs.python3Packages.black
 
-    # Development tools (essential only)
+    # Development tools
     pkgs.just # Command runner
     pkgs.pre-commit # Git hooks
     pkgs.direnv # Directory environment manager
@@ -31,6 +35,52 @@ pkgs.mkShell {
     # Function to show help menu
     show_help() {
       echo "Welcome to the nix-mox development shell!"
+      echo ""
+      echo "🔍 File Search & Navigation"
+      echo "-------------------------"
+      echo "ripgrep: (v${pkgs.ripgrep.version})"
+      echo "    Commands:"
+      echo "    - rg 'pattern'                 # Search for pattern in files"
+      echo "    - rg -i 'pattern'              # Case-insensitive search"
+      echo "    - rg -t py 'pattern'           # Search only Python files"
+      echo "    - rg --type-list               # Show supported file types"
+      echo ""
+      echo "fd: (v${pkgs.fd.version})"
+      echo "    Commands:"
+      echo "    - fd 'pattern'                 # Find files by name"
+      echo "    - fd -e py                     # Find files by extension"
+      echo "    - fd -H 'pattern'              # Include hidden files"
+      echo ""
+      echo "📝 Editing & Development"
+      echo "----------------------"
+      echo "neovim: (v${pkgs.neovim.version})"
+      echo "    Commands:"
+      echo "    - nvim file                    # Open file in Neovim"
+      echo "    - nvim .                       # Open current directory"
+      echo "    - nvim -c 'set number' file    # Open with line numbers"
+      echo ""
+      echo "code-cursor: (v${pkgs.code-cursor.version})"
+      echo "    Commands:"
+      echo "    - cursor file                  # Open file in Cursor"
+      echo "    - cursor .                     # Open current directory"
+      echo "    - cursor --help                # Show Cursor options"
+      echo ""
+      echo "🖥️  Terminal Management"
+      echo "---------------------"
+      echo "tmux: (v${pkgs.tmux.version})"
+      echo "    Commands:"
+      echo "    - tmux                         # Start new session"
+      echo "    - tmux new-session -s dev      # Create named session"
+      echo "    - tmux attach -t dev           # Attach to session"
+      echo "    - tmux list-sessions           # List all sessions"
+      echo "    - tmux kill-session -t dev     # Kill session"
+      echo ""
+      echo "tmuxinator: (v${pkgs.tmuxinator.version})"
+      echo "    Commands:"
+      echo "    - tmuxinator start project     # Start project session"
+      echo "    - tmuxinator list              # List available projects"
+      echo "    - tmuxinator new project       # Create new project config"
+      echo "    - tmuxinator edit project      # Edit project config"
       echo ""
       echo "🐍 Python Development"
       echo "-------------------"
@@ -111,6 +161,11 @@ pkgs.mkShell {
       echo "   pre-commit run               # Run all hooks"
       echo "   nixpkgs-fmt .                # Format Nix files"
       echo "   shellcheck scripts/          # Lint shell scripts"
+      echo ""
+      echo "5. Terminal workflow:"
+      echo "   tmuxinator start dev          # Start development session"
+      echo "   nvim .                        # Open editor"
+      echo "   rg 'TODO'                     # Search for TODOs"
       echo ""
       echo "For more information, see docs/."
     }
