@@ -90,13 +90,13 @@ runs:
         if $test_results_exist > 0 {
           print "✅ Test results found, generating LCOV report..."
           
-          # Run the LCOV generation script with absolute path
+          # Run the LCOV generation script using nu -c instead of source
           try {
             let script_path = $"(${{ github.workspace }})/scripts/tests/generate-lcov.nu"
             print $"Using absolute script path: ($script_path)"
             print $"Script exists: (ls $script_path | length | $in > 0)"
             
-            source $script_path
+            nu -c $"source ($script_path)"
             print "✅ LCOV coverage report generated successfully"
           } catch { |err|
             print $"⚠️ Failed to generate LCOV report: ($err)"
