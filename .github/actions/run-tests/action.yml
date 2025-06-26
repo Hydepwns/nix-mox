@@ -27,6 +27,11 @@ runs:
           mkdir $env.TEST_TEMP_DIR
         }
 
+        # Ensure coverage-tmp directory exists
+        if not ("coverage-tmp" | path exists) {
+          mkdir "coverage-tmp"
+        }
+
         print "✅ Test environment ready"
 
     - name: Run test suites
@@ -70,36 +75,30 @@ runs:
       run: |
         print "📊 Generating coverage report..."
 
-        let coverage_file = (try { ls /tmp/nix-mox-tests/coverage.json | get name | first } catch { "" })
+        # Ensure coverage-tmp directory exists
+        if not ("coverage-tmp" | path exists) {
+          mkdir "coverage-tmp"
+        }
 
+        # Run the LCOV generation script
+        try {
+          source "scripts/tests/generate-lcov.nu"
+          print "✅ LCOV coverage report generated successfully"
+        } catch {
+          print "⚠️ Failed to generate LCOV report, creating minimal report"
+          
+          # Create minimal LCOV report
+          let minimal_lcov = "TN:\nSF:scripts/tests/run-tests.nu\nFN:1,main\nFNDA:0,main\nDA:1,0\nend_of_record"
+          $minimal_lcov | save --force "coverage-tmp/coverage.lcov"
+        }
+
+        # Verify coverage file exists
+        let coverage_file = (try { ls coverage-tmp/coverage.lcov | get name | first } catch { "" })
         if ($coverage_file | is-empty) {
-          print "⚠️ No coverage file found, creating minimal report"
-
-          let minimal_coverage = {
-            summary: {
-              total_tests: 0
-              passed_tests: 0
-              failed_tests: 0
-              skipped_tests: 0
-              test_duration: 0
-              pass_rate: 0.0
-              timestamp: (date now | format date "%Y-%m-%d %H:%M:%S")
-            }
-            categories: {}
-            results: []
-          }
-
-          if not ("coverage-tmp/nix-mox-tests" | path exists) {
-            mkdir "coverage-tmp/nix-mox-tests"
-          }
-          $minimal_coverage | to json | save --force 'coverage-tmp/nix-mox-tests/coverage.json'
+          print "❌ Coverage file not found after generation"
+          exit 1
         } else {
-          print $"📄 Found coverage file: ($coverage_file)"
-
-          if not ("coverage-tmp/nix-mox-tests" | path exists) {
-            mkdir "coverage-tmp/nix-mox-tests"
-          }
-          cp $coverage_file coverage-tmp/nix-mox-tests/coverage.json
+          print $"✅ Coverage file found: ($coverage_file)"
         }
 
         print "✅ Coverage report generated"

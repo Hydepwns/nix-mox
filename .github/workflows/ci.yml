@@ -1,5 +1,18 @@
 name: CI (Simplified)
 
+# nix-mox CI Pipeline
+# ===================
+# This workflow runs comprehensive tests and generates coverage reports
+# 
+# Coverage System:
+# - Uses LCOV format for Codecov integration
+# - Generates coverage-tmp/coverage.lcov
+# - Supports multiple coverage approaches (LCOV, grcov, tarpaulin)
+# - Fallback to minimal coverage if tests fail
+#
+# For local development, use: make coverage-local
+# For troubleshooting, see: docs/COVERAGE.md
+
 on:
   push:
     branches: [ main ]
@@ -158,6 +171,7 @@ jobs:
           }
         continue-on-error: true
 
+      # Coverage and Codecov Integration
       - name: Upload coverage artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -170,12 +184,13 @@ jobs:
         if: always()
         uses: codecov/codecov-action@v5
         with:
-          files: coverage-tmp/codecov.json
+          files: coverage-tmp/coverage.lcov
           flags: unittests
           name: codecov-${{ matrix.os }}
           fail_ci_if_error: false
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
+          directory: coverage-tmp/
 
   build-heavy-packages:
     runs-on: ubuntu-latest
