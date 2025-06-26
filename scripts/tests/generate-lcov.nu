@@ -8,14 +8,42 @@ use ./lib/coverage-core.nu *
 def main [] {
     print "Generating LCOV coverage report for Codecov..."
 
-    # Set up test environment
-    if ($env.TEST_TEMP_DIR? | is-empty) {
-        $env.TEST_TEMP_DIR = "coverage-tmp/nix-mox-tests"
+    # Set up test environment - check multiple possible locations
+    let possible_test_dirs = [
+        "/tmp/nix-mox-tests",
+        "/tmp/nix-shell.*/nix-mox-tests",
+        "coverage-tmp/nix-mox-tests",
+        $env.TEST_TEMP_DIR? | default "coverage-tmp/nix-mox-tests"
+    ]
+
+    mut test_dir = ""
+    for dir in $possible_test_dirs {
+        if ($dir | str contains "*") {
+            # Handle glob patterns
+            let matches = (try { ls $dir | get name | first } catch { "" })
+            if not ($matches | is-empty) {
+                $test_dir = $matches
+                break
+            }
+        } else if ($dir | path exists) {
+            $test_dir = $dir
+            break
+        }
     }
 
+    if ($test_dir | is-empty) {
+        print "Warning: No test directory found, using default"
+        $test_dir = "coverage-tmp/nix-mox-tests"
+    }
+
+    print $"Using test directory: ($test_dir)"
+
+    # Set the TEST_TEMP_DIR for the coverage functions
+    $env.TEST_TEMP_DIR = $test_dir
+
     # Ensure directories exist
-    if not ($env.TEST_TEMP_DIR | path exists) {
-        mkdir $env.TEST_TEMP_DIR
+    if not ($test_dir | path exists) {
+        mkdir $test_dir
     }
     if not ("coverage-tmp" | path exists) {
         mkdir "coverage-tmp"
