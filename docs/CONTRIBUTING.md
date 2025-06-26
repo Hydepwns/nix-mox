@@ -77,15 +77,43 @@ nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update
 make clean
 ```
 
+### Coverage Testing
+
+The project includes comprehensive coverage reporting:
+
+```bash
+# Generate coverage reports
+make coverage          # LCOV format (recommended for Codecov)
+make coverage-grcov    # Rust-based coverage (requires Rust)
+make coverage-local    # Local development coverage
+
+# Run tests with coverage
+make test && make coverage
+
+# Check coverage locally
+cat coverage-tmp/coverage-summary.json
+```
+
+### Coverage Options
+
+- **LCOV Coverage** (Recommended): Standard format compatible with Codecov
+- **grcov Coverage**: Advanced Rust-based line-by-line coverage
+- **tarpaulin Coverage**: Simplified Rust coverage tool
+- **Custom Coverage**: Test result tracking and analysis
+
+See [Coverage Documentation](./COVERAGE.md) for detailed information.
+
 ### Continuous Integration
 
 The project uses GitHub Actions for CI/CD with the following workflow:
 
 1. **Package Building**: Builds all packages on multiple platforms (`x86_64-linux`, `aarch64-linux`)
 2. **Testing**: Runs the integrated test suite using `nix flake check`
-3. **Multi-version Testing**: Tests against multiple Nix versions (2.19.2, 2.20.1)
+3. **Coverage**: Generates and uploads coverage reports to Codecov
+4. **Multi-version Testing**: Tests against multiple Nix versions (2.19.2, 2.20.1)
+5. **Multi-platform**: Tests run on Linux and macOS
 
-All tests must pass before merging pull requests. See [Testing Guide](./guides/testing.md) for detailed information.
+All tests must pass and coverage reports must be generated before merging pull requests. See [Testing Guide](./guides/testing.md) for detailed information.
 
 ## Pull Request Process
 

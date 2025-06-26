@@ -44,17 +44,83 @@ virt-manager
 nix run .#proxmox-update
 ```
 
+## Testing & Coverage
+
+### Quick Testing
+```bash
+# Run all tests
+make test
+
+# Run specific test suites
+make unit
+make integration
+
+# Run tests with coverage
+make test && make coverage
+```
+
+### Coverage System
+
+nix-mox supports multiple coverage approaches for different needs:
+
+```bash
+# LCOV Coverage (Recommended for Codecov)
+make coverage
+
+# Rust-based coverage tools
+make coverage-grcov    # Advanced line-by-line coverage
+make coverage-tarpaulin # Simplified Rust coverage
+
+# Custom test-based coverage
+make coverage-custom
+
+# CI and local development
+make coverage-ci       # Optimized for CI environments
+make coverage-local    # Local development with fallbacks
+```
+
+### Coverage Options
+
+| Approach | Best For | Requirements | Codecov Compatible |
+|----------|----------|--------------|-------------------|
+| **LCOV** | Codecov integration | None | ✅ Yes |
+| **grcov** | Advanced Rust projects | Rust toolchain | ✅ Yes |
+| **tarpaulin** | Simplified Rust coverage | Rust toolchain | ✅ Yes |
+| **Custom** | Test result tracking | None | ❌ No |
+
+### Coverage Reports
+
+- **LCOV Format**: `coverage-tmp/coverage.lcov` (for Codecov)
+- **Summary**: `coverage-tmp/coverage-summary.json`
+- **Test Results**: `coverage-tmp/nix-mox-tests/`
+
+See [Coverage Documentation](docs/COVERAGE.md) for detailed information and troubleshooting.
+
 ## Documentation
 
 - [Usage Guide](docs/USAGE.md)
 - [Contributing](docs/CONTRIBUTING.md)
 - [Architecture](docs/architecture/ARCHITECTURE.md)
+- [Coverage Guide](docs/COVERAGE.md)
 - [Cachix Cache](https://app.cachix.org/cache/nix-mox)
 - [Local Test Workflow](https://github.com/Hydepwns/nix-mox/actions/workflows/test-local.yml) — manual/experimental
 
 ## CI/CD
 
 - [CI Status](https://github.com/Hydepwns/nix-mox/actions/workflows/ci.yml)
+- **Coverage**: Integrated with Codecov using LCOV format
+- **Multi-platform**: Tests run on Linux and macOS
+- **Caching**: Uses Cachix for faster builds
+- **Coverage Tracking**: Real-time coverage reports on [Codecov](https://codecov.io/gh/Hydepwns/nix-mox)
+
+### CI Features
+
+- ✅ **Automated Testing**: Unit, integration, and performance tests
+- ✅ **Coverage Generation**: LCOV format for Codecov integration
+- ✅ **Multi-Platform**: Linux and macOS support
+- ✅ **Package Building**: All packages built and cached
+- ✅ **Security Checks**: Automated security validation
+- ✅ **Performance Analysis**: Build time and resource optimization
 
 ## License
 
