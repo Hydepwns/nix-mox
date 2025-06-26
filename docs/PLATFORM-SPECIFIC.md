@@ -268,12 +268,14 @@ All platforms share these common development tools:
 - coreutils
 - fd
 - ripgrep
+- code-cursor (Cursor AI IDE)
+- kitty (Terminal emulator)
 
 ### Platform-Specific Tools
 
 Each platform gets additional tools:
 
-- **Linux**: zlib, openssl, systemd tools
+- **Linux**: zlib, openssl, systemd tools, qemu, virt-manager, libvirt (Proxmox tools)
 - **macOS**: CoreServices, Foundation frameworks
 
 ## Error Handling
