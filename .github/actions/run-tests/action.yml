@@ -80,10 +80,20 @@ runs:
           mkdir "coverage-tmp"
         }
 
-        # Run the LCOV generation script
+        # Run the LCOV generation script with better error handling
         try {
-          source "scripts/tests/generate-lcov.nu"
-          print "✅ LCOV coverage report generated successfully"
+          # Check if the script exists first
+          let script_exists = (try { ls scripts/tests/generate-lcov.nu | length | $in > 0 } catch { 0 })
+          
+          if $script_exists > 0 {
+            print "Found generate-lcov.nu script, running it..."
+            source "scripts/tests/generate-lcov.nu"
+            print "✅ LCOV coverage report generated successfully"
+          } else {
+            print "⚠️ generate-lcov.nu not found, trying fallback..."
+            source "scripts/tests/generate-lcov-fallback.nu"
+            print "✅ Fallback LCOV coverage report generated"
+          }
         } catch {
           print "⚠️ Failed to generate LCOV report, creating minimal report"
           
