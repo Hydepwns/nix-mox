@@ -7,6 +7,7 @@
   services = import ./services/default.nix { inherit pkgs; };
   monitoring = import ./monitoring/default.nix { inherit pkgs; };
   macos = import ./macos/default.nix { inherit pkgs; };
+  gaming = if pkgs.stdenv.isLinux then import ./gaming/default.nix { inherit pkgs; } else null;
 
   # Default shell (inline mkShell definition)
   default = pkgs.mkShell {

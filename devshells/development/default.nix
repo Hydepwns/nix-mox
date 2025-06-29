@@ -10,11 +10,11 @@ pkgs.mkShell {
     pkgs.coreutils
     pkgs.fd
     pkgs.ripgrep # File search
-    pkgs.neovim  # Editor
+    pkgs.neovim # Editor
     pkgs.tmux # Terminal multiplexer
     pkgs.tmuxinator # Tmuxinator
     pkgs.code-cursor # Cursor AI IDE
- 
+
     # Python development
     pkgs.python3
     pkgs.python3Packages.pip

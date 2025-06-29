@@ -93,20 +93,22 @@
         in
         if pkgs.stdenv.isLinux then
         # Linux packages - only include essential ones
-          filterNullPackages (commonPackages // {
-            proxmox-update = systemPackages.proxmox-update or null;
-            vzdump-backup = systemPackages.vzdump-backup or null;
-            zfs-snapshot = systemPackages.zfs-snapshot or null;
-            nixos-flake-update = systemPackages.nixos-flake-update or null;
-          })
+          filterNullPackages
+            (commonPackages // {
+              proxmox-update = systemPackages.proxmox-update or null;
+              vzdump-backup = systemPackages.vzdump-backup or null;
+              zfs-snapshot = systemPackages.zfs-snapshot or null;
+              nixos-flake-update = systemPackages.nixos-flake-update or null;
+            })
         else if pkgs.stdenv.isDarwin then
         # macOS packages - only include essential ones
-          filterNullPackages (commonPackages // {
-            homebrew-setup = systemPackages.homebrew-setup or null;
-            macos-maintenance = systemPackages.macos-maintenance or null;
-            xcode-setup = systemPackages.xcode-setup or null;
-            security-audit = systemPackages.security-audit or null;
-          })
+          filterNullPackages
+            (commonPackages // {
+              homebrew-setup = systemPackages.homebrew-setup or null;
+              macos-maintenance = systemPackages.macos-maintenance or null;
+              xcode-setup = systemPackages.xcode-setup or null;
+              security-audit = systemPackages.security-audit or null;
+            })
         else
         # Other platforms - only common packages
           filterNullPackages commonPackages;
@@ -126,6 +128,7 @@
           commonShells // {
             services = devShell.services;
             monitoring = devShell.monitoring;
+            gaming = devShell.gaming;
           }
         else if pkgs.stdenv.isDarwin then
         # macOS - add macOS-specific shell
