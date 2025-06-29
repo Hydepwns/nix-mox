@@ -13,6 +13,7 @@ export const LOG_LEVELS = {
     INFO: 1
     WARN: 2
     ERROR: 3
+    SUCCESS: 4
 }
 
 # Get current log level from environment or use default
@@ -36,6 +37,7 @@ export def log [level: string, message: string] {
             "WARN" => $YELLOW
             "INFO" => $GREEN
             "DEBUG" => $BLUE
+            "SUCCESS" => $GREEN
             _ => $NC
         }
         let timestamp = (timestamp)
@@ -152,4 +154,8 @@ export def is_ci_mode [] {
 export def usage [] {
     print "Usage: This script requires root privileges and supports --dry-run and --help options."
     print "Run with --help for specific usage information."
+}
+
+export def log_trace [message: string] {
+    log "DEBUG" $message
 }
