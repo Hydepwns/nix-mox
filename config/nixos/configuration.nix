@@ -3,6 +3,7 @@
 {
   imports = [
     ../hardware/hardware-configuration.nix
+    ./gaming.nix  # Import gaming configuration
   ];
 
   # Boot loader
@@ -143,6 +144,18 @@
         PasswordAuthentication = false;
         PermitRootLogin = "no";
       };
+    };
+
+    # Enable gaming support
+    gaming = {
+      enable = true;
+      gpu.type = "auto";  # Auto-detect GPU
+      performance.enable = true;
+      audio.enable = true;
+      audio.pipewire = true;
+      platforms.steam = true;
+      platforms.lutris = true;
+      platforms.heroic = true;
     };
   };
 
