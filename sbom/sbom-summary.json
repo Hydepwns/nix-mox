@@ -1,0 +1,16 @@
+{
+  "generated_at": "2025-06-21 08:40:27",
+  "total_packages": 12,
+  "total_size": 0,
+  "total_dependencies": 0,
+  "formats": [
+    "SPDX",
+    "CycloneDX",
+    "CSV"
+  ],
+  "files": [
+    "sbom/nix-mox.spdx.json",
+    "sbom/nix-mox.cyclonedx.json",
+    "sbom/nix-mox-packages.csv"
+  ]
+}

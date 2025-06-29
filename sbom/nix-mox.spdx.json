@@ -1,0 +1,254 @@
+{
+  "header": {
+    "spdxVersion": "SPDX-2.3",
+    "dataLicense": "CC0-1.0",
+    "SPDXID": "SPDXRef-DOCUMENT-2025-06-21-08-40:27",
+    "documentName": "nix-mox Software Bill of Materials",
+    "documentNamespace": "https://github.com/Hydepwns/nix-mox/sbom/2025-06-21T08:40:27Z",
+    "creator": "Tool: nix-mox-sbom-generator",
+    "created": "2025-06-21T08:40:27Z",
+    "documentComment": "Generated automatically by nix-mox SBOM generator"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-proxmox_update",
+      "packageName": "proxmox-update",
+      "packageVersion": "unknown",
+      "packageDescription": "Package not available",
+      "packageLicenseConcluded": "unknown",
+      "packageLicenseDeclared": "unknown",
+      "packageDownloadLocation": "",
+      "packageSize": "0 B",
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": ""
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": ""
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-vzdump_backup",
+      "packageName": "vzdump-backup",
+      "packageVersion": "unknown",
+      "packageDescription": "Package not available",
+      "packageLicenseConcluded": "unknown",
+      "packageLicenseDeclared": "unknown",
+      "packageDownloadLocation": "",
+      "packageSize": "0 B",
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": ""
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": ""
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-zfs_snapshot",
+      "packageName": "zfs-snapshot",
+      "packageVersion": "unknown",
+      "packageDescription": "Package not available",
+      "packageLicenseConcluded": "unknown",
+      "packageLicenseDeclared": "unknown",
+      "packageDownloadLocation": "",
+      "packageSize": "0 B",
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": ""
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": ""
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nixos_flake-update",
+      "packageName": "nixos-flake-update",
+      "packageVersion": "unknown",
+      "packageDescription": "Package not available",
+      "packageLicenseConcluded": "unknown",
+      "packageLicenseDeclared": "unknown",
+      "packageDownloadLocation": "",
+      "packageSize": "0 B",
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": ""
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": ""
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-install",
+      "packageName": "install",
+      "packageVersion": "unknown",
+      "packageDescription": "Package not available",
+      "packageLicenseConcluded": "unknown",
+      "packageLicenseDeclared": "unknown",
+      "packageDownloadLocation": "",
+      "packageSize": "0 B",
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": ""
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": ""
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-uninstall",
+      "packageName": "uninstall",
+      "packageVersion": "unknown",
+      "packageDescription": "Package not available",
+      "packageLicenseConcluded": "unknown",
+      "packageLicenseDeclared": "unknown",
+      "packageDownloadLocation": "",
+      "packageSize": "0 B",
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": ""
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": ""
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-proxmox_update",
+      "packageName": "proxmox-update",
+      "packageVersion": "unknown",
+      "packageDescription": "Package not available",
+      "packageLicenseConcluded": "unknown",
+      "packageLicenseDeclared": "unknown",
+      "packageDownloadLocation": "",
+      "packageSize": "0 B",
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": ""
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": ""
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-vzdump_backup",
+      "packageName": "vzdump-backup",
+      "packageVersion": "unknown",
+      "packageDescription": "Package not available",
+      "packageLicenseConcluded": "unknown",
+      "packageLicenseDeclared": "unknown",
+      "packageDownloadLocation": "",
+      "packageSize": "0 B",
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": ""
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": ""
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-zfs_snapshot",
+      "packageName": "zfs-snapshot",
+      "packageVersion": "unknown",
+      "packageDescription": "Package not available",
+      "packageLicenseConcluded": "unknown",
+      "packageLicenseDeclared": "unknown",
+      "packageDownloadLocation": "",
+      "packageSize": "0 B",
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": ""
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": ""
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nixos_flake-update",
+      "packageName": "nixos-flake-update",
+      "packageVersion": "unknown",
+      "packageDescription": "Package not available",
+      "packageLicenseConcluded": "unknown",
+      "packageLicenseDeclared": "unknown",
+      "packageDownloadLocation": "",
+      "packageSize": "0 B",
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": ""
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": ""
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-install",
+      "packageName": "install",
+      "packageVersion": "unknown",
+      "packageDescription": "Package not available",
+      "packageLicenseConcluded": "unknown",
+      "packageLicenseDeclared": "unknown",
+      "packageDownloadLocation": "",
+      "packageSize": "0 B",
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": ""
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": ""
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-uninstall",
+      "packageName": "uninstall",
+      "packageVersion": "unknown",
+      "packageDescription": "Package not available",
+      "packageLicenseConcluded": "unknown",
+      "packageLicenseDeclared": "unknown",
+      "packageDownloadLocation": "",
+      "packageSize": "0 B",
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": ""
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": ""
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    }
+  ]
+}
