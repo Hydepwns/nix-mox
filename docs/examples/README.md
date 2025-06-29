@@ -10,6 +10,7 @@ graph TD
     A --> E[Inheritance]
     A --> F[Variables]
     A --> G[Overrides]
+    A --> H[Gaming Workstation]
 ```
 
 ## Example Categories
@@ -55,6 +56,67 @@ graph TD
 - File replacements
 - Conditional overrides
 - Special configurations
+
+### 7. Gaming Workstation (`07-gaming-workstation/`)
+
+- Basic Gaming Setup
+- Custom GPU Configuration
+- Performance Tuning
+- Development + Gaming
+- Multi-Platform Gaming
+- Audio Optimization
+
+## Gaming Workstation Examples
+
+The gaming workstation examples demonstrate how to:
+
+- **Basic Gaming Setup**: Simple gaming configuration with auto-detection
+- **Custom GPU Configuration**: Manual GPU driver and optimization setup
+- **Performance Tuning**: Advanced performance optimization examples
+- **Development + Gaming**: Combined development and gaming environments
+- **Multi-Platform Gaming**: Steam, Lutris, and Heroic configuration
+- **Audio Optimization**: Low-latency audio setup for gaming
+
+### Quick Gaming Example
+
+```nix
+# Basic gaming configuration
+services.gaming = {
+  enable = true;
+  gpu.type = "auto";  # Auto-detect GPU
+  performance.enable = true;
+  audio.enable = true;
+};
+```
+
+### Advanced Gaming Example
+
+```nix
+# Advanced gaming configuration with custom settings
+services.gaming = {
+  enable = true;
+  gpu = {
+    type = "nvidia";
+    powerManagement = true;
+    modesetting = true;
+  };
+  performance = {
+    enable = true;
+    gameMode = true;
+    cpuGovernor = "performance";
+  };
+  audio = {
+    enable = true;
+    pipewire = true;
+    lowLatency = true;
+  };
+  platforms = {
+    steam = true;
+    lutris = true;
+    heroic = true;
+  };
+};
+```
 
 ## Getting Started
 

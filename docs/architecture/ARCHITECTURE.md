@@ -269,6 +269,142 @@ graph TD
     D --> D3[GVFS File Access]
 ```
 
+## Gaming Workstation Architecture
+
+nix-mox provides a comprehensive gaming workstation configuration that integrates system-level optimizations with development environments:
+
+### Gaming System Stack
+
+```mermaid
+graph TD
+    A[Gaming Workstation] --> B[System Level]
+    A --> C[Development Level]
+    A --> D[User Level]
+    
+    B --> B1[GPU Drivers]
+    B --> B2[Audio System]
+    B --> B3[Performance]
+    B --> B4[Kernel Optimizations]
+    
+    B1 --> B1a[NVIDIA/AMD/Intel]
+    B1 --> B1b[OpenGL/Vulkan]
+    B1 --> B1c[32-bit Support]
+    
+    B2 --> B2a[PipeWire]
+    B2 --> B2b[Low Latency]
+    B2 --> B2c[Game Audio]
+    
+    B3 --> B3a[GameMode]
+    B3 --> B3b[CPU Governors]
+    B3 --> B3c[Memory Optimizations]
+    
+    B4 --> B4a[Latest Kernel]
+    B4 --> B4b[Gaming Parameters]
+    B4 --> B4c[Real-time Support]
+    
+    C --> C1[Gaming Shell]
+    C --> C2[Development Shell]
+    C --> C3[Simultaneous Use]
+    
+    C1 --> C1a[Steam]
+    C1 --> C1b[Lutris]
+    C1 --> C1c[Wine Stack]
+    C1 --> C1d[Performance Tools]
+    
+    C2 --> C2a[Development Tools]
+    C2 --> C2b[IDE Support]
+    C2 --> C2c[Build Tools]
+    
+    D --> D1[Gaming Platforms]
+    D --> D2[Performance Monitoring]
+    D --> D3[Automation Scripts]
+    
+    D1 --> D1a[Steam]
+    D1 --> D1b[Lutris]
+    D1 --> D1c[Heroic]
+    
+    D2 --> D2a[MangoHud]
+    D2 --> D2b[htop]
+    D2 --> D2c[glmark2]
+    
+    D3 --> D3a[Setup Script]
+    D3 --> D3b[Health Checks]
+    D3 --> D3c[Configuration]
+```
+
+### GPU Auto-Detection & Configuration
+
+```mermaid
+graph TD
+    A[Hardware Detection] --> B{GPU Type?}
+    
+    B -->|NVIDIA| C[NVIDIA Configuration]
+    B -->|AMD| D[AMD Configuration]
+    B -->|Intel| E[Intel Configuration]
+    
+    C --> C1[NVIDIA Drivers]
+    C --> C2[Modesetting]
+    C --> C3[Power Management]
+    C --> C4[Vulkan Support]
+    
+    D --> D1[AMDVLK]
+    D --> D2[ROCm Support]
+    D --> D3[Mesa Drivers]
+    D --> D4[Vulkan Support]
+    
+    E --> E1[Intel Media Drivers]
+    E --> E2[VA-API Support]
+    E --> E3[Mesa Drivers]
+    E --> E4[Vulkan Support]
+    
+    C1 --> F[OpenGL Configuration]
+    D1 --> F
+    E1 --> F
+    
+    F --> F1[32-bit Support]
+    F --> F2[Vulkan Loaders]
+    F --> F3[Driver Packages]
+```
+
+### Performance Optimization Flow
+
+```mermaid
+graph TD
+    A[Gaming Session] --> B[GameMode Activation]
+    B --> C[CPU Optimization]
+    B --> D[GPU Optimization]
+    B --> E[Audio Optimization]
+    
+    C --> C1[Performance Governor]
+    C --> C2[CPU Affinity]
+    C --> C3[Memory Management]
+    
+    D --> D1[GPU Governor]
+    D --> D2[Power Management]
+    D --> D3[Thermal Management]
+    
+    E --> E1[Low Latency Audio]
+    E --> E2[Buffer Optimization]
+    E --> E3[Real-time Priority]
+    
+    C1 --> F[Performance Monitoring]
+    D1 --> F
+    E1 --> F
+    
+    F --> F1[MangoHud Overlay]
+    F --> F2[System Metrics]
+    F --> F3[Performance Logging]
+```
+
+### Integration with Development Environment
+
+The gaming workstation architecture allows simultaneous development and gaming:
+
+- **Shared System Resources**: Both environments use the same optimized system configuration
+- **Independent Shells**: `nix develop .#development` and `nix develop .#gaming` can run simultaneously
+- **Resource Management**: System-level optimizations benefit both environments
+- **Unified Configuration**: Single source of truth for hardware and performance settings
+
 ## Testing Infrastructure
 
 The testing infrastructure is organized under `scripts/tests/` and includes:

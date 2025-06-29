@@ -6,10 +6,56 @@ This guide provides information on configuring and troubleshooting hardware driv
 
 ## Table of Contents
 
+- [Gaming Workstation Configuration](#gaming-workstation-configuration)
 - [NVIDIA](#nvidia)
 - [AMD](#amd)
 - [Intel](#intel)
 - [General Troubleshooting](#general-troubleshooting)
+
+---
+
+## Gaming Workstation Configuration
+
+nix-mox provides a comprehensive gaming configuration module that automatically handles driver setup and optimization:
+
+### Automatic Setup
+```bash
+# Run the setup script for automatic configuration
+nu scripts/setup-gaming-workstation.nu
+```
+
+### Manual Configuration
+```nix
+# Import gaming configuration
+imports = [ ./gaming.nix ];
+
+# Enable gaming support
+services.gaming = {
+  enable = true;
+  gpu.type = "auto";  # or "nvidia", "amd", "intel"
+  performance.enable = true;
+  audio.enable = true;
+};
+```
+
+This automatically configures:
+- GPU drivers based on detected hardware
+- OpenGL/Vulkan with 32-bit support
+- Audio system (PipeWire)
+- Performance optimizations
+- Gaming platform support
+
+### GPU Auto-Detection
+The gaming module automatically detects your GPU and configures appropriate drivers:
+- **NVIDIA**: Enables NVIDIA drivers with modesetting and power management
+- **AMD**: Enables AMDVLK and ROCm support
+- **Intel**: Enables Intel media drivers and VA-API support
+
+### Performance Features
+- **GameMode**: CPU/GPU optimization during gaming
+- **MangoHud**: FPS and system monitoring
+- **Kernel optimizations**: Latest kernel with gaming parameters
+- **Audio optimization**: Low-latency PipeWire configuration
 
 ---
 

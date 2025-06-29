@@ -30,11 +30,13 @@ help:
 	@echo "  test        - Run all tests"
 	@echo "  setup-wizard - Interactive configuration setup"
 	@echo "  health-check - System health validation"
+	@echo "  gaming-setup - Setup gaming workstation"
 	@echo ""
 	@echo "🧪 Testing:"
 	@echo "  test        - Run all tests (unit + integration)"
 	@echo "  unit        - Run unit tests only"
 	@echo "  integration - Run integration tests only"
+	@echo "  gaming-test - Test gaming setup"
 	@echo "  clean       - Clean up test artifacts"
 	@echo ""
 	@echo "🔧 Development:"
@@ -102,6 +104,8 @@ help:
 	@echo "  - Use 'make clean-all' if you encounter build issues"
 	@echo "  - Use 'make setup-wizard' for interactive configuration"
 	@echo "  - Use 'make health-check' to validate system health"
+	@echo "  - Use 'make gaming-setup' to configure gaming workstation"
+	@echo "  - Use 'make gaming-test' to test gaming configuration"
 	@echo "  - Use 'make security-check' to validate security configuration"
 	@echo "  - Use 'make remote-builder-setup' to set up remote builder"
 	@echo "  - Use 'make test-remote-builder' to test remote builder"
@@ -114,6 +118,26 @@ setup-wizard:
 health-check:
 	@echo "🏥 Running nix-mox Health Check..."
 	$(NUSHELL) scripts/health-check.nu
+
+gaming-setup:
+	@echo "🎮 Setting up Gaming Workstation..."
+	$(NUSHELL) scripts/setup-gaming-workstation.nu
+
+gaming-wizard:
+	@echo "🎮 Interactive Gaming Setup Wizard..."
+	$(NUSHELL) scripts/setup-gaming-wizard.nu
+
+gaming-benchmark:
+	@echo "🎮 Running Gaming Performance Benchmark..."
+	$(NUSHELL) scripts/gaming-benchmark.nu
+
+gaming-validate:
+	@echo "🎮 Validating Gaming Configuration..."
+	$(NUSHELL) scripts/validate-gaming-config.nu
+
+gaming-test:
+	@echo "🎮 Testing Gaming Setup..."
+	./devshells/gaming/scripts/test-gaming.sh
 
 security-check:
 	@echo "🔒 Validating security module configuration..."

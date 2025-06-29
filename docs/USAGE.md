@@ -221,22 +221,46 @@ Comprehensive messaging and communication support with desktop notifications, de
 
 ### 🎮 Gaming Support
 
-nix-mox provides comprehensive gaming support with Wine, DXVK, and performance optimization tools. For detailed gaming setup, configuration, and troubleshooting, see the [Gaming Guide](guides/gaming.md).
+nix-mox provides comprehensive gaming support with both system-level configuration and development environments. For detailed gaming setup, configuration, and troubleshooting, see the [Gaming Guide](guides/gaming.md).
 
 **Quick Start:**
 
 ```bash
-nix develop .#gaming  # Enter gaming shell
+# Setup gaming workstation (one-time)
+nu scripts/setup-gaming-workstation.nu
+
+# Enter gaming shell
+nix develop .#gaming
 ```
 
-**Features:**
+**System-Level Features:**
+
+- **GPU Auto-Detection**: Automatic detection and configuration of NVIDIA/AMD/Intel GPUs
+- **OpenGL/Vulkan Support**: Complete graphics API support with 32-bit compatibility
+- **Audio Optimization**: PipeWire with low-latency configuration for gaming
+- **Performance Tuning**: GameMode, CPU governors, kernel optimizations
+- **Gaming Platforms**: Steam, Lutris, Heroic with firewall configuration
+
+**Development Shell Features:**
 
 - **Game Launchers:** Steam, Lutris, Heroic
 - **Windows Compatibility:** Wine & DXVK
 - **Performance Tools:** MangoHud, GameMode, Vulkan Tools
 - **Game Support:** League of Legends and other Windows games
 
-[⬆️ Return to Top](#-table-of-contents)
+**Simultaneous Development & Gaming:**
+
+```bash
+# Terminal 1: Development
+nix develop .#development
+cursor .
+
+# Terminal 2: Gaming
+nix develop .#gaming
+steam
+```
+
+Both environments share the same optimized system configuration while maintaining independent tool sets.
 
 ### 📊 Size Analysis & Performance
 

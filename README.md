@@ -44,6 +44,34 @@ virt-manager
 nix run .#proxmox-update
 ```
 
+## Gaming Workstation
+
+```bash
+# Setup gaming environment (one-time)
+nu scripts/setup-gaming-workstation.nu
+
+# Enter gaming shell with all tools
+nix develop .#gaming
+
+# Launch gaming platforms
+steam
+lutris
+heroic
+
+# Test gaming setup
+./devshells/gaming/scripts/test-gaming.sh
+```
+
+**Features:**
+- **Auto GPU detection** (NVIDIA/AMD/Intel)
+- **Complete OpenGL/Vulkan support** with 32-bit compatibility
+- **PipeWire audio** for low-latency gaming
+- **Performance optimizations** (GameMode, MangoHud)
+- **Wine with DXVK/VKD3D** for Windows games
+- **Simultaneous dev/gaming** environments
+
+See [Gaming Guide](docs/guides/gaming.md) for detailed setup and usage.
+
 ## Testing & Coverage
 
 ### Quick Testing

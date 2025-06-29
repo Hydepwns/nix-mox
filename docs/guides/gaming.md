@@ -2,6 +2,46 @@
 
 The nix-mox gaming shell provides a comprehensive environment for running Windows games on Linux, with special optimizations for League of Legends and other popular titles.
 
+## Gaming Workstation Setup
+
+nix-mox now provides comprehensive system-level gaming support:
+
+### Quick Setup
+```bash
+# Run the setup script
+nu scripts/setup-gaming-workstation.nu
+```
+
+### Configuration Options
+```nix
+# In your NixOS configuration
+services.gaming = {
+  enable = true;
+  gpu.type = "auto";  # Auto-detect GPU
+  performance.enable = true;
+  audio.enable = true;
+  audio.pipewire = true;
+  platforms.steam = true;
+  platforms.lutris = true;
+  platforms.heroic = true;
+};
+```
+
+### What's Included
+- **GPU Drivers**: Auto-detection and configuration for NVIDIA/AMD/Intel
+- **OpenGL/Vulkan**: Complete support with 32-bit compatibility
+- **Audio**: PipeWire for low-latency gaming audio
+- **Performance**: GameMode, CPU governors, kernel optimizations
+- **Gaming Platforms**: Steam, Lutris, Heroic with firewall rules
+- **Wine Stack**: Wine, DXVK, VKD3D, Winetricks
+- **Monitoring**: MangoHud, htop, glmark2
+
+### Simultaneous Development & Gaming
+Your workstation can now run both environments simultaneously:
+- Use `nix develop .#development` for development
+- Use `nix develop .#gaming` for gaming
+- Both can coexist and share system resources
+
 ## Quick Start
 
 ### Enter the Gaming Shell
