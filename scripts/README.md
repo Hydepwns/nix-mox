@@ -109,7 +109,7 @@ let core_scripts = get_scripts_by_category "core"
 The primary entrypoint for automation is the bash wrapper script:
 
 ```bash
-./nix-mox
+./scripts/common/nix-mox
 ```
 
 ### Usage
@@ -117,7 +117,7 @@ The primary entrypoint for automation is the bash wrapper script:
 Run the script with:
 
 ```bash
-./nix-mox --script install --dry-run
+./scripts/common/nix-mox --script install --dry-run
 ```
 
 > **Note:** The wrapper script ensures robust argument passing for all Nushell versions and platforms. You no longer need to worry about double-dash (`--`) or Nushell quirks.
@@ -147,24 +147,48 @@ Run the script with:
 
 ### **Core Scripts (`core/`)**
 
-- `install.nu`          — Unified installation script with component selection
-- `update.nu`           — System update script
-- `uninstall.nu`        — Clean removal script
-- `validate.nu`         — Configuration validation
+- `setup.nu`            — Main setup script with component selection
+- `health-check.nu`     — System health diagnostics
+- `integrate-modules.nu` — Module integration script
+- `install.nu`          — Unified installation script
+- `setup-cachix.nu`     — Cachix setup script
+- `setup-remote-builder.sh` — Remote builder setup
+- `test-remote-builder.sh` — Remote builder testing
+- `test-ci-local.sh`    — Local CI testing
+- `ci-test.sh`          — CI test script
+- `summarize-tests.sh`  — Test summarization
 
-### **Platform Scripts (`platform/`)**
+### **Gaming Scripts (`gaming/`)**
 
-- `linux/`              — Linux-specific implementations
-- `darwin/`             — macOS-specific implementations  
-- `windows/`            — Windows-specific implementations
+- `gaming-benchmark.nu` — Gaming performance benchmarking
+- `validate-gaming-config.nu` — Gaming configuration validation
+
+### **Development Scripts (`development/`)**
+
+- `code-quality.nu`     — Code quality analysis and linting
+- `pre-commit.nu`       — Pre-commit hooks and checks
+
+### **Validation Scripts (`validation/`)**
+
+- `validate-display-config.nu` — Display configuration validation
+- `performance-optimize.nu` — Performance optimization and analysis
 
 ### **Tools (`tools/`)**
 
-- `health-check.nu`     — Enhanced system health diagnostics
-- `setup-wizard.nu`     — Interactive configuration wizard
+- `project-dashboard.nu` — Project dashboard and metrics
 - `generate-docs.nu`    — Automatic documentation generation
-- `security-scan.nu`    — Security validation and reporting
-- `performance-report.nu` — Performance analysis and recommendations
+- `analyze-sizes.nu`    — Repository size analysis
+- `size-dashboard.nu`   — Size analysis dashboard
+- `advanced-cache.nu`   — Advanced caching utilities
+- `generate-sbom.nu`    — Software Bill of Materials generation
+- `generate-coverage.nu` — Code coverage generation
+- `analyze-sizes.sh`    — Shell-based size analysis
+
+### **Platform Scripts**
+
+- `linux/`              — Linux-specific implementations
+- `macos/`              — macOS-specific implementations  
+- `windows/`            — Windows-specific implementations
 
 ### **Libraries (`lib/`)**
 
@@ -179,17 +203,17 @@ Run the script with:
 - `exec.nu`             — Execution helpers
 - `platform.nu`         — Platform detection
 
+### **Common Scripts (`common/`)**
+
+- `nix-mox.nu`          — Main Nushell automation logic
+- `nix-mox`             — Bash wrapper script
+- `install-nix.sh`      — Nix installation script
+- `nix-mox-uninstall.sh` — Uninstallation script
+
 ### **Legacy Scripts**
 
-- `nix-mox`             — Main automation entrypoint (bash wrapper)
-- `nix-mox.nu`          — Nushell automation logic
-- `setup-wizard.nu`     — Interactive configuration wizard
-- `health-check.nu`     — System health diagnostics
-- `common/`             — Shared script utilities
-- `linux/`              — Linux-specific scripts (install, update, zfs, etc.)
-- `windows/`            — Windows-specific scripts
-- `handlers/`           — Script handlers
 - `tests/`              — Test suite
+- `handlers/`           — Script handlers
 
 ## Configuration
 
@@ -249,149 +273,96 @@ try {
 
 ### **Best Practices**
 
-- Use the enhanced error handling for all error conditions
-- Implement structured logging with context
-- Validate configuration before use
-- Perform security validation for critical operations
-- Monitor performance for long-running operations
-- Include comprehensive metadata in script headers
+1. **Use the enhanced libraries** for error handling, logging, and configuration
+2. **Follow the modular structure** - place scripts in appropriate directories
+3. **Include comprehensive error handling** with recovery suggestions
+4. **Use structured logging** for better debugging and monitoring
+5. **Validate configurations** before execution
+6. **Include security validation** for sensitive operations
 
-### **Script Metadata**
+## Quick Reference
 
-```nushell
-export const SCRIPT_METADATA = {
-    name: "script-name"
-    description: "What this script does"
-    platform: "all"  # or "linux", "darwin", "windows"
-    requires_root: false
-    category: "core"  # or "tools", "development", etc.
-}
-```
-
-## Testing
-
-### **Running Tests**
+### **Core Operations**
 
 ```bash
-# Run all tests
-./scripts/tests/run-tests.nu
+# Setup
+nu scripts/core/setup.nu
 
-# Run specific test categories
-./scripts/tests/run-tests.nu --category unit
-./scripts/tests/run-tests.nu --category integration
+# Health check
+nu scripts/core/health-check.nu
 
-# Run with coverage
-./scripts/tests/run-tests.nu --coverage
+# Module integration
+nu scripts/core/integrate-modules.nu
 ```
 
-### **Test Structure**
-
-- `tests/unit/` — Unit tests for individual functions
-- `tests/integration/` — Integration tests for script workflows
-- `tests/lib/` — Test utilities and helpers
-
-## Troubleshooting
-
-### **Common Issues**
-
-#### **Error Handling**
-
-- If you see structured error messages, follow the recovery suggestions
-- Check error logs for detailed context
-- Use error IDs for support requests
-
-#### **Configuration Issues**
-
-- Validate configuration with `validate.nu`
-- Check configuration file syntax
-- Verify environment variable overrides
-
-#### **Security Validation**
-
-- Review security warnings and recommendations
-- Address critical and high-priority threats
-- Use `--strict-security` for maximum security
-
-#### **Performance Issues**
-
-- Monitor script execution times
-- Check resource usage patterns
-- Review performance recommendations
-
-### **Debug Mode**
+### **Gaming Operations**
 
 ```bash
-# Enable debug logging
-export NIXMOX_LOG_LEVEL=DEBUG
-./nix-mox --script install
+# Gaming benchmark
+nu scripts/gaming/gaming-benchmark.nu
 
-# Or use the debug flag
-./nix-mox --script install --debug
+# Validate gaming config
+nu scripts/gaming/validate-gaming-config.nu
 ```
 
-### **Log Analysis**
+### **Development Operations**
 
 ```bash
-# View recent logs
-tail -f logs/nix-mox.log
+# Code quality
+nu scripts/development/code-quality.nu
 
-# Analyze error patterns
-./scripts/tools/analyze-logs.nu
-
-# Generate performance report
-./scripts/tools/performance-report.nu
+# Pre-commit checks
+nu scripts/development/pre-commit.nu
 ```
 
-## Example Invocations
+### **Validation Operations**
 
 ```bash
-# Install with enhanced features
-./nix-mox --script install --core --tools --verbose
+# Display validation
+nu scripts/validation/validate-display-config.nu
 
-# Run health check with detailed reporting
-./nix-mox --script health-check --check all --format json
+# Performance optimization
+nu scripts/validation/performance-optimize.nu
+```
 
+### **Tool Operations**
+
+```bash
 # Generate documentation
-./scripts/tools/generate-docs.nu --examples
+nu scripts/tools/generate-docs.nu --examples
 
-# Security scan
-./scripts/tools/security-scan.nu --strict
+# Analyze sizes
+nu scripts/tools/analyze-sizes.nu
 
-# Performance analysis
-./scripts/tools/performance-report.nu
-
-# Or use Makefile targets
-make setup-wizard
-make health-check
-make generate-docs
+# Generate SBOM
+nu scripts/tools/generate-sbom.nu
 ```
 
-## Benefits
+## Migration Guide
 
-### **For New Users**
+### **From Old Structure**
 
-- **Simplified Onboarding:** Interactive wizard guides through setup
-- **Reduced Errors:** Enhanced error handling with recovery suggestions
-- **Better Understanding:** Clear explanations and structured logging
-- **Faster Setup:** Streamlined process with sensible defaults
+If you have scripts referencing the old structure, update them as follows:
 
-### **For Existing Users**
+| Old Path | New Path |
+|----------|----------|
+| `scripts/setup.nu` | `scripts/core/setup.nu` |
+| `scripts/health-check.nu` | `scripts/core/health-check.nu` |
+| `scripts/code-quality.nu` | `scripts/development/code-quality.nu` |
+| `scripts/gaming-benchmark.nu` | `scripts/gaming/gaming-benchmark.nu` |
+| `scripts/validate-display-config.nu` | `scripts/validation/validate-display-config.nu` |
+| `scripts/analyze-sizes.nu` | `scripts/tools/analyze-sizes.nu` |
 
-- **System Validation:** Comprehensive health check with detailed reporting
-- **Easy Troubleshooting:** Structured error handling and logging
-- **Better Organization:** Modular script architecture
-- **Enhanced Security:** Built-in security validation and threat detection
+### **Makefile Updates**
 
-### **For Developers**
+The Makefile has been updated with the new paths. All targets now use the reorganized structure.
 
-- **Consistent Interface:** Unified script architecture
-- **Better Testing:** Comprehensive test suite with coverage
-- **Modular Design:** Reusable components and libraries
-- **Clear Documentation:** Auto-generated documentation with examples
+### **CI/CD Updates**
 
-### **For System Administrators**
+GitHub Actions and other CI/CD configurations have been updated to use the new script paths.
 
-- **Security Focus:** Built-in security validation and monitoring
-- **Performance Insights:** Execution time and resource usage tracking
-- **Audit Trail:** Comprehensive logging and error tracking
-- **Configuration Management:** Hierarchical configuration with validation
+## Support
+
+- **Documentation**: See `docs/` for detailed guides
+- **Issues**: Report problems on GitHub
+- **Scripts**: All scripts include help text and examples

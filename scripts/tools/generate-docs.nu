@@ -167,7 +167,7 @@ export def generate_main_documentation [scripts: list, args: record] {
     $markdown = ($markdown | append "./scripts/core/install.nu")
     $markdown = ($markdown | append "")
     $markdown = ($markdown | append "# Run health check")
-    $markdown = ($markdown | append "./scripts/tools/health-check.nu")
+    $markdown = ($markdown | append "./scripts/core/health-check.nu")
     $markdown = ($markdown | append "")
     $markdown = ($markdown | append "# Generate documentation")
     $markdown = ($markdown | append "./scripts/tools/generate-docs.nu")
@@ -342,7 +342,7 @@ export def generate_examples [scripts: list] {
 export def generate_script_example [script: record] {
     match $script.name {
         "install" => "nu scripts/core/install.nu --core --tools"
-        "health-check" => "nu scripts/tools/health-check.nu --check all"
+        "health-check" => "nu scripts/core/health-check.nu --check all"
         "generate-docs" => "nu scripts/tools/generate-docs.nu --examples"
         "setup-wizard" => "nu scripts/tools/setup-wizard.nu"
         "security-scan" => "nu scripts/tools/security-scan.nu --strict"

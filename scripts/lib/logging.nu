@@ -21,11 +21,11 @@ export const LOG_FORMATS = {
 
 # Simple platform detection
 def detect_platform_simple [] {
-    let os = (sys).host.name
+    let os = $nu.os-info.name
     match $os {
         "Linux" => "linux"
-        "Windows" => "windows"
-        "Darwin" => "darwin"
+        "Darwin" => "macos"
+        "Windows_NT" => "windows"
         _ => "unknown"
     }
 }
