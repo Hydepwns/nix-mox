@@ -7,7 +7,7 @@
 #   --flake-path PATH Set flake path (default: /etc/nixos or $FLAKE_PATH)
 #   --help            Show this help message
 
-use ../lib/common.nu
+use ../lib/common.nu *
 
 # Script-specific variables
 $env.FLAKE_PATH = ($env.FLAKE_PATH? | default "/etc/nixos")
