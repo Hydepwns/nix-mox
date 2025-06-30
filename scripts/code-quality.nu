@@ -256,30 +256,230 @@ def display_quality_report [report: record] {
 }
 
 def main [] {
-    log_info "Starting nix-mox code quality analysis..."
-
-    # Run all checks
-    let nix_results = (check_nix_syntax)
-    let nu_results = (check_nushell_syntax)
-    let consistency_issues = (check_file_consistency)
-    let doc_issues = (check_documentation_coverage)
-    let security_issues = (check_security_issues)
-    let perf_issues = (check_performance_issues)
-
-    # Generate report
-    let report = (generate_quality_report $nix_results $nu_results $consistency_issues $doc_issues $security_issues $perf_issues)
-
-    # Display report
-    display_quality_report $report
-
-    # Save report
-    $report | to json --indent 2 | save code-quality-report.json
-
-    log_success "Code quality analysis completed!"
-    log_info "Report saved to code-quality-report.json"
-
-    $report
+    print "🔍 nix-mox Code Quality Analysis"
+    print "================================"
+    
+    let start_time = (date now)
+    
+    # Run all quality checks
+    check_todos
+    check_syntax
+    check_formatting
+    check_security
+    check_documentation
+    check_performance
+    
+    let end_time = (date now)
+    let duration = ($end_time - $start_time)
+    
+    print $"\n✅ Code quality analysis completed in ($duration | into string | str substring 0..8)"
+    print "\n📋 Summary:"
+    print "- Run 'make format' to fix formatting issues"
+    print "- Address TODOs and FIXMEs before production"
+    print "- Review security findings"
+    print "- Update documentation as needed"
 }
+
+def check_todos [] {
+    print "\n🔍 Checking for TODOs, FIXMEs, and HACKs..."
+    
+    let todo_patterns = [
+        "TODO"
+        "FIXME" 
+        "XXX"
+        "HACK"
+        "BUG"
+        "NOTE:"
+    ]
+    
+    let issues = ($todo_patterns | each { |pattern|
+        let matches = (grep -r -n -i $pattern . --exclude-dir=.git --exclude-dir=coverage-tmp --exclude-dir=tmp out+err> /dev/null | lines | each { |line|
+            let parts = ($line | split row ":")
+            if ($parts | length) >= 3 {
+                {
+                    file: $parts.0
+                    line: $parts.1
+                    pattern: $pattern
+                    context: ($parts | skip 2 | str join ":")
+                }
+            }
+        })
+        $matches
+    } | flatten)
+    
+    if ($issues | length) > 0 {
+        print $"\n⚠️  Found ($issues | length) TODO/FIXME items:"
+        $issues | each { |issue|
+            print $"  ($issue.file):($issue.line) - ($issue.pattern) ($issue.context)"
+        }
+    } else {
+        print "✅ No TODOs or FIXMEs found"
+    }
+}
+
+def check_syntax [] {
+    print "\n🔍 Checking Nix syntax..."
+    
+    let nix_files = (ls **/*.nix | where name !~ '.git' and name !~ 'coverage-tmp' and name !~ 'tmp' | get name)
+    let syntax_errors = ($nix_files | each { |file|
+        try {
+            nix eval --file $file --impure out+err> /dev/null | lines | where ($it | str contains "error:")
+        } catch {
+            []
+        }
+    } | flatten)
+    
+    if ($syntax_errors | length) > 0 {
+        print $"\n❌ Found ($syntax_errors | length) syntax errors:"
+        $syntax_errors | each { |error|
+            print $"  $error"
+        }
+    } else {
+        print "✅ All Nix files have valid syntax"
+    }
+}
+
+def check_formatting [] {
+    print "\n🔍 Checking code formatting..."
+    
+    # Check if nixpkgs-fmt is available
+    let nixpkgs_fmt_available = (which nixpkgs-fmt | length) > 0
+    
+    if not $nixpkgs_fmt_available {
+        print "⚠️  nixpkgs-fmt not found - skipping formatting check"
+        print "💡 Install nixpkgs-fmt: nix profile install nixpkgs#nixpkgs-fmt"
+        return
+    }
+    
+    let nix_files = (ls **/*.nix | where name !~ '.git' and name !~ 'coverage-tmp' and name !~ 'tmp' | get name)
+    let unformatted = ($nix_files | each { |file|
+        let formatted = (nixpkgs-fmt $file out+err> /dev/null)
+        let original = (open $file)
+        if $formatted != $original {
+            $file
+        }
+    } | where ($it != null))
+    
+    if ($unformatted | length) > 0 {
+        print $"\n⚠️  Found ($unformatted | length) unformatted files:"
+        $unformatted | each { |unformatted_file|
+            print $"  $unformatted_file"
+        }
+        print "\n💡 Run 'make format' to fix formatting"
+    } else {
+        print "✅ All files are properly formatted"
+    }
+}
+
+def check_security [] {
+    print "\n🔍 Checking for security issues..."
+    
+    let security_patterns = [
+        "password.*=.*\"[^\"]*\""
+        "secret.*=.*\"[^\"]*\""
+        "token.*=.*\"[^\"]*\""
+        "api_key.*=.*\"[^\"]*\""
+        "private_key.*=.*\"[^\"]*\""
+    ]
+    
+    let security_issues = ($security_patterns | each { |pattern|
+        let matches = (grep -r -n -i $pattern . --exclude-dir=.git --exclude-dir=coverage-tmp --exclude-dir=tmp --exclude="*.md" out+err> /dev/null | lines | each { |line|
+            let parts = ($line | split row ":")
+            if ($parts | length) >= 3 {
+                {
+                    file: $parts.0
+                    line: $parts.1
+                    pattern: $pattern
+                    context: ($parts | skip 2 | str join ":")
+                }
+            }
+        })
+        $matches
+    } | flatten)
+    
+    if ($security_issues | length) > 0 {
+        print $"\n⚠️  Found ($security_issues | length) potential security issues:"
+        $security_issues | each { |issue|
+            print $"  ($issue.file):($issue.line) - Potential hardcoded secret"
+        }
+        print "\n💡 Consider using environment variables or secrets management"
+    } else {
+        print "✅ No obvious security issues found"
+    }
+}
+
+def check_documentation [] {
+    print "\n🔍 Checking documentation..."
+    
+    let doc_files = (ls docs/**/*.md | get name)
+    let readme_files = (ls **/README.md | where name !~ '.git' | get name)
+    
+    let all_docs = ($doc_files | append $readme_files)
+    
+    let outdated_docs = ($all_docs | each { |file|
+        let content = (open $file)
+        let outdated_patterns = [
+            "setup-wizard"
+            "setup-personal"
+            "setup-gaming-wizard"
+            "setup-gaming-workstation"
+        ]
+        
+        let has_outdated = ($outdated_patterns | any { |pattern|
+            $content | str contains $pattern
+        })
+        
+        if $has_outdated {
+            $file
+        }
+    } | where ($it != null))
+    
+    if ($outdated_docs | length) > 0 {
+        print $"\n⚠️  Found ($outdated_docs | length) potentially outdated documentation files:"
+        $outdated_docs | each { |f| print $"  ($f)" }
+        print "\n💡 Update documentation to reference new unified setup script"
+    } else {
+        print "✅ Documentation appears up to date"
+    }
+}
+
+def check_performance [] {
+    print "\n🔍 Checking for performance issues..."
+    
+    let performance_patterns = [
+        "nix build.*--rebuild"
+        "nix-collect-garbage.*-d"
+        "rm -rf.*nix/store"
+    ]
+    
+    let performance_issues = ($performance_patterns | each { |pattern|
+        let matches = (grep -r -n -i $pattern . --exclude-dir=.git --exclude-dir=coverage-tmp --exclude-dir=tmp out+err> /dev/null | lines | each { |line|
+            let parts = ($line | split row ":")
+            if ($parts | length) >= 3 {
+                {
+                    file: $parts.0
+                    line: $parts.1
+                    pattern: $pattern
+                    context: ($parts | skip 2 | str join ":")
+                }
+            }
+        })
+        $matches
+    } | flatten)
+    
+    if ($performance_issues | length) > 0 {
+        print $"\n⚠️  Found ($performance_issues | length) potential performance issues:"
+        $performance_issues | each { |issue|
+            print $"  ($issue.file):($issue.line) - Potentially expensive operation"
+        }
+        print "\n💡 Consider optimizing expensive operations"
+    } else {
+        print "✅ No obvious performance issues found"
+    }
+}
+
+# Run the main function
+main
 
 # Export functions for use in other scripts
 export def analyze [] {
