@@ -10,13 +10,13 @@
   # Enable basic gaming support with auto-detection
   services.gaming = {
     enable = true;
-    
+
     # Auto-detect GPU (NVIDIA/AMD/Intel)
     gpu.type = "auto";
-    
+
     # Enable basic performance optimizations
     performance.enable = true;
-    
+
     # Enable audio support
     audio.enable = true;
   };
@@ -27,4 +27,4 @@
   #   lutris = true;
   #   heroic = true;
   # };
-} 
+}
