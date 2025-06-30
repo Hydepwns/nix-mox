@@ -1,2 +1,0 @@
-This is my custom overridden info file!
-The administrator is still @admin_user@, but the domain @domain@ is now hardcoded. 
