@@ -564,3 +564,66 @@ To improve the gaming shell:
 2. Report issues with specific error messages
 3. Suggest new tools or optimizations
 4. Update documentation for new features
+
+## System Integration: Adding Gaming Features to Your Existing NixOS Configuration
+
+You can import nix-mox's gaming features into your own `/etc/nixos/configuration.nix` without replacing your entire system configuration.
+
+### Step-by-Step Integration
+
+1. **Copy the Gaming Features Module**
+
+   If you have a reusable module (like `gaming-features.nix` or `config/nixos/gaming.nix`), copy it to your system config directory:
+   ```bash
+   sudo cp /path/to/nix-mox/config/nixos/gaming.nix /etc/nixos/
+   ```
+
+2. **Import the Module in Your Configuration**
+
+   Edit `/etc/nixos/configuration.nix` and add the import:
+   ```nix
+   {
+     imports = [
+       ./gaming.nix
+     ];
+
+     # ...your existing config...
+   }
+   ```
+
+3. **Enable Gaming Features**
+
+   Add or update the gaming block in your configuration:
+   ```nix
+   services.gaming = {
+     enable = true;
+     gpu.type = "auto";  # or "nvidia", "amd", "intel"
+     performance.enable = true;
+     audio.enable = true;
+     audio.pipewire = true;
+     platforms.steam = true;
+     platforms.lutris = true;
+     platforms.heroic = true;
+   };
+   ```
+
+4. **Test and Apply**
+
+   ```bash
+   sudo nixos-rebuild dry-activate --flake /etc/nixos#nixos
+   sudo nixos-rebuild switch --flake /etc/nixos#nixos
+   ```
+
+### What's Included
+
+- GPU drivers and auto-detection
+- Vulkan/OpenGL with 32-bit support
+- PipeWire audio and real-time scheduling
+- GameMode, MangoHud, and performance tweaks
+- Steam, Lutris, Heroic, Wine, DXVK, VKD3D, and more
+- Firewall rules for gaming platforms
+
+### Troubleshooting
+
+- If you see errors about deprecated or missing options, update your NixOS channel and check the [troubleshooting guide](./gaming-troubleshooting.md).
+- For advanced configuration, see the comments in `gaming.nix` or the [Advanced Configuration](#advanced-configuration) section above.

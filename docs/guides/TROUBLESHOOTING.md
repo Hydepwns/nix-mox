@@ -15,6 +15,7 @@ This guide provides solutions to common issues encountered while working with th
 - [Getting Help](#getting-help)
 - [Debugging Tools](#debugging-tools)
 - [Environment Variables](#environment-variables)
+- [Display Troubleshooting](#display-troubleshooting)
 
 ---
 
@@ -369,3 +370,9 @@ Key environment variables for debugging:
 - `NIX_VERBOSE`: Verbose logging
 - `CACHIX_AUTH_TOKEN`: Cachix authentication
 - `CACHIX_SIGNING_KEY`: Cachix signing key
+
+## Display Troubleshooting
+- Run `make display-test` before/after config changes
+- If display fails: check output, follow recommendations
+- Use backup config if needed
+- For hardware/driver issues: rerun with `make display-test-verbose`

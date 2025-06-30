@@ -425,6 +425,12 @@ make macos-shell
 - Enters macOS development environment
 - Provides macOS-specific tools and frameworks
 
+### Display Testing
+- `make display-test` — basic display validation
+- `make display-test-verbose` — detailed output
+- `make display-test-interactive` — prompts before risky changes
+- `make display-test-all` — full suite
+
 ## Common Workflows
 
 ### Daily Development

@@ -83,6 +83,20 @@ scripts/tests/
 - Real environment validation
 - Located in `scripts/tests/integration/`
 
+### Display Tests
+
+- Prevent display breakage before NixOS rebuilds
+- Detect GPU, OpenGL, Vulkan, config risks
+- Auto-backup, risk assessment, clear output
+- Located in `scripts/tests/display/`
+
+**Usage:**
+- `make display-test` (basic)
+- `make display-test-verbose` (detailed)
+- `nix develop --command nu scripts/validate-display-config.nu`
+
+**Best:** Run before any display config change or rebuild.
+
 ## Writing Tests
 
 ### Basic Test Template

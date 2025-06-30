@@ -914,6 +914,7 @@ make integration
 - **Integration Tests:** End-to-end workflows and system interactions
 - **Performance Tests:** Performance benchmarking and optimization
 - **Platform Tests:** Cross-platform compatibility testing
+- **Display Tests:** Validate display config, GPU, OpenGL, Vulkan before rebuilds. Run `make display-test` or `nix develop --command nu scripts/validate-display-config.nu`.
 
 ### Test Coverage
 

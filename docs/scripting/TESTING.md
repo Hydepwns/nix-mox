@@ -378,6 +378,14 @@ def test_performance_metrics [] {
 }
 ```
 
+### Display Configuration Testing
+
+- Validates display config, GPU, OpenGL, Vulkan
+- Detects risks, auto-backups, gives clear pass/fail
+- Scripts: `scripts/validate-display-config.nu`, `scripts/tests/display/`
+- Run: `make display-test`, `make display-test-verbose`
+- Use before any display-related rebuild
+
 ## Coverage Reporting
 
 ### Coverage Structure
