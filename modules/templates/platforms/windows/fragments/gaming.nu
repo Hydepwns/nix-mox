@@ -12,7 +12,7 @@ def log-error [message: string] {
 }
 
 # Gaming configuration
-let gaming-config = {
+let gaming_config = {
     steam: {
         installPath: ($env.STEAM_PATH? | default "C:\\Steam"),
         downloadURL: "https://steamcdn-a.akamaihd.net/client/installer/SteamSetup.exe",
@@ -28,7 +28,7 @@ let gaming-config = {
 
 def download-steam [] {
     log "Downloading Steam installer..."
-    let steamUrl = $gaming-config.steam.downloadURL
+    let steamUrl = $gaming_config.steam.downloadURL
     let steamPath = $"($env.TEMP)\\SteamSetup.exe"
 
     try {
@@ -43,14 +43,14 @@ def download-steam [] {
 def install-steam [] {
     log "Installing Steam..."
     let steamPath = $"($env.TEMP)\\SteamSetup.exe"
-    let steamInstallPath = $gaming-config.steam.installPath
+    let steamInstallPath = $gaming_config.steam.installPath
 
     try {
         # Create target directory
         mkdir $steamInstallPath
 
         # Run installer
-        let args = if $gaming-config.steam.silentInstall { ["/S", "/D=" + $steamInstallPath] } else { ["/D=" + $steamInstallPath] }
+        let args = if $gaming_config.steam.silentInstall { ["/S", "/D=" + $steamInstallPath] } else { ["/D=" + $steamInstallPath] }
         Start-Process -FilePath $steamPath -ArgumentList $args -Wait
         log "Steam installed successfully"
     } catch {
@@ -61,7 +61,7 @@ def install-steam [] {
 
 def configure-steam [] {
     log "Configuring Steam..."
-    let steamConfigPath = $"($gaming-config.steam.installPath)\\config\\config.vdf"
+    let steamConfigPath = $"($gaming_config.steam.installPath)\\config\\config.vdf"
 
     try {
         # Create or update Steam configuration
@@ -94,7 +94,7 @@ def install-epic-games [] {
 
     try {
         # Download Epic Games Launcher
-        let epicUrl = $gaming-config.epic.downloadURL
+        let epicUrl = $gaming_config.epic.downloadURL
         let epicPath = $"($env.TEMP)\\EpicInstaller.msi"
 
         http get $epicUrl | save --force $epicPath
@@ -110,7 +110,7 @@ def install-epic-games [] {
 def install-games [] {
     log "Installing games..."
 
-    $gaming-config.games | each { |game|
+    $gaming_config.games | each { |game|
         log $"Installing ($game)..."
 
         if $game == "rust" {
@@ -123,7 +123,7 @@ def install-games [] {
 
 def install-rust [] {
     log "Installing Rust..."
-    let steamPath = $"($gaming-config.steam.installPath)\\Steam.exe"
+    let steamPath = $"($gaming_config.steam.installPath)\\Steam.exe"
     let rustAppId = "252490"  # Rust Steam App ID
 
     try {
