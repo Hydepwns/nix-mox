@@ -85,9 +85,9 @@ runs:
         }
 
         # Check if test results exist
-        let test_results_exist = (try { ls /tmp/nix-mox-tests | where { |it| ($it.name | path basename) | str starts-with 'test_result_' } | length | $in > 0 } catch { 0 })
+        let test_results_exist = (try { ls /tmp/nix-mox-tests | where { |it| ($it.name | path basename) | str starts-with 'test_result_' } | length } catch { 0 })
         
-        if $test_results_exist > 0 {
+        if ($test_results_exist | into int) > 0 {
           print "✅ Test results found, generating LCOV report..."
           
           # Run the LCOV generation script using nu -c instead of source
