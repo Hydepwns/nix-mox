@@ -48,6 +48,7 @@ config/personal/local.nix
 .env
 .env.local
 .env.production
+**/hydepwns.nix
 
 # Hardware configuration with real UUIDs
 config/hardware/hardware-configuration-actual.nix
