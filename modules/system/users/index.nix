@@ -171,109 +171,111 @@ let
       };
     };
 
-    config = let
-      cfg = config.users;
-    in {
-      # Default user configuration
-      users.users = lib.mkIf cfg.default.enable {
-        ${cfg.default.username} = {
-          isNormalUser = cfg.default.isNormalUser;
-          description = cfg.default.fullName;
-          extraGroups = cfg.default.groups ++ cfg.default.extraGroups;
-          uid = cfg.default.uid;
-          home = cfg.default.home;
-          createHome = cfg.default.createHome;
-          shell = cfg.default.shell;
-          initialPassword = cfg.default.initialPassword;
-        };
-      };
-
-      # Group configurations
-      users.groups = {
-        wheel = lib.mkIf cfg.groups.wheel.enable {
-          members = cfg.groups.wheel.members;
-        };
-        docker = lib.mkIf cfg.groups.docker.enable {
-          members = cfg.groups.docker.members;
-        };
-        libvirtd = lib.mkIf cfg.groups.libvirtd.enable {
-          members = cfg.groups.libvirtd.members;
-        };
-        input = lib.mkIf cfg.groups.input.enable {
-          members = cfg.groups.input.members;
-        };
-        uinput = lib.mkIf cfg.groups.uinput.enable {
-          members = cfg.groups.uinput.members;
-        };
-      };
-
-      # Security and sudo configuration
-      security = lib.mkMerge [
-        # Sudo configuration
-        (lib.mkIf cfg.sudo.enable {
-          sudo = {
-            enable = true;
-            wheelNeedsPassword = cfg.sudo.wheelNeedsPassword;
-            extraRules = cfg.sudo.extraRules;
-            securePath = cfg.sudo.securePath;
+    config =
+      let
+        cfg = config.users;
+      in
+      {
+        # Default user configuration
+        users.users = lib.mkIf cfg.default.enable {
+          ${cfg.default.username} = {
+            isNormalUser = cfg.default.isNormalUser;
+            description = cfg.default.fullName;
+            extraGroups = cfg.default.groups ++ cfg.default.extraGroups;
+            uid = cfg.default.uid;
+            home = cfg.default.home;
+            createHome = cfg.default.createHome;
+            shell = cfg.default.shell;
+            initialPassword = cfg.default.initialPassword;
           };
-        })
-        # Security features
-        (lib.mkIf cfg.security.enable {
-          # Password quality and PAM configuration
-          pam.services = lib.mkMerge [
-            (lib.mkIf cfg.security.passwordQuality.enable {
-              login.passwordAuth = {
-                enable = true;
-                settings = {
-                  password = "requisite pam_pwquality.so retry=3 minlen=${toString cfg.security.passwordQuality.minLength}";
-                };
-              };
-              sudo.passwordAuth = {
-                enable = true;
-                settings = {
-                  password = "requisite pam_pwquality.so retry=3 minlen=${toString cfg.security.passwordQuality.minLength}";
-                };
-              };
-            })
-            (lib.mkIf cfg.security.pam.enable {
-              login = {
-                enable = true;
-                settings = {
-                  auth = [
-                    "required pam_unix.so"
-                    "required pam_faillock.so preauth audit silent deny=${toString cfg.security.pam.maxRetries} unlock_time=${toString cfg.security.pam.unlockDelay}"
-                  ];
-                };
-              };
-            })
-          ];
+        };
 
-          # Login definitions
-          loginDefs = lib.mkIf cfg.security.loginDefs.enable {
-            passwordMaxDays = cfg.security.loginDefs.passwordMaxDays;
-            passwordMinDays = cfg.security.loginDefs.passwordMinDays;
-            passwordWarnAge = cfg.security.loginDefs.passwordWarnAge;
+        # Group configurations
+        users.groups = {
+          wheel = lib.mkIf cfg.groups.wheel.enable {
+            members = cfg.groups.wheel.members;
           };
-        })
-      ];
+          docker = lib.mkIf cfg.groups.docker.enable {
+            members = cfg.groups.docker.members;
+          };
+          libvirtd = lib.mkIf cfg.groups.libvirtd.enable {
+            members = cfg.groups.libvirtd.members;
+          };
+          input = lib.mkIf cfg.groups.input.enable {
+            members = cfg.groups.input.members;
+          };
+          uinput = lib.mkIf cfg.groups.uinput.enable {
+            members = cfg.groups.uinput.members;
+          };
+        };
 
-      # User environment
-      environment = {
-        # Set default editor
-        variables = {
-          EDITOR = "nano";
-          VISUAL = "nano";
+        # Security and sudo configuration
+        security = lib.mkMerge [
+          # Sudo configuration
+          (lib.mkIf cfg.sudo.enable {
+            sudo = {
+              enable = true;
+              wheelNeedsPassword = cfg.sudo.wheelNeedsPassword;
+              extraRules = cfg.sudo.extraRules;
+              securePath = cfg.sudo.securePath;
+            };
+          })
+          # Security features
+          (lib.mkIf cfg.security.enable {
+            # Password quality and PAM configuration
+            pam.services = lib.mkMerge [
+              (lib.mkIf cfg.security.passwordQuality.enable {
+                login.passwordAuth = {
+                  enable = true;
+                  settings = {
+                    password = "requisite pam_pwquality.so retry=3 minlen=${toString cfg.security.passwordQuality.minLength}";
+                  };
+                };
+                sudo.passwordAuth = {
+                  enable = true;
+                  settings = {
+                    password = "requisite pam_pwquality.so retry=3 minlen=${toString cfg.security.passwordQuality.minLength}";
+                  };
+                };
+              })
+              (lib.mkIf cfg.security.pam.enable {
+                login = {
+                  enable = true;
+                  settings = {
+                    auth = [
+                      "required pam_unix.so"
+                      "required pam_faillock.so preauth audit silent deny=${toString cfg.security.pam.maxRetries} unlock_time=${toString cfg.security.pam.unlockDelay}"
+                    ];
+                  };
+                };
+              })
+            ];
+
+            # Login definitions
+            loginDefs = lib.mkIf cfg.security.loginDefs.enable {
+              passwordMaxDays = cfg.security.loginDefs.passwordMaxDays;
+              passwordMinDays = cfg.security.loginDefs.passwordMinDays;
+              passwordWarnAge = cfg.security.loginDefs.passwordWarnAge;
+            };
+          })
+        ];
+
+        # User environment
+        environment = {
+          # Set default editor
+          variables = {
+            EDITOR = "nano";
+            VISUAL = "nano";
+          };
+        };
+
+        # User services
+        services = {
+          # Enable user services
+          dbus.enable = true;
+          gvfs.enable = true;
         };
       };
-
-      # User services
-      services = {
-        # Enable user services
-        dbus.enable = true;
-        gvfs.enable = true;
-      };
-    };
   };
 
 in

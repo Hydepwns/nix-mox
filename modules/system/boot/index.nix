@@ -41,28 +41,30 @@ let
       };
     };
 
-    config = let
-      cfg = config.boot.loader;
-    in {
-      # Default to systemd-boot
-      boot.loader.systemd-boot = lib.mkDefault {
-        enable = true;
-        configurationLimit = cfg.systemd-boot.configurationLimit;
-        editor = cfg.systemd-boot.editor;
-        timeout = cfg.systemd-boot.timeout;
-      };
+    config =
+      let
+        cfg = config.boot.loader;
+      in
+      {
+        # Default to systemd-boot
+        boot.loader.systemd-boot = lib.mkDefault {
+          enable = true;
+          configurationLimit = cfg.systemd-boot.configurationLimit;
+          editor = cfg.systemd-boot.editor;
+          timeout = cfg.systemd-boot.timeout;
+        };
 
-      # GRUB configuration (alternative)
-      boot.loader.grub = lib.mkIf cfg.grub.enable {
-        enable = true;
-        device = cfg.grub.device;
-        useOSProber = cfg.grub.useOSProber;
-        efiSupport = cfg.grub.efiSupport;
-      };
+        # GRUB configuration (alternative)
+        boot.loader.grub = lib.mkIf cfg.grub.enable {
+          enable = true;
+          device = cfg.grub.device;
+          useOSProber = cfg.grub.useOSProber;
+          efiSupport = cfg.grub.efiSupport;
+        };
 
-      # EFI support
-      boot.loader.efi.canTouchEfiVariables = lib.mkDefault true;
-    };
+        # EFI support
+        boot.loader.efi.canTouchEfiVariables = lib.mkDefault true;
+      };
   };
 
 in

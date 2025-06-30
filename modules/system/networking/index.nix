@@ -112,66 +112,68 @@ let
       };
     };
 
-    config = let
-      cfg = config.networking;
-    in {
-      # Default to NetworkManager
-      networking = {
-        networkmanager = lib.mkDefault {
+    config =
+      let
+        cfg = config.networking;
+      in
+      {
+        # Default to NetworkManager
+        networking = {
+          networkmanager = lib.mkDefault {
+            enable = true;
+            wifi.backend = cfg.networkmanager.wifi.backend;
+          };
+
+          # Firewall configuration
+          firewall = lib.mkIf cfg.firewall.enable {
+            enable = true;
+            allowedTCPPorts = cfg.firewall.allowedTCPPorts;
+            allowedUDPPorts = cfg.firewall.allowedUDPPorts;
+            allowedTCPPortRanges = cfg.firewall.allowedTCPPortRanges;
+          };
+
+          # DNS configuration
+          nameservers = lib.mkIf cfg.dns.enable cfg.dns.nameservers;
+          search = lib.mkIf cfg.dns.enable cfg.dns.search;
+        };
+
+        # Local DNS resolver
+        services.resolved = lib.mkIf (cfg.dns.enable && cfg.dns.localResolver) {
           enable = true;
-          wifi.backend = cfg.networkmanager.wifi.backend;
+          dns = cfg.dns.nameservers;
+          domains = cfg.dns.search;
         };
 
-        # Firewall configuration
-        firewall = lib.mkIf cfg.firewall.enable {
-          enable = true;
-          allowedTCPPorts = cfg.firewall.allowedTCPPorts;
-          allowedUDPPorts = cfg.firewall.allowedUDPPorts;
-          allowedTCPPortRanges = cfg.firewall.allowedTCPPortRanges;
+        # VPN configurations
+        services.openvpn = lib.mkIf (cfg.vpn.enable && cfg.vpn.openvpn.enable) {
+          servers = lib.mapAttrs'
+            (name: config: lib.nameValuePair name { config = config; })
+            (lib.listToAttrs (lib.imap0 (i: config: lib.nameValuePair "vpn${toString i}" config) cfg.vpn.openvpn.configs));
         };
 
-        # DNS configuration
-        nameservers = lib.mkIf cfg.dns.enable cfg.dns.nameservers;
-        search = lib.mkIf cfg.dns.enable cfg.dns.search;
-      };
+        # WireGuard configuration
+        networking.wireguard = lib.mkIf (cfg.vpn.enable && cfg.vpn.wireguard.enable) {
+          interfaces = cfg.vpn.wireguard.interfaces;
+        };
 
-      # Local DNS resolver
-      services.resolved = lib.mkIf (cfg.dns.enable && cfg.dns.localResolver) {
-        enable = true;
-        dns = cfg.dns.nameservers;
-        domains = cfg.dns.search;
-      };
+        # Proxy configuration
+        environment = lib.mkIf cfg.proxy.enable {
+          variables = {
+            http_proxy = cfg.proxy.httpProxy;
+            https_proxy = cfg.proxy.httpsProxy;
+            no_proxy = lib.concatStringsSep "," cfg.proxy.noProxy;
+          };
+        };
 
-      # VPN configurations
-      services.openvpn = lib.mkIf (cfg.vpn.enable && cfg.vpn.openvpn.enable) {
-        servers = lib.mapAttrs'
-          (name: config: lib.nameValuePair name { config = config; })
-          (lib.listToAttrs (lib.imap0 (i: config: lib.nameValuePair "vpn${toString i}" config) cfg.vpn.openvpn.configs));
-      };
+        # Network security
+        security = {
+          # Enable AppArmor for network services
+          apparmor.enable = lib.mkDefault true;
 
-      # WireGuard configuration
-      networking.wireguard = lib.mkIf (cfg.vpn.enable && cfg.vpn.wireguard.enable) {
-        interfaces = cfg.vpn.wireguard.interfaces;
-      };
-
-      # Proxy configuration
-      environment = lib.mkIf cfg.proxy.enable {
-        variables = {
-          http_proxy = cfg.proxy.httpProxy;
-          https_proxy = cfg.proxy.httpsProxy;
-          no_proxy = lib.concatStringsSep "," cfg.proxy.noProxy;
+          # Network security policies
+          auditd.enable = lib.mkDefault true;
         };
       };
-
-      # Network security
-      security = {
-        # Enable AppArmor for network services
-        apparmor.enable = lib.mkDefault true;
-        
-        # Network security policies
-        auditd.enable = lib.mkDefault true;
-      };
-    };
   };
 
 in
