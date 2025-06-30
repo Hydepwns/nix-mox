@@ -12,7 +12,7 @@
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/nix-mox.git
+git clone https://github.com/hydepwns/nix-mox.git
 cd nix-mox
 
 # Interactive setup (recommended)
