@@ -11,8 +11,8 @@
 git clone https://github.com/your-org/nix-mox.git
 cd nix-mox
 
-# Interactive setup
-nu scripts/setup.nu
+# Quick setup
+nu scripts/core/setup.nu
 
 # Choose template
 cp config/templates/development.nix config/nixos/configuration.nix
@@ -55,8 +55,8 @@ nix develop .#testing          # Testing tools
 ### Module Integration
 
 ```bash
-# Interactive module integration
-nu scripts/integrate-modules.nu
+# Add modules
+nu scripts/core/integrate-modules.nu
 
 # Available modules: infisical, tailscale, gaming, monitoring, storage
 ```

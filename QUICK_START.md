@@ -16,7 +16,7 @@ git clone https://github.com/your-org/nix-mox.git
 cd nix-mox
 
 # Interactive setup (recommended)
-nu scripts/setup.nu
+nu scripts/core/setup.nu
 
 # Or manual setup
 cp env.example .env
@@ -65,7 +65,7 @@ nix develop .#testing
 
 1. **Customize personal settings** - Edit `config/personal/user.nix`
 2. **Configure hardware** - Edit `config/personal/hardware.nix`
-3. **Add modules** - Use `nu scripts/integrate-modules.nu`
+3. **Add modules** - Use `nu scripts/core/integrate-modules.nu`
 4. **Explore templates** - Check `config/templates/`
 5. **Read documentation** - See `docs/` for detailed guides
 
@@ -76,18 +76,8 @@ nix develop .#testing
 nixos-rebuild dry-activate --flake .#nixos
 
 # Regenerate personal config
-nu scripts/setup.nu
+nu scripts/core/setup.nu
 
 # Switch to minimal template
 cp config/templates/minimal.nix config/nixos/configuration.nix
 ```
-
-## Support
-
-- **Documentation**: `docs/`
-- **Issues**: GitHub Issues
-- **Discussions**: GitHub Discussions
-
----
-
-**Note**: This is a production-grade framework. Personal data is properly separated and secured. Always review configuration files before committing to version control. 

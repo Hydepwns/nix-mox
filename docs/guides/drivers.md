@@ -21,7 +21,7 @@ nix-mox provides a comprehensive gaming configuration module that automatically 
 ### Automatic Setup
 ```bash
 # Run the setup script for automatic configuration
-nu scripts/setup-gaming-workstation.nu
+nu scripts/gaming/setup-gaming-workstation.nu
 ```
 
 ### Manual Configuration

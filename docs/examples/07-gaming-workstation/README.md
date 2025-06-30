@@ -46,13 +46,13 @@ Low-latency audio setup specifically optimized for gaming.
 
 ```bash
 # Run the setup script
-nu scripts/setup-gaming-workstation.nu
+nu scripts/gaming/setup-gaming-workstation.nu
 
 # Enter gaming shell
 nix develop .#gaming
 
 # Test gaming setup
-./devshells/gaming/scripts/test-gaming.sh
+nu scripts/gaming/validate-gaming-config.nu
 ```
 
 ## Features Demonstrated

@@ -30,7 +30,7 @@ sudo nixos-rebuild switch
 
 ```bash
 # Run the setup script
-nu scripts/setup-gaming-workstation.nu
+nu scripts/gaming/setup-gaming-workstation.nu
 
 # Enter gaming shell
 nix develop .#gaming
