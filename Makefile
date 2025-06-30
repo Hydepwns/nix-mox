@@ -28,7 +28,7 @@ help:
 	@echo "  dev         - Enter development shell"
 	@echo "  build       - Build default package"
 	@echo "  test        - Run all tests"
-	@echo "  setup-wizard - Interactive configuration setup"
+	@echo "  setup       - Interactive configuration setup"
 	@echo "  health-check - System health validation"
 	@echo "  gaming-setup - Setup gaming workstation"
 	@echo ""
@@ -102,12 +102,13 @@ help:
 	@echo "  - Use 'make dev' to start development"
 	@echo "  - Use 'make test' before committing changes"
 	@echo "  - Use 'make format' to ensure consistent code style"
+	@echo "  - Use 'make code-quality' to check code quality"
 	@echo "  - Use 'make analyze-sizes' to see performance tradeoffs"
 	@echo "  - Use 'make size-dashboard' for interactive size analysis"
 	@echo "  - Use 'make cache-optimize' for faster builds"
 	@echo "  - Use 'make sbom' for compliance documentation"
 	@echo "  - Use 'make clean-all' if you encounter build issues"
-	@echo "  - Use 'make setup-wizard' for interactive configuration"
+	@echo "  - Use 'make setup' for interactive configuration"
 	@echo "  - Use 'make health-check' to validate system health"
 	@echo "  - Use 'make gaming-setup' to configure gaming workstation"
 	@echo "  - Use 'make gaming-test' to test gaming configuration"
@@ -116,9 +117,9 @@ help:
 	@echo "  - Use 'make test-remote-builder' to test remote builder"
 
 # Setup and health check targets
-setup-wizard:
-	@echo "🔧 Starting nix-mox Configuration Wizard..."
-	$(NUSHELL) scripts/setup-wizard.nu
+setup:
+	@echo "🔧 Starting nix-mox Configuration Setup..."
+	$(NUSHELL) scripts/setup.nu
 
 health-check:
 	@echo "🏥 Running nix-mox Health Check..."
@@ -126,11 +127,7 @@ health-check:
 
 gaming-setup:
 	@echo "🎮 Setting up Gaming Workstation..."
-	$(NUSHELL) scripts/setup-gaming-workstation.nu
-
-gaming-wizard:
-	@echo "🎮 Interactive Gaming Setup Wizard..."
-	$(NUSHELL) scripts/setup-gaming-wizard.nu
+	$(NUSHELL) scripts/setup.nu
 
 gaming-benchmark:
 	@echo "🎮 Running Gaming Performance Benchmark..."
@@ -163,6 +160,21 @@ display-test-verbose:
 display-test-all:
 	@echo "🖥️  Comprehensive Display Configuration Testing..."
 	$(NUSHELL) scripts/validate-display-config.nu --backup --verbose --interactive
+
+# Code quality targets
+code-quality: check-nushell
+	@echo "🔍 Running comprehensive code quality analysis..."
+	$(NUSHELL) scripts/code-quality.nu
+
+code-syntax: check-nushell
+	@echo "🔍 Checking code syntax..."
+	$(NUSHELL) -c "source scripts/code-quality.nu; check_syntax"
+
+code-security: check-nushell
+	@echo "🔍 Checking for security issues..."
+	$(NUSHELL) -c "source scripts/code-quality.nu; check_security"
+
+quality: code-quality
 
 security-check:
 	@echo "🔒 Validating security module configuration..."
@@ -384,22 +396,6 @@ performance-report: check-nushell
 
 # Quick performance check
 perf: performance-report
-
-# Code quality targets
-code-quality: check-nushell
-	@echo "🔍 Analyzing code quality..."
-	$(NUSHELL) -c "source scripts/code-quality.nu; analyze"
-
-code-syntax: check-nushell
-	@echo "✅ Checking syntax..."
-	$(NUSHELL) -c "source scripts/code-quality.nu; check-syntax"
-
-code-security: check-nushell
-	@echo "🔒 Checking security..."
-	$(NUSHELL) -c "source scripts/code-quality.nu; check-security"
-
-# Quick code quality check
-quality: code-quality
 
 # Coverage targets
 coverage: check-nushell
