@@ -5,194 +5,287 @@
 
 use lib/common.nu *
 
-def analyze_test_performance [] {
-    log_info "Analyzing test performance..."
+# Configuration constants
+const PERFORMANCE_THRESHOLDS = {
+    test_slow: 10.0
+    build_slow: 60.0
+    eval_slow: 5.0
+    max_parallel_jobs: 8
+}
 
-    let start_time = (date now | into int)
-
-    # Run tests with timing
-    let test_result = (try {
-        nu -c 'source scripts/tests/run-tests.nu; run ["--unit"]'
-        { success: true, duration: 0, error: null }
+# Utility functions
+def safe_command [cmd: string] {
+    try {
+        nu -c $cmd | str trim
     } catch {
-        { success: false, duration: 0, error: "Test execution failed" }
-    })
+        ""
+    }
+}
 
+def safe_int [value: any] {
+    try {
+        $value | into int
+    } catch {
+        0
+    }
+}
+
+def measure_duration [command: closure] {
+    let start_time = (date now | into int)
+    let result = (try {
+        do $command
+        true
+    } catch {
+        false
+    })
     let end_time = (date now | into int)
     let duration = (($end_time - $start_time) | into float) / 1000000000
-
+    
     {
-        success: $test_result.success
+        success: $result
         duration: $duration
-        error: $test_result.error
+        error: null
     }
+}
+
+def analyze_test_performance [] {
+    log_info "Analyzing test performance..."
+    
+    # Check if test script exists
+    if not ("scripts/tests/run-tests.nu" | path exists) {
+        return {
+            success: false
+            duration: 0.0
+            error: "Test script not found: scripts/tests/run-tests.nu"
+        }
+    }
+    
+    # Run tests with timing
+    let test_result = (try {
+        measure_duration { || nu -c 'source scripts/tests/run-tests.nu; run ["--unit"]' }
+    } catch {
+        {
+            success: false
+            duration: 0.0
+            error: "Test execution failed"
+        }
+    })
+    
+    $test_result
 }
 
 def analyze_build_performance [] {
     log_info "Analyzing build performance..."
-
-    let start_time = (date now | into int)
-
+    
+    # Check if we're in a Nix flake
+    if not ("flake.nix" | path exists) {
+        return {
+            success: false
+            duration: 0.0
+            error: "Not in a Nix flake directory"
+        }
+    }
+    
     # Test build performance
     let build_result = (try {
-        nix build .#install --no-link --accept-flake-config
-        { success: true, duration: 0 }
+        measure_duration { || nix build .#install --no-link --accept-flake-config }
     } catch {
-        { success: false, duration: 0, error: $env.LAST_ERROR }
+        {
+            success: false
+            duration: 0.0
+            error: "Build failed"
+        }
     })
-
-    let end_time = (date now | into int)
-    let duration = (($end_time - $start_time) | into float) / 1000000000
-
-    {
-        success: $build_result.success
-        duration: $duration
-        error: ($build_result.error | default null)
-    }
+    
+    $build_result
 }
 
 def analyze_flake_evaluation [] {
     log_info "Analyzing flake evaluation performance..."
-
-    let start_time = (date now | into int)
-
+    
+    # Check if we're in a Nix flake
+    if not ("flake.nix" | path exists) {
+        return {
+            success: false
+            duration: 0.0
+            error: "Not in a Nix flake directory"
+        }
+    }
+    
     # Test flake evaluation speed
     let eval_result = (try {
-        nix flake show --json
-        { success: true, duration: 0 }
+        measure_duration { || nix flake show --json }
     } catch {
-        { success: false, duration: 0, error: $env.LAST_ERROR }
+        {
+            success: false
+            duration: 0.0
+            error: "Flake evaluation failed"
+        }
     })
+    
+    $eval_result
+}
 
-    let end_time = (date now | into int)
-    let duration = (($end_time - $start_time) | into float) / 1000000000
-
+def analyze_system_resources [] {
+    log_info "Analyzing system resources..."
+    
+    let cpu_count = (safe_command "nproc" | into int | default 0)
+    let mem_gb = (safe_command "free -g | grep Mem | awk '{print $2}'" | into int | default 0)
+    let disk_free_gb = (safe_command "df -h . | tail -n 1 | awk '{print $4}' | str replace 'G' ''" | into int | default 0)
+    
     {
-        success: $eval_result.success
-        duration: $duration
-        error: ($eval_result.error | default null)
+        cpu_cores: $cpu_count
+        memory_gb: $mem_gb
+        disk_free_gb: $disk_free_gb
+        recommended_parallel_jobs: (if $cpu_count > $PERFORMANCE_THRESHOLDS.max_parallel_jobs { $PERFORMANCE_THRESHOLDS.max_parallel_jobs } else { $cpu_count })
     }
 }
 
-def generate_performance_report [test_perf: record, build_perf: record, eval_perf: record] {
+def generate_performance_report [test_perf: record, build_perf: record, eval_perf: record, system_resources: record] {
     let report = {
         timestamp: (date now | format date "%Y-%m-%d %H:%M:%S")
+        system_resources: $system_resources
         test_performance: $test_perf
         build_performance: $build_perf
         flake_evaluation: $eval_perf
         recommendations: []
     }
-
+    
     mut recommendations = []
-
-    # Test performance recommendations
-    if $test_perf.duration > 10 {
-        $recommendations = ($recommendations | append "Test suite is slow (>10s) - consider parallelization")
+    
+    # System resource recommendations
+    if $system_resources.memory_gb < 8 {
+        $recommendations = ($recommendations | append "Low memory ($($system_resources.memory_gb)GB) - consider increasing RAM for better performance")
     }
-
+    
+    if $system_resources.disk_free_gb < 10 {
+        $recommendations = ($recommendations | append "Low disk space ($($system_resources.disk_free_gb)GB) - free up space for builds")
+    }
+    
+    # Test performance recommendations
+    if $test_perf.duration > $PERFORMANCE_THRESHOLDS.test_slow {
+        $recommendations = ($recommendations | append "Test suite is slow ($($test_perf.duration | into string | str substring 0..6)s) - consider parallelization")
+    }
+    
     if not $test_perf.success {
         $recommendations = ($recommendations | append "Test suite has failures - investigate and fix")
     }
-
+    
     # Build performance recommendations
-    if $build_perf.duration > 60 {
-        $recommendations = ($recommendations | append "Build is slow (>60s) - consider caching optimization")
+    if $build_perf.duration > $PERFORMANCE_THRESHOLDS.build_slow {
+        $recommendations = ($recommendations | append "Build is slow ($($build_perf.duration | into string | str substring 0..6)s) - consider caching optimization")
     }
-
+    
     if not $build_perf.success {
         $recommendations = ($recommendations | append "Build has failures - investigate dependencies")
     }
-
+    
     # Flake evaluation recommendations
-    if $eval_perf.duration > 5 {
-        $recommendations = ($recommendations | append "Flake evaluation is slow (>5s) - consider simplifying structure")
+    if $eval_perf.duration > $PERFORMANCE_THRESHOLDS.eval_slow {
+        $recommendations = ($recommendations | append "Flake evaluation is slow ($($eval_perf.duration | into string | str substring 0..6)s) - consider simplifying structure")
     }
-
+    
     if not $eval_perf.success {
         $recommendations = ($recommendations | append "Flake evaluation failed - check syntax and dependencies")
     }
-
+    
     # General recommendations
     if ($recommendations | is-empty) {
         $recommendations = ($recommendations | append "Performance is good - no immediate optimizations needed")
     }
-
+    
     $report | upsert recommendations $recommendations
 }
 
 def display_performance_report [report: record] {
-    print $"($env.GREEN)=== nix-mox Performance Report ===($env.NC)"
+    print $"(ansi green)=== nix-mox Performance Report ===(ansi reset)"
     print $"Generated: ($report.timestamp)"
     print ""
-
-    print $"($env.BLUE)Test Performance:($env.NC)"
+    
+    # System resources
+    print $"(ansi cyan)💻 System Resources:(ansi reset)"
+    print $"  CPU Cores: ($report.system_resources.cpu_cores)"
+    print $"  Memory: ($report.system_resources.memory_gb) GB"
+    print $"  Disk Free: ($report.system_resources.disk_free_gb) GB"
+    print $"  Recommended Parallel Jobs: ($report.system_resources.recommended_parallel_jobs)"
+    print ""
+    
+    # Test performance
+    print $"(ansi blue)🧪 Test Performance:(ansi reset)"
     let test_status = if $report.test_performance.success { "✅" } else { "❌" }
     print $"  ($test_status) Duration: ($report.test_performance.duration | into string | str substring 0..6)s"
     if not $report.test_performance.success {
         print $"  Error: ($report.test_performance.error)"
     }
     print ""
-
-    print $"($env.BLUE)Build Performance:($env.NC)"
+    
+    # Build performance
+    print $"(ansi blue)🔨 Build Performance:(ansi reset)"
     let build_status = if $report.build_performance.success { "✅" } else { "❌" }
     print $"  ($build_status) Duration: ($report.build_performance.duration | into string | str substring 0..6)s"
     if not $report.build_performance.success {
         print $"  Error: ($report.build_performance.error)"
     }
     print ""
-
-    print $"($env.BLUE)Flake Evaluation:($env.NC)"
+    
+    # Flake evaluation
+    print $"(ansi blue)📦 Flake Evaluation:(ansi reset)"
     let eval_status = if $report.flake_evaluation.success { "✅" } else { "❌" }
     print $"  ($eval_status) Duration: ($report.flake_evaluation.duration | into string | str substring 0..6)s"
     if not $report.flake_evaluation.success {
         print $"  Error: ($report.flake_evaluation.error)"
     }
     print ""
-
-    print $"($env.YELLOW)Recommendations:($env.NC)"
+    
+    # Recommendations
+    print $"(ansi yellow)💡 Recommendations:(ansi reset)"
     for rec in $report.recommendations {
         print $"  • ($rec)"
     }
     print ""
 }
 
-def optimize_test_parallelization [] {
+def optimize_test_parallelization [system_resources: record] {
     log_info "Optimizing test parallelization..."
-
-    # Check if we can run tests in parallel
-    let cpu_count = (sys | get cpu | get count)
-    let recommended_jobs = (if $cpu_count > 4 { 4 } else { $cpu_count })
-
-    print $"CPU cores: ($cpu_count)"
+    
+    let recommended_jobs = $system_resources.recommended_parallel_jobs
+    
+    print $"CPU cores: ($system_resources.cpu_cores)"
     print $"Recommended parallel jobs: ($recommended_jobs)"
-
+    
     # Update test configuration for parallel execution
     let test_config = {
         parallel: true
         max_jobs: $recommended_jobs
         timeout: 300
+        retries: 2
+        coverage: true
     }
-
+    
     print "Test parallelization configuration:"
     print ($test_config | to json --indent 2)
-
+    
     $test_config
 }
 
 def optimize_build_caching [] {
     log_info "Optimizing build caching..."
-
+    
     # Check Cachix status
     let cachix_status = (try {
-        cachix whoami
-        { available: true, user: $env.LAST_OUTPUT }
+        let user = (safe_command "cachix whoami")
+        if ($user | str length) > 0 {
+            { available: true, user: $user }
+        } else {
+            { available: false, user: null }
+        }
     } catch {
         { available: false, user: null }
     })
-
+    
     if $cachix_status.available {
         print $"✅ Cachix available: ($cachix_status.user)"
-
+        
         # Optimize cache configuration
         let cache_config = {
             substituters: [
@@ -205,8 +298,11 @@ def optimize_build_caching [] {
                 "hydepwns.cachix.org-1:xg8huKdwzBkLdkq5eCKenadhCROHIICGI9H6y3simJU="
                 "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
             ]
+            experimental_features: ["nix-command" "flakes"]
+            max_jobs: "auto"
+            cores: 0
         }
-
+        
         print "Cache configuration optimized"
         $cache_config
     } else {
@@ -215,37 +311,62 @@ def optimize_build_caching [] {
     }
 }
 
+def optimize_nix_config [] {
+    log_info "Optimizing Nix configuration..."
+    
+    let nix_config = {
+        experimental_features: ["nix-command" "flakes"]
+        max_jobs: "auto"
+        cores: 0
+        sandbox: true
+        substituters: [
+            "https://cache.nixos.org"
+        ]
+        trusted_public_keys: [
+            "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+        ]
+    }
+    
+    print "Nix configuration optimized for performance"
+    $nix_config
+}
+
 def main [] {
     log_info "Starting nix-mox performance optimization..."
-
+    
+    # Analyze system resources first
+    let system_resources = (analyze_system_resources)
+    
     # Analyze performance
     let test_perf = (analyze_test_performance)
     let build_perf = (analyze_build_performance)
     let eval_perf = (analyze_flake_evaluation)
-
+    
     # Generate report
-    let report = (generate_performance_report $test_perf $build_perf $eval_perf)
-
+    let report = (generate_performance_report $test_perf $build_perf $eval_perf $system_resources)
+    
     # Display report
     display_performance_report $report
-
+    
     # Apply optimizations
-    let test_config = (optimize_test_parallelization)
+    let test_config = (optimize_test_parallelization $system_resources)
     let cache_config = (optimize_build_caching)
-
+    let nix_config = (optimize_nix_config)
+    
     # Save report
     let final_report = ($report | merge {
         optimizations: {
             test_config: $test_config
             cache_config: $cache_config
+            nix_config: $nix_config
         }
     })
-
+    
     $final_report | to json --indent 2 | save performance-report.json
-
+    
     log_success "Performance optimization completed!"
     log_info "Report saved to performance-report.json"
-
+    
     $final_report
 }
 
@@ -255,15 +376,36 @@ export def analyze [] {
 }
 
 export def optimize [] {
-    optimize_test_parallelization
+    let system_resources = (analyze_system_resources)
+    optimize_test_parallelization $system_resources
     optimize_build_caching
+    optimize_nix_config
 }
 
 export def report [] {
+    let system_resources = (analyze_system_resources)
     let test_perf = (analyze_test_performance)
     let build_perf = (analyze_build_performance)
     let eval_perf = (analyze_flake_evaluation)
-    let report = (generate_performance_report $test_perf $build_perf $eval_perf)
+    let report = (generate_performance_report $test_perf $build_perf $eval_perf $system_resources)
     display_performance_report $report
     $report
+}
+
+export def quick_check [] {
+    log_info "Running quick performance check..."
+    
+    let system_resources = (analyze_system_resources)
+    let eval_perf = (analyze_flake_evaluation)
+    
+    print $"(ansi green)Quick Performance Check:(ansi reset)"
+    print $"CPU: ($system_resources.cpu_cores) cores"
+    print $"Memory: ($system_resources.memory_gb) GB"
+    print $"Flake evaluation: ($eval_perf.duration | into string | str substring 0..6)s"
+    
+    if $eval_perf.duration > $PERFORMANCE_THRESHOLDS.eval_slow {
+        print $"(ansi yellow)⚠️  Flake evaluation is slow(ansi reset)"
+    } else {
+        print $"(ansi green)✅ Flake evaluation is fast(ansi reset)"
+    }
 }
