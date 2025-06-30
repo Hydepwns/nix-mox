@@ -7,24 +7,24 @@
   # Add gaming validation tools to system packages
   environment.systemPackages = with pkgs; [
     # Hardware detection
-    pciutils      # lspci - for GPU detection
-    mesa-demos    # glxinfo - for OpenGL information
-    
+    pciutils # lspci - for GPU detection
+    mesa-demos # glxinfo - for OpenGL information
+
     # Audio system
-    pulseaudio    # pactl - for audio system detection
-    
+    pulseaudio # pactl - for audio system detection
+
     # Security
-    ufw           # firewall status
-    
+    ufw # firewall status
+
     # Additional useful gaming tools
-    vulkan-tools  # vulkaninfo (already available)
-    gamemode      # gamemoded (already available)
-    mangohud      # performance monitoring (already available)
-    
+    vulkan-tools # vulkaninfo (already available)
+    gamemode # gamemoded (already available)
+    mangohud # performance monitoring (already available)
+
     # Gaming platforms
-    steam         # Steam (already available)
-    lutris        # Lutris (already available)
-    wine          # Wine (already available)
+    steam # Steam (already available)
+    lutris # Lutris (already available)
+    wine # Wine (already available)
   ];
 
   # Optional: Enable UFW firewall service
@@ -60,4 +60,4 @@
       };
     };
   };
-} 
+}
