@@ -2,62 +2,42 @@
   "header": {
     "spdxVersion": "SPDX-2.3",
     "dataLicense": "CC0-1.0",
-    "SPDXID": "SPDXRef-DOCUMENT-2025-06-21-08-40:27",
+    "SPDXID": "SPDXRef-DOCUMENT-2025-06-30-14-35:14",
     "documentName": "nix-mox Software Bill of Materials",
-    "documentNamespace": "https://github.com/Hydepwns/nix-mox/sbom/2025-06-21T08:40:27Z",
+    "documentNamespace": "https://github.com/Hydepwns/nix-mox/sbom/2025-06-30T14:35:14Z",
     "creator": "Tool: nix-mox-sbom-generator",
-    "created": "2025-06-21T08:40:27Z",
+    "created": "2025-06-30T14:35:14Z",
     "documentComment": "Generated automatically by nix-mox SBOM generator"
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-Package-proxmox_update",
-      "packageName": "proxmox-update",
-      "packageVersion": "unknown",
-      "packageDescription": "Package not available",
-      "packageLicenseConcluded": "unknown",
-      "packageLicenseDeclared": "unknown",
-      "packageDownloadLocation": "",
-      "packageSize": "0 B",
+      "SPDXID": "SPDXRef-Package-install",
+      "packageName": "install",
+      "packageVersion": "",
+      "packageDescription": "nix-mox installation script",
+      "packageLicenseConcluded": "MIT",
+      "packageLicenseDeclared": "MIT",
+      "packageDownloadLocation": "https://github.com/Hydepwns/nix-mox",
+      "packageSize": 109791624,
       "packageChecksum": {
         "algorithm": "SHA256",
-        "checksumValue": ""
+        "checksumValue": "x0kpjixf5l6c011yyzda0lyw7smg02v8-"
       },
       "packageVerificationCode": {
-        "packageVerificationCodeValue": ""
+        "packageVerificationCodeValue": "x0kpjixf5l6c011yyzda0lyw7smg02v8-"
       },
       "packageHomePage": "https://github.com/Hydepwns/nix-mox",
       "packageSupplier": "Organization: Hydepwns",
       "packageOriginator": "Organization: Hydepwns"
     },
     {
-      "SPDXID": "SPDXRef-Package-vzdump_backup",
-      "packageName": "vzdump-backup",
-      "packageVersion": "unknown",
-      "packageDescription": "Package not available",
-      "packageLicenseConcluded": "unknown",
-      "packageLicenseDeclared": "unknown",
-      "packageDownloadLocation": "",
-      "packageSize": "0 B",
-      "packageChecksum": {
-        "algorithm": "SHA256",
-        "checksumValue": ""
-      },
-      "packageVerificationCode": {
-        "packageVerificationCodeValue": ""
-      },
-      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
-      "packageSupplier": "Organization: Hydepwns",
-      "packageOriginator": "Organization: Hydepwns"
-    },
-    {
-      "SPDXID": "SPDXRef-Package-zfs_snapshot",
-      "packageName": "zfs-snapshot",
-      "packageVersion": "unknown",
-      "packageDescription": "Package not available",
-      "packageLicenseConcluded": "unknown",
-      "packageLicenseDeclared": "unknown",
-      "packageDownloadLocation": "",
+      "SPDXID": "SPDXRef-Package-uninstall",
+      "packageName": "uninstall",
+      "packageVersion": "1.0.0",
+      "packageDescription": "nix-mox uninstall package",
+      "packageLicenseConcluded": "MIT",
+      "packageLicenseDeclared": "MIT",
+      "packageDownloadLocation": "https://github.com/Hydepwns/nix-mox",
       "packageSize": "0 B",
       "packageChecksum": {
         "algorithm": "SHA256",
@@ -73,18 +53,78 @@
     {
       "SPDXID": "SPDXRef-Package-nixos_flake-update",
       "packageName": "nixos-flake-update",
-      "packageVersion": "unknown",
-      "packageDescription": "Package not available",
-      "packageLicenseConcluded": "unknown",
-      "packageLicenseDeclared": "unknown",
-      "packageDownloadLocation": "",
-      "packageSize": "0 B",
+      "packageVersion": "",
+      "packageDescription": "NixOS flake update utility",
+      "packageLicenseConcluded": "MIT",
+      "packageLicenseDeclared": "MIT",
+      "packageDownloadLocation": "https://github.com/Hydepwns/nix-mox",
+      "packageSize": 182858000,
       "packageChecksum": {
         "algorithm": "SHA256",
-        "checksumValue": ""
+        "checksumValue": "3rdvczp4kwbap50r5ifa1jdkg4m27h2g-"
       },
       "packageVerificationCode": {
-        "packageVerificationCodeValue": ""
+        "packageVerificationCodeValue": "3rdvczp4kwbap50r5ifa1jdkg4m27h2g-"
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-proxmox_update",
+      "packageName": "proxmox-update",
+      "packageVersion": "",
+      "packageDescription": "Proxmox update management script",
+      "packageLicenseConcluded": "MIT",
+      "packageLicenseDeclared": "MIT",
+      "packageDownloadLocation": "https://github.com/Hydepwns/nix-mox",
+      "packageSize": 109789976,
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": "55vfl7sji0637karcp75291zbc2qwpav-"
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": "55vfl7sji0637karcp75291zbc2qwpav-"
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-vzdump_backup",
+      "packageName": "vzdump-backup",
+      "packageVersion": "",
+      "packageDescription": "Proxmox vzdump backup utility",
+      "packageLicenseConcluded": "MIT",
+      "packageLicenseDeclared": "MIT",
+      "packageDownloadLocation": "https://github.com/Hydepwns/nix-mox",
+      "packageSize": 2160595776,
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": "d0ahyjb8w1wmnab3bz7438dbwpvq9l7a-"
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": "d0ahyjb8w1wmnab3bz7438dbwpvq9l7a-"
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-zfs_snapshot",
+      "packageName": "zfs-snapshot",
+      "packageVersion": "",
+      "packageDescription": "ZFS snapshot management script",
+      "packageLicenseConcluded": "MIT",
+      "packageLicenseDeclared": "MIT",
+      "packageDownloadLocation": "https://github.com/Hydepwns/nix-mox",
+      "packageSize": 2160597544,
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": "ns8841h5953iv4ga2x3mrvvf5wjwx03b-"
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": "ns8841h5953iv4ga2x3mrvvf5wjwx03b-"
       },
       "packageHomePage": "https://github.com/Hydepwns/nix-mox",
       "packageSupplier": "Organization: Hydepwns",
@@ -93,11 +133,11 @@
     {
       "SPDXID": "SPDXRef-Package-install",
       "packageName": "install",
-      "packageVersion": "unknown",
-      "packageDescription": "Package not available",
-      "packageLicenseConcluded": "unknown",
-      "packageLicenseDeclared": "unknown",
-      "packageDownloadLocation": "",
+      "packageVersion": "1.0.0",
+      "packageDescription": "nix-mox install package",
+      "packageLicenseConcluded": "MIT",
+      "packageLicenseDeclared": "MIT",
+      "packageDownloadLocation": "https://github.com/Hydepwns/nix-mox",
       "packageSize": "0 B",
       "packageChecksum": {
         "algorithm": "SHA256",
@@ -113,71 +153,11 @@
     {
       "SPDXID": "SPDXRef-Package-uninstall",
       "packageName": "uninstall",
-      "packageVersion": "unknown",
-      "packageDescription": "Package not available",
-      "packageLicenseConcluded": "unknown",
-      "packageLicenseDeclared": "unknown",
-      "packageDownloadLocation": "",
-      "packageSize": "0 B",
-      "packageChecksum": {
-        "algorithm": "SHA256",
-        "checksumValue": ""
-      },
-      "packageVerificationCode": {
-        "packageVerificationCodeValue": ""
-      },
-      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
-      "packageSupplier": "Organization: Hydepwns",
-      "packageOriginator": "Organization: Hydepwns"
-    },
-    {
-      "SPDXID": "SPDXRef-Package-proxmox_update",
-      "packageName": "proxmox-update",
-      "packageVersion": "unknown",
-      "packageDescription": "Package not available",
-      "packageLicenseConcluded": "unknown",
-      "packageLicenseDeclared": "unknown",
-      "packageDownloadLocation": "",
-      "packageSize": "0 B",
-      "packageChecksum": {
-        "algorithm": "SHA256",
-        "checksumValue": ""
-      },
-      "packageVerificationCode": {
-        "packageVerificationCodeValue": ""
-      },
-      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
-      "packageSupplier": "Organization: Hydepwns",
-      "packageOriginator": "Organization: Hydepwns"
-    },
-    {
-      "SPDXID": "SPDXRef-Package-vzdump_backup",
-      "packageName": "vzdump-backup",
-      "packageVersion": "unknown",
-      "packageDescription": "Package not available",
-      "packageLicenseConcluded": "unknown",
-      "packageLicenseDeclared": "unknown",
-      "packageDownloadLocation": "",
-      "packageSize": "0 B",
-      "packageChecksum": {
-        "algorithm": "SHA256",
-        "checksumValue": ""
-      },
-      "packageVerificationCode": {
-        "packageVerificationCodeValue": ""
-      },
-      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
-      "packageSupplier": "Organization: Hydepwns",
-      "packageOriginator": "Organization: Hydepwns"
-    },
-    {
-      "SPDXID": "SPDXRef-Package-zfs_snapshot",
-      "packageName": "zfs-snapshot",
-      "packageVersion": "unknown",
-      "packageDescription": "Package not available",
-      "packageLicenseConcluded": "unknown",
-      "packageLicenseDeclared": "unknown",
-      "packageDownloadLocation": "",
+      "packageVersion": "1.0.0",
+      "packageDescription": "nix-mox uninstall package",
+      "packageLicenseConcluded": "MIT",
+      "packageLicenseDeclared": "MIT",
+      "packageDownloadLocation": "https://github.com/Hydepwns/nix-mox",
       "packageSize": "0 B",
       "packageChecksum": {
         "algorithm": "SHA256",
@@ -193,11 +173,11 @@
     {
       "SPDXID": "SPDXRef-Package-nixos_flake-update",
       "packageName": "nixos-flake-update",
-      "packageVersion": "unknown",
-      "packageDescription": "Package not available",
-      "packageLicenseConcluded": "unknown",
-      "packageLicenseDeclared": "unknown",
-      "packageDownloadLocation": "",
+      "packageVersion": "1.0.0",
+      "packageDescription": "nix-mox nixos-flake-update package",
+      "packageLicenseConcluded": "MIT",
+      "packageLicenseDeclared": "MIT",
+      "packageDownloadLocation": "https://github.com/Hydepwns/nix-mox",
       "packageSize": "0 B",
       "packageChecksum": {
         "algorithm": "SHA256",
@@ -211,13 +191,13 @@
       "packageOriginator": "Organization: Hydepwns"
     },
     {
-      "SPDXID": "SPDXRef-Package-install",
-      "packageName": "install",
-      "packageVersion": "unknown",
-      "packageDescription": "Package not available",
-      "packageLicenseConcluded": "unknown",
-      "packageLicenseDeclared": "unknown",
-      "packageDownloadLocation": "",
+      "SPDXID": "SPDXRef-Package-proxmox_update",
+      "packageName": "proxmox-update",
+      "packageVersion": "1.0.0",
+      "packageDescription": "nix-mox proxmox-update package",
+      "packageLicenseConcluded": "MIT",
+      "packageLicenseDeclared": "MIT",
+      "packageDownloadLocation": "https://github.com/Hydepwns/nix-mox",
       "packageSize": "0 B",
       "packageChecksum": {
         "algorithm": "SHA256",
@@ -231,13 +211,33 @@
       "packageOriginator": "Organization: Hydepwns"
     },
     {
-      "SPDXID": "SPDXRef-Package-uninstall",
-      "packageName": "uninstall",
-      "packageVersion": "unknown",
-      "packageDescription": "Package not available",
-      "packageLicenseConcluded": "unknown",
-      "packageLicenseDeclared": "unknown",
-      "packageDownloadLocation": "",
+      "SPDXID": "SPDXRef-Package-vzdump_backup",
+      "packageName": "vzdump-backup",
+      "packageVersion": "1.0.0",
+      "packageDescription": "nix-mox vzdump-backup package",
+      "packageLicenseConcluded": "MIT",
+      "packageLicenseDeclared": "MIT",
+      "packageDownloadLocation": "https://github.com/Hydepwns/nix-mox",
+      "packageSize": "0 B",
+      "packageChecksum": {
+        "algorithm": "SHA256",
+        "checksumValue": ""
+      },
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": ""
+      },
+      "packageHomePage": "https://github.com/Hydepwns/nix-mox",
+      "packageSupplier": "Organization: Hydepwns",
+      "packageOriginator": "Organization: Hydepwns"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-zfs_snapshot",
+      "packageName": "zfs-snapshot",
+      "packageVersion": "1.0.0",
+      "packageDescription": "nix-mox zfs-snapshot package",
+      "packageLicenseConcluded": "MIT",
+      "packageLicenseDeclared": "MIT",
+      "packageDownloadLocation": "https://github.com/Hydepwns/nix-mox",
       "packageSize": "0 B",
       "packageChecksum": {
         "algorithm": "SHA256",

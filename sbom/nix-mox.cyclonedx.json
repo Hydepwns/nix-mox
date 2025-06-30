@@ -3,7 +3,7 @@
   "specVersion": "1.5",
   "version": 1,
   "metadata": {
-    "timestamp": "2025-06-21T08:40:27Z",
+    "timestamp": "2025-06-30T14:35:14Z",
     "tools": [
       {
         "vendor": "nix-mox",
@@ -16,79 +16,51 @@
       "name": "nix-mox",
       "version": "1.0.0",
       "description": "A comprehensive NixOS configuration framework",
-      "bomRef": "nix-mox-bom-2025-06-21-08-40:27"
+      "bomRef": "nix-mox-bom-2025-06-30-14-35:14"
     }
   },
   "components": [
     {
       "type": "library",
-      "name": "proxmox-update",
-      "version": "unknown",
-      "description": "Package not available",
+      "name": "install",
+      "version": "",
+      "description": "nix-mox installation script",
       "licenses": [
         {
           "license": {
-            "id": "unknown"
+            "id": "MIT"
           }
         }
       ],
-      "bomRef": "pkg-proxmox_update",
+      "bomRef": "pkg-install",
       "properties": [
         {
           "name": "size",
-          "value": "0 B"
+          "value": 109791624
         },
         {
           "name": "dependencies",
-          "value": "0"
+          "value": "5"
         },
         {
           "name": "build_inputs",
-          "value": "0"
+          "value": "5"
         }
       ]
     },
     {
       "type": "library",
-      "name": "vzdump-backup",
-      "version": "unknown",
-      "description": "Package not available",
+      "name": "uninstall",
+      "version": "1.0.0",
+      "description": "nix-mox uninstall package",
       "licenses": [
         {
           "license": {
-            "id": "unknown"
+            "id": "MIT"
           }
         }
       ],
-      "bomRef": "pkg-vzdump_backup",
-      "properties": [
-        {
-          "name": "size",
-          "value": "0 B"
-        },
-        {
-          "name": "dependencies",
-          "value": "0"
-        },
-        {
-          "name": "build_inputs",
-          "value": "0"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "zfs-snapshot",
-      "version": "unknown",
-      "description": "Package not available",
-      "licenses": [
-        {
-          "license": {
-            "id": "unknown"
-          }
-        }
-      ],
-      "bomRef": "pkg-zfs_snapshot",
+      "bomRef": "pkg-uninstall",
       "properties": [
         {
           "name": "size",
@@ -107,12 +79,12 @@
     {
       "type": "library",
       "name": "nixos-flake-update",
-      "version": "unknown",
-      "description": "Package not available",
+      "version": "",
+      "description": "NixOS flake update utility",
       "licenses": [
         {
           "license": {
-            "id": "unknown"
+            "id": "MIT"
           }
         }
       ],
@@ -120,27 +92,111 @@
       "properties": [
         {
           "name": "size",
-          "value": "0 B"
+          "value": 182858000
         },
         {
           "name": "dependencies",
-          "value": "0"
+          "value": "6"
         },
         {
           "name": "build_inputs",
-          "value": "0"
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "proxmox-update",
+      "version": "",
+      "description": "Proxmox update management script",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "bomRef": "pkg-proxmox_update",
+      "properties": [
+        {
+          "name": "size",
+          "value": 109789976
+        },
+        {
+          "name": "dependencies",
+          "value": "5"
+        },
+        {
+          "name": "build_inputs",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vzdump-backup",
+      "version": "",
+      "description": "Proxmox vzdump backup utility",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "bomRef": "pkg-vzdump_backup",
+      "properties": [
+        {
+          "name": "size",
+          "value": 2160595776
+        },
+        {
+          "name": "dependencies",
+          "value": "11"
+        },
+        {
+          "name": "build_inputs",
+          "value": "11"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "zfs-snapshot",
+      "version": "",
+      "description": "ZFS snapshot management script",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "bomRef": "pkg-zfs_snapshot",
+      "properties": [
+        {
+          "name": "size",
+          "value": 2160597544
+        },
+        {
+          "name": "dependencies",
+          "value": "11"
+        },
+        {
+          "name": "build_inputs",
+          "value": "11"
         }
       ]
     },
     {
       "type": "library",
       "name": "install",
-      "version": "unknown",
-      "description": "Package not available",
+      "version": "1.0.0",
+      "description": "nix-mox install package",
       "licenses": [
         {
           "license": {
-            "id": "unknown"
+            "id": "MIT"
           }
         }
       ],
@@ -163,12 +219,12 @@
     {
       "type": "library",
       "name": "uninstall",
-      "version": "unknown",
-      "description": "Package not available",
+      "version": "1.0.0",
+      "description": "nix-mox uninstall package",
       "licenses": [
         {
           "license": {
-            "id": "unknown"
+            "id": "MIT"
           }
         }
       ],
@@ -190,13 +246,41 @@
     },
     {
       "type": "library",
-      "name": "proxmox-update",
-      "version": "unknown",
-      "description": "Package not available",
+      "name": "nixos-flake-update",
+      "version": "1.0.0",
+      "description": "nix-mox nixos-flake-update package",
       "licenses": [
         {
           "license": {
-            "id": "unknown"
+            "id": "MIT"
+          }
+        }
+      ],
+      "bomRef": "pkg-nixos_flake-update",
+      "properties": [
+        {
+          "name": "size",
+          "value": "0 B"
+        },
+        {
+          "name": "dependencies",
+          "value": "0"
+        },
+        {
+          "name": "build_inputs",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "proxmox-update",
+      "version": "1.0.0",
+      "description": "nix-mox proxmox-update package",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
           }
         }
       ],
@@ -219,12 +303,12 @@
     {
       "type": "library",
       "name": "vzdump-backup",
-      "version": "unknown",
-      "description": "Package not available",
+      "version": "1.0.0",
+      "description": "nix-mox vzdump-backup package",
       "licenses": [
         {
           "license": {
-            "id": "unknown"
+            "id": "MIT"
           }
         }
       ],
@@ -247,100 +331,16 @@
     {
       "type": "library",
       "name": "zfs-snapshot",
-      "version": "unknown",
-      "description": "Package not available",
+      "version": "1.0.0",
+      "description": "nix-mox zfs-snapshot package",
       "licenses": [
         {
           "license": {
-            "id": "unknown"
+            "id": "MIT"
           }
         }
       ],
       "bomRef": "pkg-zfs_snapshot",
-      "properties": [
-        {
-          "name": "size",
-          "value": "0 B"
-        },
-        {
-          "name": "dependencies",
-          "value": "0"
-        },
-        {
-          "name": "build_inputs",
-          "value": "0"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "nixos-flake-update",
-      "version": "unknown",
-      "description": "Package not available",
-      "licenses": [
-        {
-          "license": {
-            "id": "unknown"
-          }
-        }
-      ],
-      "bomRef": "pkg-nixos_flake-update",
-      "properties": [
-        {
-          "name": "size",
-          "value": "0 B"
-        },
-        {
-          "name": "dependencies",
-          "value": "0"
-        },
-        {
-          "name": "build_inputs",
-          "value": "0"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "install",
-      "version": "unknown",
-      "description": "Package not available",
-      "licenses": [
-        {
-          "license": {
-            "id": "unknown"
-          }
-        }
-      ],
-      "bomRef": "pkg-install",
-      "properties": [
-        {
-          "name": "size",
-          "value": "0 B"
-        },
-        {
-          "name": "dependencies",
-          "value": "0"
-        },
-        {
-          "name": "build_inputs",
-          "value": "0"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "uninstall",
-      "version": "unknown",
-      "description": "Package not available",
-      "licenses": [
-        {
-          "license": {
-            "id": "unknown"
-          }
-        }
-      ],
-      "bomRef": "pkg-uninstall",
       "properties": [
         {
           "name": "size",

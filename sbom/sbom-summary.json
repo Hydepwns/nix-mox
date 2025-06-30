@@ -1,8 +1,8 @@
 {
-  "generated_at": "2025-06-21 08:40:27",
+  "generated_at": "2025-06-30 14:35:14",
   "total_packages": 12,
-  "total_size": 0,
-  "total_dependencies": 0,
+  "total_size": 4723632920,
+  "total_dependencies": 38,
   "formats": [
     "SPDX",
     "CycloneDX",
