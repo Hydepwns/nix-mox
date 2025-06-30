@@ -30,7 +30,10 @@ echo "Building packages for current system..."
 # Check if we're on Linux to determine which packages to build
 if [[ "$(uname)" == "Linux" ]]; then
     echo "🐧 Linux detected - building Linux-specific packages..."
-    if nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update --accept-flake-config; then
+    if nix build .#proxmox-update --accept-flake-config --out-link tmp/result-proxmox-update \
+        && nix build .#vzdump-backup --accept-flake-config --out-link tmp/result-vzdump-backup \
+        && nix build .#zfs-snapshot --accept-flake-config --out-link tmp/result-zfs-snapshot \
+        && nix build .#nixos-flake-update --accept-flake-config --out-link tmp/result-nixos-flake-update; then
         echo "✅ Linux package builds successful"
     else
         echo "❌ Linux package builds failed"
@@ -39,7 +42,7 @@ if [[ "$(uname)" == "Linux" ]]; then
 else
     echo "🍎 Non-Linux system detected - building available packages..."
     # Build all available packages for the current system
-    if nix build --accept-flake-config; then
+    if nix build --accept-flake-config --out-link tmp/result-all; then
         echo "✅ Package builds successful"
     else
         echo "❌ Package builds failed"
