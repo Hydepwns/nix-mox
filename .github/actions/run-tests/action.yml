@@ -123,7 +123,8 @@ runs:
           exit 1
         } else {
           print $"✅ Coverage file found: ($coverage_file)"
-          print $"📄 Coverage file size: ((ls coverage-tmp/coverage.lcov | get size | first | into string) bytes)"
+          let file_size = (try { ls coverage-tmp/coverage.lcov | get size | first | into string } catch { "unknown" })
+          print $"📄 Coverage file size: ($file_size) bytes"
         }
 
         # Also copy to /tmp for CI workflows to find
