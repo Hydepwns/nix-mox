@@ -3,7 +3,7 @@
 {
   imports = [
     ../hardware/hardware-configuration.nix
-    ./gaming.nix  # Import gaming configuration
+    ./gaming.nix # Import gaming configuration
   ];
 
   # Boot loader
@@ -149,7 +149,7 @@
     # Enable gaming support
     gaming = {
       enable = true;
-      gpu.type = "auto";  # Auto-detect GPU
+      gpu.type = "auto"; # Auto-detect GPU
       performance.enable = true;
       audio.enable = true;
       audio.pipewire = true;

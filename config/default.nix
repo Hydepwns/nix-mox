@@ -1,7 +1,14 @@
+# Main Configuration Aggregator
+# This file manages the overall configuration structure
+
 { inputs, self, ... }:
 let
-  # Import the user's NixOS configuration
-  userConfig = import ./nixos/configuration.nix;
+  # Check if personal config exists
+  hasPersonalConfig = builtins.pathExists ./personal/default.nix;
+
+  # Import appropriate configuration
+  baseConfig = import ./nixos/configuration.nix;
+  personalConfig = if hasPersonalConfig then import ./personal/default.nix else { };
   userHome = import ./home/home.nix;
   userHardware = import ./hardware/hardware-configuration.nix;
 in
@@ -11,13 +18,17 @@ in
     system = "x86_64-linux";
     specialArgs = { inherit inputs self; };
     modules = [
-      userConfig
+      baseConfig
+      personalConfig
       userHardware
       inputs.home-manager.nixosModules.home-manager
       {
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
-        home-manager.users.droo = userHome;
+        # Use personal configuration if available, otherwise fallback to droo
+        home-manager.users = if hasPersonalConfig then { } else {
+          droo = userHome;
+        };
       }
     ];
   };
