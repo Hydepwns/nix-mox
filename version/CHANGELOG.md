@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2025-01-27
+
+### Fixed
+
+- **CI Pipeline**: Resolved critical CI failures and improved reliability
+  - Fixed Nushell syntax errors in coverage generation step
+  - Resolved type conversion issues in test result processing
+  - Fixed Nix configuration conflicts with proper option priorities
+  - Corrected `builtins.getEnv` usage patterns for default values
+- **Nix Configuration**: Resolved configuration conflicts and syntax issues
+  - Added `lib.mkDefault` for conflicting options (timezone, kernelPackages)
+  - Fixed `builtins.getEnv` syntax with proper default value patterns
+  - Removed personal attribute from top-level config to avoid option conflicts
+  - Imported lib in user.nix and hardware.nix for mkDefault usage
+- **Build Artifacts**: Improved CI script to output build artifacts to tmp directory
+  - Used `--out-link` flag for all nix build commands
+  - Redirected result symlinks to `tmp/result-<name>` instead of project root
+  - Prevents clutter in main directory from build outputs
+
+### Changed
+
+- **CI Scripts**: Updated CI test script to use proper output directories
+- **Documentation**: Updated QUICK_START.md and README.md with current status
+- **Test Infrastructure**: Improved test reliability and CI integration
+
+### Added
+
+- **CI Reliability**: Enhanced CI pipeline with better error handling and reporting
+- **Build Organization**: Cleaner build artifact management in CI environments
+
 ## [0.4.2] - 2025-01-27
 
 ### Fixed
