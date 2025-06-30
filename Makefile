@@ -119,60 +119,74 @@ help:
 # Setup and health check targets
 setup:
 	@echo "🔧 Starting nix-mox Configuration Setup..."
-	$(NUSHELL) scripts/setup.nu
+	$(NUSHELL) scripts/core/setup.nu
 
 health-check:
 	@echo "🏥 Running nix-mox Health Check..."
-	$(NUSHELL) scripts/health-check.nu
+	$(NUSHELL) scripts/core/health-check.nu
 
+setup-gaming:
+	$(NUSHELL) scripts/core/setup.nu
+
+gaming-workstation:
 gaming-setup:
 	@echo "🎮 Setting up Gaming Workstation..."
-	$(NUSHELL) scripts/setup.nu
+	$(NUSHELL) scripts/gaming/setup-gaming-workstation.nu
+	@echo "🎮 Setting up Gaming Workstation..."
+	$(NUSHELL) scripts/gaming/setup-gaming-workstation.nu
+
+gaming-workstation-dev:
+	@echo "🎮 Setting up Development + Gaming Workstation..."
+	$(NUSHELL) scripts/gaming/setup-gaming-workstation.nu --development --performance
+
+gaming-workstation-interactive:
+	@echo "🎮 Interactive Gaming Workstation Setup..."
+	$(NUSHELL) scripts/gaming/setup-gaming-workstation.nu --interactive
 
 gaming-benchmark:
 	@echo "🎮 Running Gaming Performance Benchmark..."
-	$(NUSHELL) scripts/gaming-benchmark.nu
+	$(NUSHELL) scripts/gaming/gaming-benchmark.nu
 
-gaming-validate:
+validate-gaming:
 	@echo "🎮 Validating Gaming Configuration..."
-	$(NUSHELL) scripts/validate-gaming-config.nu
+	$(NUSHELL) scripts/gaming/validate-gaming-config.nu
 
-gaming-test:
+test-gaming:
 	@echo "🎮 Testing Gaming Setup..."
-	./devshells/gaming/scripts/test-gaming.sh
+	$(NUSHELL) scripts/gaming/validate-gaming-config.nu
 
-display-test:
+validate-display:
 	@echo "🖥️  Testing Display Configuration..."
-	$(NUSHELL) scripts/validate-display-config.nu
+	$(NUSHELL) scripts/validation/validate-display-config.nu
 
-display-test-interactive:
+validate-display-interactive:
 	@echo "🖥️  Interactive Display Configuration Testing..."
-	$(NUSHELL) scripts/validate-display-config.nu --interactive
+	$(NUSHELL) scripts/validation/validate-display-config.nu --interactive
 
-display-test-backup:
+validate-display-backup:
 	@echo "🖥️  Testing Display Configuration with Backup..."
-	$(NUSHELL) scripts/validate-display-config.nu --backup
+	$(NUSHELL) scripts/validation/validate-display-config.nu --backup
 
-display-test-verbose:
+validate-display-verbose:
 	@echo "🖥️  Verbose Display Configuration Testing..."
-	$(NUSHELL) scripts/validate-display-config.nu --verbose
+	$(NUSHELL) scripts/validation/validate-display-config.nu --verbose
 
-display-test-all:
+validate-display-full:
 	@echo "🖥️  Comprehensive Display Configuration Testing..."
-	$(NUSHELL) scripts/validate-display-config.nu --backup --verbose --interactive
+	$(NUSHELL) scripts/validation/validate-display-config.nu --backup --verbose --interactive
 
 # Code quality targets
 code-quality: check-nushell
 	@echo "🔍 Running comprehensive code quality analysis..."
-	$(NUSHELL) scripts/code-quality.nu
+	$(NUSHELL) scripts/development/code-quality.nu
 
 code-syntax: check-nushell
 	@echo "🔍 Checking code syntax..."
-	$(NUSHELL) -c "source scripts/code-quality.nu; check_syntax"
+	$(NUSHELL) -c "source scripts/development/code-quality.nu; check_syntax"
 
 code-security: check-nushell
 	@echo "🔍 Checking for security issues..."
-	$(NUSHELL) -c "source scripts/code-quality.nu; check_security"
+	$(NUSHELL) -c "source scripts/development/code-quality.nu; check_security"
 
 quality: code-quality
 
@@ -206,11 +220,11 @@ test: check-nushell $(TEST_DIR)
 	@echo "🧪 Running all tests..."
 	$(NUSHELL) -c "source scripts/tests/run-tests.nu; run []"
 
-unit: check-nushell $(TEST_DIR)
+test-unit: check-nushell $(TEST_DIR)
 	@echo "🧪 Running unit tests..."
 	$(NUSHELL) scripts/tests/unit/unit-tests.nu
 
-integration: check-nushell $(TEST_DIR)
+test-integration: check-nushell $(TEST_DIR)
 	@echo "🧪 Running integration tests..."
 	$(NUSHELL) scripts/tests/integration/integration-tests.nu
 
@@ -288,68 +302,68 @@ zfs-shell:
 # Analysis targets
 analyze-sizes:
 	@echo "📊 Analyzing repository sizes..."
-	./scripts/analyze-sizes.sh
+	./scripts/tools/analyze-sizes.sh
 
 # Size analysis dashboard
 size-dashboard: check-nushell
 	@echo "📊 Generating size analysis dashboard..."
-	$(NUSHELL) -c "source scripts/size-dashboard.nu; run"
+	$(NUSHELL) -c "source scripts/tools/size-dashboard.nu; run"
 
 size-dashboard-html: check-nushell
 	@echo "📊 Generating HTML dashboard..."
-	$(NUSHELL) -c "source scripts/size-dashboard.nu; generate-html"
+	$(NUSHELL) -c "source scripts/tools/size-dashboard.nu; generate-html"
 
 size-dashboard-api: check-nushell
 	@echo "📊 Generating JSON API..."
-	$(NUSHELL) -c "source scripts/size-dashboard.nu; generate-api"
+	$(NUSHELL) -c "source scripts/tools/size-dashboard.nu; generate-api"
 
 # Advanced caching
 cache-optimize: check-nushell
 	@echo "🔄 Running advanced caching optimization..."
-	$(NUSHELL) -c "source scripts/advanced-cache.nu; run"
+	$(NUSHELL) -c "source scripts/tools/advanced-cache.nu; run"
 
 cache-warm: check-nushell
 	@echo "🔥 Warming cache..."
-	$(NUSHELL) -c "source scripts/advanced-cache.nu; warm"
+	$(NUSHELL) -c "source scripts/tools/advanced-cache.nu; warm"
 
 cache-maintain: check-nushell
 	@echo "🔧 Maintaining cache..."
-	$(NUSHELL) -c "source scripts/advanced-cache.nu; maintain"
+	$(NUSHELL) -c "source scripts/tools/advanced-cache.nu; maintain"
 
 # SBOM generation
 sbom: check-nushell
 	@echo "📋 Generating Software Bill of Materials..."
-	$(NUSHELL) -c "source scripts/generate-sbom.nu; run"
+	$(NUSHELL) -c "source scripts/tools/generate-sbom.nu; run"
 
 sbom-spdx: check-nushell
 	@echo "📋 Generating SPDX format SBOM..."
-	$(NUSHELL) -c "source scripts/generate-sbom.nu; generate_spdx_sbom"
+	$(NUSHELL) -c "source scripts/tools/generate-sbom.nu; generate_spdx_sbom"
 
 sbom-cyclonedx: check-nushell
 	@echo "📋 Generating CycloneDX format SBOM..."
-	$(NUSHELL) -c "source scripts/generate-sbom.nu; generate_cyclonedx_sbom"
+	$(NUSHELL) -c "source scripts/tools/generate-sbom.nu; generate_cyclonedx_sbom"
 
 sbom-csv: check-nushell
 	@echo "📋 Generating CSV format SBOM..."
-	$(NUSHELL) -c "source scripts/generate-sbom.nu; generate_csv_report"
+	$(NUSHELL) -c "source scripts/tools/generate-sbom.nu; generate_csv_report"
 
 # CI/CD targets
 ci-test:
 	@echo "🔄 Running quick CI test..."
-	./scripts/ci-test.sh
+	./scripts/core/ci-test.sh
 
 ci-local:
 	@echo "🔄 Running comprehensive CI test..."
-	./scripts/test-ci-local.sh
+	./scripts/core/test-ci-local.sh
 
 # Remote builder targets
 remote-builder-setup:
 	@echo "🔧 Setting up remote builder..."
-	./scripts/setup-remote-builder.sh
+	./scripts/core/setup-remote-builder.sh
 
 test-remote-builder:
 	@echo "🔧 Testing remote builder..."
-	./scripts/test-remote-builder.sh
+	./scripts/core/test-remote-builder.sh
 
 # Maintenance targets
 clean-all: clean
@@ -384,15 +398,15 @@ shells:
 # Performance optimization targets
 performance-analyze: check-nushell
 	@echo "📊 Analyzing performance..."
-	$(NUSHELL) -c "source scripts/performance-optimize.nu; analyze"
+	$(NUSHELL) -c "source scripts/validation/performance-optimize.nu; analyze"
 
 performance-optimize: check-nushell
 	@echo "⚡ Optimizing performance..."
-	$(NUSHELL) -c "source scripts/performance-optimize.nu; optimize"
+	$(NUSHELL) -c "source scripts/validation/performance-optimize.nu; optimize"
 
 performance-report: check-nushell
 	@echo "📋 Generating performance report..."
-	$(NUSHELL) -c "source scripts/performance-optimize.nu; report"
+	$(NUSHELL) -c "source scripts/validation/performance-optimize.nu; report"
 
 # Quick performance check
 perf: performance-report
@@ -400,24 +414,24 @@ perf: performance-report
 # Coverage targets
 coverage: check-nushell
 	@echo "📊 Setting up coverage..."
-	$(NUSHELL) scripts/tests/setup-coverage.nu --approach lcov --verbose
+	$(NUSHELL) scripts/tools/generate-coverage.nu --approach lcov --verbose
 
 coverage-grcov: check-nushell
 	@echo "📊 Setting up grcov coverage..."
-	$(NUSHELL) scripts/tests/setup-coverage.nu --approach grcov --verbose
+	$(NUSHELL) scripts/tools/generate-coverage.nu --approach grcov --verbose
 
 coverage-tarpaulin: check-nushell
 	@echo "📊 Setting up tarpaulin coverage..."
-	$(NUSHELL) scripts/tests/setup-coverage.nu --approach tarpaulin --verbose
+	$(NUSHELL) scripts/tools/generate-coverage.nu --approach tarpaulin --verbose
 
 coverage-custom: check-nushell
 	@echo "📊 Setting up custom coverage..."
-	$(NUSHELL) scripts/tests/setup-coverage.nu --approach custom --verbose
+	$(NUSHELL) scripts/tools/generate-coverage.nu --approach custom --verbose
 
 coverage-ci: check-nushell
 	@echo "📊 Setting up coverage for CI..."
-	$(NUSHELL) -c "source scripts/tests/setup-coverage.nu; ci_setup_coverage"
+	$(NUSHELL) -c "source scripts/tools/generate-coverage.nu; ci_setup_coverage"
 
 coverage-local: check-nushell
 	@echo "📊 Setting up coverage for local development..."
-	$(NUSHELL) -c "source scripts/tests/setup-coverage.nu; local_setup_coverage"
+	$(NUSHELL) -c "source scripts/tools/generate-coverage.nu; local_setup_coverage"

@@ -56,11 +56,11 @@ jobs:
           $env.CI = "true"
           print "🚀 Running performance benchmarks..."
 
-          # Test script execution times
+          # Test nix-mox script
           time ./scripts/common/nix-mox --script install --platform auto --dry-run
           time ./scripts/common/nix-mox --script install --platform auto --debug
 
-          # Test comprehensive test suite performance
+          # Run unit tests
           time nu -c "source scripts/tests/run-tests.nu; run ['--unit']"
 
       - name: Cross-Platform Tests
@@ -70,10 +70,10 @@ jobs:
           $env.CI = "true"
           print "🌐 Testing cross-platform compatibility..."
 
-          # Test script validation
+          # Test nix-mox script
           ./scripts/common/nix-mox --script install --debug
 
-          # Test comprehensive test suite
+          # Run tests
           nu -c "source scripts/tests/run-tests.nu; run ['--unit', '--integration']"
 
           # Test flake evaluation for different systems
