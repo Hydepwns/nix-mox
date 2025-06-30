@@ -42,6 +42,15 @@ desktop.ini
 *.tmp
 *.tempresult
 
+# Personal configuration (Phase 1 & 2)
+config/personal/secrets.nix
+config/personal/local.nix
+.env
+.env.local
+.env.production
+
+# Hardware configuration with real UUIDs
+config/hardware/hardware-configuration-actual.nix
 
 # Nix remote builder keys
 nix-mox-public.key
