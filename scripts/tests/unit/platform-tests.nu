@@ -1,3 +1,4 @@
+use ../../lib/platform.nu *
 use ../lib/test-utils.nu *
 use ../lib/test-coverage.nu
 use ../lib/coverage-core.nu
@@ -6,7 +7,7 @@ def test_detect_platform [] {
     print "Testing platform detection..."
 
     track_test "detect_platform_basic" "unit" "passed" 0.1
-    let detected_platform = (sys host | get name | str downcase)
+    let detected_platform = (detect_platform)
 
     let valid_platforms = ["linux", "windows", "darwin", "unknown"]
     assert_true ($valid_platforms | any {|p| $p == $detected_platform}) "Platform detection returns valid value"

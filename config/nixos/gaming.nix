@@ -74,11 +74,10 @@ in
   config = mkIf cfg.enable {
     # Hardware configuration
     hardware = {
-      # OpenGL support
-      opengl = {
+      # Graphics support (updated from opengl)
+      graphics = {
         enable = true;
-        driSupport = true;
-        driSupport32Bit = true;
+        enable32Bit = true;
         extraPackages = mkMerge [
           (with pkgs; [
             vaapiVdpau
@@ -100,21 +99,20 @@ in
           libvdpau-va-gl
         ];
       };
-      
-      # NVIDIA configuration
-      nvidia = mkIf (cfg.gpu.type == "nvidia" || cfg.gpu.nvidia.enable) {
-        enable = true;
-        modesetting.enable = cfg.gpu.nvidia.modesetting.enable;
-        powerManagement.enable = cfg.gpu.nvidia.powerManagement.enable;
-        open = cfg.gpu.nvidia.open;
-        nvidiaSettings = true;
-        package = config.boot.kernelPackages.nvidiaPackages.stable;
-        prime = mkIf cfg.gpu.nvidia.prime.enable {
-          enable = true;
-          intelBusId = cfg.gpu.nvidia.prime.intelBusId;
-          nvidiaBusId = cfg.gpu.nvidia.prime.nvidiaBusId;
-        };
-      };
+    };
+    
+    # NVIDIA configuration - simplified conditional
+    hardware.nvidia = mkIf (cfg.gpu.type == "nvidia" || cfg.gpu.nvidia.enable) {
+      modesetting.enable = cfg.gpu.nvidia.modesetting.enable;
+      powerManagement.enable = cfg.gpu.nvidia.powerManagement.enable;
+      open = cfg.gpu.nvidia.open;
+      nvidiaSettings = true;
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
+      # prime = mkIf cfg.gpu.nvidia.prime.enable {
+      #   enable = true;
+      #   intelBusId = cfg.gpu.nvidia.prime.intelBusId;
+      #   nvidiaBusId = cfg.gpu.nvidia.prime.nvidiaBusId;
+      # };
     };
     
     # Audio configuration
@@ -134,6 +132,9 @@ in
         support32Bit = true;
         package = pkgs.pulseaudioFull;
       };
+      
+      # X server video drivers for NVIDIA
+      xserver.videoDrivers = mkIf (cfg.gpu.type == "nvidia" || cfg.gpu.nvidia.enable) [ "nvidia" ];
     };
     
     # Gaming platforms
@@ -219,6 +220,8 @@ in
         pulseaudio = {
           source = "${pkgs.pulseaudio}/bin/pulseaudio";
           capabilities = "cap_sys_nice+ep";
+          owner = "root";
+          group = "audio";
         };
       };
     };

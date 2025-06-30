@@ -3,9 +3,10 @@
 
 # Export the main platform detection function
 export def detect_platform [] {
-    let os = (sys).host.name
+    let os = (sys host | get name)
     match $os {
         "Linux" => "linux"
+        "NixOS" => "linux"
         "Windows" => "windows"
         "Darwin" => "darwin"
         _ => "unknown"
@@ -62,12 +63,11 @@ export def script_exists_for_platform [platform: string, script: string] {
 
 export def get_platform_info [] {
     {
-        os: (sys).host.name
-        arch: (sys).host.arch
-        version: (sys).host.version
-        kernel: (sys).host.kernel_version
-        memory: (sys).mem
-        cpu: (sys).cpu
+        os: (sys host | get name)
+        version: (sys host | get os_version)
+        long_version: (sys host | get long_os_version)
+        kernel: (sys host | get kernel_version)
+        hostname: (sys host | get hostname)
     }
 }
 
@@ -104,7 +104,7 @@ export def check_platform_requirements [platform: string] {
                 return false
             }
             # Check for Windows 10/11 (build 10.0.17763 or higher)
-            let build = (sys).host.version | str replace "Windows " "" | str replace "." "" | into int
+            let build = (sys host | get os_version | str replace "Windows " "" | str replace "." "" | into int)
             if $build < 10017763 {
                 print "Windows 10 (build 17763) or higher required"
                 return false

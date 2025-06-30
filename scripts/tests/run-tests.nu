@@ -18,6 +18,7 @@ def setup_test_config [] {
         run_integration_tests: true
         run_storage_tests: true
         run_performance_tests: true
+        run_display_tests: true
         generate_coverage: true
         export_format: "json"
         verbose: false
@@ -123,6 +124,13 @@ def run_performance_tests [] {
     true
 }
 
+def run_display_tests [] {
+    print "Running display tests..."
+    # Run display tests in the same process to ensure test result files are available
+    source "display/display-tests.nu"
+    true
+}
+
 def run_all_test_suites [config: record] {
     # Call setup_test_env from the imported module
     setup_test_env
@@ -156,6 +164,13 @@ def run_all_test_suites [config: record] {
         let performance_success = run_test_suite "performance" { run_performance_tests } $config
         $test_results = ($test_results | append { suite: "performance", success: $performance_success })
         $overall_success = ($overall_success and $performance_success)
+    }
+
+    # Run display tests
+    if $config.run_display_tests {
+        let display_success = run_test_suite "display" { run_display_tests } $config
+        $test_results = ($test_results | append { suite: "display", success: $display_success })
+        $overall_success = ($overall_success and $display_success)
     }
 
     # Generate coverage report
@@ -282,11 +297,11 @@ def parse_args [args: list, config: record] {
             $config
         }
 
-        let test_flags = ["--unit", "--integration", "--storage", "--performance"]
+        let test_flags = ["--unit", "--integration", "--storage", "--performance", "--display"]
         let has_specific_tests = ($args | any { |arg| $test_flags | any { |flag| $arg == $flag } })
 
         let config = if $has_specific_tests {
-            $config | upsert run_unit_tests ($args | any { |arg| $arg == "--unit" }) | upsert run_integration_tests ($args | any { |arg| $arg == "--integration" }) | upsert run_storage_tests ($args | any { |arg| $arg == "--storage" }) | upsert run_performance_tests ($args | any { |arg| $arg == "--performance" })
+            $config | upsert run_unit_tests ($args | any { |arg| $arg == "--unit" }) | upsert run_integration_tests ($args | any { |arg| $arg == "--integration" }) | upsert run_storage_tests ($args | any { |arg| $arg == "--storage" }) | upsert run_performance_tests ($args | any { |arg| $arg == "--performance" }) | upsert run_display_tests ($args | any { |arg| $arg == "--display" })
         } else {
             $config
         }
@@ -319,7 +334,7 @@ def print_help [] {
     print "Usage: nu -c 'source scripts/tests/run-tests.nu; run [OPTIONS]'"
     print ""
     print "Options:"
-    print "  --unit, --integration, --storage, --performance"
+    print "  --unit, --integration, --storage, --performance, --display"
     print "    Run specific test suites (default: all)"
     print ""
     print "  --verbose, -v"
@@ -350,6 +365,7 @@ def print_help [] {
     print "  nu -c 'source scripts/tests/run-tests.nu; run [\"--unit\"]'"
     print "  nu -c 'source scripts/tests/run-tests.nu; run [\"--verbose\", \"--integration\"]'"
     print "  nu -c 'source scripts/tests/run-tests.nu; run [\"--no-coverage\", \"--parallel\"]'"
+    print "  nu -c 'source scripts/tests/run-tests.nu; run [\"--display\"]'"
 }
 
 # --- Main Runner ---

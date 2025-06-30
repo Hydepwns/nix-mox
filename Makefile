@@ -37,6 +37,11 @@ help:
 	@echo "  unit        - Run unit tests only"
 	@echo "  integration - Run integration tests only"
 	@echo "  gaming-test - Test gaming setup"
+	@echo "  display-test - Test display configuration"
+	@echo "  display-test-interactive - Interactive display testing"
+	@echo "  display-test-backup - Display testing with backup"
+	@echo "  display-test-verbose - Verbose display testing"
+	@echo "  display-test-all - Comprehensive display testing"
 	@echo "  clean       - Clean up test artifacts"
 	@echo ""
 	@echo "🔧 Development:"
@@ -138,6 +143,26 @@ gaming-validate:
 gaming-test:
 	@echo "🎮 Testing Gaming Setup..."
 	./devshells/gaming/scripts/test-gaming.sh
+
+display-test:
+	@echo "🖥️  Testing Display Configuration..."
+	$(NUSHELL) scripts/validate-display-config.nu
+
+display-test-interactive:
+	@echo "🖥️  Interactive Display Configuration Testing..."
+	$(NUSHELL) scripts/validate-display-config.nu --interactive
+
+display-test-backup:
+	@echo "🖥️  Testing Display Configuration with Backup..."
+	$(NUSHELL) scripts/validate-display-config.nu --backup
+
+display-test-verbose:
+	@echo "🖥️  Verbose Display Configuration Testing..."
+	$(NUSHELL) scripts/validate-display-config.nu --verbose
+
+display-test-all:
+	@echo "🖥️  Comprehensive Display Configuration Testing..."
+	$(NUSHELL) scripts/validate-display-config.nu --backup --verbose --interactive
 
 security-check:
 	@echo "🔒 Validating security module configuration..."
