@@ -56,28 +56,25 @@ let
           };
         };
 
-        # AMD configuration
-        hardware.opengl.extraPackages = lib.mkIf (cfg.type == "amd" || cfg.amd.enable) (with pkgs; [
-          amdvlk
-          rocm-opencl-icd
-          rocm-opencl-runtime
-        ]);
-
-        # Intel configuration
-        hardware.opengl.extraPackages = lib.mkIf (cfg.type == "intel" || cfg.intel.enable) (with pkgs; [
-          intel-media-driver
-          vaapiIntel
-          vaapiVdpau
-        ]);
-
-        # OpenGL configuration
+        # OpenGL configuration with GPU-specific packages
         hardware.opengl = {
           enable = true;
           driSupport = true;
           driSupport32Bit = true;
           extraPackages = with pkgs; [
+            # General OpenGL packages
             vaapiVdpau
             libvdpau-va-gl
+          ] ++ lib.optionals (cfg.type == "amd" || cfg.amd.enable) [
+            # AMD-specific packages
+            amdvlk
+            rocm-opencl-icd
+            rocm-opencl-runtime
+          ] ++ lib.optionals (cfg.type == "intel" || cfg.intel.enable) [
+            # Intel-specific packages
+            intel-media-driver
+            vaapiIntel
+            vaapiVdpau
           ];
         };
       };
@@ -308,23 +305,17 @@ let
         cfg = config.hardware.input;
       in
       lib.mkIf cfg.enable {
-        # Keyboard configuration
-        services.xserver = lib.mkIf cfg.keyboard.enable {
-          layout = cfg.keyboard.layout;
-          xkbVariant = cfg.keyboard.variant;
-        };
-
-        # Mouse configuration
-        services.xserver = lib.mkIf cfg.mouse.enable {
-          libinput.mouse.accelProfile = cfg.mouse.accelProfile;
-        };
-
-        # Touchpad configuration
-        services.xserver = lib.mkIf cfg.touchpad.enable {
-          libinput.touchpad = {
-            naturalScrolling = cfg.touchpad.naturalScrolling;
-            tapToClick = cfg.touchpad.tapToClick;
-            scrollMethod = lib.mkIf cfg.touchpad.twoFingerScroll "twofinger";
+        # Combined X server configuration
+        services.xserver = {
+          layout = lib.mkIf cfg.keyboard.enable cfg.keyboard.layout;
+          xkbVariant = lib.mkIf cfg.keyboard.enable cfg.keyboard.variant;
+          libinput = {
+            mouse.accelProfile = lib.mkIf cfg.mouse.enable cfg.mouse.accelProfile;
+            touchpad = lib.mkIf cfg.touchpad.enable {
+              naturalScrolling = cfg.touchpad.naturalScrolling;
+              tapToClick = cfg.touchpad.tapToClick;
+              scrollMethod = lib.mkIf cfg.touchpad.twoFingerScroll "twofinger";
+            };
           };
         };
       };
