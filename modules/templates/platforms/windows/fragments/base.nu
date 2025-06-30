@@ -147,36 +147,36 @@ def import-fragments [] {
     log "Importing essential fragments..."
 
     # Always import these base fragments
-    source fragments/prerequisites.nu
-    source fragments/networking.nu
-    source fragments/security.nu
-    source fragments/performance.nu
-    source fragments/maintenance.nu
+    source ./prerequisites.nu
+    source ./networking.nu
+    source ./security.nu
+    source ./performance.nu
+    source ./maintenance.nu
 
     # Import feature-specific fragments based on configuration
     if "gaming" in $config.features {
         log "Importing gaming fragment..."
-        source fragments/gaming.nu
+        source ./gaming.nu
     }
 
     if "development" in $config.features {
         log "Importing development fragment..."
-        source fragments/development.nu
+        source ./development.nu
     }
 
     if "multimedia" in $config.features {
         log "Importing multimedia fragment..."
-        source fragments/multimedia.nu
+        source ./multimedia.nu
     }
 
     if "productivity" in $config.features {
         log "Importing productivity fragment..."
-        source fragments/productivity.nu
+        source ./productivity.nu
     }
 
     if "virtualization" in $config.features {
         log "Importing virtualization fragment..."
-        source fragments/virtualization.nu
+        source ./virtualization.nu
     }
 }
 
@@ -210,7 +210,4 @@ export-env {
     $env.WINDOWS_CONFIG = ($config | to json)
 }
 
-# Run main function if script is executed directly
-if ($env.SCRIPT_NAME? | default "" | str contains "base.nu") {
-    main
-}
+# Script execution is handled by the exported function
