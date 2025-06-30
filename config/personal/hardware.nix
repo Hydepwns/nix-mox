@@ -1,6 +1,9 @@
 # Hardware-specific Configuration
 # Customize this file with your hardware settings
 { config, pkgs, ... }:
+let
+  lib = pkgs.lib;
+in
 {
   # Boot configuration
   boot = {
@@ -11,7 +14,7 @@
     };
 
     # Kernel configuration
-    kernelPackages = pkgs.linuxPackages_latest;
+    kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
 
     # Kernel modules (customize based on your hardware)
     initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usb_storage" "usbhid" "sd_mod" ];

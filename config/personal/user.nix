@@ -2,14 +2,15 @@
 # Customize this file with your personal settings
 { config, pkgs, ... }:
 let
+  lib = pkgs.lib;
   # Get personal settings from environment or use defaults
-  personal = config.personal or {
-    username = "user";
-    email = "user@example.com";
-    timezone = "UTC";
-    hostname = "nixos";
-    gitUsername = "user";
-    gitEmail = "user@example.com";
+  personal = {
+    username = let val = builtins.getEnv "NIXMOX_USERNAME"; in if val == "" then "user" else val;
+    email = let val = builtins.getEnv "NIXMOX_EMAIL"; in if val == "" then "user@example.com" else val;
+    timezone = let val = builtins.getEnv "NIXMOX_TIMEZONE"; in if val == "" then "UTC" else val;
+    hostname = let val = builtins.getEnv "NIXMOX_HOSTNAME"; in if val == "" then "nixos" else val;
+    gitUsername = let val = builtins.getEnv "NIXMOX_GIT_USERNAME"; in if val == "" then "user" else val;
+    gitEmail = let val = builtins.getEnv "NIXMOX_GIT_EMAIL"; in if val == "" then "user@example.com" else val;
   };
 in
 {
@@ -19,12 +20,12 @@ in
     description = personal.username;
     extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
     shell = pkgs.zsh;
-    initialPassword = builtins.getEnv "INITIAL_PASSWORD" or "changeme";
+    initialPassword = let val = builtins.getEnv "INITIAL_PASSWORD"; in if val == "" then "changeme" else val;
   };
 
   # System configuration
   networking.hostName = personal.hostname;
-  time.timeZone = personal.timezone;
+  time.timeZone = lib.mkDefault personal.timezone;
 
   # Home Manager configuration
   home-manager.users.${personal.username} = {
