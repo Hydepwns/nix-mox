@@ -1,360 +1,342 @@
 # Development Workflow Guide
 
-## Overview
+> Best practices for developing with nix-mox.
 
-This guide covers the development workflow for nix-mox, including the available Make targets, best practices, and common development tasks.
-
-## Quick Reference
+## Quick Development Commands
 
 ```bash
-# Essential commands
-make help          # Show all available targets
-make dev           # Enter development shell
-make test          # Run all tests
-make format        # Format code
-make check         # Run flake checks
-make build-all     # Build all packages
-make clean         # Clean test artifacts
-```
-
-## Available Make Targets
-
-### Testing
-
-- **`make test`** - Run all tests with coverage
-- **`make unit`** - Run unit tests only
-- **`make integration`** - Run integration tests only
-- **`make clean`** - Clean test artifacts
-
-### Development
-
-- **`make dev`** - Enter development shell
-- **`make format`** - Format Nix files
-- **`make check`** - Run nix flake check
-- **`make build`** - Build default package
-- **`make build-all`** - Build all packages
-
-### CI/CD
-
-- **`make ci-test`** - Quick CI test locally
-- **`make ci-local`** - Comprehensive CI test locally
-
-### Maintenance
-
-- **`make update`** - Update flake inputs
-- **`make lock`** - Update flake.lock
-- **`make clean-all`** - Clean all artifacts
-
-### Information
-
-- **`make packages`** - Show available packages
-- **`make shells`** - Show available shells
-
-## Development Workflow
-
-### 1. Initial Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/hydepwns/nix-mox.git
-cd nix-mox
-
-# Enter development environment
+# Start development
 make dev
 
-# Verify setup
-make test
-```
-
-### 2. Daily Development
-
-```bash
-# Start development session
-make dev
-
-# Run tests to ensure everything works
+# Run tests
 make test
 
-# Make your changes...
-
-# Run tests again
-make test
+# Check code quality
+make code-quality
 
 # Format code
 make format
 
-# Run full validation
-make check
-```
-
-### 3. Before Committing
-
-```bash
-# Run the pre-commit checklist
-make test          # Ensure tests pass
-make format        # Format code
-make check         # Run flake checks
-make clean         # Clean artifacts
-
-# Optional: Build all packages
+# Build packages
 make build-all
-
-# Commit changes
-git add .
-git commit -m "feat: your feature description"
 ```
 
-### 4. Before Pushing
+## Development Workflow
+
+### 1. **Setup Development Environment**
 
 ```bash
-# Run comprehensive CI test locally
+# Enter development shell
+make dev
+
+# Or use specific shells
+nix develop .#development
+nix develop .#testing
+nix develop .#gaming
+```
+
+### 2. **Before Making Changes**
+
+```bash
+# Update dependencies
+make update
+
+# Run existing tests
+make test
+
+# Check code quality
+make code-quality
+```
+
+### 3. **During Development**
+
+```bash
+# Run tests frequently
+make test
+
+# Check syntax
+make code-syntax
+
+# Check security
+make code-security
+
+# Format code
+make format
+```
+
+### 4. **Before Committing**
+
+```bash
+# Run pre-commit checks
+nu scripts/pre-commit.nu
+
+# Or run individual checks
+make code-quality
+make format
+make test
+```
+
+### 5. **Before Pushing**
+
+```bash
+# Run comprehensive tests
 make ci-local
 
-# If everything passes, push
-git push origin your-branch
+# Generate documentation
+make docs
+
+# Check for TODOs/FIXMEs
+make code-quality
 ```
 
-## Development Shells
+## Code Quality Standards
 
-nix-mox provides several specialized development shells:
+### Code Style
 
-### Available Shells
+- **Nix files**: Use `nixpkgs-fmt` for formatting
+- **Nushell scripts**: Follow consistent indentation and naming
+- **Documentation**: Use clear, concise language
+
+### Quality Checks
 
 ```bash
-make dev              # Default shell with Cursor IDE, Kitty terminal, Proxmox tools
-make test-shell       # Testing environment
-make services-shell   # Service development
-make monitoring-shell # Monitoring tools
-make zfs-shell         # Storage tools
+# Comprehensive quality analysis
+make code-quality
+
+# Quick quality check
+make quality
+
+# Individual checks
+make code-syntax
+make code-security
 ```
 
-### Platform-Specific Shells
+### Pre-commit Hook
+
+Install the pre-commit hook for automatic quality checks:
 
 ```bash
-# Linux only
-make gaming-shell     # Gaming development (x86_64 only)
-make zfs-shell         # ZFS tools
-
-# macOS only
-make macos-shell      # macOS development
+# Copy pre-commit hook
+cp scripts/pre-commit.nu .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
 ```
 
-### Shell Features
-
-Each shell includes:
-
-- Platform-specific tools
-- Development utilities
-- Documentation and examples
-- Helpful shell hooks
-
-### Default Shell Features
-
-The default shell (`make dev`) now includes:
-
-- **🔧 Base Tools**: git, nix, nixpkgs-fmt, shellcheck, coreutils, fd, ripgrep
-- **📝 Cursor AI IDE**: Modern AI-powered code editor
-- **🖥️ Kitty Terminal**: Fast, feature-rich terminal emulator (set as default)
-- **🖥️ Proxmox Tools** (Linux only): QEMU, virt-manager, libvirt for VM management
-
-#### Quick Commands
+Or run manually:
 
 ```bash
-# Open Cursor IDE
-cursor .
-
-# Open new Kitty terminal
-kitty
-open-terminal
-
-# Proxmox management (Linux only)
-virt-manager                    # Open VM manager GUI
-virsh list --all               # List all VMs
-nix run .#proxmox-update       # Update Proxmox host
+nu scripts/pre-commit.nu
 ```
-
-## Package Development
-
-### Building Packages
-
-```bash
-# Build default package
-make build
-
-# Build all packages
-make build-all
-
-# Build specific package
-nix build .#proxmox-update
-nix build .#vzdump-backup
-nix build .#zfs-snapshot
-nix build .#nixos-flake-update
-```
-
-### Available Packages
-
-```bash
-make packages
-```
-
-Shows:
-
-- `proxmox-update` - Update Proxmox host packages
-- `vzdump-backup` - Backup Proxmox VMs and containers
-- `zfs-snapshot` - ZFS snapshot management
-- `nixos-flake-update` - NixOS flake updates
 
 ## Testing Strategy
 
 ### Test Types
 
-1. **Unit Tests** (`make unit`)
-   - Fast, isolated component testing
-   - Mock external dependencies
-   - Located in `scripts/tests/unit/`
+1. **Unit Tests** - Test individual functions and modules
+2. **Integration Tests** - Test system interactions
+3. **Performance Tests** - Test system performance
+4. **Display Tests** - Test display configuration safety
 
-2. **Integration Tests** (`make integration`)
-   - End-to-end functionality testing
-   - Platform-specific validation
-   - Located in `scripts/tests/integration/`
-
-3. **Flake Checks** (`make check`)
-   - Nix flake validation
-   - Package building verification
-   - Cross-platform compatibility
-
-### Testing Workflow
+### Running Tests
 
 ```bash
-# During development
-make unit           # Quick feedback
+# All tests
+make test
 
-# Before committing
-make test           # Full test suite
+# Unit tests only
+make unit
 
-# Before pushing
-make ci-local       # Comprehensive CI simulation
+# Integration tests only
+make integration
+
+# Specific test categories
+make gaming-test
+make display-test
+make security-check
 ```
 
-## Code Quality
-
-### Formatting
+### Test Coverage
 
 ```bash
-# Format Nix files
-make format
+# Generate coverage report
+make coverage
 
-# Or manually
-nix fmt
+# View coverage dashboard
+make coverage-local
 ```
 
-### Validation
+## Documentation
+
+### Writing Documentation
+
+- Keep documentation up to date with code changes
+- Use clear, concise language
+- Include examples where helpful
+- Update README files when adding new features
+
+### Documentation Structure
+
+```
+docs/
+├── USAGE.md              # Main usage guide
+├── guides/               # Detailed guides
+├── examples/             # Code examples
+└── architecture/         # System architecture
+```
+
+## Security Practices
+
+### Code Security
+
+- Never commit secrets or passwords
+- Use environment variables for sensitive data
+- Run security checks before committing
+- Review security findings from `make code-security`
+
+### Security Checks
 
 ```bash
-# Run flake checks
-make check
+# Check for security issues
+make code-security
 
-# Or manually
-nix flake check
+# Validate security configuration
+make security-check
 ```
+
+## Performance Considerations
+
+### Build Performance
+
+- Use Cachix for build caching
+- Optimize package dependencies
+- Use parallel builds where possible
+- Monitor build times with `make analyze-sizes`
+
+### Runtime Performance
+
+- Profile performance-critical code
+- Use `make performance-analyze` for system analysis
+- Optimize based on performance reports
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Test Failures**
-
+1. **Build Failures**
    ```bash
-   make clean        # Clean test artifacts
-   make test         # Run tests again
+   make clean-all
+   make build-all
    ```
 
-2. **Build Failures**
-
+2. **Test Failures**
    ```bash
-   make build-all    # Identify problematic packages
-   make clean-all    # Clean everything
+   make clean
+   make test
    ```
 
-3. **Flake Issues**
-
+3. **Quality Check Failures**
    ```bash
-   make update       # Update flake inputs
-   make lock         # Update flake.lock
+   make format
+   make code-quality
    ```
 
-### Debug Mode
+### Getting Help
 
-```bash
-# Enable debug output
-$env.DEBUG = true
-make test
-```
-
-### Clean Start
-
-```bash
-# Clean everything and start fresh
-make clean-all
-make test
-```
+- Check existing issues on GitHub
+- Review documentation in `docs/`
+- Run `make help` for available commands
+- Use `make health-check` for system validation
 
 ## Best Practices
 
-### 1. Development Habits
+### General
 
-- Run tests frequently during development
-- Use `make unit` for quick feedback
-- Use `make test` before committing
-- Use `make ci-local` before pushing
+- Write tests for new features
+- Update documentation with changes
+- Use meaningful commit messages
+- Review code before merging
 
-### 2. Code Quality
+### Code Quality
 
-- Always format code with `make format`
-- Run flake checks with `make check`
-- Keep test artifacts clean with `make clean`
+- Run quality checks frequently
+- Address TODOs and FIXMEs promptly
+- Follow established patterns
+- Use consistent naming conventions
 
-### 3. Package Development
+### Testing
 
-- Test package builds with `make build-all`
-- Verify cross-platform compatibility
-- Update documentation when adding new packages
+- Test locally before pushing
+- Use CI/CD for automated testing
+- Maintain good test coverage
+- Test edge cases and error conditions
 
-### 4. CI/CD
+### Documentation
 
-- Test CI workflow locally before pushing
-- Use `make ci-test` for quick validation
-- Use `make ci-local` for comprehensive testing
+- Keep documentation current
+- Use clear examples
+- Document breaking changes
+- Update quick start guides
 
-## Integration with IDEs
+## CI/CD Integration
 
-### VS Code
+### GitHub Actions
 
-Add to your workspace settings:
+The repository includes GitHub Actions workflows for:
 
-```json
-{
-  "nix.enable": true,
-  "nix.serverPath": "nix",
-  "files.associations": {
-    "*.nix": "nix"
-  }
-}
-```
+- Automated testing
+- Code quality checks
+- Security scanning
+- Documentation generation
+- Release management
 
-### Shell Integration
-
-Add to your shell profile:
+### Local CI Testing
 
 ```bash
-# Quick access to nix-mox development
-alias nixmox='cd /path/to/nix-mox && make dev'
-alias nixmox-test='cd /path/to/nix-mox && make test'
+# Quick CI test
+make ci-test
+
+# Comprehensive CI test
+make ci-local
 ```
 
-## Related Documentation
+## Release Process
 
-- [Testing Guide](./testing.md) - Detailed testing information
-- [CI/CD Guide](./ci-cd.md) - Continuous integration setup
-- [Script Development Guide](./scripting.md) - Script development practices
-- [Architecture Documentation](../architecture/ARCHITECTURE.md) - System design
+### Before Release
+
+1. Run comprehensive tests
+2. Update documentation
+3. Check for TODOs/FIXMEs
+4. Generate SBOM
+5. Update version numbers
+
+### Release Commands
+
+```bash
+# Generate release artifacts
+make sbom
+make docs
+
+# Run release tests
+make ci-local
+make code-quality
+```
+
+## Contributing
+
+### Pull Request Process
+
+1. Fork the repository
+2. Create a feature branch
+3. Make changes following this workflow
+4. Run all quality checks
+5. Submit pull request
+
+### Code Review
+
+- Review for code quality
+- Check test coverage
+- Verify documentation updates
+- Ensure security compliance
+
+---
+
+**Remember**: Quality is everyone's responsibility. Run quality checks frequently and address issues promptly.
