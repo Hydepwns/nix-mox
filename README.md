@@ -1,107 +1,90 @@
 # nix-mox
 
-> A comprehensive NixOS configuration framework for devs, sysadmins, and power users.
+> Production-grade NixOS configuration framework with templates and personal data separation.
 
-[![NixOS](https://img.shields.io/badge/NixOS-21.11-blue.svg)](https://nixos.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Flake](https://img.shields.io/badge/Flake-Enabled-green.svg)](https://nixos.wiki/wiki/Flakes)
 [![CI](https://github.com/Hydepwns/nix-mox/workflows/CI%20(Simplified)/badge.svg)](https://github.com/Hydepwns/nix-mox/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/Hydepwns/nix-mox/branch/main/graph/badge.svg?token=0Uuau6V5pl)](https://codecov.io/gh/Hydepwns/nix-mox)
 [![Platforms](https://img.shields.io/badge/platforms-x86_64%20%7C%20aarch64%20%7C%20Linux%20%7C%20macOS-blue.svg)](https://github.com/Hydepwns/nix-mox/actions)
-[![Nix Versions](https://img.shields.io/badge/nix%20versions-2.19.2%20%7C%202.20.1-green.svg)](https://github.com/Hydepwns/nix-mox/actions)
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/Hydepwns/nix-mox.git
+git clone https://github.com/your-org/nix-mox.git
 cd nix-mox
-./scripts/setup-wizard.nu
+
+# Interactive setup
+nu scripts/setup.nu
+
+# Choose template
+cp config/templates/development.nix config/nixos/configuration.nix
+
+# Build and switch
+sudo nixos-rebuild switch --flake .#nixos
 ```
+
+## Templates
+
+| Template | Use Case | Description |
+|----------|----------|-------------|
+| `minimal` | Basic system | Essential tools only |
+| `development` | Software development | IDEs, tools, containers |
+| `gaming` | Gaming workstation | Steam, performance optimizations |
+| `server` | Production server | Monitoring, management tools |
+| `desktop` | Daily use | Full desktop environment |
+
+## Structure
 
 ```bash
-nix-mox/
-├── config/ # <Your NixOS configuration>
-├── modules/
-├── devshells/ # Dev shells for different use cases (default includes Cursor IDE, Kitty terminal, Proxmox tools)
-├── scripts/
-├── docs/
+config/
+├── personal/     # Your settings (gitignored)
+├── templates/    # Ready-to-use configs
+├── profiles/     # Shared components
+└── nixos/        # Main config
 ```
 
-## Quick Development
+## Advanced Usage
+
+### Development Shells
 
 ```bash
-# Enter default shell with Cursor IDE and Kitty terminal
-nix develop
-
-# Open Cursor IDE
-cursor .
-
-# Open new terminal
-kitty
-
-# Proxmox management (Linux only)
-virt-manager
-nix run .#proxmox-update
+nix develop                    # Default environment
+nix develop .#development      # Development tools
+nix develop .#gaming           # Gaming tools
+nix develop .#testing          # Testing tools
 ```
 
-## Gaming Workstation
+### Module Integration
 
 ```bash
-# Setup gaming environment (one-time)
-nu scripts/setup-gaming-workstation.nu
+# Interactive module integration
+nu scripts/integrate-modules.nu
 
-# Enter gaming shell with all tools
-nix develop .#gaming
-
-# Launch gaming platforms
-steam
-lutris
-heroic
-
-# Test gaming setup
-./devshells/gaming/scripts/test-gaming.sh
+# Available modules: infisical, tailscale, gaming, monitoring, storage
 ```
-
-**Features:**
-- **Auto GPU detection** (NVIDIA/AMD/Intel)
-- **Complete OpenGL/Vulkan support** with 32-bit compatibility
-- **PipeWire audio** for low-latency gaming
-- **Performance optimizations** (GameMode, MangoHud)
-- **Wine with DXVK/VKD3D** for Windows games
-- **Simultaneous dev/gaming** environments
-
-See [Gaming Guide](docs/guides/gaming.md) for detailed setup and usage.
-
-## Testing & Coverage
-
-### Quick Testing
-```bash
-# Run all tests
-make test
-
-# Run specific test suites
-make unit
-make integration
-
-# Run tests with coverage
-make test && make coverage
-```
-
-### Coverage & CI
-
-- **Automated CI/CD with multi-platform support**
-- **LCOV/Codecov integration supported**
-- Multiple coverage approaches (LCOV, grcov, tarpaulin, custom)
-- See [Coverage & CI Guide](docs/COVERAGE.md) for full details, advanced usage, and troubleshooting.
 
 ## Documentation
 
-- [Usage Guide](docs/USAGE.md)
-- [Contributing](docs/CONTRIBUTING.md)
-- [Architecture](docs/architecture/ARCHITECTURE.md)
-- [Coverage & CI Guide](docs/COVERAGE.md)
-- [Cachix Cache](https://app.cachix.org/cache/nix-mox)
-- [Local Test Workflow](https://github.com/Hydepwns/nix-mox/actions/workflows/test-local.yml) — manual/experimental
+- **[Quick Start](QUICK_START.md)** - Get started in minutes
+- **[Usage Guide](docs/USAGE.md)** - Comprehensive usage documentation
+- **[Gaming Guide](docs/guides/gaming.md)** - Gaming setup and optimization
+- **[Examples](docs/examples/)** - Configuration examples
+
+## Features
+
+- **Personal data separation** - Personal settings in `config/personal/`
+- **Template system** - Ready-to-use configurations
+- **Module integration** - Advanced features via modules
+- **Security hardening** - Built-in security profiles
+- **Environment-based config** - Different settings for different environments
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/your-org/nix-mox/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-org/nix-mox/discussions)
+- **Documentation**: `docs/`
+
+---
+
+**Note**: This is a production-grade framework. Personal data is properly separated and secured.
 
 ## License
 
