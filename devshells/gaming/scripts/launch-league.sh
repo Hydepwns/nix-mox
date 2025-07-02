@@ -74,7 +74,7 @@ echo "✅ League of Legends found!"
 echo "🚀 Starting League Client..."
 
 # Launch League of Legends with performance optimizations
-cd "$(dirname "$LEAGUE_PATH")"
+cd "$(dirname "$LEAGUE_PATH")" || exit 1
 gamemoderun mangohud wine64 LeagueClient.exe
 
 echo "🎮 League of Legends launched!"

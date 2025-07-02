@@ -31,7 +31,8 @@ test_version() {
   local description="$2"
 
   if command -v "$cmd" &> /dev/null; then
-    local version=$($cmd --version 2> /dev/null | head -n1 || echo "version unknown")
+    local version
+    version=$($cmd --version 2> /dev/null | head -n1 || echo "version unknown")
     echo -e "${GREEN}✓${NC} $description: $version"
     return 0
   else
@@ -48,7 +49,8 @@ test_wine() {
     echo -e "${GREEN}✓${NC} Wine is available"
 
     # Test Wine version
-    local wine_version=$(wine --version 2> /dev/null || echo "version unknown")
+    local wine_version
+    wine_version=$(wine --version 2> /dev/null || echo "version unknown")
     echo -e "${GREEN}✓${NC} Wine version: $wine_version"
 
     # Test if Wine can run basic commands
@@ -69,7 +71,8 @@ test_graphics() {
 
   # Test OpenGL
   if command -v glxinfo &> /dev/null; then
-    local opengl_version=$(glxinfo | grep "OpenGL version" | head -n1 || echo "OpenGL version unknown")
+    local opengl_version
+    opengl_version=$(glxinfo | grep "OpenGL version" | head -n1 || echo "OpenGL version unknown")
     echo -e "${GREEN}✓${NC} $opengl_version"
   else
     echo -e "${RED}✗${NC} glxinfo not available"

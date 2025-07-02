@@ -50,7 +50,8 @@ check_system_requirements() {
   info "Checking system requirements..."
 
   # Check for sufficient disk space (at least 10GB)
-  local available_space=$(df "$HOME" | awk 'NR==2 {print $4}')
+  local available_space
+  available_space=$(df "$HOME" | awk 'NR==2 {print $4}')
   local required_space=10485760 # 10GB in KB
 
   if [ "$available_space" -lt "$required_space" ]; then
@@ -59,7 +60,8 @@ check_system_requirements() {
   fi
 
   # Check for sufficient RAM (at least 4GB)
-  local total_ram=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+  local total_ram
+  total_ram=$(grep MemTotal /proc/meminfo | awk '{print $2}')
   local required_ram=4194304 # 4GB in KB
 
   if [ "$total_ram" -lt "$required_ram" ]; then
