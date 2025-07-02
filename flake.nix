@@ -264,11 +264,8 @@
           # Development shells with platform-specific availability
           devShells = createDevShells system pkgs devShell;
 
-          # Code formatter - use treefmt for better formatting
-          formatter = {
-            type = "app";
-            program = "${pkgs.treefmt}/bin/treefmt";
-          };
+          # Code formatter - use treefmt-nix wrapper for proper derivation
+          formatter = createFormatter system pkgs treefmt-nix;
 
           # Packages with architecture checking
           packages = createPackages system pkgs systemPackages;
