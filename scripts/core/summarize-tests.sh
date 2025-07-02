@@ -66,7 +66,7 @@ else
 
     if [ "$i" -lt $((${#start_lines[@]} - 1)) ]; then
       # Block ends just before the next failure's line
-      next_failure_start_line=${start_lines[$((i+1))]}
+      next_failure_start_line=${start_lines[$((i + 1))]}
       block_content_end_line=$((next_failure_start_line - 1))
     else
       # For the last failure, block ends at the last line
@@ -88,7 +88,7 @@ else
         # Then, grep the rest of the block (from the 4th line onwards) for more specific details
         num_block_lines=$(echo "$failure_context_block" | wc -l | xargs) # xargs to trim whitespace from wc -l output
         if [ "$num_block_lines" -gt 3 ]; then
-            echo "$failure_context_block" | tail -n +4 | \
+          echo "$failure_context_block" | tail -n +4 |
             grep -E '^\s*\*\*|\(test/|\scode:|\sleft:|\sright:|expected|got|Assertion with|stacktrace:|Error:|ERROR:' >> "$OUTPUT_FILE"
         fi
       else
@@ -104,7 +104,7 @@ if [ -d "$COVERAGE_DIR" ]; then
   echo "--- JSON Test Results Summary ---" >> "$OUTPUT_FILE"
 
   # Find all JSON result files
-  result_files=$(find "$COVERAGE_DIR" -name "test_result_*.json" 2>/dev/null)
+  result_files=$(find "$COVERAGE_DIR" -name "test_result_*.json" 2> /dev/null)
 
   if [ -n "$result_files" ]; then
     echo "Found $(echo "$result_files" | wc -l) test result files:" >> "$OUTPUT_FILE"
