@@ -1,6 +1,6 @@
 # nix-mox
 
-> Production-grade NixOS configuration framework with templates and personal data separation.
+> Production-grade NixOS configuration framework with templates, personal data separation, and multi-host management.
 
 [![CI](https://github.com/Hydepwns/nix-mox/workflows/CI%20(Simplified)/badge.svg)](https://github.com/Hydepwns/nix-mox/actions/workflows/ci.yml)
 [![Platforms](https://img.shields.io/badge/platforms-x86_64%20%7C%20aarch64%20%7C%20Linux%20%7C%20macOS-blue.svg)](https://github.com/Hydepwns/nix-mox/actions)
@@ -23,6 +23,59 @@ sudo nixos-rebuild switch --flake .#nixos
 ```
 
 ## Templates
+
+## Multi-Host Management
+
+nix-mox supports managing multiple NixOS hosts from a single flake:
+
+```bash
+# Build specific host configurations
+nix build .#nixosConfigurations.host1.config.system.build.toplevel
+nix build .#nixosConfigurations.host2.config.system.build.toplevel
+
+# Deploy to hosts
+nixos-rebuild switch --flake .#host1
+nixos-rebuild switch --flake .#host2
+
+# See available hosts and outputs
+nix run .#dev
+```
+
+### Host Configuration
+
+Each host can have its own:
+- **Hardware configuration** - CPU, GPU, storage, networking
+- **Home configuration** - User environment, shell, applications
+- **Extra modules** - Host-specific services and features
+- **Special arguments** - Secrets, environment variables, host type
+
+```nix
+# config/hosts.nix
+{
+  host1 = {
+    system = "x86_64-linux";
+    hardware = ./hardware/host1-hardware-configuration.nix;
+    home = ./home/host1-home.nix;
+    extraModules = [ ./modules/host1-extra.nix ];
+    specialArgs = { 
+      hostType = "desktop";
+      mySecret = "host1-secret";
+    };
+  };
+  
+  host2 = {
+    system = "x86_64-linux";
+    hardware = ./hardware/host2-hardware-configuration.nix;
+    home = ./home/host2-home.nix;
+    extraModules = [ ./modules/server-extra.nix ];
+    specialArgs = { 
+      hostType = "server";
+      mySecret = "host2-secret";
+    };
+  };
+}
+```
+
 
 | Template | Use Case | Description |
 |----------|----------|-------------|
@@ -160,6 +213,8 @@ nix run .#uninstall           # Uninstall nix-mox
 - **[Contributing](docs/CONTRIBUTING.md)** - Development guidelines
 
 ## Features
+- **Multi-host management** - Manage multiple NixOS hosts from one flake
+
 
 - **Personal data separation** - Personal settings in `config/personal/`
 - **Template system** - Ready-to-use configurations
@@ -176,6 +231,7 @@ nix run .#uninstall           # Uninstall nix-mox
 - ✅ **CI Pipeline**: Fully functional with automated testing
 - ✅ **Test Coverage**: 97% pass rate across 83 tests
 - ✅ **Cross-platform**: Linux, macOS, and Windows support
+- ✅ **Multi-host**: Manage multiple NixOS hosts from one flake
 - ✅ **Production Ready**: Comprehensive validation and testing
 - ✅ **Documentation**: Complete guides and examples
 - ✅ **Code Formatting**: Multi-language support with treefmt

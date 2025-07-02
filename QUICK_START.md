@@ -100,6 +100,26 @@ make integration
 
 ## Next Steps
 
+## Multi-Host Management
+
+nix-mox supports managing multiple NixOS hosts from a single flake:
+
+```bash
+# Build specific host configurations
+nix build .#nixosConfigurations.host1.config.system.build.toplevel
+nix build .#nixosConfigurations.host2.config.system.build.toplevel
+
+# Deploy to hosts
+nixos-rebuild switch --flake .#host1
+nixos-rebuild switch --flake .#host2
+
+# See available hosts and outputs
+nix run .#dev
+```
+
+For detailed multi-host configuration, see [Multi-Host Guide](docs/MULTI_HOST.md).
+
+
 1. **Customize personal settings** - Edit `config/personal/user.nix`
 2. **Configure hardware** - Edit `config/personal/hardware.nix`
 3. **Add modules** - Use `nu scripts/core/integrate-modules.nu`

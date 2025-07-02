@@ -73,6 +73,26 @@ hardware.nvidia = {
 
 ## Advanced Features
 
+## Multi-Host Management
+
+For managing multiple NixOS hosts from a single flake, see the comprehensive [Multi-Host Guide](MULTI_HOST.md).
+
+Basic multi-host commands:
+
+```bash
+# Build host configurations
+nix build .#nixosConfigurations.host1.config.system.build.toplevel
+nix build .#nixosConfigurations.host2.config.system.build.toplevel
+
+# Deploy to hosts
+nixos-rebuild switch --flake .#host1
+nixos-rebuild switch --flake .#host2
+
+# Remote deployment
+nixos-rebuild switch --flake .#host1 --target-host user@host1.example.com
+```
+
+
 ### Using Modules
 ```bash
 # Interactive module integration
