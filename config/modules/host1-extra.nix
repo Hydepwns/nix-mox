@@ -8,20 +8,18 @@
 
 {
   # Desktop-specific settings
-  services.xserver = {
-    enable = true;
+  services = {
+    xserver = {
+      enable = true;
+    };
     displayManager.gdm.enable = true;
     desktopManager.gnome.enable = true;
+    pulseaudio.enable = false;
   };
 
   # Hardware-specific settings
   hardware = {
-    opengl = {
-      enable = true;
-      driSupport = true;
-      driSupport32Bit = true;
-    };
-    pulseaudio.enable = true;
+    graphics.enable = true;
   };
 
   # Desktop applications
@@ -36,20 +34,20 @@
     gimp
 
     # System tools
-    gnome.gnome-tweaks
-    gnome.gnome-software
+    gnome-tweaks
+    gnome-software
   ];
 
   # User-specific settings
   users.users.droo = {
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
-    shell = pkgs.zsh;
+    shell = lib.mkForce pkgs.zsh;
   };
 
   # Security settings for desktop
   security = {
-    sudo.wheelNeedsPassword = false;
+    sudo.wheelNeedsPassword = lib.mkForce false;
     rtkit.enable = true;
   };
 
@@ -65,7 +63,7 @@
   # System settings
   system = {
     autoUpgrade = {
-      enable = true;
+      enable = lib.mkForce true;
       channel = "https://nixos.org/channels/nixos-unstable";
     };
   };
@@ -76,4 +74,9 @@
     echo "Host type: ${hostType}"
     echo "Secret: ${mySecret}"
   '';
+
+  services.pipewire = {
+    enable = true;
+    audio.enable = true;
+  };
 }

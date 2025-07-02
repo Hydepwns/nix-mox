@@ -82,7 +82,7 @@
   users.users.droo = {
     isNormalUser = true;
     extraGroups = [ "wheel" "docker" ];
-    shell = pkgs.bash;
+    shell = lib.mkForce pkgs.bash;
     openssh.authorizedKeys.keys = [
       # Add your SSH public key here
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC..."
@@ -92,7 +92,7 @@
   # Security settings for server
   security = {
     sudo.wheelNeedsPassword = true;
-    auditd.enable = true;
+    auditd.enable = lib.mkForce true;
   };
 
   # Networking for server
@@ -114,8 +114,8 @@
   # System settings
   system = {
     autoUpgrade = {
-      enable = true;
-      channel = "https://nixos.org/channels/nixos-23.11"; # More stable for servers
+      enable = lib.mkForce true;
+      channel = lib.mkForce "https://nixos.org/channels/nixos-23.11"; # More stable for servers
     };
   };
 
