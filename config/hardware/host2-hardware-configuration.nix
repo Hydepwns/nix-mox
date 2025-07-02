@@ -17,7 +17,7 @@
   # Boot configuration
   boot = {
     loader = {
-      systemd-boot.enable = true;
+      systemd-boot.enable = lib.mkForce true;
       efi.canTouchEfiVariables = true;
     };
 
@@ -63,7 +63,7 @@
   # Network
   networking = {
     hostName = "host2";
-    useDHCP = true;
+    useDHCP = lib.mkForce true;
     interfaces.enp0s3.useDHCP = true;
 
     # Static IP configuration (optional)
@@ -79,7 +79,7 @@
   };
 
   # Time zone
-  time.timeZone = "UTC";
+  time.timeZone = lib.mkForce "UTC";
 
   # Locale
   i18n.defaultLocale = "en_US.UTF-8";

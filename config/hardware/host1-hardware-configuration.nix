@@ -17,7 +17,7 @@
   # Boot configuration
   boot = {
     loader = {
-      systemd-boot.enable = true;
+      systemd-boot.enable = lib.mkForce true;
       efi.canTouchEfiVariables = true;
     };
 
@@ -31,12 +31,6 @@
     # CPU
     cpu.intel.updateMicrocode = true;
 
-    # Audio
-    pulseaudio = {
-      enable = true;
-      support32Bit = true;
-    };
-
     # Bluetooth
     bluetooth.enable = true;
 
@@ -45,6 +39,14 @@
       linux-firmware
       intel-media-driver
     ];
+  };
+
+  # Audio services
+  services = {
+    pulseaudio = {
+      enable = false;
+      support32Bit = true;
+    };
   };
 
   # File systems
@@ -66,12 +68,12 @@
   # Network
   networking = {
     hostName = "host1";
-    useDHCP = true;
+    useDHCP = lib.mkForce true;
     interfaces.enp0s3.useDHCP = true;
   };
 
   # Time zone
-  time.timeZone = "America/New_York";
+  time.timeZone = lib.mkForce "America/New_York";
 
   # Locale
   i18n.defaultLocale = "en_US.UTF-8";
