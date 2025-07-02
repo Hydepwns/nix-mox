@@ -4,8 +4,8 @@
 # downloading a binary distribution and running its installer script
 # (which in turn creates and populates /nix).
 
-{ # Prevent execution if this script was only partially downloaded
-  oops() {
+
+oops() {
     echo "$0:" "$@" >&2
     exit 1
   }
@@ -117,8 +117,6 @@
 
   script=$(echo "$unpack"/*/install)
 
-  [ -e "$script" ] || oops "installation script is missing from the binary tarball!"
-  export INVOKED_FROM_INSTALL_IN=1
-  "$script" "$@"
-
-} # End of wrapping
+[ -e "$script" ] || oops "installation script is missing from the binary tarball!"
+export INVOKED_FROM_INSTALL_IN=1
+"$script" "$@"
