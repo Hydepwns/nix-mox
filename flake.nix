@@ -30,13 +30,9 @@
 
   nixConfig = {
     trusted-substituters = [
-      "https://hydepwns.cachix.org"
-      "https://nix-mox.cachix.org"
       "https://cache.nixos.org"
     ];
     trusted-public-keys = [
-      "hydepwns.cachix.org-1:xg8huKdwzBkLdkq5eCKenadhCROHI3GI9H6y3simJU="
-      "nix-mox.cachix.org-1:MVJZxC7ZyRFAxVsxDuq0nmMRxlTIt5nFFm4Ur10ZCI4="
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
     ];
   };
@@ -264,9 +260,6 @@
           # Development shells with platform-specific availability
           devShells = createDevShells system pkgs devShell;
 
-          # Code formatter - use treefmt-nix wrapper for proper derivation
-          formatter = createFormatter system pkgs treefmt-nix;
-
           # Packages with architecture checking
           packages = createPackages system pkgs systemPackages;
 
@@ -301,7 +294,11 @@
             };
           };
         }
-      ) // (
+      ) // {
+        # Code formatter - use treefmt-nix wrapper for proper derivation
+        # Create formatter for x86_64-linux as the default
+        formatter = createFormatter "x86_64-linux" (import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; }) treefmt-nix;
+      } // (
       # Only include NixOS configs if explicitly requested or if not in CI
       if builtins.getEnv "INCLUDE_NIXOS_CONFIGS" == "1" || (builtins.getEnv "CI" != "true" && builtins.getEnv "CI" != "1") then
         { nixosConfigurations = safeImport ./config { inherit inputs self; }; }
