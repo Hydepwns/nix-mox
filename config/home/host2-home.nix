@@ -134,8 +134,8 @@
     zip
 
     # Log analysis
-    logwatch
-    multitail
+    # logwatch
+    # multitail
   ];
 
   # XDG

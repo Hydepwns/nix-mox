@@ -8,20 +8,16 @@
 
 {
   # Home Manager configuration
-  home = {
-    username = "droo";
-    homeDirectory = "/home/droo";
-    stateVersion = "23.11";
-  };
+  home.username = "droo";
+  home.homeDirectory = "/home/droo";
+  home.stateVersion = "23.11";
 
   # Programs
   programs = {
     # Shell
     zsh = {
-      enable = true;
-      enableAutosuggestions = true;
+      autosuggestion.enable = true;
       enableCompletion = true;
-      syntaxHighlighting.enable = true;
       shellAliases = {
         ll = "ls -la";
         la = "ls -A";
@@ -39,7 +35,6 @@
 
     # Git
     git = {
-      enable = true;
       userName = "Your Name";
       userEmail = "your.email@example.com";
       extraConfig = {
@@ -51,7 +46,6 @@
 
     # Neovim
     neovim = {
-      enable = true;
       viAlias = true;
       vimAlias = true;
       extraConfig = ''
@@ -65,7 +59,6 @@
 
     # Terminal
     alacritty = {
-      enable = true;
       settings = {
         window = {
           opacity = 0.9;
@@ -86,7 +79,6 @@
 
     # Browser
     firefox = {
-      enable = true;
       profiles.default = {
         settings = {
           "browser.startup.homepage" = "https://nixos.org";
@@ -94,18 +86,20 @@
         };
       };
     };
+
+    # SSH
+    ssh = {
+    };
   };
 
   # Services
   services = {
     # SSH agent
     ssh-agent = {
-      enable = true;
     };
 
     # GPG agent
     gpg-agent = {
-      enable = true;
       enableSshSupport = true;
     };
   };
@@ -140,25 +134,13 @@
 
   # XDG
   xdg = {
-    enable = true;
     userDirs = {
-      enable = true;
       createDirectories = true;
-    };
-  };
-
-  # GTK
-  gtk = {
-    enable = true;
-    theme = {
-      name = "Adwaita-dark";
-      package = pkgs.gnome.gnome-themes-extra;
     };
   };
 
   # Qt
   qt = {
-    enable = true;
     platformTheme = "gtk";
   };
 }
