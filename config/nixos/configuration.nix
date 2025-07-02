@@ -7,6 +7,9 @@
 { config, lib, pkgs, inputs, ... }:
 
 {
+  # Allow unfree packages
+  nixpkgs.config.allowUnfree = true;
+
   # Nix settings
   nix = {
     settings = {
@@ -143,10 +146,10 @@
   # Programs
   programs = {
     # Shell
-    bash.enableCompletion = true;
+    bash.completion.enable = true;
 
     # SSH
-    ssh.startAgent = true;
+    ssh.startAgent = false;
 
     # Less
     less.enable = true;
