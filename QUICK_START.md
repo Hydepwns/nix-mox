@@ -51,6 +51,24 @@ sudo nixos-rebuild dry-activate --flake .#nixos
 
 ## Development
 
+### Quick Commands
+
+```bash
+# Format all code
+nix run .#fmt
+
+# Run tests
+nix run .#test
+
+# Update flake inputs
+nix run .#update
+
+# Enter development shell
+nix develop
+```
+
+### Development Shells
+
 ```bash
 # Enter development shell
 nix develop
@@ -59,20 +77,25 @@ nix develop
 nix develop .#development
 nix develop .#gaming
 nix develop .#testing
+nix develop .#services         # Service tools (Linux)
+nix develop .#monitoring       # Monitoring tools (Linux)
 ```
 
 ## Testing
 
 ```bash
 # Run all tests
-make test
+nix run .#test
 
-# Run specific test suites
+# Or run specific test suites
+nix build .#checks.x86_64-linux.unit
+nix build .#checks.x86_64-linux.integration
+nix build .#checks.x86_64-linux.test-suite
+
+# Run tests with make (legacy)
+make test
 make unit
 make integration
-
-# Run CI tests locally
-bash scripts/core/ci-test.sh
 ```
 
 ## Next Steps

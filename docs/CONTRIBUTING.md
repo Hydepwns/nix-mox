@@ -17,14 +17,24 @@
    # Or use specific development shells
    nix develop .#development  # For general development
    nix develop .#testing     # For testing
-   nix develop .#services    # For service development
-   nix develop .#monitoring  # For monitoring tools
-   nix develop .#zfs         # For ZFS-related development (Linux only)
+   nix develop .#services    # For service development (Linux)
+   nix develop .#monitoring  # For monitoring tools (Linux)
+   nix develop .#gaming      # For gaming tools (Linux)
+   nix develop .#macos       # For macOS tools (macOS)
    ```
 
 3. Quick development commands:
 
    ```bash
+   # Format all code
+   nix run .#fmt
+
+   # Run tests
+   nix run .#test
+
+   # Update flake inputs
+   nix run .#update
+
    # Open Cursor IDE
    cursor .
 
@@ -49,11 +59,13 @@ The project provides the following packages (Linux only):
 
 ## Guidelines
 
-- Use `nixpkgs-fmt` for Nix files
-- Follow existing code style
+- Use `nix run .#fmt` to format all code before committing
+- Follow existing code style and patterns
 - Add comments for complex logic
-- Keep functions focused
+- Keep functions focused and small
 - Ensure Linux-specific packages are properly guarded
+- Test changes on target platforms
+- Update documentation when adding features
 
 ## Testing
 
@@ -61,17 +73,20 @@ Before submitting changes, ensure all tests pass:
 
 ```bash
 # Run all tests
-make test
+nix run .#test
 
 # Run specific test types
-make unit
-make integration
+nix build .#checks.x86_64-linux.unit
+nix build .#checks.x86_64-linux.integration
 
 # Run via Nix flake (recommended for CI)
 nix flake check
 
 # Build all packages locally
 nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update
+
+# Format code before committing
+nix run .#fmt
 
 # Clean up test artifacts
 make clean
