@@ -7,7 +7,7 @@ let
   hasPersonalConfig = builtins.pathExists ./personal/default.nix;
 
   # Import appropriate configuration
-  baseConfig = import ./nixos/configuration.nix;
+  baseConfig = import ./nixos/configuration.nix { inherit self inputs; };
   personalConfig = if hasPersonalConfig then import ./personal/default.nix else { };
   userHome = import ./home/home.nix;
   userHardware = import ./hardware/hardware-configuration.nix;
