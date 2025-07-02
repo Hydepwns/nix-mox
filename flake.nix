@@ -317,6 +317,10 @@
                 export PATH="${pkgs.nixpkgs-fmt}/bin:${pkgs.nodePackages.prettier}/bin:${pkgs.shfmt}/bin:${pkgs.python3Packages.black}/bin:${pkgs.rustfmt}/bin:${pkgs.go}/bin:${pkgs.shellcheck}/bin:$PATH"
                 ${pkgs.treefmt}/bin/treefmt "$@"
               '');
+              meta = {
+                description = "Format code using treefmt";
+                platforms = pkgs.lib.platforms.all;
+              };
             };
 
             # Run tests
@@ -325,6 +329,10 @@
               program = toString (pkgs.writeShellScript "test" ''
                 nix build .#checks.${system}.test-suite
               '');
+              meta = {
+                description = "Run test suite";
+                platforms = pkgs.lib.platforms.all;
+              };
             };
 
             # Update flake inputs
@@ -333,6 +341,10 @@
               program = toString (pkgs.writeShellScript "update" ''
                 nix flake update
               '');
+              meta = {
+                description = "Update flake inputs";
+                platforms = pkgs.lib.platforms.all;
+              };
             };
 
             # Development tools helper
@@ -363,14 +375,17 @@
                 echo ""
                 echo "For full details, run: nix flake show"
               '');
+              meta = {
+                description = "Show development help and available commands";
+                platforms = pkgs.lib.platforms.all;
+              };
             };
           };
+
+          # Code formatter - per-system formatter
+          formatter = createFormatter system pkgs treefmt-nix;
         }
-      ) // {
-        # Code formatter - use treefmt-nix wrapper for proper derivation
-        # Create formatter for x86_64-linux as the default
-        formatter = createFormatter "x86_64-linux" (import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; }) treefmt-nix;
-      } // (
+      ) // (
       # Only include NixOS configs if explicitly requested or if not in CI
       if builtins.getEnv "INCLUDE_NIXOS_CONFIGS" == "1" || (builtins.getEnv "CI" != "true" && builtins.getEnv "CI" != "1") then
         let
@@ -385,7 +400,6 @@
               modules = [
                 ./config/nixos/configuration.nix
                 ./config/hardware/host1-hardware-configuration.nix
-                ./config/home/host1-home.nix
                 ./config/modules/host1-extra.nix
                 inputs.home-manager.nixosModules.home-manager
                 {
@@ -401,7 +415,6 @@
               modules = [
                 ./config/nixos/configuration.nix
                 ./config/hardware/host2-hardware-configuration.nix
-                ./config/home/host2-home.nix
                 ./config/modules/server-extra.nix
                 inputs.home-manager.nixosModules.home-manager
                 {
