@@ -1,232 +1,19 @@
-{ config, pkgs, inputs, self, ... }:
+# ============================================================================
+# NIXOS CONFIGURATION
+# ============================================================================
+# Base NixOS configuration shared by all hosts
+# ============================================================================
 
-let
-  lib = pkgs.lib;
-in
+{ config, lib, pkgs, inputs, ... }:
+
 {
-  imports = [
-    ../hardware/hardware-configuration.nix
-    ./gaming.nix # Import gaming configuration
-  ];
-
-  # Boot loader
-  boot.loader = {
-    systemd-boot.enable = true;
-    efi.canTouchEfiVariables = true;
-    timeout = 3;
-  };
-
-  # Kernel (optional: use latest)
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
-  # Networking
-  networking = {
-    hostName = "nixos"; # Change this to your hostname
-    networkmanager.enable = true;
-    nameservers = [ "8.8.8.8" "1.1.1.1" ];
-
-    # Optional: enable firewall
-    firewall = {
-      enable = true;
-      allowedTCPPorts = [ ];
-      allowedUDPPorts = [ ];
-    };
-  };
-
-  # Time zone and locale
-  time.timeZone = "America/New_York"; # Change to your timezone
-  i18n.defaultLocale = "en_US.UTF-8";
-
-  # IMPORTANT: Display configuration to prevent CLI lock
-  services.xserver = {
-    enable = true;
-
-    # Display manager - choose one:
-    displayManager = {
-      lightdm.enable = true;
-      # sddm.enable = true;  # Alternative: KDE's display manager
-      # gdm.enable = true;   # Alternative: GNOME's display manager
-    };
-
-    # Or use a window manager instead:
-    # windowManager.i3.enable = true;
-    # windowManager.awesome.enable = true;
-  };
-
-  # Desktop environment - choose one:
-  services.desktopManager = {
-    gnome.enable = true;
-    # plasma5.enable = true;  # Alternative: KDE Plasma
-    # xfce.enable = true;     # Alternative: XFCE (lightweight)
-  };
-
-  # Enable sound
-  services.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    jack.enable = lib.mkForce true;
-    pulse.enable = true;
-  };
-
-  # Graphics drivers
-  hardware.graphics = {
-    enable = true;
-    enable32Bit = true;
-  };
-
-  # Vulkan support for Intel graphics (minimal configuration)
-  hardware.opengl = {
-    # enable = true;
-    # driSupport = true;
-    # driSupport32Bit = true;
-  };
-
-  # NVIDIA drivers (uncomment if you have NVIDIA GPU)
-  # services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.nvidia = {
-    modesetting.enable = true;
-    powerManagement.enable = true;
-    open = false;
-    nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
-  };
-
-  # AMD drivers (usually work out of the box, but you can be explicit)
-  # services.xserver.videoDrivers = [ "amdgpu" ];
-
-  # Performance optimizations (NVIDIA focused)
-  boot.kernelParams = [
-    "nvidia-drm.modeset=1"
-    "nvidia.NVreg_UsePageAttributeTable=1"
-    "nvidia.NVreg_EnablePCIeGen3=1"
-    "nvidia.NVreg_InitializeSystemMemoryAllocations=1"
-  ];
-
-  # Gaming environment variables
-  environment.variables = {
-    # Vulkan (NVIDIA only)
-    VK_ICD_FILENAMES = "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.json";
-    # Wine
-    WINEDEBUG = "-all";
-    # Performance
-    __GL_SYNC_TO_VBLANK = "0";
-    __GL_THREADED_OPTIMIZATIONS = "1";
-    # NVIDIA specific
-    __NV_PRIME_RENDER_OFFLOAD = "1";
-    __VK_LAYER_NV_optimus = "NVIDIA_only";
-  };
-
-  # Users
-  users.users.droo = {
-    # Change "droo" to your username
-    isNormalUser = true;
-    description = "Droo";
-    extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
-    shell = pkgs.zsh; # or pkgs.bash
-  };
-
-  # Enable sudo
-  security.sudo.enable = true;
-
-  # System packages
-  environment.systemPackages = with pkgs; [
-    # Essential tools
-    vim
-    wget
-    git
-    htop
-    firefox
-
-    # Terminal emulators
-    kitty
-    alacritty
-
-    # From nix-mox (access the packages)
-    self.packages.${pkgs.system}.proxmox-update
-    self.packages.${pkgs.system}.vzdump-backup
-    self.packages.${pkgs.system}.zfs-snapshot
-    self.packages.${pkgs.system}.nixos-flake-update
-
-    # Development tools
-    vscode
-    docker
-    docker-compose
-
-    # Gaming and Wine support (minimal)
-    vulkan-loader
-    gst_all_1.gstreamer
-    gst_all_1.gst-plugins-base
-    gst_all_1.gst-plugins-good
-    libgudev
-  ];
-
-  # Programs
-  programs = {
-    zsh.enable = true;
-    git.enable = true;
-
-    # Steam for gaming (since nix-mox has gaming focus)
-    steam = {
-      enable = true;
-      remotePlay.openFirewall = true;
-      dedicatedServer.openFirewall = true;
-    };
-  };
-
-  # Services
-  services = {
-    # SSH (optional)
-    openssh = {
-      enable = true;
-      settings = {
-        PasswordAuthentication = false;
-        PermitRootLogin = "no";
-      };
-    };
-
-    # Enable gaming support
-    gaming = {
-      enable = true;
-      gpu.type = "auto"; # Auto-detect GPU
-      performance.enable = true;
-      audio.enable = true;
-      audio.pipewire = true;
-      platforms.steam = true;
-      platforms.lutris = true;
-      platforms.heroic = true;
-    };
-  };
-
-  # Docker (optional)
-  virtualisation.docker = {
-    enable = true;
-    enableOnBoot = true;
-  };
-
-  # Nix configuration
+  # Nix settings
   nix = {
     settings = {
-      experimental-features = [ "nix-command" "flakes" ];
       auto-optimise-store = true;
-
-      # Use nix-mox's binary caches
-      substituters = [
-        "https://cache.nixos.org"
-        "https://hydepwns.cachix.org"
-        "https://nix-mox.cachix.org"
-      ];
-
-      trusted-public-keys = [
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "hydepwns.cachix.org-1:xg8huKdwzBkLdkq5eCKenadhCROHIICGI9H6y3simJU="
-        "nix-mox.cachix.org-1:MVJZxC7ZyRFAxVsxDuq0nmMRxlTIt5nFFm4Ur10ZCI4="
-      ];
+      experimental-features = [ "nix-command" "flakes" ];
+      trusted-users = [ "root" "droo" ];
     };
-
-    # Garbage collection
     gc = {
       automatic = true;
       dates = "weekly";
@@ -234,11 +21,151 @@ in
     };
   };
 
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
+  # System packages
+  environment.systemPackages = with pkgs; [
+    # Essential tools
+    vim
+    wget
+    curl
+    git
+    htop
+    tree
 
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # were taken. Don't change this unless you know what you're doing.
-  system.stateVersion = "23.11"; # Did you read the comment?
+    # Nix tools
+    nix-index
+    nix-tree
+
+    # Network tools
+    inetutils
+    mtr
+    iperf3
+  ];
+
+  # System settings
+  system = {
+    stateVersion = "23.11";
+    autoUpgrade = {
+      enable = false; # Disabled by default, enable per-host
+      channel = "https://nixos.org/channels/nixos-unstable";
+    };
+  };
+
+  # Security settings
+  security = {
+    sudo.wheelNeedsPassword = true;
+    auditd.enable = false; # Enable per-host if needed
+  };
+
+  # Networking
+  networking = {
+    firewall = {
+      enable = true;
+      allowedTCPPorts = [ 22 ]; # SSH only by default
+      allowedUDPPorts = [];
+    };
+  };
+
+  # Services
+  services = {
+    # SSH (basic config, can be overridden per-host)
+    openssh = {
+      enable = true;
+      settings = {
+        PermitRootLogin = "no";
+        PasswordAuthentication = false;
+        PubkeyAuthentication = true;
+      };
+    };
+
+    # Timesync
+    timesyncd.enable = true;
+
+    # Cron
+    cron.enable = true;
+  };
+
+  # Users
+  users = {
+    mutableUsers = false;
+    users.droo = {
+      isNormalUser = true;
+      extraGroups = [ "wheel" ];
+      shell = pkgs.bash;
+      # SSH keys will be added per-host
+      openssh.authorizedKeys.keys = [
+        # Add your SSH public key here
+        "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC..."
+      ];
+    };
+  };
+
+  # Boot
+  boot = {
+    # Kernel settings
+    kernel.sysctl = {
+      "kernel.sysrq" = 1;
+      "net.ipv4.ip_forward" = 0;
+    };
+
+    # Loader (will be overridden by hardware configs)
+    loader.grub.enable = false;
+    loader.systemd-boot.enable = false;
+  };
+
+  # Hardware
+  hardware = {
+    # Basic hardware support
+    enableRedistributableFirmware = true;
+  };
+
+  # Internationalization
+  i18n = {
+    defaultLocale = "en_US.UTF-8";
+    supportedLocales = [ "en_US.UTF-8/UTF-8" ];
+  };
+
+  # Console
+  console = {
+    font = "Lat2-Terminus16";
+    keyMap = "us";
+  };
+
+  # Time
+  time.timeZone = "UTC"; # Will be overridden by hardware configs
+
+  # Documentation
+  documentation = {
+    nixos.enable = true;
+    man.enable = true;
+    info.enable = true;
+  };
+
+  # Programs
+  programs = {
+    # Shell
+    bash.enableCompletion = true;
+
+    # SSH
+    ssh.startAgent = true;
+
+    # Less
+    less.enable = true;
+
+    # Zsh
+    zsh.enable = true;
+  };
+
+  # Environment
+  environment = {
+    # Variables
+    variables = {
+      EDITOR = "vim";
+      PAGER = "less";
+    };
+
+    # Shell init
+    shellInit = ''
+      # Add any global shell initialization here
+    '';
+  };
 }

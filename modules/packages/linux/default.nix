@@ -1,6 +1,7 @@
 { pkgs, helpers, config, ... }:
 let
   inherit (helpers) isLinux createShellApp readScript;
+  inherit (pkgs.lib) optional optionals;
   linux = [ "x86_64-linux" "aarch64-linux" ];
 
   # Check if we should build heavy packages (disable in CI or when explicitly disabled)
@@ -29,24 +30,16 @@ let
         pkgs.gnused
         pkgs.gnutar
       ];
-
-      # Architecture-specific dependencies - be more conservative
+      # Architecture-specific dependencies
       archSpecificDeps =
-        if system == "x86_64-linux" then [
-          # Only include packages that are definitely available
-          (safeGetPkg "qemu")
-          (safeGetPkg "zfs")
-          # Skip proxmox-backup-client and lxc if they cause issues
-        ] else if system == "aarch64-linux" then [
-          # For aarch64, be even more conservative
-          (safeGetPkg "zfs")
-          # Skip qemu and lxc on aarch64 if they cause build issues
-        ] else [ ];
-
-      # Filter out null values
-      filteredDeps = builtins.filter (pkg: pkg != null) archSpecificDeps;
+        if system == "x86_64-linux" then
+          optionals (safeGetPkg "qemu" != null) [ (safeGetPkg "qemu") ] ++
+          optionals (safeGetPkg "zfs" != null) [ (safeGetPkg "zfs") ]
+        else if system == "aarch64-linux" then
+          optionals (safeGetPkg "zfs" != null) [ (safeGetPkg "zfs") ]
+        else [];
     in
-    commonDeps ++ filteredDeps;
+    commonDeps ++ archSpecificDeps;
 
   # Create a package with proper architecture checking
   createLinuxPackage = name: scriptPath: deps:
@@ -56,7 +49,6 @@ let
       null
     else
       let
-        # Filter out any null dependencies that might have been passed
         validDeps = builtins.filter (pkg: pkg != null) deps;
       in
       pkgs.symlinkJoin {
@@ -76,45 +68,39 @@ let
 
   # Base packages (always available)
   basePackages = {
-    # Lightweight packages (always available)
     nixos-flake-update = createLinuxPackage "nixos-flake-update" "scripts/linux/nixos-flake-update.nu" [
       pkgs.nix
       pkgs.bash
       pkgs.coreutils
     ];
-
     install = createLinuxPackage "nix-mox-install" "scripts/linux/install.nu" [
       pkgs.bash
       pkgs.coreutils
     ];
-
     uninstall = createLinuxPackage "nix-mox-uninstall" "scripts/linux/uninstall.nu" [
       pkgs.bash
       pkgs.coreutils
     ];
-
     proxmox-update = createLinuxPackage "proxmox-update" "scripts/linux/proxmox-update.nu" [
       pkgs.bash
       pkgs.coreutils
     ];
-
-    remote-builder-setup = createLinuxPackage "remote-builder-setup" "scripts/setup-remote-builder.sh" [
+    remote-builder-setup = createLinuxPackage "remote-builder-setup" "scripts/setup-remote-builder.sh" ([
       pkgs.bash
       pkgs.coreutils
       pkgs.openssh
       pkgs.curl
       pkgs.gnugrep
       pkgs.gnused
-    ];
-
-    test-remote-builder = createLinuxPackage "test-remote-builder" "scripts/test-remote-builder.sh" [
+    ] ++ optionals (safeGetPkg "rsync" != null) [ (safeGetPkg "rsync") ]);
+    test-remote-builder = createLinuxPackage "test-remote-builder" "scripts/test-remote-builder.sh" ([
       pkgs.bash
       pkgs.coreutils
       pkgs.openssh
       pkgs.nix
       pkgs.gnugrep
       pkgs.gnused
-    ];
+    ] ++ optionals (safeGetPkg "rsync" != null) [ (safeGetPkg "rsync") ]);
   };
 
   # Heavy packages (conditional based on environment)

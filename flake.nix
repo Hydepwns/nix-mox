@@ -100,7 +100,8 @@
         let
           result = builtins.tryEval (import path args);
         in
-        if result.success then result.value else { };
+        if result.success then result.value else
+          throw "Failed to import ${path}: ${result.error}";
 
       # Helper function to validate script paths exist
       validateScriptPath = path:
@@ -344,16 +345,23 @@
                 echo "  nix run .#update  - Update flake inputs"
                 echo "  nix develop       - Enter development shell"
                 echo ""
-                echo "Available packages:"
-                echo "  nix build .#install        - Build install script"
-                echo "  nix build .#uninstall      - Build uninstall script"
+                echo "Available outputs:"
+                echo "  nixosConfigurations:"
+                echo "    - host1 (desktop)"
+                echo "    - host2 (server)"
+                echo ""
+                echo "  packages:"
+                echo "    - install, uninstall (all platforms)"
                 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-                  echo "  nix build .#proxmox-update  - Build Proxmox update script"
-                  echo "  nix build .#nixos-flake-update - Build NixOS flake update script"
+                  echo "    - proxmox-update, nixos-flake-update (Linux)"
                 elif [[ "$OSTYPE" == "darwin"* ]]; then
-                  echo "  nix build .#homebrew-setup - Build Homebrew setup script"
-                  echo "  nix build .#macos-maintenance - Build macOS maintenance script"
+                  echo "    - homebrew-setup, macos-maintenance (macOS)"
                 fi
+                echo ""
+                echo "  devShells: default, development, testing"
+                echo "  apps: fmt, test, update, dev"
+                echo ""
+                echo "For full details, run: nix flake show"
               '');
             };
           };
@@ -365,15 +373,20 @@
       } // (
       # Only include NixOS configs if explicitly requested or if not in CI
       if builtins.getEnv "INCLUDE_NIXOS_CONFIGS" == "1" || (builtins.getEnv "CI" != "true" && builtins.getEnv "CI" != "1") then
+        let
+          # Create a pkgs instance for the default system
+          defaultPkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
+        in
         {
           nixosConfigurations = {
             host1 = inputs.nixpkgs.lib.nixosSystem {
               system = "x86_64-linux";
-              specialArgs = { inherit inputs self; };
+              specialArgs = { inherit inputs self; mySecret = "host1-secret"; hostType = "desktop"; };
               modules = [
                 ./config/nixos/configuration.nix
                 ./config/hardware/host1-hardware-configuration.nix
                 ./config/home/host1-home.nix
+                ./config/modules/host1-extra.nix
                 inputs.home-manager.nixosModules.home-manager
                 {
                   home-manager.useGlobalPkgs = true;
@@ -384,11 +397,12 @@
             };
             host2 = inputs.nixpkgs.lib.nixosSystem {
               system = "x86_64-linux";
-              specialArgs = { inherit inputs self; };
+              specialArgs = { inherit inputs self; mySecret = "host2-secret"; hostType = "server"; };
               modules = [
                 ./config/nixos/configuration.nix
                 ./config/hardware/host2-hardware-configuration.nix
                 ./config/home/host2-home.nix
+                ./config/modules/server-extra.nix
                 inputs.home-manager.nixosModules.home-manager
                 {
                   home-manager.useGlobalPkgs = true;

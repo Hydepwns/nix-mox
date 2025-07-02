@@ -20,7 +20,7 @@ in
     description = "Hydepwns User";
     extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" ];
     shell = pkgs.zsh;
-    initialPassword = "sunfish";
+    initialPassword = "nixos";
   };
 
   # System configuration
