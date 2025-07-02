@@ -62,12 +62,12 @@ export __GL_THREADED_OPTIMIZATIONS=1
 LEAGUE_PATH="$WINEPREFIX/drive_c/Riot Games/League of Legends/LeagueClient.exe"
 
 if [ ! -f "$LEAGUE_PATH" ]; then
-    echo "❌ League of Legends not found at: $LEAGUE_PATH"
-    echo "📥 Please install League of Legends first:"
-    echo "   1. Download League of Legends installer from https://na.leagueoflegends.com/"
-    echo "   2. Run: wine64 League_of_Legends_installer.exe"
-    echo "   3. Follow the installation process"
-    exit 1
+  echo "❌ League of Legends not found at: $LEAGUE_PATH"
+  echo "📥 Please install League of Legends first:"
+  echo "   1. Download League of Legends installer from https://na.leagueoflegends.com/"
+  echo "   2. Run: wine64 League_of_Legends_installer.exe"
+  echo "   3. Follow the installation process"
+  exit 1
 fi
 
 echo "✅ League of Legends found!"
