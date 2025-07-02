@@ -267,7 +267,7 @@ test_remote_builder() {
 
   # Test with a simple derivation
   local test_drv
-  test_drv=$(nix-instantiate --expr 'derivation { name = "test"; system = "x86_64-linux"; builder = "/bin/sh"; args = ["-c" "echo hello > $out"]; }' 2> /dev/null || true)
+  test_drv=$(nix-instantiate --expr "derivation { name = \"test\"; system = \"x86_64-linux\"; builder = \"/bin/sh\"; args = [\"-c\" \"echo hello > \$out\"]; }" 2> /dev/null || true)
 
   if [[ -n $test_drv ]]; then
     print_status "Testing build on remote machine..."

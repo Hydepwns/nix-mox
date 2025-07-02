@@ -101,12 +101,12 @@ test_simple_derivation() {
   print_status "Testing simple derivation build..."
 
   local test_expr
-  test_expr='derivation {
-        name = "remote-test";
-        system = "x86_64-linux";
-        builder = "/bin/sh";
-        args = ["-c" "echo \"Remote builder test successful\" > $out"];
-    }'
+  test_expr="derivation {
+        name = \"remote-test\";
+        system = \"x86_64-linux\";
+        builder = \"/bin/sh\";
+        args = [\"-c\" \"echo \\\"Remote builder test successful\\\" > \$out\"];
+    }"
 
   local test_drv
   test_drv=$(nix-instantiate --expr "$test_expr" 2> /dev/null || true)
@@ -163,7 +163,7 @@ test_actual_build() {
 show_builder_status() {
   print_status "Current builder configuration:"
   echo
-  cat ~/.config/nix/nix.conf | grep -A 5 -B 5 "builders"
+  grep -A 5 -B 5 "builders" ~/.config/nix/nix.conf
   echo
 
   print_status "Available builders:"

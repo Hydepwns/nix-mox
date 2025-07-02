@@ -39,9 +39,11 @@ failure_pattern='✗'
 failure_lines_with_numbers=$(grep -n "$failure_pattern" "$INPUT_FILE")
 
 if [ -z "$failure_lines_with_numbers" ]; then
-  echo "No test failures found in the output." >> "$OUTPUT_FILE"
-  echo "This might be a different type of test suite failure." >> "$OUTPUT_FILE"
-  echo "Please check the full output in $INPUT_FILE." >> "$OUTPUT_FILE"
+  {
+    echo "No test failures found in the output."
+    echo "This might be a different type of test suite failure."
+    echo "Please check the full output in $INPUT_FILE."
+  } >> "$OUTPUT_FILE"
 else
   # Get the line number of the last line to mark the end of test details
   last_line_num=$(wc -l < "$INPUT_FILE")
@@ -75,7 +77,10 @@ else
 
     # Ensure the calculated block end line is not before its start line
     if [ "$block_content_end_line" -lt "$block_content_start_line" ]; then
-      echo "    (No further context extracted or context ends immediately after failure)" >> "$OUTPUT_FILE"
+      {
+        echo "    (No further context extracted or context ends immediately after failure)"
+        echo ""
+      } >> "$OUTPUT_FILE"
     else
       # Extract the whole context block for this specific failure
       failure_context_block=$(sed -n "${block_content_start_line},${block_content_end_line}p" "$INPUT_FILE")
@@ -92,10 +97,12 @@ else
             grep -E '^\s*\*\*|\(test/|\scode:|\sleft:|\sright:|expected|got|Assertion with|stacktrace:|Error:|ERROR:' >> "$OUTPUT_FILE"
         fi
       else
-        echo "    (No context block found between this failure and the next/end)" >> "$OUTPUT_FILE"
+        {
+          echo "    (No context block found between this failure and the next/end)"
+          echo ""
+        } >> "$OUTPUT_FILE"
       fi
     fi
-    echo "" >> "$OUTPUT_FILE" # Add a blank line for readability before the next failure summary
   done
 fi
 
