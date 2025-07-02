@@ -79,14 +79,14 @@ in
 
   # Vulkan support for Intel graphics (minimal configuration)
   hardware.opengl = {
-#     enable = true;
-#     driSupport = true;
-#     driSupport32Bit = true;
-#   };
-#
-#   # NVIDIA drivers (uncomment if you have NVIDIA GPU)
-#   # services.xserver.videoDrivers = [ "nvidia" ];
-  # hardware.nvidia = {
+    # enable = true;
+    # driSupport = true;
+    # driSupport32Bit = true;
+  };
+
+  # NVIDIA drivers (uncomment if you have NVIDIA GPU)
+  # services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.nvidia = {
     modesetting.enable = true;
     powerManagement.enable = true;
     open = false;
