@@ -54,4 +54,4 @@ if [ $duration -gt 5 ]; then
   exit 1
 fi
 
-echo "Performance tests completed successfully" 
+echo "Performance tests completed successfully"

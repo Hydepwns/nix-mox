@@ -28,4 +28,4 @@ echo "Testing retry with logging..."
 testRetry 3 1 "false" false || exit 1
 testLogging "ERROR" "Retry failed" "[ERROR] Retry failed" || exit 1
 
-echo "Integration tests completed successfully" 
+echo "Integration tests completed successfully"

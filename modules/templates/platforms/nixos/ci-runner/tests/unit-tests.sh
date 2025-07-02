@@ -26,4 +26,4 @@ testRetry 3 1 "false" false || exit 1
 echo "Testing parallel execution..."
 testParallelExecution "echo test1" "echo test2" 2 || exit 1
 
-echo "Unit tests completed successfully" 
+echo "Unit tests completed successfully"
