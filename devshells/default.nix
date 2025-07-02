@@ -23,6 +23,14 @@
       pkgs.ripgrep
       pkgs.code-cursor # Cursor AI IDE
       pkgs.kitty # Terminal emulator
+      # Formatters for treefmt
+      pkgs.nodePackages.prettier
+      pkgs.shfmt
+      pkgs.python3Packages.black
+      pkgs.rustfmt
+      pkgs.go
+      pkgs.treefmt
+      pkgs.nodejs
     ] ++ (
       # Platform-specific dependencies
       if pkgs.stdenv.isDarwin then [
@@ -45,6 +53,9 @@
       export NIX_MOX_IS_LINUX=${if pkgs.stdenv.isLinux then "true" else "false"}
       export NIX_MOX_IS_DARWIN=${if pkgs.stdenv.isDarwin then "true" else "false"}
       export NIX_MOX_ARCH=${pkgs.stdenv.hostPlatform.parsed.cpu.name}
+
+      # Ensure prettier is in PATH for treefmt
+      export PATH=${pkgs.nodePackages.prettier}/bin:$PATH
 
       # Set default terminal to Kitty
       export TERMINAL=kitty

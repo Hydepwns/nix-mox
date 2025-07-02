@@ -76,35 +76,39 @@ in
     enable32Bit = true;
   };
 
-  # NVIDIA drivers (uncomment if you have NVIDIA GPU)
-  # services.xserver.videoDrivers = [ "nvidia" ];
-  # hardware.nvidia = {
-  #   modesetting.enable = true;
-  #   powerManagement.enable = true;
-  #   open = false;
-  #   nvidiaSettings = true;
-  #   package = config.boot.kernelPackages.nvidiaPackages.stable;
-  # };
+  # NVIDIA drivers (enabled for dedicated GPU)
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.nvidia = {
+    modesetting.enable = true;
+    powerManagement.enable = true;
+    open = false;
+    nvidiaSettings = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+  };
 
   # AMD drivers (usually work out of the box, but you can be explicit)
   # services.xserver.videoDrivers = [ "amdgpu" ];
 
-  # Performance optimizations
+  # Performance optimizations (NVIDIA focused)
   boot.kernelParams = [
     "nvidia-drm.modeset=1"
-    "amdgpu.si_support=1"
-    "amdgpu.cik_support=1"
+    "nvidia.NVreg_UsePageAttributeTable=1"
+    "nvidia.NVreg_EnablePCIeGen3=1"
+    "nvidia.NVreg_InitializeSystemMemoryAllocations=1"
   ];
 
   # Gaming environment variables
   environment.variables = {
-    # Vulkan
-    VK_ICD_FILENAMES = "/run/opengl-driver/share/vulkan/icd.d/intel_icd.x86_64.json:/run/opengl-driver/share/vulkan/icd.d/radeon_icd.x86_64.json";
+    # Vulkan (NVIDIA only)
+    VK_ICD_FILENAMES = "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.json";
     # Wine
     WINEDEBUG = "-all";
     # Performance
     __GL_SYNC_TO_VBLANK = "0";
     __GL_THREADED_OPTIMIZATIONS = "1";
+    # NVIDIA specific
+    __NV_PRIME_RENDER_OFFLOAD = "1";
+    __VK_LAYER_NV_optimus = "NVIDIA_only";
   };
 
   # Users
@@ -142,16 +146,16 @@ in
     vscode
     docker
     docker-compose
-    
+
     # Gaming platforms
     lutris
     heroic
-    
+
     # Gaming tools
     gamemode
     mangohud
     goverlay
-    
+
     # Performance monitoring
     # nvtop  # Not available in current nixpkgs
     # radeontop  # Not available in current nixpkgs

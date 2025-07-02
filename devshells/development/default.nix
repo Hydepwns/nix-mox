@@ -21,6 +21,14 @@ pkgs.mkShell {
     pkgs.python3Packages.pytest
     pkgs.python3Packages.black
 
+    # Formatters for treefmt
+    pkgs.nodePackages.prettier
+    pkgs.shfmt
+    pkgs.rustfmt
+    pkgs.go
+    pkgs.treefmt
+    pkgs.nodejs
+
     # Development tools
     pkgs.just # Command runner
     pkgs.pre-commit # Git hooks
@@ -169,6 +177,9 @@ pkgs.mkShell {
       echo ""
       echo "For more information, see docs/."
     }
+
+    # Ensure prettier is in PATH for treefmt
+    export PATH=${pkgs.nodePackages.prettier}/bin:$PATH
 
     # Show initial help menu
     show_help
