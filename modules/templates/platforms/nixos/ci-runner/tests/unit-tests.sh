@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-# Source test utilities
+# shellcheck source=./test-utils.nix
 . ./test-utils.nix
 
 echo "Running unit tests..."
