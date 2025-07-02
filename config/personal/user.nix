@@ -6,11 +6,11 @@ let
   # Get personal settings from environment or use defaults
   personal = {
     username = let val = builtins.getEnv "NIXMOX_USERNAME"; in if val == "" then "hydepwns" else val;
-    email = let val = builtins.getEnv "NIXMOX_EMAIL"; in if val == "" then "andrewtehsailor@gmail.com" else val;
+    email = let val = builtins.getEnv "NIXMOX_EMAIL"; in if val == "" then "user@example.com" else val;
     timezone = let val = builtins.getEnv "NIXMOX_TIMEZONE"; in if val == "" then "Europe/Madrid" else val;
-    hostname = let val = builtins.getEnv "NIXMOX_HOSTNAME"; in if val == "" then "nix-mox" else val;
+    hostname = let val = builtins.getEnv "NIXMOX_HOSTNAME"; in if val == "" then "nixos" else val;
     gitUsername = let val = builtins.getEnv "NIXMOX_GIT_USERNAME"; in if val == "" then "hydepwns" else val;
-    gitEmail = let val = builtins.getEnv "NIXMOX_GIT_EMAIL"; in if val == "" then "andrewtehsailor@gmail.com" else val;
+    gitEmail = let val = builtins.getEnv "NIXMOX_GIT_EMAIL"; in if val == "" then "user@example.com" else val;
   };
 in
 {
