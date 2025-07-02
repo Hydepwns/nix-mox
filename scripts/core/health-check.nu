@@ -3,7 +3,7 @@
 # nix-mox Health Check Script
 # Comprehensive system health validation for nix-mox configurations
 
-use lib/common.nu *
+use ../lib/common.nu *
 
 def show_banner [] {
     print $"\n(ansi blue_bold)🏥 nix-mox: Health Check(ansi reset)"
@@ -214,7 +214,7 @@ def check_disk_space [] {
             log_trace "Disk space check: high usage"
             false
         }
-    } catch { |err| 
+    } catch { |err|
         log_error $"Could not check disk space. Error: ($err)"
         log_trace $"Disk space check failed with error: ($err)"
         false
@@ -246,7 +246,7 @@ def check_memory_usage [] {
             log_trace "Memory usage check: high usage"
             false
         }
-    } catch { |err| 
+    } catch { |err|
         log_error $"Could not check memory usage. Error: ($err)"
         log_trace $"Memory usage check failed with error: ($err)"
         false
@@ -257,53 +257,62 @@ def check_network_connectivity [] {
     log_info "Checking network connectivity..."
     mut checks_passed = 0
     mut total_checks = 0
+
+    # Check internet connectivity
     log_trace "Running: ping -c 1 8.8.8.8"
-    try {
+    let internet_ok = try {
         let ping_output = (ping -c 1 8.8.8.8 | complete)
         log_trace $"ping output: ($ping_output.stdout)"
         if ($ping_output.exit_code == 0) {
             log_success "Internet connectivity: OK"
             log_trace "Internet connectivity: OK"
-            $checks_passed = $checks_passed + 1
+            true
         } else {
             log_error "Internet connectivity: Failed"
             log_trace "Internet connectivity: Failed"
+            false
         }
-    } catch { |err| log_error $"Could not test internet connectivity. Error: ($err)"; log_trace $"Internet connectivity check failed: ($err)" }
+    } catch { |err|
+        log_error $"Could not test internet connectivity. Error: ($err)"
+        log_trace $"Internet connectivity check failed: ($err)"
+        false
+    }
+    if $internet_ok { $checks_passed = $checks_passed + 1 }
     $total_checks = $total_checks + 1
+
+    # Check DNS resolution
     log_trace "Running: nslookup google.com"
-    try {
+    let dns_ok = try {
         let nslookup_output = (nslookup google.com | complete)
         log_trace $"nslookup output: ($nslookup_output.stdout)"
         let dns_test = ($nslookup_output.stdout | str contains "Name:")
         if $dns_test {
             log_success "DNS resolution: OK"
             log_trace "DNS resolution: OK"
-            $checks_passed = $checks_passed + 1
+            true
         } else {
             log_error "DNS resolution: Failed"
             log_trace "DNS resolution: Failed"
+            false
         }
-    } catch { |err| 
+    } catch { |err|
         log_trace $"nslookup failed, trying alternative DNS check: ($err)"
         # Fallback: try using ping to test DNS resolution
-        try {
-            let ping_dns_output = (ping -c 1 google.com | complete)
-            log_trace $"ping google.com output: ($ping_dns_output.stdout)"
-            if ($ping_dns_output.exit_code == 0) {
-                log_success "DNS resolution: OK (via ping)"
-                log_trace "DNS resolution: OK (via ping)"
-                $checks_passed = $checks_passed + 1
-            } else {
-                log_error "DNS resolution: Failed"
-                log_trace "DNS resolution: Failed"
-            }
-        } catch { |err2| 
-            log_error $"Could not test DNS resolution. Error: ($err2)"
-            log_trace $"DNS resolution check failed: ($err2)"
+        let ping_dns_output = (ping -c 1 google.com | complete)
+        log_trace $"ping google.com output: ($ping_dns_output.stdout)"
+        if ($ping_dns_output.exit_code == 0) {
+            log_success "DNS resolution: OK (via ping)"
+            log_trace "DNS resolution: OK (via ping)"
+            true
+        } else {
+            log_error "DNS resolution: Failed"
+            log_trace "DNS resolution: Failed"
+            false
         }
     }
+    if $dns_ok { $checks_passed = $checks_passed + 1 }
     $total_checks = $total_checks + 1
+
     { passed: $checks_passed total: $total_checks }
 }
 
@@ -385,7 +394,7 @@ def generate_report [results: record] {
     # Health score with color coding
     let score_color = if $success_rate >= 90 { "green_bold" } else if $success_rate >= 80 { "yellow_bold" } else { "red_bold" }
     let score_icon = if $success_rate >= 90 { "✅" } else if $success_rate >= 80 { "⚠️" } else { "❌" }
-    
+
     print $"($score_icon) Overall Health: (ansi $score_color)($success_rate)%(ansi reset) ($total_passed)/($total_checks) checks passed\n"
 
     print $"(ansi cyan_bold)📋 Detailed Results:(ansi reset)"
