@@ -45,10 +45,6 @@ desktop.ini
 # Personal configuration (Phase 1 & 2)
 config/personal/secrets.nix
 config/personal/local.nix
-.env
-.env.local
-.env.production
-**/hydepwns.nix
 
 # Hardware configuration with real UUIDs
 config/hardware/hardware-configuration-actual.nix

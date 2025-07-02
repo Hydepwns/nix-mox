@@ -265,7 +265,10 @@
           devShells = createDevShells system pkgs devShell;
 
           # Code formatter - use treefmt for better formatting
-          formatter = pkgs.treefmt;
+          formatter = {
+            type = "app";
+            program = "${pkgs.treefmt}/bin/treefmt";
+          };
 
           # Packages with architecture checking
           packages = createPackages system pkgs systemPackages;
