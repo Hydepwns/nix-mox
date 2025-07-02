@@ -44,6 +44,7 @@ nix run .#dev
 ### Host Configuration
 
 Each host can have its own:
+
 - **Hardware configuration** - CPU, GPU, storage, networking
 - **Home configuration** - User environment, shell, applications
 - **Extra modules** - Host-specific services and features
@@ -75,7 +76,6 @@ Each host can have its own:
   };
 }
 ```
-
 
 | Template | Use Case | Description |
 |----------|----------|-------------|
@@ -137,16 +137,19 @@ nix run .#formatter
 ```
 
 **Supported formats:**
-- **Nix** (`.nix`) - `nixpkgs-fmt`
-- **Shell scripts** (`.sh`, `.bash`, `.zsh`) - `shfmt` + `shellcheck`
-- **Markdown** (`.md`, `.mdx`) - `prettier`
-- **JSON/YAML** (`.json`, `.yml`, `.yaml`) - `prettier`
-- **JavaScript/TypeScript** (`.js`, `.ts`, `.jsx`, `.tsx`) - `prettier`
-- **CSS/SCSS** (`.css`, `.scss`, `.sass`) - `prettier`
-- **HTML** (`.html`, `.htm`) - `prettier`
-- **Python** (`.py`) - `black`
-- **Rust** (`.rs`) - `rustfmt`
-- **Go** (`.go`) - `gofmt`
+
+| Language/Format | Extensions | Formatter |
+|----------------|------------|-----------|
+| **Nix** | `.nix` | `nixpkgs-fmt` |
+| **Shell scripts** | `.sh`, `.bash`, `.zsh` | `shfmt` + `shellcheck` |
+| **Markdown** | `.md`, `.mdx` | `prettier` |
+| **JSON/YAML** | `.json`, `.yml`, `.yaml` | `prettier` |
+| **JavaScript/TypeScript** | `.js`, `.ts`, `.jsx`, `.tsx` | `prettier` |
+| **CSS/SCSS** | `.css`, `.scss`, `.sass` | `prettier` |
+| **HTML** | `.html`, `.htm` | `prettier` |
+| **Python** | `.py` | `black` |
+| **Rust** | `.rs` | `rustfmt` |
+| **Go** | `.go` | `gofmt` |
 
 ### Testing
 
@@ -177,6 +180,7 @@ nu scripts/core/integrate-modules.nu
 ## Available Packages
 
 ### Linux Packages
+
 ```bash
 # System management
 nix run .#proxmox-update      # Update Proxmox host
@@ -190,6 +194,7 @@ nix run .#uninstall           # Uninstall nix-mox
 ```
 
 ### macOS Packages
+
 ```bash
 # macOS management
 nix run .#homebrew-setup      # Setup Homebrew
@@ -213,39 +218,48 @@ nix run .#uninstall           # Uninstall nix-mox
 - **[Contributing](docs/CONTRIBUTING.md)** - Development guidelines
 
 ## Features
-- **Multi-host management** - Manage multiple NixOS hosts from one flake
 
+### Core Infrastructure
 
-- **Personal data separation** - Personal settings in `config/personal/`
-- **Template system** - Ready-to-use configurations
-- **Module integration** - Advanced features via modules
-- **Security hardening** - Built-in security profiles
-- **Environment-based config** - Different settings for different environments
+- **Multi-host management** - Centralized configuration for multiple NixOS hosts
+- **Template system** - Pre-built configurations for development, gaming, server, desktop
+- **Module integration** - Extensible architecture with plug-and-play modules
+- **Personal data separation** - Secure separation of personal settings in `config/personal/`
+
+### Security & Hardening
+
+- **Built-in security profiles** - Pre-configured security hardening
+- **Environment-based configuration** - Different security levels per environment
+- **Secrets management** - Secure handling of sensitive data
+- **Network security** - Automated firewall and network configuration
+
+### Development Tools
+
+- **Multi-language formatting** - Consistent code style across all supported languages
 - **Comprehensive testing** - 97% test pass rate with CI/CD pipeline
-- **Cross-platform support** - Linux, macOS, and Windows compatibility
-- **Multi-language formatting** - Consistent code style across all file types
-- **Development apps** - Quick commands for common development tasks
+- **Development shells** - Isolated environments for different tasks
+- **Quick commands** - Streamlined development workflows
 
-## Status
+### Platform Support
 
-- ✅ **CI Pipeline**: Fully functional with automated testing
-- ✅ **Test Coverage**: 97% pass rate across 83 tests
-- ✅ **Cross-platform**: Linux, macOS, and Windows support
-- ✅ **Multi-host**: Manage multiple NixOS hosts from one flake
-- ✅ **Production Ready**: Comprehensive validation and testing
-- ✅ **Documentation**: Complete guides and examples
-- ✅ **Code Formatting**: Multi-language support with treefmt
-- ✅ **Development Tools**: Streamlined workflow with apps
+- **Linux** - Full NixOS support with optimized configurations
+- **macOS** - Homebrew integration and macOS optimizations
+- **Windows** - Gaming and development tools
+- **Containers** - Docker and orchestration support
 
-## Support
+### System Management
 
-- **Issues**: [GitHub Issues](https://github.com/Hydepwns/nix-mox/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Hydepwns/nix-mox/discussions)
-- **Documentation**: `docs/`
+- **Health monitoring** - System health checks and diagnostics
+- **Backup automation** - Automated VM and container backups
+- **Performance optimization** - Gaming and workstation tuning
+- **Storage management** - ZFS integration with caching and snapshots
 
----
+### Advanced Capabilities
 
-**Note**: This is a production-grade framework. Personal data is properly separated and secured.
+- **Proxmox integration** - Automated host management and updates
+- **Service orchestration** - Multi-service deployment
+- **Monitoring stack** - Built-in monitoring and alerting
+- **Gaming optimization** - Steam integration and performance tuning
 
 ## License
 

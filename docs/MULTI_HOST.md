@@ -5,6 +5,7 @@
 ## Overview
 
 nix-mox supports managing multiple NixOS hosts from a single flake, allowing you to:
+
 - Define host-specific hardware configurations
 - Customize user environments per host
 - Add host-specific services and modules
@@ -409,21 +410,25 @@ specialArgs = {
 ### Adding New Hosts
 
 1. **Create hardware configuration:**
+
    ```bash
    cp config/hardware/host1-hardware-configuration.nix config/hardware/host3-hardware-configuration.nix
    ```
 
 2. **Create home configuration:**
+
    ```bash
    cp config/home/host1-home.nix config/home/host3-home.nix
    ```
 
 3. **Create host-specific module:**
+
    ```bash
    cp config/modules/host1-extra.nix config/modules/host3-extra.nix
    ```
 
 4. **Add to hosts.nix:**
+
    ```nix
    host3 = {
      system = "x86_64-linux";
@@ -438,6 +443,7 @@ specialArgs = {
    ```
 
 5. **Add to flake.nix:**
+
    ```nix
    nixosConfigurations = {
      host1 = inputs.nixpkgs.lib.nixosSystem { /* ... */ };
@@ -449,21 +455,25 @@ specialArgs = {
 ## Best Practices
 
 ### 1. **Modular Design**
+
 - Keep host-specific configurations in separate files
 - Use shared base configuration for common settings
 - Create reusable modules for common features
 
 ### 2. **Security**
+
 - Use host-specific secrets and arguments
 - Avoid hardcoding sensitive information
 - Use SSH keys for remote deployment
 
 ### 3. **Maintenance**
+
 - Use descriptive host names
 - Document host-specific requirements
 - Keep hardware configurations minimal and focused
 
 ### 4. **Testing**
+
 - Test configurations before deployment
 - Use dry-run mode for validation
 - Maintain separate test environments
@@ -473,6 +483,7 @@ specialArgs = {
 ### Common Issues
 
 1. **Path resolution errors:**
+
    ```bash
    # Ensure all paths in hosts.nix are correct
    ls -la config/hardware/
@@ -481,6 +492,7 @@ specialArgs = {
    ```
 
 2. **Import errors:**
+
    ```bash
    # Check flake evaluation
    nix flake check
@@ -488,6 +500,7 @@ specialArgs = {
    ```
 
 3. **Deployment failures:**
+
    ```bash
    # Use dry-run mode
    nixos-rebuild dry-activate --flake .#host1
