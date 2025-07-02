@@ -3,9 +3,9 @@
 # Main script for nix-mox
 use ../lib/common.nu *
 
-# Fallback log_error if not defined
-if (not (scope commands | where name == 'log_error' | is-not-empty)) {
-    export def log_error [message: string] {
+# Fallback error if not defined
+if (not (scope commands | where name == 'error' | is-not-empty)) {
+    export def error [message: string] {
         print $"Error: ($message)"
     }
 }
@@ -50,7 +50,7 @@ def show_help [] {
     print "  --dry-run           Show what would be done without making changes"
     print "  --debug             Enable debug output"
     print "  --platform <os>     Specify platform (auto, linux, darwin)"
-    print "  --script <name>     Run specific script (install, update, zfs-snapshot)"
+    print "  --script <name>     Run specific script (install, update, zfs-snapshot, setup-interactive)"
     print "  --log <file>        Log output to file"
     print ""
     print "Examples:"
@@ -58,13 +58,14 @@ def show_help [] {
     print "  nix-mox --platform auto --dry-run"
     print "  nix-mox --script install --debug"
     print "  nix-mox --script zfs-snapshot --log output.log"
+    print "  nix-mox --script setup-interactive"
 }
 
 # --- Error Handling ---
 def handle_error [error_msg: string, exit_code: int = 1] {
-    log_error $error_msg
+    error $error_msg
     if ($env.LOG_FILE? | is-not-empty) {
-        log_error "Check the log file for more details: ($env.LOG_FILE)"
+        error "Check the log file for more details: ($env.LOG_FILE)"
     }
     exit $exit_code
 }
@@ -102,17 +103,35 @@ def run_script [script: string, dry_run: bool] {
     }
 
     # Check if script is supported
-    let supported_scripts = ["install", "update", "zfs-snapshot"]
+    let supported_scripts = ["install", "update", "zfs-snapshot", "setup-interactive"]
     if not ($supported_scripts | any { |s| $s == $script }) {
         handle_error $"Unsupported script: ($script). Supported scripts: ($supported_scripts | str join ', ')"
     }
 
     match $script {
+        "setup-interactive" => {
+            if $dry_run {
+                info "Would execute interactive setup script"
+            } else {
+                info "Running interactive setup script..."
+
+                let setup_script = "scripts/linux/setup-interactive.nu"
+                check_file $setup_script "Setup script not found"
+                check_permissions $setup_script "x"
+
+                try {
+                    nu $setup_script
+                    info "Interactive setup completed successfully"
+                } catch { |err|
+                    handle_error $"Interactive setup failed: ($err)"
+                }
+            }
+        }
         "install" => {
             if $dry_run {
-                log_info "Would execute install script"
+                info "Would execute install script"
             } else {
-                log_info "Running install script..."
+                info "Running install script..."
 
                 # Get platform-specific install script
                 let platform = detect_platform
@@ -130,10 +149,10 @@ def run_script [script: string, dry_run: bool] {
                 check_permissions $install_script "x"
 
                 # Run platform-specific install script
-                log_info $"Running platform-specific install script: ($install_script)"
+                info $"Running platform-specific install script: ($install_script)"
                 try {
                     nu $install_script
-                    log_success "Installation completed successfully"
+                    info "Installation completed successfully"
                 } catch { |err|
                     handle_error $"Installation failed: ($err)"
                 }
@@ -141,9 +160,9 @@ def run_script [script: string, dry_run: bool] {
         }
         "update" => {
             if $dry_run {
-                log_info "Would execute update script"
+                info "Would execute update script"
             } else {
-                log_info "Running update script..."
+                info "Running update script..."
 
                 # Get platform-specific update script
                 let platform = detect_platform
@@ -154,11 +173,11 @@ def run_script [script: string, dry_run: bool] {
                         check_command "nix-env"
 
                         # For Linux/macOS, update Nix packages
-                        log_info "Updating Nix packages..."
+                        info "Updating Nix packages..."
                         try {
                             nix-channel --update
                             nix-env -u '*'
-                            log_success "Nix packages updated successfully"
+                            info "Nix packages updated successfully"
                         } catch { |err|
                             handle_error $"Failed to update Nix packages: ($err)"
                         }
@@ -171,7 +190,7 @@ def run_script [script: string, dry_run: bool] {
 
                         try {
                             nu $win_update_script
-                            log_success "Steam and Rust updated successfully"
+                            info "Steam and Rust updated successfully"
                         } catch { |err|
                             handle_error $"Failed to update Steam and Rust: ($err)"
                         }
@@ -184,9 +203,9 @@ def run_script [script: string, dry_run: bool] {
         }
         "zfs-snapshot" => {
             if $dry_run {
-                log_info "Would execute ZFS snapshot script"
+                info "Would execute ZFS snapshot script"
             } else {
-                log_info "Running ZFS snapshot script..."
+                info "Running ZFS snapshot script..."
 
                 # Check if ZFS is available and user has permissions
                 check_command "zfs"
@@ -207,22 +226,22 @@ def run_script [script: string, dry_run: bool] {
                     let failed_snapshots = ($pools | each { |pool|
                         let timestamp = (date now | format date '%Y%m%d-%H%M%S')
                         let snapshot_name = $"($pool)@($timestamp)"
-                        log_info $"Creating snapshot: ($snapshot_name)"
+                        info $"Creating snapshot: ($snapshot_name)"
                         try {
                             zfs snapshot $snapshot_name
-                            log_success $"Created snapshot: ($snapshot_name)"
+                            info $"Created snapshot: ($snapshot_name)"
                             null
                         } catch { |err|
-                            log_error $"Failed to create snapshot ($snapshot_name): ($err)"
+                            error $"Failed to create snapshot ($snapshot_name): ($err)"
                             $snapshot_name
                         }
                     } | where { |it| $it != null })
 
                     # Report any failed snapshots
                     if ($failed_snapshots | length) > 0 {
-                        log_warn $"Failed to create ($failed_snapshots | length) snapshots:"
+                        warn $"Failed to create ($failed_snapshots | length) snapshots:"
                         for snapshot in $failed_snapshots {
-                            log_warn $"  - ($snapshot)"
+                            warn $"  - ($snapshot)"
                         }
                         handle_error "Some snapshots failed to create" 0  # Exit with warning
                     }
@@ -260,22 +279,17 @@ def setup_file_logging [log_file: string] {
         try {
             # Redirect stdout and stderr to log file
             $env.LOG_FILE = $log_file
-            log_info $"Logging to: ($log_file)"
+            info $"Logging to: ($log_file)"
 
             # Override logging functions to write to file
-            def log_info [message: string] {
+            def info [message: string] {
                 let timestamp = (date now | format date '%Y-%m-%d %H:%M:%S')
                 log_to_file $"[INFO] ($timestamp) ($message)" $log_file
             }
 
-            def log_error [message: string] {
+            def error [message: string] {
                 let timestamp = (date now | format date '%Y-%m-%d %H:%M:%S')
                 log_to_file $"[ERROR] ($timestamp) ($message)" $log_file
-            }
-
-            def log_success [message: string] {
-                let timestamp = (date now | format date '%Y-%m-%d %H:%M:%S')
-                log_to_file $"[SUCCESS] ($timestamp) ($message)" $log_file
             }
 
             def log_dryrun [message: string] {
@@ -283,7 +297,7 @@ def setup_file_logging [log_file: string] {
                 log_to_file $"[DRYRUN] ($timestamp) ($message)" $log_file
             }
 
-            def log_warn [message: string] {
+            def warn [message: string] {
                 let timestamp = (date now | format date '%Y-%m-%d %H:%M:%S')
                 log_to_file $"[WARN] ($timestamp) ($message)" $log_file
             }
@@ -310,13 +324,6 @@ def main [args: list] {
         $env.DEBUG = true
     }
 
-    # Setup environment
-    try {
-        setup_env
-    } catch { |err|
-        handle_error $"Failed to setup environment: ($err)"
-    }
-
     # Only require --script if not showing help
     if ($parsed_args.script | is-empty) {
         handle_error "No script specified. Use --script <name> to run a script."
@@ -324,7 +331,7 @@ def main [args: list] {
 
     # Detect platform and print info only if running a script
     let platform = detect_platform
-    log_info $"Platform: ($platform)"
+    info $"Platform: ($platform)"
     print_os_info
 
     # Setup logging
