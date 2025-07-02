@@ -23,6 +23,7 @@ in
   networking = {
     hostName = "nixos"; # Change this to your hostname
     networkmanager.enable = true;
+    nameservers = [ "8.8.8.8" "1.1.1.1" ];
 
     # Optional: enable firewall
     firewall = {
@@ -76,9 +77,16 @@ in
     enable32Bit = true;
   };
 
-  # NVIDIA drivers (enabled for dedicated GPU)
-  services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.nvidia = {
+  # Vulkan support for Intel graphics (minimal configuration)
+  hardware.opengl = {
+#     enable = true;
+#     driSupport = true;
+#     driSupport32Bit = true;
+#   };
+#
+#   # NVIDIA drivers (uncomment if you have NVIDIA GPU)
+#   # services.xserver.videoDrivers = [ "nvidia" ];
+  # hardware.nvidia = {
     modesetting.enable = true;
     powerManagement.enable = true;
     open = false;
@@ -147,18 +155,12 @@ in
     docker
     docker-compose
 
-    # Gaming platforms
-    lutris
-    heroic
-
-    # Gaming tools
-    gamemode
-    mangohud
-    goverlay
-
-    # Performance monitoring
-    # nvtop  # Not available in current nixpkgs
-    # radeontop  # Not available in current nixpkgs
+    # Gaming and Wine support (minimal)
+    vulkan-loader
+    gst_all_1.gstreamer
+    gst_all_1.gst-plugins-base
+    gst_all_1.gst-plugins-good
+    libgudev
   ];
 
   # Programs
