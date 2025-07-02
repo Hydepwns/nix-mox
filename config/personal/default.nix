@@ -9,6 +9,7 @@ let
 
   # Check if personal files exist
   hasUserConfig = builtins.pathExists ./user.nix;
+  hasHydepwnsConfig = builtins.pathExists ./hydepwns.nix;
   hasHardwareConfig = builtins.pathExists ./hardware.nix;
   hasSecretsConfig = builtins.pathExists ./secrets.nix;
   hasLocalConfig = builtins.pathExists ./local.nix;
@@ -16,6 +17,7 @@ in
 {
   imports =
     (if hasUserConfig then [ ./user.nix ] else [ ]) ++
+    (if hasHydepwnsConfig then [ ./hydepwns.nix ] else [ ]) ++
     (if hasHardwareConfig then [ ./hardware.nix ] else [ ]) ++
     (if isPersonal && hasSecretsConfig then [ ./secrets.nix ] else [ ]) ++
     (if hasLocalConfig then [ ./local.nix ] else [ ]);

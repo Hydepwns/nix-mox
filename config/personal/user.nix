@@ -5,12 +5,12 @@ let
   lib = pkgs.lib;
   # Get personal settings from environment or use defaults
   personal = {
-    username = let val = builtins.getEnv "NIXMOX_USERNAME"; in if val == "" then "user" else val;
-    email = let val = builtins.getEnv "NIXMOX_EMAIL"; in if val == "" then "user@example.com" else val;
-    timezone = let val = builtins.getEnv "NIXMOX_TIMEZONE"; in if val == "" then "UTC" else val;
-    hostname = let val = builtins.getEnv "NIXMOX_HOSTNAME"; in if val == "" then "nixos" else val;
-    gitUsername = let val = builtins.getEnv "NIXMOX_GIT_USERNAME"; in if val == "" then "user" else val;
-    gitEmail = let val = builtins.getEnv "NIXMOX_GIT_EMAIL"; in if val == "" then "user@example.com" else val;
+    username = let val = builtins.getEnv "NIXMOX_USERNAME"; in if val == "" then "hydepwns" else val;
+    email = let val = builtins.getEnv "NIXMOX_EMAIL"; in if val == "" then "andrewtehsailor@gmail.com" else val;
+    timezone = let val = builtins.getEnv "NIXMOX_TIMEZONE"; in if val == "" then "Europe/Madrid" else val;
+    hostname = let val = builtins.getEnv "NIXMOX_HOSTNAME"; in if val == "" then "nix-mox" else val;
+    gitUsername = let val = builtins.getEnv "NIXMOX_GIT_USERNAME"; in if val == "" then "hydepwns" else val;
+    gitEmail = let val = builtins.getEnv "NIXMOX_GIT_EMAIL"; in if val == "" then "andrewtehsailor@gmail.com" else val;
   };
 in
 {
@@ -24,7 +24,7 @@ in
   };
 
   # System configuration
-  networking.hostName = personal.hostname;
+  networking.hostName = lib.mkDefault personal.hostname;
   time.timeZone = lib.mkDefault personal.timezone;
 
   # Home Manager configuration
