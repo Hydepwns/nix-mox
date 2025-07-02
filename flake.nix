@@ -1,30 +1,61 @@
 {
-  # Flake outputs:
-  # - devShells.default: Development shell with common tools for working on this repo
-  # - formatter: Nix code formatter (nixpkgs-fmt)
-  # - packages.<system>.proxmox-update: Proxmox update script as a Nix package (Linux only)
-  # - packages.<system>.vzdump-backup: Proxmox vzdump backup script as a Nix package (Linux only)
-  # - packages.<system>.zfs-snapshot: ZFS snapshot/prune script as a Nix package (Linux only)
-  # - packages.<system>.nixos-flake-update: NixOS flake update script as a Nix package (Linux only)
-  # - packages.<system>.install: nix-mox installation script as a Nix package (Platform-specific)
-  # - packages.<system>.uninstall: nix-mox uninstallation script as a Nix package (Platform-specific)
-  # - packages.<system>.homebrew-setup: Homebrew setup script (macOS only)
-  # - packages.<system>.macos-maintenance: macOS maintenance script (macOS only)
-  # - packages.<system>.xcode-setup: Xcode setup script (macOS only)
-  # - packages.<system>.security-audit: Security audit script (macOS only)
+  # ============================================================================
+  # NIX-MOX FLAKE
+  # ============================================================================
+  # A comprehensive NixOS configuration framework with development tools,
+  # monitoring, and system management utilities.
+  #
+  # QUICK START:
+  #   nix run .#dev          - Show available commands
+  #   nix develop            - Enter development shell
+  #   nix run .#fmt          - Format code
+  #   nix run .#test         - Run tests
+  #
+  # FLAKE OUTPUTS:
+  #   devShells:
+  #     - default: Development shell with common tools
+  #     - development: Extended development tools
+  #     - testing: Testing environment
+  #     - services: Service management tools (Linux)
+  #     - monitoring: Monitoring tools (Linux)
+  #     - gaming: Gaming setup (Linux)
+  #     - macos: macOS-specific tools (macOS)
+  #
+  #   packages:
+  #     - install: Installation script (all platforms)
+  #     - uninstall: Uninstallation script (all platforms)
+  #     - proxmox-update: Proxmox update script (Linux only)
+  #     - vzdump-backup: Proxmox backup script (Linux only)
+  #     - zfs-snapshot: ZFS snapshot script (Linux only)
+  #     - nixos-flake-update: NixOS flake update script (Linux only)
+  #     - homebrew-setup: Homebrew setup script (macOS only)
+  #     - macos-maintenance: macOS maintenance script (macOS only)
+  #     - xcode-setup: Xcode setup script (macOS only)
+  #     - security-audit: Security audit script (macOS only)
+  #
+  #   apps:
+  #     - fmt: Format code using treefmt
+  #     - test: Run test suite
+  #     - update: Update flake inputs
+  #     - dev: Show development help
+  #
+  #   formatter: Code formatter (treefmt with nixpkgs-fmt, shellcheck, shfmt)
+  #   checks: Test suite with platform-specific tests
+  #   nixosConfigurations: NixOS system configurations (when not in CI)
+  # ============================================================================
 
   description = "A comprehensive NixOS configuration framework with development tools, monitoring, and system management utilities";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:NixOS/nixpkgs/9e83b64f727c88a7711a2c463a7b16eedb69a84c";
+    flake-utils.url = "github:numtide/flake-utils/11707dc2f618dd54ca8739b309ec4fc024de578b";
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/863842639722dd12ae9e37ca83bcb61a63b36f6c";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # Add additional useful inputs
-    nixpkgs-fmt.url = "github:nix-community/nixpkgs-fmt";
-    treefmt-nix.url = "github:numtide/treefmt-nix";
+    nixpkgs-fmt.url = "github:nix-community/nixpkgs-fmt/bdb15b4c7e0cb49ae091dd43113d0a938afae02c";
+    treefmt-nix.url = "github:numtide/treefmt-nix/ac8e6f32e11e9c7f153823abc3ab007f2a65d3e1";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
@@ -71,6 +102,16 @@
         in
         if result.success then result.value else { };
 
+      # Helper function to validate script paths exist
+      validateScriptPath = path:
+        if builtins.pathExists (self + "/${path}") then
+          path
+        else
+          throw "Script path '${path}' does not exist in the flake";
+
+      # Helper function to safely read scripts with validation
+      safeReadScript = path: builtins.readFile (self + "/${validateScriptPath path}");
+
       # Helper function to get system-specific packages with better error handling
       getSystemPackages = system: pkgs:
         let
@@ -78,7 +119,7 @@
             inherit pkgs;
             config = safeImport ./config/default.nix { inherit inputs; };
             helpers = {
-              readScript = path: builtins.readFile (self + "/${path}");
+              readScript = safeReadScript;
               inherit isLinux;
             };
           };
@@ -292,6 +333,29 @@
                 nix flake update
               '');
             };
+
+            # Development tools helper
+            dev = {
+              type = "app";
+              program = toString (pkgs.writeShellScript "dev" ''
+                echo "Available development commands:"
+                echo "  nix run .#fmt     - Format code"
+                echo "  nix run .#test    - Run tests"
+                echo "  nix run .#update  - Update flake inputs"
+                echo "  nix develop       - Enter development shell"
+                echo ""
+                echo "Available packages:"
+                echo "  nix build .#install        - Build install script"
+                echo "  nix build .#uninstall      - Build uninstall script"
+                if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+                  echo "  nix build .#proxmox-update  - Build Proxmox update script"
+                  echo "  nix build .#nixos-flake-update - Build NixOS flake update script"
+                elif [[ "$OSTYPE" == "darwin"* ]]; then
+                  echo "  nix build .#homebrew-setup - Build Homebrew setup script"
+                  echo "  nix build .#macos-maintenance - Build macOS maintenance script"
+                fi
+              '');
+            };
           };
         }
       ) // {
@@ -301,7 +365,40 @@
       } // (
       # Only include NixOS configs if explicitly requested or if not in CI
       if builtins.getEnv "INCLUDE_NIXOS_CONFIGS" == "1" || (builtins.getEnv "CI" != "true" && builtins.getEnv "CI" != "1") then
-        { nixosConfigurations = safeImport ./config { inherit inputs self; }; }
+        {
+          nixosConfigurations = {
+            host1 = inputs.nixpkgs.lib.nixosSystem {
+              system = "x86_64-linux";
+              specialArgs = { inherit inputs self; };
+              modules = [
+                ./config/nixos/configuration.nix
+                ./config/hardware/host1-hardware-configuration.nix
+                ./config/home/host1-home.nix
+                inputs.home-manager.nixosModules.home-manager
+                {
+                  home-manager.useGlobalPkgs = true;
+                  home-manager.useUserPackages = true;
+                  home-manager.users.droo = import ./config/home/host1-home.nix;
+                }
+              ];
+            };
+            host2 = inputs.nixpkgs.lib.nixosSystem {
+              system = "x86_64-linux";
+              specialArgs = { inherit inputs self; };
+              modules = [
+                ./config/nixos/configuration.nix
+                ./config/hardware/host2-hardware-configuration.nix
+                ./config/home/host2-home.nix
+                inputs.home-manager.nixosModules.home-manager
+                {
+                  home-manager.useGlobalPkgs = true;
+                  home-manager.useUserPackages = true;
+                  home-manager.users.droo = import ./config/home/host2-home.nix;
+                }
+              ];
+            };
+          };
+        }
       else { }
     );
 }

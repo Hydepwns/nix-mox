@@ -37,6 +37,7 @@
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
         "type": "github"
       }
     },
@@ -72,6 +73,7 @@
       "original": {
         "owner": "nix-community",
         "repo": "home-manager",
+        "rev": "863842639722dd12ae9e37ca83bcb61a63b36f6c",
         "type": "github"
       }
     },
@@ -86,8 +88,8 @@
       },
       "original": {
         "owner": "NixOS",
-        "ref": "nixos-unstable",
         "repo": "nixpkgs",
+        "rev": "9e83b64f727c88a7711a2c463a7b16eedb69a84c",
         "type": "github"
       }
     },
@@ -108,6 +110,7 @@
       "original": {
         "owner": "nix-community",
         "repo": "nixpkgs-fmt",
+        "rev": "bdb15b4c7e0cb49ae091dd43113d0a938afae02c",
         "type": "github"
       }
     },
@@ -183,6 +186,7 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "rev": "ac8e6f32e11e9c7f153823abc3ab007f2a65d3e1",
         "type": "github"
       }
     }
