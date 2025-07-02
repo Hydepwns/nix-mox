@@ -34,6 +34,7 @@ help:
 	@echo ""
 	@echo "🧪 Testing:"
 	@echo "  test        - Run all tests (unit + integration)"
+	@echo "  test-flake  - Run tests with flake"
 	@echo "  unit        - Run unit tests only"
 	@echo "  integration - Run integration tests only"
 	@echo "  gaming-test - Test gaming setup"
@@ -46,10 +47,12 @@ help:
 	@echo ""
 	@echo "🔧 Development:"
 	@echo "  format      - Format Nix files with nixpkgs-fmt"
+	@echo "  fmt         - Format all code with treefmt"
 	@echo "  check       - Run nix flake check"
 	@echo "  build       - Build default package"
 	@echo "  build-all   - Build all packages"
 	@echo "  update      - Update flake inputs"
+	@echo "  update-flake - Update flake inputs with flake"
 	@echo "  lock        - Update flake.lock"
 	@echo ""
 	@echo "💻 Development Shells:"
@@ -102,6 +105,7 @@ help:
 	@echo "  - Use 'make dev' to start development"
 	@echo "  - Use 'make test' before committing changes"
 	@echo "  - Use 'make format' to ensure consistent code style"
+	@echo "  - Use 'make fmt' to format all code with treefmt"
 	@echo "  - Use 'make code-quality' to check code quality"
 	@echo "  - Use 'make analyze-sizes' to see performance tradeoffs"
 	@echo "  - Use 'make size-dashboard' for interactive size analysis"
@@ -189,6 +193,27 @@ code-security: check-nushell
 	$(NUSHELL) -c "source scripts/development/code-quality.nu; check_security"
 
 quality: code-quality
+
+# New flake-based targets
+fmt:
+	@echo "🎨 Formatting code with treefmt..."
+	$(NIX) run .#fmt
+
+test-flake:
+	@echo "🧪 Running tests with flake..."
+	$(NIX) run .#test
+
+update-flake:
+	@echo "🔄 Updating flake inputs..."
+	$(NIX) run .#update
+
+check-flake:
+	@echo "✅ Running flake check..."
+	$(NIX) flake check
+
+build-packages:
+	@echo "📦 Building all packages..."
+	$(NIX) build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update
 
 security-check:
 	@echo "🔒 Validating security module configuration..."

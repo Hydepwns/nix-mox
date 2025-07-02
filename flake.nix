@@ -22,6 +22,10 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Add additional useful inputs
+    nixpkgs-fmt.url = "github:nix-community/nixpkgs-fmt";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   nixConfig = {
@@ -31,14 +35,18 @@
       "https://cache.nixos.org"
     ];
     trusted-public-keys = [
-      "hydepwns.cachix.org-1:xg8huKdwzBkLdkq5eCKenadhCROHIICGI9H6y3simJU="
+      "hydepwns.cachix.org-1:xg8huKdwzBkLdkq5eCKenadhCROHI3GI9H6y3simJU="
       "nix-mox.cachix.org-1:MVJZxC7ZyRFAxVsxDuq0nmMRxlTIt5nFFm4Ur10ZCI4="
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
     ];
   };
 
-  outputs = { self, nixpkgs, flake-utils, home-manager, ... }@inputs:
+  outputs = { self, nixpkgs, flake-utils, home-manager, nixpkgs-fmt, treefmt-nix, ... }@inputs:
     let
+      # ============================================================================
+      # CONSTANTS AND CONFIGURATION
+      # ============================================================================
+
       # Supported systems with clear documentation
       supportedSystems = [
         "aarch64-darwin" # Apple Silicon Macs
@@ -47,26 +55,60 @@
         "aarch64-linux" # ARM Linux (Raspberry Pi, etc.)
       ];
 
+      # ============================================================================
+      # HELPER FUNCTIONS
+      # ============================================================================
+
       # Helper function to check if system is supported
       isSupported = system: builtins.elem system supportedSystems;
 
-      # Simplified helper function to get system-specific packages with better error handling
+      # Helper function to check if system is Linux
+      isLinux = system: builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
+
+      # Helper function to check if system is Darwin
+      isDarwin = system: builtins.elem system [ "aarch64-darwin" "x86_64-darwin" ];
+
+      # Helper function to safely import modules with error handling
+      safeImport = path: args:
+        let
+          result = builtins.tryEval (import path args);
+        in
+        if result.success then result.value else { };
+
+      # Helper function to get system-specific packages with better error handling
       getSystemPackages = system: pkgs:
         let
-          tryImport = path: builtins.tryEval (import path {
+          baseArgs = {
             inherit pkgs;
-            config = import ./config/default.nix { inherit inputs; };
+            config = safeImport ./config/default.nix { inherit inputs; };
             helpers = {
               readScript = path: builtins.readFile (self + "/${path}");
-              isLinux = system: builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
+              inherit isLinux;
             };
-          });
+          };
         in
-        if pkgs.stdenv.isLinux then
-          tryImport ./modules/packages/linux/default.nix
-        else if pkgs.stdenv.isDarwin then
-          tryImport ./modules/packages/macos/default.nix
-        else { success = true; value = { }; };
+        if isLinux system then
+          safeImport ./modules/packages/linux/default.nix baseArgs
+        else if isDarwin system then
+          safeImport ./modules/packages/macos/default.nix baseArgs
+        else { };
+
+      # Helper function to filter out null packages and ensure we have at least one package
+      filterNullPackages = pkgs: attrs:
+        let
+          nullPackages = pkgs.lib.filterAttrs (name: value: value == null) attrs;
+          nullNames = builtins.attrNames nullPackages;
+          filtered = builtins.removeAttrs attrs nullNames;
+        in
+        # If all packages are null, provide a minimal fallback
+        if builtins.length (builtins.attrNames filtered) == 0 then
+          { default = pkgs.hello; }  # Fallback package
+        else
+          filtered;
+
+      # ============================================================================
+      # PACKAGE CREATION FUNCTIONS
+      # ============================================================================
 
       # Simplified helper function to create packages with minimal evaluation
       createPackages = system: pkgs: systemPackages:
@@ -77,32 +119,19 @@
             uninstall = systemPackages.uninstall or null;
             default = systemPackages.install or null;
           };
-
-          # Helper function to filter out null packages and ensure we have at least one package
-          filterNullPackages = attrs:
-            let
-              nullPackages = pkgs.lib.filterAttrs (name: value: value == null) attrs;
-              nullNames = builtins.attrNames nullPackages;
-              filtered = builtins.removeAttrs attrs nullNames;
-            in
-            # If all packages are null, provide a minimal fallback
-            if builtins.length (builtins.attrNames filtered) == 0 then
-              { default = pkgs.hello; }  # Fallback package
-            else
-              filtered;
         in
-        if pkgs.stdenv.isLinux then
+        if isLinux system then
         # Linux packages - only include essential ones
-          filterNullPackages
+          filterNullPackages pkgs
             (commonPackages // {
               proxmox-update = systemPackages.proxmox-update or null;
               vzdump-backup = systemPackages.vzdump-backup or null;
               zfs-snapshot = systemPackages.zfs-snapshot or null;
               nixos-flake-update = systemPackages.nixos-flake-update or null;
             })
-        else if pkgs.stdenv.isDarwin then
+        else if isDarwin system then
         # macOS packages - only include essential ones
-          filterNullPackages
+          filterNullPackages pkgs
             (commonPackages // {
               homebrew-setup = systemPackages.homebrew-setup or null;
               macos-maintenance = systemPackages.macos-maintenance or null;
@@ -111,111 +140,103 @@
             })
         else
         # Other platforms - only common packages
-          filterNullPackages commonPackages;
+          filterNullPackages pkgs commonPackages;
+
+      # ============================================================================
+      # DEVELOPMENT SHELL CREATION FUNCTIONS
+      # ============================================================================
 
       # Simplified helper function to create platform-specific devShells
       createDevShells = system: pkgs: devShell:
         let
           # Common shells available on all platforms
           commonShells = {
-            default = devShell.default;
-            development = devShell.development;
-            testing = devShell.testing;
+            default = devShell.default or null;
+            development = devShell.development or null;
+            testing = devShell.testing or null;
           };
         in
-        if pkgs.stdenv.isLinux then
+        if isLinux system then
         # Linux - add essential shells only
-          commonShells // {
-            services = devShell.services;
-            monitoring = devShell.monitoring;
-            gaming = devShell.gaming;
-          }
-        else if pkgs.stdenv.isDarwin then
+          filterNullPackages pkgs
+            (commonShells // {
+              services = devShell.services or null;
+              monitoring = devShell.monitoring or null;
+              gaming = devShell.gaming or null;
+            })
+        else if isDarwin system then
         # macOS - add macOS-specific shell
-          commonShells // {
-            macos = devShell.macos;
-          }
+          filterNullPackages pkgs
+            (commonShells // {
+              macos = devShell.macos or null;
+            })
         else
         # Other platforms - only common shells
-          commonShells;
+          filterNullPackages pkgs commonShells;
+
+      # ============================================================================
+      # TEST CREATION FUNCTIONS
+      # ============================================================================
+
+      # Helper function to create test commands
+      createTestCommand = name: testScript: pkgs:
+        pkgs.runCommand "nix-mox-${name}"
+          {
+            buildInputs = [ pkgs.nushell ];
+            src = ./.;
+          } ''
+          cp -r $src $TMPDIR/src
+          cd $TMPDIR/src
+          export TEST_TEMP_DIR=$TMPDIR/nix-mox-${name}
+          nu -c "source ${testScript}" || exit 1
+          touch $out
+        '';
 
       # Simplified helper function to create platform-specific checks
       createChecks = system: pkgs:
         let
-          src = ./.;
-          # Always use nixpkgs Nushell for checks to ensure availability in CI
-          nushell = pkgs.nushell;
           baseChecks = {
             # Unit tests only
-            unit = pkgs.runCommand "nix-mox-unit-tests"
-              {
-                buildInputs = [ nushell ];
-              } ''
-              cp -r ${src} $TMPDIR/src
-              cd $TMPDIR/src
-              export TEST_TEMP_DIR=$TMPDIR/nix-mox-unit
-              nu -c "source scripts/tests/unit/unit-tests.nu" || exit 1
-              touch $out
-            '';
+            unit = createTestCommand "unit-tests" "scripts/tests/unit/unit-tests.nu" pkgs;
 
             # Integration tests only
-            integration = pkgs.runCommand "nix-mox-integration-tests"
-              {
-                buildInputs = [ nushell ];
-              } ''
-              cp -r ${src} $TMPDIR/src
-              cd $TMPDIR/src
-              export TEST_TEMP_DIR=$TMPDIR/nix-mox-integration
-              nu -c "source scripts/tests/integration/integration-tests.nu" || exit 1
-              touch $out
-            '';
+            integration = createTestCommand "integration-tests" "scripts/tests/integration/integration-tests.nu" pkgs;
 
             # Full test suite
-            test-suite = pkgs.runCommand "nix-mox-tests"
-              {
-                buildInputs = [ nushell ];
-              } ''
-              cp -r ${src} $TMPDIR/src
-              cd $TMPDIR/src
-              export TEST_TEMP_DIR=$TMPDIR/nix-mox-tests
-              nu -c "source scripts/tests/run-tests.nu; run []" || exit 1
-              touch $out
-            '';
+            test-suite = createTestCommand "tests" "scripts/tests/run-tests.nu; run []" pkgs;
           };
         in
-        if pkgs.stdenv.isLinux then
+        if isLinux system then
         # Linux-specific checks
           baseChecks // {
             # Linux-specific tests
-            linux-specific = pkgs.runCommand "nix-mox-linux-tests"
-              {
-                buildInputs = [ nushell ];
-              } ''
-              cp -r ${src} $TMPDIR/src
-              cd $TMPDIR/src
-              export TEST_TEMP_DIR=$TMPDIR/nix-mox-linux
-              nu -c "source scripts/tests/linux/linux-tests.nu" || exit 1
-              touch $out
-            '';
+            linux-specific = createTestCommand "linux-tests" "scripts/tests/linux/linux-tests.nu" pkgs;
           }
-        else if pkgs.stdenv.isDarwin then
+        else if isDarwin system then
         # macOS-specific checks
           baseChecks // {
             # macOS-specific tests
-            macos-specific = pkgs.runCommand "nix-mox-macos-tests"
-              {
-                buildInputs = [ nushell ];
-              } ''
-              cp -r ${src} $TMPDIR/src
-              cd $TMPDIR/src
-              export TEST_TEMP_DIR=$TMPDIR/nix-mox-macos
-              nu -c "source scripts/tests/macos/macos-tests.nu" || exit 1
-              touch $out
-            '';
+            macos-specific = createTestCommand "macos-tests" "scripts/tests/macos/macos-tests.nu" pkgs;
           }
         else
         # Other platforms - only base checks
           baseChecks;
+
+      # ============================================================================
+      # FORMATTER CONFIGURATION
+      # ============================================================================
+
+      # Create formatter configuration
+      createFormatter = system: pkgs: treefmt-nix:
+        treefmt-nix.lib.mkWrapper pkgs {
+          projectRootFile = "flake.nix";
+          programs = {
+            nixpkgs-fmt.enable = true;
+            shellcheck.enable = true;
+            shfmt.enable = true;
+          };
+        };
+
     in
     flake-utils.lib.eachSystem supportedSystems
       (system:
@@ -225,7 +246,7 @@
             inherit system;
             config.allowUnfree = true;
             config.darwinConfig =
-              if system == "aarch64-darwin" || system == "x86_64-darwin" then {
+              if isDarwin system then {
                 system = system;
                 # Use newer SDK to avoid deprecation warnings
                 sdkVersion = "14.0";
@@ -233,35 +254,57 @@
           };
 
           # Import development shell
-          devShell = import ./devshells/default.nix { inherit pkgs; };
+          devShell = safeImport ./devshells/default.nix { inherit pkgs; };
 
           # Get system-specific packages with error handling
-          systemPackagesResult = getSystemPackages system pkgs;
-          systemPackages = if systemPackagesResult.success then systemPackagesResult.value else { };
+          systemPackages = getSystemPackages system pkgs;
 
-          # Helper functions
-          helpers = {
-            readScript = path: builtins.readFile (self + "/${path}");
-            isLinux = system: builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
-          };
         in
         {
           # Development shells with platform-specific availability
           devShells = createDevShells system pkgs devShell;
 
-          # Code formatter
-          formatter = pkgs.nixpkgs-fmt;
+          # Code formatter - use treefmt for better formatting
+          formatter = pkgs.treefmt;
 
           # Packages with architecture checking
           packages = createPackages system pkgs systemPackages;
 
           # Test suite with platform-specific tests
           checks = createChecks system pkgs;
+
+          # Add apps for common development tasks
+          apps = {
+            # Format code
+            fmt = {
+              type = "app";
+              program = toString (pkgs.writeShellScript "fmt" ''
+                export PATH="${pkgs.nixpkgs-fmt}/bin:${pkgs.nodePackages.prettier}/bin:${pkgs.shfmt}/bin:${pkgs.python3Packages.black}/bin:${pkgs.rustfmt}/bin:${pkgs.go}/bin:${pkgs.shellcheck}/bin:$PATH"
+                ${pkgs.treefmt}/bin/treefmt "$@"
+              '');
+            };
+
+            # Run tests
+            test = {
+              type = "app";
+              program = toString (pkgs.writeShellScript "test" ''
+                nix build .#checks.${system}.test-suite
+              '');
+            };
+
+            # Update flake inputs
+            update = {
+              type = "app";
+              program = toString (pkgs.writeShellScript "update" ''
+                nix flake update
+              '');
+            };
+          };
         }
       ) // (
       # Only include NixOS configs if explicitly requested or if not in CI
       if builtins.getEnv "INCLUDE_NIXOS_CONFIGS" == "1" || (builtins.getEnv "CI" != "true" && builtins.getEnv "CI" != "1") then
-        { nixosConfigurations = import ./config { inherit inputs self; }; }
+        { nixosConfigurations = safeImport ./config { inherit inputs self; }; }
       else { }
     );
 }
