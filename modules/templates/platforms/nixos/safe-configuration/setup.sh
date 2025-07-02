@@ -511,7 +511,7 @@ EOF
   # Generate hardware configuration
   print_status "Generating hardware configuration..."
   if command -v nixos-generate-config > /dev/null 2>&1; then
-    sudo nixos-generate-config --show-hardware-config > hardware/hardware-configuration.nix
+    sudo nixos-generate-config --show-hardware-config | sudo tee hardware/hardware-configuration.nix > /dev/null
     print_success "Hardware configuration generated"
   else
     print_warning "nixos-generate-config not found. Creating minimal hardware config..."
