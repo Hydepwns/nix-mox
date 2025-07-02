@@ -6,11 +6,11 @@ let
   # Personal settings for hydepwns
   personal = {
     username = "hydepwns";
-    email = "hydepwns@example.com";
-    timezone = "America/New_York";
-    hostname = "hydepwns-nixos";
+    email = "andrewtehsailor@gmail.com";
+    timezone = "Europe/Madrid";
+    hostname = "nixos";
     gitUsername = "hydepwns";
-    gitEmail = "hydepwns@example.com";
+    gitEmail = "andrewtehsailor@gmail.com";
   };
 in
 {
@@ -18,9 +18,9 @@ in
   users.users.${personal.username} = lib.mkForce {
     isNormalUser = true;
     description = "Hydepwns User";
-    extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" ];
+    extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" ];
     shell = pkgs.zsh;
-    initialPassword = "changeme";
+    initialPassword = "sunfish";
   };
 
   # System configuration
@@ -162,6 +162,10 @@ in
       pciutils
       usbutils
       lshw
+      virt-manager
+      qemu
+      podman
+      podman-compose
     ];
   };
 }
