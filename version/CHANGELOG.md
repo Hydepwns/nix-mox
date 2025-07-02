@@ -5,6 +5,58 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-01-27
+
+### Added
+
+- **Code Formatting Infrastructure**: Comprehensive code formatting setup with treefmt
+  - Added `treefmt.nix` configuration for consistent code formatting across the project
+  - Added `.treefmt.toml` with formatting rules for multiple languages
+  - Added `docs/FORMATTING.md` with detailed formatting guidelines and best practices
+  - Added `docs/DEVELOPMENT.md` with comprehensive development workflow documentation
+- **Enhanced Flake Infrastructure**: Improved Nix flake with better error handling and platform support
+  - Enhanced error handling with `safeImport` functions and fallback mechanisms
+  - Improved platform detection and system-specific package filtering
+  - Better development shell organization with platform-specific availability
+  - Enhanced test suite integration with granular test execution
+- **Development Tools**: New development utilities and improved build system
+  - Added `fmt`, `test`, and `update` apps for common development tasks
+  - Enhanced Makefile with improved build targets and formatting support
+  - Better development shell organization with platform-specific tools
+
+### Changed
+
+- **Documentation**: Comprehensive documentation updates across the project
+  - Updated `README.md` with improved project description and usage examples
+  - Enhanced `QUICK_START.md` with better getting started instructions
+  - Updated `docs/CONTRIBUTING.md` with detailed contribution guidelines
+  - Updated `docs/USAGE.md` with comprehensive usage examples and best practices
+- **Core Scripts**: Significant improvements to core utilities and scripts
+  - Enhanced installation and uninstallation scripts with better error handling
+  - Improved CI testing capabilities with better reporting and reliability
+  - Updated remote builder setup and testing with enhanced functionality
+  - Enhanced Linux utilities and size analysis tools
+- **Gaming Development**: Improved gaming development environment
+  - Enhanced League of Legends configuration and launching scripts
+  - Improved gaming environment testing with better validation
+  - Better integration with development shells
+- **Modules and Templates**: Enhanced testing and error handling
+  - Improved error handling utilities across modules
+  - Enhanced CI runner test scripts (integration, performance, unit tests)
+  - Updated safe-configuration setup and test scripts
+  - Improved monitoring test fragments with better testing capabilities
+- **Development Shells**: Better organization and platform-specific features
+  - Improved shell organization with platform-specific availability
+  - Enhanced development tools integration
+  - Better NixOS configuration integration
+
+### Fixed
+
+- **Build System**: Improved build artifact management and error handling
+- **Script Reliability**: Enhanced script execution consistency across platforms
+- **Test Infrastructure**: Better test organization and execution reliability
+- **Platform Compatibility**: Improved cross-platform support and detection
+
 ## [0.4.3] - 2025-01-27
 
 ### Fixed
