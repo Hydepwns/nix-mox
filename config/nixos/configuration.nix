@@ -90,6 +90,21 @@
   # Users - will be configured in personal config
   users.mutableUsers = true;
 
+  # X11 and Display Manager (basic setup, can be overridden)
+  services.xserver = {
+    enable = true;
+    displayManager.lightdm.enable = true;
+    desktopManager = {
+      xfce.enable = true;
+      gnome.enable = false;
+      plasma5.enable = false;
+    };
+    xkb = {
+      layout = "us";
+      variant = "";
+    };
+  };
+
   # Boot
   boot = {
     # Kernel settings
