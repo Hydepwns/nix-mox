@@ -14,7 +14,7 @@
     pulseaudio # pactl - for audio system detection
 
     # Security
-    ufw # firewall status
+    # ufw # firewall status (removed, not in nixpkgs)
 
     # Additional useful gaming tools
     vulkan-tools # vulkaninfo (already available)
@@ -27,37 +27,9 @@
     wine # Wine (already available)
   ];
 
-  # Optional: Enable UFW firewall service
-  services.ufw = {
-    enable = true;
-    settings = {
-      DEFAULT_INPUT_POLICY = "DROP";
-      DEFAULT_OUTPUT_POLICY = "ACCEPT";
-      DEFAULT_FORWARD_POLICY = "DROP";
-    };
-  };
+  # Note: Firewall and audio are configured through the gaming.nix module
+  # This file only provides additional tools and packages
 
-  # Optional: Enable PipeWire for better audio
-  services.pipewire = {
-    enable = true;
-    pulse.enable = true;
-    alsa.enable = true;
-  };
-
-  # Optional: Enable GameMode service
-  services.gamemode = {
-    enable = true;
-    settings = {
-      general = {
-        renice = 10;
-        softrealtime = "auto";
-        ioprio = 0;
-      };
-      gpu = {
-        apply_gpu_optimisations = "accept-responsibility";
-        gpu_device = 0;
-        amd_performance_level = "high";
-      };
-    };
-  };
+  # Note: GameMode is configured through the gaming.nix module
+  # This file only provides additional tools and packages
 }
