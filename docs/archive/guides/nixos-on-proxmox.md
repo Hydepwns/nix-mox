@@ -73,8 +73,8 @@ services.nix-mox.templates.customOptions.safe-configuration = {
   hostname = "my-nixos-system";
   username = "myuser";
   timezone = "America/New_York";
-  displayManager = "lightdm";  # lightdm, sddm, gdm
-  desktopEnvironment = "gnome";  # gnome, plasma5, xfce, i3, awesome
+  displayManager = "sddm";  # sddm, gdm
+  desktopEnvironment = "gnome";  # gnome, plasma6, xfce, i3, awesome
   graphicsDriver = "auto";  # auto, nvidia, amdgpu, intel
   enableSteam = true;
   enableDocker = true;
@@ -96,7 +96,7 @@ If you still encounter display problems:
 
    ```nix
    services.xserver.displayManager = {
-     sddm.enable = true;  # Instead of lightdm
+     sddm.enable = true;  # Default display manager
    };
    ```
 
