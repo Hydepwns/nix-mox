@@ -394,7 +394,7 @@
         in
         {
           nixosConfigurations = {
-            # Use the personal configuration system
+            # Use the personal configuration system with gaming support
             nixos = inputs.nixpkgs.lib.nixosSystem {
               system = "x86_64-linux";
               specialArgs = { inherit inputs self; };
@@ -403,11 +403,29 @@
                 ./config/hardware/hardware-configuration.nix
                 # Import personal configuration (hydepwns.nix)
                 ./config/personal/hydepwns.nix
+                # Import gaming configuration
+                ./config/nixos/gaming.nix
+                ./config/nixos/gaming-tools.nix
                 inputs.home-manager.nixosModules.home-manager
                 {
                   home-manager.useGlobalPkgs = true;
                   home-manager.useUserPackages = true;
                   # The hydepwns.nix file already configures home-manager.users.hydepwns
+                }
+                # Enable gaming services
+                {
+                  services.gaming = {
+                    enable = true;
+                    gpu.type = "auto";
+                    performance.enable = true;
+                    performance.gamemode = true;
+                    performance.mangohud = true;
+                    audio.enable = true;
+                    audio.pipewire = true;
+                    platforms.steam = true;
+                    platforms.lutris = true;
+                    platforms.heroic = true;
+                  };
                 }
               ];
             };
