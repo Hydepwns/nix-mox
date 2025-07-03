@@ -130,8 +130,9 @@
   hardware = {
     # Basic hardware support
     enableRedistributableFirmware = true;
-    opengl.enable = true;
-    opengl.driSupport32Bit = true;
+    # Graphics support (updated for newer NixOS)
+    graphics.enable = true;
+    graphics.enable32Bit = true;
   };
 
   # Internationalization
