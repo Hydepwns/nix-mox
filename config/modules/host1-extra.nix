@@ -15,12 +15,13 @@
         lightdm.enable = true;
         # gdm.enable = true;  # Commented out to match current system
       };
-      desktopManager = {
-        gnome.enable = true;
-      };
     };
     pulseaudio.enable = false;
+        desktopManager.gnome.enable = true;
   };
+
+  # SSH configuration - use GNOME's seahorse ssh-askpass
+  programs.ssh.askPassword = lib.mkForce "${pkgs.seahorse}/libexec/seahorse/ssh-askpass";
 
   # Hardware-specific settings
   hardware = {
