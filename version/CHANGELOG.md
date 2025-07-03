@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2025-07-03
+
+### Added
+
+- **CI Runner Test Utilities**: New test utilities for CI runner infrastructure
+  - Added `test-utils.sh` with common testing utilities for CI runner tests
+  - Enhanced test job queue, logging, retry mechanism, and parallel execution utilities
+  - Improved test infrastructure for CI runner templates
+
+### Changed
+
+- **Code Quality**: Comprehensive code formatting and style improvements
+  - Enhanced `.treefmt.toml` with `--external-sources` flag for better shellcheck linting
+  - Improved shell script formatting across all scripts with consistent style
+  - Standardized error handling and output formatting in installation scripts
+  - Enhanced gaming scripts with better error handling and testing logic
+- **Installation Scripts**: Improved installation and setup script reliability
+  - Updated `install-nix.sh` with better formatting and error handling
+  - Enhanced `nix-mox-uninstall.sh` with improved cleanup logic
+  - Refactored remote builder setup and test scripts for better maintainability
+- **Configuration Files**: Updated system configuration structure
+  - Improved `host1-home.nix` configuration structure
+  - Enhanced `server-extra.nix` modularity
+  - Updated main NixOS configuration with better settings
+- **Error Handling**: Enhanced error handling across modules and packages
+  - Improved error handling utilities with better formatting and messages
+  - Enhanced Linux package configuration
+  - Updated safe-configuration setup script with better structure
+  - Improved monitoring test fragments and Linux common scripts
+
+### Fixed
+
+- **Shell Script Formatting**: Consistent formatting across all shell scripts
+- **Error Handling**: Better error messages and handling patterns
+- **Test Infrastructure**: Improved CI test script reliability and formatting
+- **Code Style**: Standardized indentation and formatting patterns
+
 ## [0.5.0] - 2025-01-27
 
 ### Added

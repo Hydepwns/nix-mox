@@ -123,27 +123,47 @@ Access metrics at `http://localhost:9100/metrics`
 
 ## Testing
 
-The template includes automated testing support:
+The template includes automated testing support with comprehensive test utilities:
 
-1. **Unit Tests**:
+### Test Utilities
+
+The `tests/test-utils.sh` file provides common testing utilities:
+
+- **Job Queue Testing**: `testJobQueue()` - Test job queue operations
+- **Logging Testing**: `testLogging()` - Test logging functionality
+- **Retry Mechanism Testing**: `testRetry()` - Test retry logic
+- **Parallel Execution Testing**: `testParallelExecution()` - Test parallel job execution
+
+### Test Categories
+
+1. **Unit Tests** (`unit-tests.sh`):
    - Configuration validation
    - Job queue management
    - Parallel execution
    - Retry mechanism
 
-2. **Integration Tests**:
+2. **Integration Tests** (`integration-tests.sh`):
    - Service integration
    - Monitoring setup
    - Error handling
    - Logging verification
 
-3. **Performance Tests**:
+3. **Performance Tests** (`performance-tests.sh`):
    - Parallel execution
    - Resource utilization
    - Queue management
 
+### Running Tests
+
 Run tests with:
 
 ```bash
-nix-build tests/default.nix
+# Run all tests
+./tests/unit-tests.sh
+./tests/integration-tests.sh
+./tests/performance-tests.sh
+
+# Or use the test utilities directly
+source tests/test-utils.sh
+testJobQueue "test-job" "test-job"
 ```

@@ -84,6 +84,7 @@ Each host can have its own:
 | `gaming` | Gaming workstation | Steam, performance optimizations |
 | `server` | Production server | Monitoring, management tools |
 | `desktop` | Daily use | Full desktop environment |
+| `ci-runner` | CI/CD infrastructure | Parallel job execution, monitoring, metrics |
 
 ## Structure
 
