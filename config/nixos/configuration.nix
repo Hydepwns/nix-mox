@@ -94,13 +94,15 @@
   services.xserver = {
     enable = true;
     displayManager.lightdm.enable = true;
-    desktopManager = {
-      xfce.enable = true;
-    };
     xkb = {
       layout = "us";
       variant = "";
     };
+  };
+
+  # Desktop Manager (updated for Plasma 6)
+  services.desktopManager = {
+    plasma6.enable = true;
   };
 
   # Boot
