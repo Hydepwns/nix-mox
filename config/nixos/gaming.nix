@@ -108,11 +108,8 @@ in
       open = cfg.gpu.nvidia.open;
       nvidiaSettings = true;
       package = config.boot.kernelPackages.nvidiaPackages.stable;
-      # prime = mkIf cfg.gpu.nvidia.prime.enable {
-      #   enable = true;
-      #   intelBusId = cfg.gpu.nvidia.prime.intelBusId;
-      #   nvidiaBusId = cfg.gpu.nvidia.prime.nvidiaBusId;
-      # };
+      # Note: Prime configuration removed due to option conflicts
+      # For hybrid setups, configure manually in hardware config
     };
 
     # Audio configuration
@@ -128,7 +125,7 @@ in
 
       # PulseAudio (legacy support)
       pulseaudio = mkIf cfg.audio.pulseaudio {
-        enable = true;
+        enable = false;
         support32Bit = true;
         package = pkgs.pulseaudioFull;
       };
@@ -163,11 +160,11 @@ in
 
       # Graphics tools
       vulkan-tools
-      vulkan-validation-layers
-      vulkan-headers
-      vulkan-loader
-      vulkan-extension-layer
-      vulkan-utility-libraries
+      # vulkan-validation-layers
+      # vulkan-headers
+      # vulkan-loader
+      # vulkan-extension-layer
+      # vulkan-utility-libraries
 
       # Wine and compatibility
       wine
@@ -183,12 +180,12 @@ in
 
       # Additional gaming tools
       protontricks
-      dosbox
-      scummvm
+      # dosbox
+      # scummvm
 
       # Audio tools
-      (mkIf cfg.audio.jack jack2)
-      (mkIf cfg.audio.jack qjackctl)
+      # (mkIf cfg.audio.jack jack2)
+      # (mkIf cfg.audio.jack qjackctl)
     ];
 
     # Kernel modules for gaming
