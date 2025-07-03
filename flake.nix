@@ -394,6 +394,25 @@
         in
         {
           nixosConfigurations = {
+            # Use the personal configuration system
+            nixos = inputs.nixpkgs.lib.nixosSystem {
+              system = "x86_64-linux";
+              specialArgs = { inherit inputs self; };
+              modules = [
+                ./config/nixos/configuration.nix
+                ./config/hardware/hardware-configuration.nix
+                # Import personal configuration (hydepwns.nix)
+                ./config/personal/hydepwns.nix
+                inputs.home-manager.nixosModules.home-manager
+                {
+                  home-manager.useGlobalPkgs = true;
+                  home-manager.useUserPackages = true;
+                  # The hydepwns.nix file already configures home-manager.users.hydepwns
+                }
+              ];
+            };
+
+            # Keep the original host configurations as alternatives
             host1 = inputs.nixpkgs.lib.nixosSystem {
               system = "x86_64-linux";
               specialArgs = { inherit inputs self; mySecret = "host1-secret"; hostType = "desktop"; };
