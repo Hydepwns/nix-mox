@@ -33,10 +33,34 @@ in
   networking.hostName = lib.mkForce personal.hostname;
   time.timeZone = lib.mkForce personal.timezone;
 
+  # Additional system packages
+  environment.systemPackages = with pkgs; [
+    # Essential tools (in addition to base config)
+    vlc
+    mpv
+    ffmpeg
+    imagemagick
+    gimp
+    inkscape
+    libreoffice
+    calibre
+    evince
+    vscode
+    jetbrains.idea-community
+    docker
+    docker-compose
+  ];
+
   # Display manager configuration - use LightDM since it's currently running
+  # Note: This will be merged with gaming configuration
   services.xserver = {
     enable = true;
     displayManager.lightdm.enable = true;
+    desktopManager = {
+      xfce.enable = true;
+      gnome.enable = false;
+      plasma5.enable = false;
+    };
     xkb = {
       layout = "us";
       variant = "";
@@ -150,7 +174,7 @@ in
       };
     };
 
-    # Common packages for development
+    # Common packages for development and gaming
     home.packages = with pkgs; [
       # Development tools
       nodejs_20
@@ -185,6 +209,38 @@ in
       qemu
       podman
       podman-compose
+
+      # Additional essential tools
+      vim
+      wget
+      curl
+      git
+      htop
+      tree
+      nix-index
+      nix-tree
+      inetutils
+      mtr
+      iperf3
+
+      # Graphics and multimedia
+      vlc
+      mpv
+      ffmpeg
+      imagemagick
+      gimp
+      inkscape
+
+      # Office and productivity
+      libreoffice
+      calibre
+      evince
+
+      # Additional development tools
+      vscode
+      jetbrains.idea-community
+      docker
+      docker-compose
     ];
   };
 }
