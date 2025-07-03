@@ -88,15 +88,13 @@
     };
 
     # SSH
-    ssh = {
-    };
+    ssh = { };
   };
 
   # Services
   services = {
     # SSH agent
-    ssh-agent = {
-    };
+    ssh-agent = { };
 
     # GPG agent
     gpg-agent = {

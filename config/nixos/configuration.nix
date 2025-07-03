@@ -64,7 +64,7 @@
     firewall = {
       enable = true;
       allowedTCPPorts = [ 22 ]; # SSH only by default
-      allowedUDPPorts = [];
+      allowedUDPPorts = [ ];
     };
   };
 

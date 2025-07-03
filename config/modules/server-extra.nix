@@ -100,12 +100,12 @@
     firewall = {
       enable = true;
       allowedTCPPorts = [
-        22    # SSH
-        80    # HTTP
-        443   # HTTPS
-        3000  # Grafana
-        9090  # Prometheus
-        5432  # PostgreSQL
+        22 # SSH
+        80 # HTTP
+        443 # HTTPS
+        3000 # Grafana
+        9090 # Prometheus
+        5432 # PostgreSQL
       ];
       allowedUDPPorts = [ 53 ]; # DNS
     };
