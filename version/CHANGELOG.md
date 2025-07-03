@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Nushell Formatting**: Added nufmt support for Nushell files
+  - `.treefmt.toml` now includes a Nushell formatter using `nufmt`
+  - `nufmt` added to devshell and flake fmt app for consistent Nushell formatting
+  - All `.nu` files are now auto-formatted with `nufmt` via treefmt
+- **Makefile Robustness**: All Makefile targets are now declared as `.PHONY`
+  - Prevents accidental file/target conflicts and improves reliability
+
 - **Code Quality**: Comprehensive code formatting and style improvements
   - Enhanced `.treefmt.toml` with `--external-sources` flag for better shellcheck linting
   - Improved shell script formatting across all scripts with consistent style
