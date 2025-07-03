@@ -24,7 +24,7 @@ in
   users.users.${personal.username} = {
     isNormalUser = true;
     description = "Hydepwns User";
-    extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" ];
+    extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" "qemu-libvirtd" ];
     shell = pkgs.zsh;
     initialPassword = "nixos";
   };
@@ -33,9 +33,23 @@ in
   networking.hostName = lib.mkForce personal.hostname;
   time.timeZone = lib.mkForce personal.timezone;
 
+  # Virtualization services
+  virtualisation = {
+    libvirtd = {
+      enable = true;
+      qemu = {
+        package = pkgs.qemu_kvm;
+        runAsRoot = true;
+        swtpm.enable = true;
+      };
+    };
+    spiceUSBRedirection.enable = true;
+  };
+
   # Additional system packages
   environment.systemPackages = with pkgs; [
     # Essential tools (in addition to base config)
+    firefox
     vlc
     mpv
     ffmpeg
@@ -49,6 +63,12 @@ in
     jetbrains.idea-community
     docker
     docker-compose
+
+    # Proxmox and virtualization tools
+    proxmox-backup-client
+    proxmox-auto-install-assistant
+    python312Packages.proxmoxer
+    terraform-providers.proxmox
   ];
 
   # Display manager configuration - use LightDM since it's currently running
@@ -56,14 +76,19 @@ in
   services.xserver = {
     enable = true;
     displayManager.lightdm.enable = true;
-    desktopManager = {
-      xfce.enable = true;
-    };
     xkb = {
       layout = "us";
       variant = "";
     };
   };
+
+  # Desktop Manager (updated for Plasma 6)
+  services.desktopManager = {
+    plasma6.enable = true;
+  };
+
+  # SSH configuration - use Plasma 6's ksshaskpass
+  programs.ssh.askPassword = lib.mkForce "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass";
 
   # Network configuration - enable network interfaces
   networking.useDHCP = true;
@@ -154,6 +179,9 @@ in
           selection_background = "#585b70";
           cursor = "#f5e0dc";
           url_color = "#f5c2e7";
+          # KDE Plasma integration
+          wayland_titlebar_color = "system";
+          macos_titlebar_color = "system";
         };
       };
 
@@ -167,6 +195,11 @@ in
           search = {
             default = "ddg";
             force = true;
+          };
+          # KDE Plasma integration
+          settings = {
+            "widget.use-xdg-desktop-portal.file-picker" = 1;
+            "widget.use-xdg-desktop-portal.mime-handler" = 1;
           };
         };
       };
@@ -208,6 +241,13 @@ in
       podman
       podman-compose
 
+      # Virtualization and management
+      virt-viewer
+      spice-gtk
+      spice-protocol
+      libvirt
+      libguestfs
+
       # Additional essential tools
       vim
       wget
@@ -239,6 +279,12 @@ in
       jetbrains.idea-community
       docker
       docker-compose
+
+      # Proxmox and virtualization tools
+      proxmox-backup-client
+      proxmox-auto-install-assistant
+      python312Packages.proxmoxer
+      terraform-providers.proxmox
     ];
   };
 }
