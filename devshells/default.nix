@@ -29,6 +29,7 @@
       pkgs.python3Packages.black
       pkgs.rustfmt
       pkgs.go
+      pkgs.nufmt
       pkgs.treefmt
       pkgs.nodejs
     ] ++ (

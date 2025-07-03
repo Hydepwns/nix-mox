@@ -314,7 +314,7 @@
             fmt = {
               type = "app";
               program = toString (pkgs.writeShellScript "fmt" ''
-                export PATH="${pkgs.nixpkgs-fmt}/bin:${pkgs.nodePackages.prettier}/bin:${pkgs.shfmt}/bin:${pkgs.python3Packages.black}/bin:${pkgs.rustfmt}/bin:${pkgs.go}/bin:${pkgs.shellcheck}/bin:$PATH"
+                export PATH="${pkgs.nixpkgs-fmt}/bin:${pkgs.nodePackages.prettier}/bin:${pkgs.shfmt}/bin:${pkgs.python3Packages.black}/bin:${pkgs.rustfmt}/bin:${pkgs.go}/bin:${pkgs.nufmt}/bin:${pkgs.shellcheck}/bin:$PATH"
                 ${pkgs.treefmt}/bin/treefmt "$@"
               '');
               meta = {

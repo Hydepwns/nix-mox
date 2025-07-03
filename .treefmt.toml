@@ -99,3 +99,8 @@ includes = ["*.rs"]
 command = "gofmt"
 options = ["-w", "-s"]
 includes = ["*.go"]
+
+# Nushell formatting
+[formatter.nushell]
+command = "nufmt"
+includes = ["*.nu"]
