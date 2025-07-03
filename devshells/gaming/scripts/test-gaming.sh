@@ -16,7 +16,7 @@ test_command() {
   local cmd="$1"
   local description="$2"
 
-  if command -v "$cmd" &> /dev/null; then
+  if command -v "$cmd" &>/dev/null; then
     echo -e "${GREEN}✓${NC} $description ($cmd)"
     return 0
   else
@@ -30,9 +30,9 @@ test_version() {
   local cmd="$1"
   local description="$2"
 
-  if command -v "$cmd" &> /dev/null; then
+  if command -v "$cmd" &>/dev/null; then
     local version
-    version=$($cmd --version 2> /dev/null | head -n1 || echo "version unknown")
+    version=$($cmd --version 2>/dev/null | head -n1 || echo "version unknown")
     echo -e "${GREEN}✓${NC} $description: $version"
     return 0
   else
@@ -45,16 +45,16 @@ test_version() {
 test_wine() {
   echo -e "${BLUE}Testing Wine functionality...${NC}"
 
-  if command -v wine &> /dev/null; then
+  if command -v wine &>/dev/null; then
     echo -e "${GREEN}✓${NC} Wine is available"
 
     # Test Wine version
     local wine_version
-    wine_version=$(wine --version 2> /dev/null || echo "version unknown")
+    wine_version=$(wine --version 2>/dev/null || echo "version unknown")
     echo -e "${GREEN}✓${NC} Wine version: $wine_version"
 
     # Test if Wine can run basic commands
-    if wine cmd /c echo "Wine test successful" &> /dev/null; then
+    if wine cmd /c echo "Wine test successful" &>/dev/null; then
       echo -e "${GREEN}✓${NC} Wine can execute basic commands"
     else
       echo -e "${YELLOW}⚠${NC} Wine basic command test failed"
@@ -70,7 +70,7 @@ test_graphics() {
   echo -e "${BLUE}Testing graphics capabilities...${NC}"
 
   # Test OpenGL
-  if command -v glxinfo &> /dev/null; then
+  if command -v glxinfo &>/dev/null; then
     local opengl_version
     opengl_version=$(glxinfo | grep "OpenGL version" | head -n1 || echo "OpenGL version unknown")
     echo -e "${GREEN}✓${NC} $opengl_version"
@@ -79,14 +79,14 @@ test_graphics() {
   fi
 
   # Test Vulkan
-  if command -v vulkaninfo &> /dev/null; then
+  if command -v vulkaninfo &>/dev/null; then
     echo -e "${GREEN}✓${NC} Vulkan support available"
   else
     echo -e "${YELLOW}⚠${NC} vulkaninfo not available"
   fi
 
   # Test OpenGL benchmark
-  if command -v glmark2 &> /dev/null; then
+  if command -v glmark2 &>/dev/null; then
     echo -e "${GREEN}✓${NC} OpenGL benchmark (glmark2) available"
   else
     echo -e "${YELLOW}⚠${NC} glmark2 not available"
@@ -101,8 +101,8 @@ test_monitoring() {
   test_command "nvtop" "GPU monitoring (nvtop)"
 
   # Test if nvtop works (NVIDIA GPU)
-  if command -v nvtop &> /dev/null; then
-    if timeout 2s nvtop --version &> /dev/null; then
+  if command -v nvtop &>/dev/null; then
+    if timeout 2s nvtop --version &>/dev/null; then
       echo -e "${GREEN}✓${NC} nvtop is functional"
     else
       echo -e "${YELLOW}⚠${NC} nvtop may not work (no NVIDIA GPU or driver issues)"
@@ -118,8 +118,8 @@ test_performance() {
   test_command "mangohud" "MangoHud"
 
   # Test GameMode
-  if command -v gamemode &> /dev/null; then
-    if gamemode --version &> /dev/null; then
+  if command -v gamemode &>/dev/null; then
+    if gamemode --version &>/dev/null; then
       echo -e "${GREEN}✓${NC} GameMode is functional"
     else
       echo -e "${YELLOW}⚠${NC} GameMode may not be properly configured"
@@ -127,8 +127,8 @@ test_performance() {
   fi
 
   # Test MangoHud
-  if command -v mangohud &> /dev/null; then
-    if mangohud --help &> /dev/null; then
+  if command -v mangohud &>/dev/null; then
+    if mangohud --help &>/dev/null; then
       echo -e "${GREEN}✓${NC} MangoHud is functional"
     else
       echo -e "${YELLOW}⚠${NC} MangoHud may not be properly configured"

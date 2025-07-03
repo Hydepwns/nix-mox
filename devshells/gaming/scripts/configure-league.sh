@@ -34,12 +34,12 @@ info() {
 
 # Function to check if running in gaming shell
 check_gaming_shell() {
-  if ! command -v wine &> /dev/null; then
+  if ! command -v wine &>/dev/null; then
     error "Please run this from the gaming shell (nix develop .#gaming)"
     exit 1
   fi
 
-  if ! command -v winetricks &> /dev/null; then
+  if ! command -v winetricks &>/dev/null; then
     error "winetricks not found. Please ensure you're in the gaming shell."
     exit 1
   fi
@@ -84,7 +84,7 @@ create_wine_prefix() {
     sleep 5
 
     # Kill any remaining Wine processes
-    wineserver -k 2> /dev/null || true
+    wineserver -k 2>/dev/null || true
   else
     log "Wine prefix already exists at: $WINEPREFIX"
   fi
@@ -141,7 +141,7 @@ setup_environment() {
   log "Setting up environment variables for optimal performance..."
 
   # Create environment file
-  cat > "$HOME/.config/league-env" << 'EOF'
+  cat >"$HOME/.config/league-env" <<'EOF'
 # League of Legends Wine Environment Variables
 export WINEPREFIX="$HOME/.wine-league"
 export WINEARCH=win64
@@ -176,7 +176,7 @@ EOF
 create_launch_script() {
   log "Creating League of Legends launch script..."
 
-  cat > "$HOME/.local/bin/league-launch" << 'EOF'
+  cat >"$HOME/.local/bin/league-launch" <<'EOF'
 #!/usr/bin/env bash
 # League of Legends launch script with performance optimizations
 
@@ -204,7 +204,7 @@ EOF
 create_lutris_config() {
   log "Creating Lutris configuration template..."
 
-  cat > "$HOME/.config/lutris/games/league-of-legends.yml" << 'EOF'
+  cat >"$HOME/.config/lutris/games/league-of-legends.yml" <<'EOF'
 # League of Legends Lutris Configuration
 name: League of Legends
 slug: league-of-legends
