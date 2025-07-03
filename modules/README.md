@@ -228,7 +228,7 @@ The main automation entrypoint is the bash wrapper script for robust CLI usage:
 
 - **nix-mox**: Bash wrapper (recommended for all CLI usage)
 - **nix-mox.nu**: Nushell automation logic (called by the wrapper)
-- **setup-wizard.nu**: Interactive configuration wizard
+- **setup.nu**: Interactive configuration wizard
 - **health-check.nu**: System health diagnostics
 - **linux/**: Linux-specific scripts (backup, update, ZFS, install, etc.)
 - **windows/**: Windows-specific scripts

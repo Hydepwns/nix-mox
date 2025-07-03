@@ -12,12 +12,13 @@
     xserver = {
       enable = true;
       displayManager = {
-        lightdm.enable = true;
-        # gdm.enable = true;  # Commented out to match current system
+        sddm.enable = true;
+        # Optional: Enable GDM for GNOME
+        # gdm.enable = true;
       };
     };
     pulseaudio.enable = false;
-        desktopManager.gnome.enable = true;
+    desktopManager.plasma6.enable = true;
   };
 
   # SSH configuration - use GNOME's seahorse ssh-askpass

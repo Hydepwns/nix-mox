@@ -32,6 +32,9 @@
     # Voice chat
     discord
     teamspeak
+
+    # Terminal emulator
+    kitty
   ];
 
   # Gaming programs

@@ -19,6 +19,9 @@
     git
     htop
     curl
+
+    # Terminal emulator
+    kitty
   ];
 
   # Basic programs

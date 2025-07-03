@@ -98,7 +98,7 @@ services.xserver.displayManager = {
 ```nix
 services.xserver.desktopManager = {
   gnome.enable = false;    # Disable default
-  plasma5.enable = true;   # Enable KDE Plasma
+  plasma6.enable = true;   # Enable KDE Plasma 6
   # xfce.enable = true;    # Enable XFCE
 };
 ```

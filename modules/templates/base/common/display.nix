@@ -2,7 +2,7 @@
 {
   services.xserver = {
     enable = true;
-    displayManager.lightdm.enable = true;
+    displayManager.sddm.enable = true;
     services.desktopManager.gnome.enable = true;
   };
 }

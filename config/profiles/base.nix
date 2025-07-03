@@ -18,6 +18,9 @@
     bat
     exa
     fzf
+
+    # Terminal emulator
+    kitty
   ];
 
   # Basic programs
@@ -92,4 +95,11 @@
     PAGER = "less";
     TERM = "xterm-256color";
   };
+
+  # Desktop environment
+  services.desktopManager.plasma6.enable = true;
+  # Optional: Enable GNOME instead of Plasma
+  # services.desktopManager.gnome.enable = true;
+  # Enable Wayland support for SDDM (Plasma 6)
+  services.displayManager.sddm.wayland.enable = true;
 }

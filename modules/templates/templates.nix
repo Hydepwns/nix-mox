@@ -108,13 +108,13 @@ let
         };
         displayManager = {
           type = "enum";
-          values = [ "lightdm" "sddm" "gdm" ];
-          default = "lightdm";
+          values = [ "sddm" "gdm" "lightdm" ];
+          default = "sddm";
           description = "Display manager to use";
         };
         desktopEnvironment = {
           type = "enum";
-          values = [ "gnome" "plasma5" "xfce" "i3" "awesome" ];
+          values = [ "gnome" "plasma6" "xfce" "i3" "awesome" ];
           default = "gnome";
           description = "Desktop environment or window manager to use";
         };

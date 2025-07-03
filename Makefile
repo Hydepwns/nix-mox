@@ -139,62 +139,60 @@ setup-gaming:
 gaming-workstation:
 gaming-setup:
 	@echo "🎮 Setting up Gaming Workstation..."
-	$(NUSHELL) scripts/gaming/setup-gaming-workstation.nu
-	@echo "🎮 Setting up Gaming Workstation..."
-	$(NUSHELL) scripts/gaming/setup-gaming-workstation.nu
+	$(NUSHELL) scripts/core/setup.nu
 
 gaming-workstation-dev:
 	@echo "🎮 Setting up Development + Gaming Workstation..."
-	$(NUSHELL) scripts/gaming/setup-gaming-workstation.nu --development --performance
+	$(NUSHELL) scripts/core/setup.nu
 
 gaming-workstation-interactive:
 	@echo "🎮 Interactive Gaming Workstation Setup..."
-	$(NUSHELL) scripts/gaming/setup-gaming-workstation.nu --interactive
+	$(NUSHELL) scripts/core/setup.nu
 
 gaming-benchmark:
 	@echo "🎮 Running Gaming Performance Benchmark..."
-	$(NUSHELL) scripts/gaming/gaming-benchmark.nu
+	@echo "⚠️  This feature has been moved to scripts/archive/"
 
 validate-gaming:
 	@echo "🎮 Validating Gaming Configuration..."
-	$(NUSHELL) scripts/gaming/validate-gaming-config.nu
+	@echo "⚠️  This feature has been moved to scripts/archive/"
 
 test-gaming:
 	@echo "🎮 Testing Gaming Setup..."
-	$(NUSHELL) scripts/gaming/validate-gaming-config.nu
+	@echo "⚠️  This feature has been moved to scripts/archive/"
 
 validate-display:
 	@echo "🖥️  Testing Display Configuration..."
-	$(NUSHELL) scripts/validation/validate-display-config.nu
+	@echo "⚠️  This feature has been moved to scripts/archive/"
 
 validate-display-interactive:
 	@echo "🖥️  Interactive Display Configuration Testing..."
-	$(NUSHELL) scripts/validation/validate-display-config.nu --interactive
+	@echo "⚠️  This feature has been moved to scripts/archive/"
 
 validate-display-backup:
 	@echo "🖥️  Testing Display Configuration with Backup..."
-	$(NUSHELL) scripts/validation/validate-display-config.nu --backup
+	@echo "⚠️  This feature has been moved to scripts/archive/"
 
 validate-display-verbose:
 	@echo "🖥️  Verbose Display Configuration Testing..."
-	$(NUSHELL) scripts/validation/validate-display-config.nu --verbose
+	@echo "⚠️  This feature has been moved to scripts/archive/"
 
 validate-display-full:
 	@echo "🖥️  Comprehensive Display Configuration Testing..."
-	$(NUSHELL) scripts/validation/validate-display-config.nu --backup --verbose --interactive
+	@echo "⚠️  This feature has been moved to scripts/archive/"
 
 # Code quality targets
 code-quality: check-nushell
 	@echo "🔍 Running comprehensive code quality analysis..."
-	$(NUSHELL) scripts/development/code-quality.nu
+	@echo "⚠️  This feature has been moved to scripts/archive/"
 
 code-syntax: check-nushell
 	@echo "🔍 Checking code syntax..."
-	$(NUSHELL) -c "source scripts/development/code-quality.nu; check_syntax"
+	@echo "⚠️  This feature has been moved to scripts/archive/"
 
 code-security: check-nushell
 	@echo "🔍 Checking for security issues..."
-	$(NUSHELL) -c "source scripts/development/code-quality.nu; check_security"
+	@echo "⚠️  This feature has been moved to scripts/archive/"
 
 quality: code-quality
 

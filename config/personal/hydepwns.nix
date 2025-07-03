@@ -71,11 +71,11 @@ in
     terraform-providers.proxmox
   ];
 
-  # Display manager configuration - use LightDM since it's currently running
+  # Display manager configuration - use SDDM for Plasma 6
   # Note: This will be merged with gaming configuration
   services.xserver = {
     enable = true;
-    displayManager.lightdm.enable = true;
+    displayManager.sddm.enable = true;
     xkb = {
       layout = "us";
       variant = "";
@@ -170,16 +170,17 @@ in
       # Terminal
       kitty = {
         enable = true;
+        font = {
+          name = "JetBrains Mono Nerd Font";
+          size = 12;
+        };
         settings = {
-          font_family = "JetBrains Mono Nerd Font";
-          font_size = 12;
-          background_opacity = 0.9;
+          background_opacity = "0.9";
           background = "#1e1e2e";
           foreground = "#cdd6f4";
           selection_background = "#585b70";
           cursor = "#f5e0dc";
           url_color = "#f5c2e7";
-          # KDE Plasma integration
           wayland_titlebar_color = "system";
           macos_titlebar_color = "system";
         };

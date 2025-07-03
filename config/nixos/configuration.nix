@@ -34,6 +34,9 @@
     htop
     tree
 
+    # Terminal emulator
+    kitty
+
     # Nix tools
     nix-index
     nix-tree
@@ -93,12 +96,15 @@
   # X11 and Display Manager (basic setup, can be overridden)
   services.xserver = {
     enable = true;
-    displayManager.lightdm.enable = true;
+    displayManager.sddm.enable = true;
     xkb = {
       layout = "us";
       variant = "";
     };
   };
+
+  # Enable Wayland support for SDDM (Plasma 6)
+  services.displayManager.sddm.wayland.enable = true;
 
   # Desktop Manager (updated for Plasma 6)
   services.desktopManager = {
@@ -122,6 +128,8 @@
   hardware = {
     # Basic hardware support
     enableRedistributableFirmware = true;
+    opengl.enable = true;
+    opengl.driSupport32Bit = true;
   };
 
   # Internationalization
@@ -159,6 +167,8 @@
 
     # Zsh
     zsh.enable = true;
+
+    # Note: Kitty configuration is handled by home-manager in personal config
   };
 
   # Environment
@@ -174,4 +184,10 @@
       # Add any global shell initialization here
     '';
   };
+
+  # Set Kitty as the default terminal for all users in KDE Plasma
+  environment.etc."xdg/kdeglobals".text = ''
+[General]
+TerminalApplication=kitty
+'';
 }

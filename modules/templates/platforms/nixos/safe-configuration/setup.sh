@@ -117,7 +117,7 @@ main() {
 
   case $de_choice in
   1) desktop_environment="gnome" ;;
-  2) desktop_environment="plasma5" ;;
+  2) desktop_environment="plasma6" ;;
   3) desktop_environment="xfce" ;;
   4) desktop_environment="i3" ;;
   5) desktop_environment="awesome" ;;
@@ -282,8 +282,8 @@ EOF
     gnome.enable = false;
 EOF
     case $desktop_environment in
-    "plasma5")
-      echo "    plasma5.enable = true;" >>nixos/configuration.nix
+    "plasma6")
+      echo "    plasma6.enable = true;" >>nixos/configuration.nix
       ;;
     "xfce")
       echo "    xfce.enable = true;" >>nixos/configuration.nix

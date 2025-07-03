@@ -210,13 +210,11 @@ nix run .#uninstall           # Uninstall nix-mox
 
 ## Documentation
 
-- **[Quick Start](QUICK_START.md)** - Get started in minutes
-- **[Usage Guide](docs/USAGE.md)** - Comprehensive usage documentation
-- **[Development Guide](docs/DEVELOPMENT.md)** - Development workflow and tools
-- **[Formatting Guide](docs/FORMATTING.md)** - Code formatting guidelines
-- **[Gaming Guide](docs/guides/gaming.md)** - Gaming setup and optimization
-- **[Examples](docs/examples/)** - Configuration examples
-- **[Contributing](docs/CONTRIBUTING.md)** - Development guidelines
+- **[Quick Start](docs/QUICK_START.md)** - Get started in minutes
+- **[Templates](docs/TEMPLATES.md)** - Template and profile reference
+- **[Platform Setup](docs/PLATFORM.md)** - Platform-specific guides
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Contributing](docs/archive/CONTRIBUTING.md)** - Development guidelines (archived)
 
 ## Features
 
