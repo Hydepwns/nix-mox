@@ -31,7 +31,7 @@ print_error() {
 
 # Function to check if command exists
 command_exists() {
-  command -v "$1" > /dev/null 2>&1
+  command -v "$1" >/dev/null 2>&1
 }
 
 # Function to check if we're on macOS
@@ -54,7 +54,7 @@ check_ssh_key() {
 
 # Function to display usage
 show_usage() {
-  cat << EOF
+  cat <<EOF
 Usage: $0 [OPTIONS] REMOTE_HOST
 
 Setup a remote Linux builder for Nix on macOS.
@@ -83,40 +83,40 @@ SYSTEMS="x86_64-linux,aarch64-linux"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -u | --user)
-      REMOTE_USER="$2"
-      shift 2
-      ;;
-    -p | --port)
-      SSH_PORT="$2"
-      shift 2
-      ;;
-    -k | --key)
-      SSH_KEY_PATH="$2"
-      shift 2
-      ;;
-    -s | --systems)
-      SYSTEMS="$2"
-      shift 2
-      ;;
-    -h | --help)
-      show_usage
-      exit 0
-      ;;
-    -*)
-      print_error "Unknown option: $1"
-      show_usage
+  -u | --user)
+    REMOTE_USER="$2"
+    shift 2
+    ;;
+  -p | --port)
+    SSH_PORT="$2"
+    shift 2
+    ;;
+  -k | --key)
+    SSH_KEY_PATH="$2"
+    shift 2
+    ;;
+  -s | --systems)
+    SYSTEMS="$2"
+    shift 2
+    ;;
+  -h | --help)
+    show_usage
+    exit 0
+    ;;
+  -*)
+    print_error "Unknown option: $1"
+    show_usage
+    exit 1
+    ;;
+  *)
+    if [[ -z $REMOTE_HOST ]]; then
+      REMOTE_HOST="$1"
+    else
+      print_error "Multiple hosts specified"
       exit 1
-      ;;
-    *)
-      if [[ -z $REMOTE_HOST ]]; then
-        REMOTE_HOST="$1"
-      else
-        print_error "Multiple hosts specified"
-        exit 1
-      fi
-      shift
-      ;;
+    fi
+    shift
+    ;;
   esac
 done
 
@@ -144,7 +144,7 @@ setup_remote_builder() {
 
   # Test SSH connection
   print_status "Testing SSH connection to $REMOTE_HOST..."
-  if ! ssh -p "$SSH_PORT" -o ConnectTimeout=10 -o BatchMode=yes "$REMOTE_USER@$REMOTE_HOST" exit 2> /dev/null; then
+  if ! ssh -p "$SSH_PORT" -o ConnectTimeout=10 -o BatchMode=yes "$REMOTE_USER@$REMOTE_HOST" exit 2>/dev/null; then
     print_error "Cannot connect to $REMOTE_HOST as $REMOTE_USER"
     print_status "Please ensure:"
     print_status "1. The remote host is accessible"
@@ -174,7 +174,7 @@ setup_remote_machine() {
   print_status "Setting up remote machine..."
 
   # Create remote setup script
-  cat > /tmp/remote_nix_setup.sh << 'REMOTE_SCRIPT'
+  cat >/tmp/remote_nix_setup.sh <<'REMOTE_SCRIPT'
 #!/bin/bash
 set -euo pipefail
 
@@ -256,7 +256,7 @@ setup_local_machine() {
   fi
 
   # Add builder configuration
-  echo "$builder_config" >> "$nix_conf"
+  echo "$builder_config" >>"$nix_conf"
 
   print_success "Local machine setup complete"
 }
@@ -267,7 +267,7 @@ test_remote_builder() {
 
   # Test with a simple derivation
   local test_drv
-  test_drv=$(nix-instantiate --expr "derivation { name = \"test\"; system = \"x86_64-linux\"; builder = \"/bin/sh\"; args = [\"-c\" \"echo hello > \$out\"]; }" 2> /dev/null || true)
+  test_drv=$(nix-instantiate --expr 'derivation { name = "test"; system = "x86_64-linux"; builder = "/bin/sh"; args = ["-c" "echo hello > $out"]; }' 2>/dev/null || true)
 
   if [[ -n $test_drv ]]; then
     print_status "Testing build on remote machine..."

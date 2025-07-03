@@ -84,7 +84,7 @@ test_ssh_connection() {
   print_status "Remote user: $remote_user"
   print_status "SSH port: $ssh_port"
 
-  if ssh -p "$ssh_port" -o ConnectTimeout=10 -o BatchMode=yes "$remote_user@$remote_host" exit 2> /dev/null; then
+  if ssh -p "$ssh_port" -o ConnectTimeout=10 -o BatchMode=yes "$remote_user@$remote_host" exit 2>/dev/null; then
     print_success "SSH connection successful"
   else
     print_error "SSH connection failed"
@@ -101,15 +101,15 @@ test_simple_derivation() {
   print_status "Testing simple derivation build..."
 
   local test_expr
-  test_expr="derivation {
-        name = \"remote-test\";
-        system = \"x86_64-linux\";
-        builder = \"/bin/sh\";
-        args = [\"-c\" \"echo \\\"Remote builder test successful\\\" > \$out\"];
-    }"
+  test_expr='derivation {
+        name = "remote-test";
+        system = "x86_64-linux";
+        builder = "/bin/sh";
+        args = ["-c" "echo \"Remote builder test successful\" > $out"];
+    }'
 
   local test_drv
-  test_drv=$(nix-instantiate --expr "$test_expr" 2> /dev/null || true)
+  test_drv=$(nix-instantiate --expr "$test_expr" 2>/dev/null || true)
 
   if [[ -n $test_drv ]]; then
     print_status "Testing build on remote machine..."
@@ -151,7 +151,7 @@ test_actual_build() {
     print_status "Content: $(cat "$result")"
 
     # Cleanup
-    nix-store --delete "$result" 2> /dev/null || true
+    nix-store --delete "$result" 2>/dev/null || true
     print_status "Cleaned up test build"
   else
     print_error "Build failed"
@@ -179,7 +179,7 @@ test_project_builds() {
     print_status "Found flake.nix, testing project builds..."
 
     # Test x86_64-linux build
-    if nix eval .#packages.x86_64-linux.default 2> /dev/null; then
+    if nix eval .#packages.x86_64-linux.default 2>/dev/null; then
       print_status "Testing x86_64-linux build..."
       if nix build .#packages.x86_64-linux.default --dry-run 2>&1 | grep -q "will be built"; then
         print_success "x86_64-linux build will use remote builder"
@@ -191,7 +191,7 @@ test_project_builds() {
     fi
 
     # Test aarch64-linux build
-    if nix eval .#packages.aarch64-linux.default 2> /dev/null; then
+    if nix eval .#packages.aarch64-linux.default 2>/dev/null; then
       print_status "Testing aarch64-linux build..."
       if nix build .#packages.aarch64-linux.default --dry-run 2>&1 | grep -q "will be built"; then
         print_success "aarch64-linux build will use remote builder"
