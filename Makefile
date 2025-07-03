@@ -12,12 +12,16 @@ NIX = nix
 PACKAGES = proxmox-update vzdump-backup zfs-snapshot nixos-flake-update install uninstall
 
 # Phony targets
-.PHONY: help test unit integration clean format check build build-all \
+.PHONY: help test test-unit test-integration test-flake test-gaming clean format fmt check check-flake build build-all build-packages \
         dev test-shell gaming-shell macos-shell services-shell monitoring-shell zfs-shell \
-        ci-test ci-local update lock clean-all packages shells analyze-sizes \
-        setup-wizard health-check security-check sbom cache-optimize size-dashboard \
-        remote-builder-setup test-remote-builder performance-analyze performance-optimize performance-report perf \
-        code-quality code-syntax code-security quality
+        ci-test ci-local update update-flake lock clean-all packages shells analyze-sizes \
+        setup setup-gaming gaming-setup gaming-workstation gaming-workstation-dev gaming-workstation-interactive gaming-benchmark validate-gaming \
+        health-check security-check sbom sbom-spdx sbom-cyclonedx sbom-csv cache-optimize cache-warm cache-maintain \
+        size-dashboard size-dashboard-html size-dashboard-api remote-builder-setup test-remote-builder \
+        performance-analyze performance-optimize performance-report perf \
+        code-quality code-syntax code-security quality \
+        validate-display validate-display-interactive validate-display-backup validate-display-verbose validate-display-full \
+        coverage coverage-grcov coverage-tarpaulin coverage-custom coverage-ci coverage-local
 
 # Default target - show help
 help:
