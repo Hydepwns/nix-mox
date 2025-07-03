@@ -15,7 +15,7 @@
     settings = {
       auto-optimise-store = true;
       experimental-features = [ "nix-command" "flakes" ];
-      trusted-users = [ "root" "droo" ];
+      trusted-users = [ "root" "hydepwns" ];
     };
     gc = {
       automatic = true;
@@ -87,20 +87,8 @@
     cron.enable = true;
   };
 
-  # Users
-  users = {
-    mutableUsers = false;
-    users.droo = {
-      isNormalUser = true;
-      extraGroups = [ "wheel" ];
-      shell = pkgs.bash;
-      # SSH keys will be added per-host
-      openssh.authorizedKeys.keys = [
-        # Add your SSH public key here
-        "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC..."
-      ];
-    };
-  };
+  # Users - will be configured in personal config
+  users.mutableUsers = true;
 
   # Boot
   boot = {

@@ -14,8 +14,14 @@ let
   };
 in
 {
-  # System user configuration
-  users.users.${personal.username} = lib.mkForce {
+    # System user configuration - keep droo user but add hydepwns
+  users.users.droo = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ];
+    shell = pkgs.zsh;
+  };
+
+  users.users.${personal.username} = {
     isNormalUser = true;
     description = "Hydepwns User";
     extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" ];
@@ -26,6 +32,19 @@ in
   # System configuration
   networking.hostName = lib.mkForce personal.hostname;
   time.timeZone = lib.mkForce personal.timezone;
+
+  # Display manager configuration - use LightDM since it's currently running
+  services.xserver = {
+    enable = true;
+    displayManager.lightdm.enable = true;
+    xkb = {
+      layout = "us";
+      variant = "";
+    };
+  };
+
+  # Network configuration - enable network interfaces
+  networking.useDHCP = true;
 
   # Home Manager configuration
   home-manager.users.${personal.username} = lib.mkForce {
@@ -124,7 +143,7 @@ in
           name = "Default";
           isDefault = true;
           search = {
-            default = "DuckDuckGo";
+            default = "ddg";
             force = true;
           };
         };
