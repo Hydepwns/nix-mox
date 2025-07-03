@@ -47,6 +47,10 @@ else {
   # Platform
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 
+  # Boot loader - use systemd-boot for UEFI systems
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
   # CPU microcode updates
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;

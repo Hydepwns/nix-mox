@@ -58,8 +58,6 @@ in
     displayManager.lightdm.enable = true;
     desktopManager = {
       xfce.enable = true;
-      gnome.enable = false;
-      plasma5.enable = false;
     };
     xkb = {
       layout = "us";
