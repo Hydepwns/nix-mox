@@ -37,7 +37,7 @@ includes = ["*.sh", "*.bash", "*.zsh"]
 # Shell script linting
 [formatter.shellcheck]
 command = "shellcheck"
-options = ["--color=always", "--shell=bash"]
+options = ["--color=always", "--shell=bash", "--external-sources"]
 includes = ["*.sh", "*.bash", "*.zsh"]
 
 # Markdown formatting
@@ -98,4 +98,4 @@ includes = ["*.rs"]
 [formatter.go]
 command = "gofmt"
 options = ["-w", "-s"]
-includes = ["*.go"] 
+includes = ["*.go"]

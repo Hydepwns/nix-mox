@@ -101,7 +101,7 @@
           result = builtins.tryEval (import path args);
         in
         if result.success then result.value else
-          throw "Failed to import ${path}: ${result.error}";
+        throw "Failed to import ${path}: ${result.error}";
 
       # Helper function to validate script paths exist
       validateScriptPath = path:
