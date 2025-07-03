@@ -40,5 +40,10 @@
   # networking.interfaces.enp5s0.useDHCP = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+
+  # Boot loader configuration for UEFI systems
+  boot.loader.systemd-boot.enable = lib.mkForce true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }
