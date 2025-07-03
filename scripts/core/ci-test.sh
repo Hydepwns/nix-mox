@@ -10,7 +10,7 @@ echo "=================================="
 
 # Check prerequisites
 echo "📋 Checking prerequisites..."
-if ! command -v nix &> /dev/null; then
+if ! command -v nix &>/dev/null; then
   echo "❌ Nix not found. Please install Nix first."
   exit 1
 fi
@@ -97,7 +97,7 @@ fi
 # Test 6: Check devshells
 echo ""
 echo "🔍 Checking devshells..."
-if nix develop --help > /dev/null 2>&1; then
+if nix develop --help >/dev/null 2>&1; then
   echo "✅ Devshells are valid"
 else
   echo "❌ Devshells check failed"

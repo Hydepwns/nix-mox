@@ -1,8 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
-# shellcheck source=./test-utils.nix
-. ./test-utils.nix
+# shellcheck disable=SC1091
+# shellcheck source=./test-utils.sh
+. ./test-utils.sh
 
 echo "Running unit tests..."
 
