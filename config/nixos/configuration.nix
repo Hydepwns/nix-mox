@@ -96,12 +96,14 @@
   # X11 and Display Manager (basic setup, can be overridden)
   services.xserver = {
     enable = true;
-    displayManager.sddm.enable = true;
     xkb = {
       layout = "us";
       variant = "";
     };
   };
+
+  # Display manager (updated for newer NixOS)
+  services.displayManager.sddm.enable = true;
 
   # Enable Wayland support for SDDM (Plasma 6)
   services.displayManager.sddm.wayland.enable = true;

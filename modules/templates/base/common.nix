@@ -39,9 +39,11 @@
   # Display configuration
   services.xserver = {
     enable = true;
-    displayManager.sddm.enable = true;
     services.desktopManager.gnome.enable = true;
   };
+
+  # Display manager (updated for newer NixOS)
+  services.displayManager.sddm.enable = true;
 
   # Sound
   security.rtkit.enable = true;
@@ -52,10 +54,10 @@
     pulse.enable = true;
   };
 
-  # Graphics drivers
-  hardware.opengl = {
+  # Graphics drivers (updated for newer NixOS)
+  hardware.graphics = {
     enable = true;
-    driSupport32Bit = true;
+    enable32Bit = true;
   };
 
   # Enable sudo

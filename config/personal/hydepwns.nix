@@ -75,12 +75,14 @@ in
   # Note: This will be merged with gaming configuration
   services.xserver = {
     enable = true;
-    displayManager.sddm.enable = true;
     xkb = {
       layout = "us";
       variant = "";
     };
   };
+
+  # Display manager (updated for newer NixOS)
+  services.displayManager.sddm.enable = true;
 
   # Desktop Manager (updated for Plasma 6)
   services.desktopManager = {

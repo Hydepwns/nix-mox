@@ -159,8 +159,6 @@ Run the script with:
 - `ci-test.sh`          — CI test script
 - `summarize-tests.sh`  — Test summarization
 
-
-
 ### **Tools (`tools/`)**
 
 - `cleanup.nu`          — Comprehensive project cleanup (`--help` available)

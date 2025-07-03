@@ -85,11 +85,11 @@ in
     wantedBy = [ "timers.target" ]; # Ensures the timer is started on boot
   };
 
-  # --- NVIDIA and OpenGL Support ---
+  # --- NVIDIA and OpenGL Support (updated for newer NixOS) ---
   services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.opengl.enable = true;
-  hardware.opengl.driSupport = true;
-  hardware.opengl.driSupport32Bit = true;
+  hardware.graphics.enable = true;
+  hardware.graphics.driSupport = true;
+  hardware.graphics.enable32Bit = true;
   hardware.pulseaudio.support32Bit = true;
 
   system.stateVersion = "24.05";
