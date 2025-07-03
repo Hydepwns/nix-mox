@@ -11,12 +11,8 @@
   services = {
     xserver = {
       enable = true;
-      displayManager = {
-        sddm.enable = true;
-        # Optional: Enable GDM for GNOME
-        # gdm.enable = true;
-      };
     };
+    displayManager.sddm.enable = true;
     pulseaudio.enable = false;
     desktopManager.plasma6.enable = true;
   };

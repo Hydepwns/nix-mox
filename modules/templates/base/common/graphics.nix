@@ -1,7 +1,8 @@
 { config, pkgs, inputs, ... }:
 {
-  hardware.opengl = {
+  # Graphics configuration (updated for newer NixOS)
+  hardware.graphics = {
     enable = true;
-    driSupport32Bit = true;
+    enable32Bit = true;
   };
 }

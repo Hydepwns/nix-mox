@@ -56,13 +56,13 @@ let
           };
         };
 
-        # OpenGL configuration with GPU-specific packages
-        hardware.opengl = {
+        # Graphics configuration with GPU-specific packages (updated for newer NixOS)
+        hardware.graphics = {
           enable = true;
           driSupport = true;
-          driSupport32Bit = true;
+          enable32Bit = true;
           extraPackages = with pkgs; [
-            # General OpenGL packages
+            # General graphics packages
             vaapiVdpau
             libvdpau-va-gl
           ] ++ lib.optionals (cfg.type == "amd" || cfg.amd.enable) [
