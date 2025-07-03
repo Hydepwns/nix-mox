@@ -147,7 +147,8 @@ Run the script with:
 
 ### **Core Scripts (`core/`)**
 
-- `setup.nu`            — Main setup script with component selection
+- `setup.nu`            — Main setup script with component selection (`--help` available)
+- `cleanup.nu`          — Core cleanup operations (`--help` available)
 - `health-check.nu`     — System health diagnostics
 - `integrate-modules.nu` — Module integration script
 - `install.nu`          — Unified installation script
@@ -158,31 +159,33 @@ Run the script with:
 - `ci-test.sh`          — CI test script
 - `summarize-tests.sh`  — Test summarization
 
-### **Gaming Scripts (`gaming/`)**
 
-- `gaming-benchmark.nu` — Gaming performance benchmarking
-- `validate-gaming-config.nu` — Gaming configuration validation
-
-### **Development Scripts (`development/`)**
-
-- `code-quality.nu`     — Code quality analysis and linting
-- `pre-commit.nu`       — Pre-commit hooks and checks
-
-### **Validation Scripts (`validation/`)**
-
-- `validate-display-config.nu` — Display configuration validation
-- `performance-optimize.nu` — Performance optimization and analysis
 
 ### **Tools (`tools/`)**
 
+- `cleanup.nu`          — Comprehensive project cleanup (`--help` available)
 - `project-dashboard.nu` — Project dashboard and metrics
 - `generate-docs.nu`    — Automatic documentation generation
 - `analyze-sizes.nu`    — Repository size analysis
 - `size-dashboard.nu`   — Size analysis dashboard
 - `advanced-cache.nu`   — Advanced caching utilities
-- `generate-sbom.nu`    — Software Bill of Materials generation
 - `generate-coverage.nu` — Code coverage generation
-- `analyze-sizes.sh`    — Shell-based size analysis
+- `analyze-sizes.sh`    — Shell-based size analysis (`--help` available)
+
+### **Archived Scripts (`archive/`)**
+
+The following scripts have been archived due to infrequent use or consolidation:
+
+- `gaming-benchmark.nu` — Gaming performance benchmarking
+- `validate-gaming-config.nu` — Gaming configuration validation
+- `code-quality.nu`     — Code quality analysis and linting
+- `pre-commit.nu`       — Pre-commit hooks and checks
+- `validate-display-config.nu` — Display configuration validation
+- `performance-optimize.nu` — Performance optimization and analysis
+- `generate-sbom.nu`    — Software Bill of Materials generation
+- `advanced-cache.nu`   — Advanced caching utilities (archived version)
+
+> **Note**: Archived scripts are still functional but may not be actively maintained. Use the main tools for current functionality.
 
 ### **Platform Scripts**
 

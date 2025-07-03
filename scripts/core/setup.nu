@@ -231,5 +231,31 @@ def input [prompt: string] {
     $in | str trim
 }
 
+# Show help
+export def show_help [] {
+    print "nix-mox Setup Script"
+    print ""
+    print "Usage:"
+    print "  setup.nu                    # Interactive setup"
+    print "  setup.nu --help             # Show this help"
+    print ""
+    print "Setup Types:"
+    print "  1. Personal configuration (recommended)"
+    print "  2. Gaming workstation"
+    print "  3. Development environment"
+    print "  4. Server setup"
+    print "  5. Minimal system"
+    print ""
+    print "Examples:"
+    print "  nu scripts/core/setup.nu    # Run interactive setup"
+    print "  nu scripts/core/setup.nu --help  # Show help"
+}
+
+# Check for help flag
+if ($env | get --ignore-errors ARGS | default [] | any { |arg| $arg == "--help" or $arg == "-h" }) {
+    show_help
+    exit 0
+}
+
 # Run the main function
 main

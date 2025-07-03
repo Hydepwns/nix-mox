@@ -22,6 +22,20 @@ cp config/templates/development.nix config/nixos/configuration.nix
 sudo nixos-rebuild switch --flake .#nixos
 ```
 
+## Documentation
+
+- **[Platform Guide](docs/PLATFORM.md)** - Platform-specific setup and configuration
+- **[Quick Start](docs/QUICK_START.md)** - Detailed quick start guide
+- **[Templates](docs/TEMPLATES.md)** - Available configuration templates
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Archive](docs/archive/)** - Legacy documentation and detailed guides
+
+## Maintenance Tools
+
+- **Cleanup**: `nu scripts/tools/cleanup.nu` - Comprehensive project cleanup
+- **Health Check**: `nu scripts/core/health-check.nu` - System health validation
+- **Size Analysis**: `nu scripts/tools/analyze-sizes.nu` - Repository size analysis
+
 ## Templates
 
 ## Multi-Host Management
@@ -83,8 +97,9 @@ Each host can have its own:
 | `development` | Software development | IDEs, tools, containers |
 | `gaming` | Gaming workstation | Steam, performance optimizations |
 | `server` | Production server | Monitoring, management tools |
-| `desktop` | Daily use | Full desktop environment |
 | `ci-runner` | CI/CD infrastructure | Parallel job execution, monitoring, metrics |
+
+> **Note**: The `desktop` template has been consolidated into the base profile. See [Templates](docs/TEMPLATES.md) for details.
 
 ## Structure
 
@@ -112,6 +127,12 @@ nix run .#update
 
 # Enter development shell
 nix develop
+
+# Project cleanup
+nu scripts/tools/cleanup.nu
+
+# Health check
+nu scripts/core/health-check.nu
 ```
 
 ### Development Shells

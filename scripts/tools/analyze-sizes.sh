@@ -340,8 +340,36 @@ EOF
   log_success "Detailed report saved to: $report_file"
 }
 
+# Show help
+show_help() {
+  echo "nix-mox Size Analysis Script"
+  echo ""
+  echo "Usage:"
+  echo "  analyze-sizes.sh [options]"
+  echo ""
+  echo "Options:"
+  echo "  -h, --help    Show this help message"
+  echo ""
+  echo "What it does:"
+  echo "  • Analyzes package sizes and build times"
+  echo "  • Analyzes development shell sizes"
+  echo "  • Analyzes template sizes"
+  echo "  • Generates performance recommendations"
+  echo "  • Saves detailed report to JSON file"
+  echo ""
+  echo "Examples:"
+  echo "  ./scripts/tools/analyze-sizes.sh     # Run analysis"
+  echo "  ./scripts/tools/analyze-sizes.sh -h  # Show help"
+}
+
 # Main function
 main() {
+  # Check for help flag
+  if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    show_help
+    exit 0
+  fi
+
   echo "🔍 nix-mox Size Analysis"
   echo "========================"
   echo ""

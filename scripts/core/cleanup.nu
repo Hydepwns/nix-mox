@@ -140,6 +140,31 @@ def check_obsolete_references [] {
     }
 }
 
+# Show help
+export def show_help [] {
+    print "nix-mox Core Cleanup Script"
+    print ""
+    print "Usage:"
+    print "  cleanup.nu                  # Run core cleanup"
+    print "  cleanup.nu --help           # Show this help"
+    print ""
+    print "What it does:"
+    print "  • Cleans temporary build artifacts"
+    print "  • Checks for old user/group entries"
+    print "  • Validates configuration consistency"
+    print "  • Checks for obsolete references"
+    print ""
+    print "Examples:"
+    print "  nu scripts/core/cleanup.nu  # Run cleanup"
+    print "  nu scripts/core/cleanup.nu --help  # Show help"
+}
+
+# Check for help flag
+if ($env | get --ignore-errors ARGS | default [] | any { |arg| $arg == "--help" or $arg == "-h" }) {
+    show_help
+    exit 0
+}
+
 # Export the main function
 export def cleanup [] {
     main

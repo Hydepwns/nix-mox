@@ -359,19 +359,23 @@
                 echo ""
                 echo "Available outputs:"
                 echo "  nixosConfigurations:"
-                echo "    - host1 (desktop)"
-                echo "    - host2 (server)"
+                echo "    - nixos (main configuration with gaming support)"
+                echo "    - host1, host2 (alternative configurations)"
                 echo ""
                 echo "  packages:"
                 echo "    - install, uninstall (all platforms)"
                 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-                  echo "    - proxmox-update, nixos-flake-update (Linux)"
+                  echo "    - proxmox-update, vzdump-backup, zfs-snapshot, nixos-flake-update (Linux)"
                 elif [[ "$OSTYPE" == "darwin"* ]]; then
-                  echo "    - homebrew-setup, macos-maintenance (macOS)"
+                  echo "    - homebrew-setup, macos-maintenance, xcode-setup, security-audit (macOS)"
                 fi
                 echo ""
-                echo "  devShells: default, development, testing"
+                echo "  devShells: default, development, testing, services, monitoring, gaming"
                 echo "  apps: fmt, test, update, dev"
+                echo ""
+                echo "  Maintenance tools:"
+                echo "    - nu scripts/tools/cleanup.nu     - Project cleanup"
+                echo "    - nu scripts/core/health-check.nu - System health check"
                 echo ""
                 echo "For full details, run: nix flake show"
               '');
