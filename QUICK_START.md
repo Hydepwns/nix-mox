@@ -41,6 +41,9 @@ cp config/templates/minimal.nix config/nixos/configuration.nix
 
 ## Build and Deploy
 
+> **Note:** systemd-boot is now the default boot loader for UEFI systems. If you use legacy BIOS, adjust your hardware config accordingly.
+> The default desktop environment is XFCE. Gaming support (Steam, Lutris, Heroic, MangoHud, GameMode, etc.) is integrated by default.
+
 ```bash
 # Build and switch
 sudo nixos-rebuild switch --flake .#nixos
@@ -127,6 +130,14 @@ For detailed multi-host configuration, see [Multi-Host Guide](docs/MULTI_HOST.md
 5. **Read documentation** - See `docs/` for detailed guides
 
 ## Troubleshooting
+
+- **Boot loader issues:**
+  - The file `config/hardware/hardware-configuration-actual.nix` is authoritative for boot loader settings. If you see a warning about bootability, ensure it contains the correct boot loader configuration for your system (e.g., `systemd-boot` for UEFI).
+  - If you dual-boot or use legacy BIOS, you may need to adjust `boot.loader` options in your hardware config.
+- **Display issues:**
+  - XFCE is the default desktop environment. If you want to use another, edit your personal config or base config accordingly.
+- **Gaming support:**
+  - Gaming tools and optimizations are enabled by default. You can customize or disable them in `config/nixos/gaming.nix`.
 
 ```bash
 # Check configuration
