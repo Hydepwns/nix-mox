@@ -80,14 +80,14 @@ def create_backup [source_path: string, backup_dir: string, prefix: string = "ba
         if not ($backup_dir | path exists) {
             mkdir $backup_dir
         }
-        
+
         let timestamp = (date now | format date "%Y%m%d_%H%M%S")
         let filename = ($source_path | path basename)
         let backup_path = $"($backup_dir)/($prefix)_($filename)_($timestamp)"
-        
+
         # Copy file
         cp $source_path $backup_path
-        
+
         {
             success: true
             backup_path: $backup_path
@@ -148,7 +148,7 @@ def get_gpu_info [] {
 
 def get_driver_info [] {
     mut driver_info = {}
-    
+
     # NVIDIA
     try {
         let nvidia_info = (safe_command "nvidia-smi --version")
@@ -156,7 +156,7 @@ def get_driver_info [] {
             $driver_info = ($driver_info | upsert nvidia $nvidia_info)
         }
     } catch {}
-    
+
     # AMD
     try {
         let amd_info = (safe_command "lspci | grep -i amd")
@@ -164,7 +164,7 @@ def get_driver_info [] {
             $driver_info = ($driver_info | upsert amd $amd_info)
         }
     } catch {}
-    
+
     # Intel
     try {
         let intel_info = (safe_command "lspci | grep -i intel")
@@ -172,13 +172,13 @@ def get_driver_info [] {
             $driver_info = ($driver_info | upsert intel $intel_info)
         }
     } catch {}
-    
+
     $driver_info
 }
 
 def get_display_info [] {
     mut display_info = {}
-    
+
     # X11
     try {
         let x11_display = (safe_command "echo $DISPLAY")
@@ -186,7 +186,7 @@ def get_display_info [] {
             $display_info = ($display_info | upsert x11 $x11_display)
         }
     } catch {}
-    
+
     # Wayland
     try {
         let wayland_display = (safe_command "echo $WAYLAND_DISPLAY")
@@ -194,7 +194,7 @@ def get_display_info [] {
             $display_info = ($display_info | upsert wayland $wayland_display)
         }
     } catch {}
-    
+
     # Desktop environment
     try {
         let desktop = (safe_command "echo $XDG_CURRENT_DESKTOP")
@@ -202,7 +202,7 @@ def get_display_info [] {
             $display_info = ($display_info | upsert desktop $desktop)
         }
     } catch {}
-    
+
     $display_info
 }
 
@@ -291,7 +291,7 @@ def check_system_health [] {
     } catch {
         -1
     }
-    
+
     # Check memory usage
     let memory_usage = try {
         let memory_result = (safe_command "free | grep Mem | awk '{printf \"%.0f\", $3/$2 * 100.0}'")
@@ -299,7 +299,7 @@ def check_system_health [] {
     } catch {
         -1
     }
-    
+
     # Check CPU load
     let cpu_load = try {
         let cpu_result = (safe_command "uptime | awk -F'load average:' '{print $2}' | awk '{print $1}' | sed 's/,//'")
@@ -307,7 +307,7 @@ def check_system_health [] {
     } catch {
         -1.0
     }
-    
+
     # Check network connectivity
     let network_available = try {
         let network_test = (safe_command "ping -c 1 8.8.8.8")
@@ -315,7 +315,7 @@ def check_system_health [] {
     } catch {
         false
     }
-    
+
     {
         disk_usage: $disk_usage
         memory_usage: $memory_usage
@@ -332,15 +332,15 @@ def check_display_services [] {
     } catch {
         false
     }
-    
+
     # Check display manager
     let display_manager_running = try {
-        let dm_status = (safe_command "systemctl status lightdm")
+        let dm_status = (safe_command "systemctl status sddm")
         ($dm_status | str contains "active")
     } catch {
         false
     }
-    
+
     # Check audio system
     let audio_running = try {
         let audio_status = (safe_command "systemctl --user status pipewire")
@@ -348,7 +348,7 @@ def check_display_services [] {
     } catch {
         false
     }
-    
+
     {
         x11_running: $x11_running
         display_manager_running: $display_manager_running
@@ -360,12 +360,12 @@ def check_display_services [] {
 def calculate_hardware_risk [gpu_type: string, gpu_detected: bool] {
     mut risk_score = 0
     mut risk_factors = []
-    
+
     if not $gpu_detected {
         $risk_score = ($risk_score + 3)
         $risk_factors = ($risk_factors | append "GPU not detected")
     }
-    
+
     if $gpu_type == "nvidia" {
         $risk_score = ($risk_score + 2)
         $risk_factors = ($risk_factors | append "NVIDIA GPU (higher risk)")
@@ -373,7 +373,7 @@ def calculate_hardware_risk [gpu_type: string, gpu_detected: bool] {
         $risk_score = ($risk_score + 2)
         $risk_factors = ($risk_factors | append "Unknown GPU type")
     }
-    
+
     {
         score: $risk_score
         factors: $risk_factors
@@ -384,22 +384,22 @@ def calculate_hardware_risk [gpu_type: string, gpu_detected: bool] {
 def calculate_config_risk [config_analysis: record] {
     mut risk_score = 0
     mut risk_factors = []
-    
+
     if ($config_analysis.has_deprecated_opengl | default false) {
         $risk_score = ($risk_score + 1)
         $risk_factors = ($risk_factors | append "Deprecated OpenGL configuration")
     }
-    
+
     if ($config_analysis.has_deprecated_pulseaudio | default false) {
         $risk_score = ($risk_score + 1)
         $risk_factors = ($risk_factors | append "Deprecated PulseAudio configuration")
     }
-    
+
     if not ($config_analysis.has_xserver | default false) {
         $risk_score = ($risk_score + 1)
         $risk_factors = ($risk_factors | append "No X server configuration")
     }
-    
+
     {
         score: $risk_score
         factors: $risk_factors
@@ -411,7 +411,7 @@ def calculate_config_risk [config_analysis: record] {
 export def validate_config [config_path: string] {
     let syntax_valid = validate_nix_syntax $config_path
     let nixos_valid = validate_nixos_config $config_path
-    
+
     {
         syntax: $syntax_valid
         nixos: $nixos_valid
@@ -444,11 +444,11 @@ export def get_system_info [] {
 export def assess_risks [gpu_type: string, gpu_detected: bool, config_analysis: record] {
     let hardware_risk = calculate_hardware_risk $gpu_type $gpu_detected
     let config_risk = calculate_config_risk $config_analysis
-    
+
     {
         hardware: $hardware_risk
         config: $config_risk
         total_score: ($hardware_risk.score + $config_risk.score)
         overall_level: (if ($hardware_risk.score + $config_risk.score) >= 5 { "high" } else if ($hardware_risk.score + $config_risk.score) >= 3 { "medium" } else { "low" })
     }
-} 
+}

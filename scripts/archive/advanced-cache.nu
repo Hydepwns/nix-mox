@@ -3,7 +3,7 @@
 # nix-mox Advanced Caching Strategy
 # Implements sophisticated build caching with multiple layers and optimization
 
-use ../lib/common.nu *
+use lib/common.nu *
 
 # Cache configuration
 def get_cache_config [] {

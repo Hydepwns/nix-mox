@@ -3,7 +3,7 @@
 # nix-mox Size Analysis Dashboard
 # Web-based interactive dashboard for analyzing package sizes and dependencies
 
-use lib/common.nu *
+use ../lib/common.nu *
 
 def log_info [message: string] {
     print $"📊 ($message)"
