@@ -7,9 +7,9 @@
     # Gaming platforms
     steam
     lutris
-    heroic
+    #heroic
     itch
-    gog-galaxy
+    # gog-galaxy
 
     # Gaming tools
     gamemode
@@ -20,10 +20,9 @@
     vkd3d
 
     # Performance monitoring
-    htop
+   # htop
     nvtop
     radeontop
-    intel-gpu-tool
     mesa-demos
 
     # Media players
@@ -141,11 +140,11 @@
     alias steam="steam -silent"
     alias lutris="lutris --no-browser"
     alias heroic="heroic --no-sandbox"
-    
+
     # Performance monitoring
     alias gpu="nvidia-smi || radeontop || intel_gpu_top"
     alias fps="mangohud"
-    
+
     # Wine shortcuts
     alias wine32="WINEARCH=win32 WINEPREFIX=~/.wine32 wine"
     alias wine64="WINEARCH=win64 WINEPREFIX=~/.wine64 wine"
