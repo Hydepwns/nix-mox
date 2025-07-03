@@ -1,3 +1,6 @@
+#!/bin/bash
+# Error handling utilities for nix-mox packages
+
 logMessage() {
   local level="$1"
   local message="$2"
@@ -5,7 +8,7 @@ logMessage() {
     local timestamp
     timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     echo "[$timestamp] [$level] $message"
-    echo "[$timestamp] [$level] $message" >> "@logFile@"
+    echo "[$timestamp] [$level] $message" >>"@logFile@"
   fi
 }
 

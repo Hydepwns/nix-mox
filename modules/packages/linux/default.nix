@@ -37,7 +37,7 @@ let
           optionals (safeGetPkg "zfs" != null) [ (safeGetPkg "zfs") ]
         else if system == "aarch64-linux" then
           optionals (safeGetPkg "zfs" != null) [ (safeGetPkg "zfs") ]
-        else [];
+        else [ ];
     in
     commonDeps ++ archSpecificDeps;
 

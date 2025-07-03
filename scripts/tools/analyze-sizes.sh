@@ -53,23 +53,23 @@ format_size() {
 # Get system architecture
 get_system() {
   case "$(uname -m)" in
-    x86_64)
-      if [[ $OSTYPE == "darwin"* ]]; then
-        echo "x86_64-darwin"
-      else
-        echo "x86_64-linux"
-      fi
-      ;;
-    aarch64 | arm64)
-      if [[ $OSTYPE == "darwin"* ]]; then
-        echo "aarch64-darwin"
-      else
-        echo "aarch64-linux"
-      fi
-      ;;
-    *)
-      echo "unknown"
-      ;;
+  x86_64)
+    if [[ $OSTYPE == "darwin"* ]]; then
+      echo "x86_64-darwin"
+    else
+      echo "x86_64-linux"
+    fi
+    ;;
+  aarch64 | arm64)
+    if [[ $OSTYPE == "darwin"* ]]; then
+      echo "aarch64-darwin"
+    else
+      echo "aarch64-linux"
+    fi
+    ;;
+  *)
+    echo "unknown"
+    ;;
   esac
 }
 
@@ -88,7 +88,7 @@ analyze_packages() {
     log_info "Analyzing package: $package..."
 
     # Check if package exists for this system
-    if ! nix flake show .#"$package" > /dev/null 2>&1; then
+    if ! nix flake show .#"$package" >/dev/null 2>&1; then
       log_warning "Package $package not available for $system"
       continue
     fi
@@ -96,21 +96,21 @@ analyze_packages() {
     # Build package and measure time
     local start_time
     start_time=$(date +%s)
-    nix build .#"$package" --no-link > /dev/null 2>&1
+    nix build .#"$package" --no-link >/dev/null 2>&1
     local end_time
     end_time=$(date +%s)
     local duration=$((end_time - start_time))
 
     # Get closure size
     local closure_size
-    closure_size=$(nix path-info --closure-size .#"$package" 2> /dev/null | awk '{print $1}' | head -1)
+    closure_size=$(nix path-info --closure-size .#"$package" 2>/dev/null | awk '{print $1}' | head -1)
     if [ -z "$closure_size" ] || [ "$closure_size" = "0" ]; then
       closure_size=0
     fi
 
     # Get individual package size
     local package_size
-    package_size=$(nix path-info --size .#"$package" 2> /dev/null | awk '{print $1}' | head -1)
+    package_size=$(nix path-info --size .#"$package" 2>/dev/null | awk '{print $1}' | head -1)
     if [ -z "$package_size" ] || [ "$package_size" = "0" ]; then
       package_size=0
     fi
@@ -156,7 +156,7 @@ analyze_devshells() {
     log_info "Analyzing devshell: $shell..."
 
     # Check if shell exists for this system
-    if ! nix flake show .#devShells."$shell" > /dev/null 2>&1; then
+    if ! nix flake show .#devShells."$shell" >/dev/null 2>&1; then
       unavailable_shells+=("$shell")
       continue
     fi
@@ -164,14 +164,14 @@ analyze_devshells() {
     # Build shell and measure time
     local start_time
     start_time=$(date +%s)
-    nix build .#devShells."$shell" --no-link > /dev/null 2>&1
+    nix build .#devShells."$shell" --no-link >/dev/null 2>&1
     local end_time
     end_time=$(date +%s)
     local duration=$((end_time - start_time))
 
     # Get closure size
     local closure_size
-    closure_size=$(nix path-info --closure-size .#devShells."$shell" 2> /dev/null | awk '{print $1}' | head -1)
+    closure_size=$(nix path-info --closure-size .#devShells."$shell" 2>/dev/null | awk '{print $1}' | head -1)
     if [ -z "$closure_size" ] || [ "$closure_size" = "0" ]; then
       closure_size=0
     fi
@@ -211,7 +211,7 @@ analyze_templates() {
 
   # Get available NixOS configurations
   local configs
-  configs=$(nix flake show .#nixosConfigurations 2> /dev/null | grep "nixosConfigurations\." | sed 's/nixosConfigurations\.//' | tr -d ' ')
+  configs=$(nix flake show .#nixosConfigurations 2>/dev/null | grep "nixosConfigurations\." | sed 's/nixosConfigurations\.//' | tr -d ' ')
 
   if [ -z "$configs" ]; then
     echo "No NixOS configurations found for this system."
@@ -228,14 +228,14 @@ analyze_templates() {
     # Build configuration and measure time
     local start_time
     start_time=$(date +%s)
-    nix build .#nixosConfigurations."$config".config.system.build.toplevel --no-link > /dev/null 2>&1
+    nix build .#nixosConfigurations."$config".config.system.build.toplevel --no-link >/dev/null 2>&1
     local end_time
     end_time=$(date +%s)
     local duration=$((end_time - start_time))
 
     # Get closure size
     local closure_size
-    closure_size=$(nix path-info --closure-size .#nixosConfigurations."$config".config.system.build.toplevel 2> /dev/null | awk '{print $1}' | head -1)
+    closure_size=$(nix path-info --closure-size .#nixosConfigurations."$config".config.system.build.toplevel 2>/dev/null | awk '{print $1}' | head -1)
     if [ -z "$closure_size" ] || [ "$closure_size" = "0" ]; then
       closure_size=0
     fi
@@ -318,7 +318,7 @@ generate_summary() {
   # Save report
   local report_file
   report_file="nix-mox-size-analysis-${system}-$(date +%Y%m%d-%H%M%S).json"
-  cat > "$report_file" << EOF
+  cat >"$report_file" <<EOF
 {
     "timestamp": "$(date -Iseconds)",
     "system": "$system",

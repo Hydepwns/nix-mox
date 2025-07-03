@@ -1,3 +1,4 @@
+#!/bin/bash
 # Common functions for nix-mox Linux scripts (Bash)
 
 # Color codes
@@ -38,10 +39,10 @@ log() {
   local current_idx
 
   case "$level" in
-    ERROR) color="$RED" ;;
-    WARN) color="$YELLOW" ;;
-    INFO) color="$GREEN" ;;
-    DEBUG) color="$BLUE" ;;
+  ERROR) color="$RED" ;;
+  WARN) color="$YELLOW" ;;
+  INFO) color="$GREEN" ;;
+  DEBUG) color="$BLUE" ;;
   esac
 
   level_idx=$(log_level_index "$level")
