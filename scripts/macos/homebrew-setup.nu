@@ -28,12 +28,16 @@ def main [] {
     let common_tools = [
         "git"
         "curl"
+        "neovim"
+        "chezmoi"
         "wget"
         "jq"
         "yq"
         "htop"
         "tmux"
         "zsh"
+        "nu"
+        "eza"
     ]
 
     for tool in $common_tools {
