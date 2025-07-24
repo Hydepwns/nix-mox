@@ -1,16 +1,24 @@
 # nix-mox
 
-> Production-grade NixOS configuration framework with templates, personal data separation, and multi-host management.
+> Production-grade NixOS configuration framework with devenv integration, Hydepwns dotfiles, Zed editor, and Blender support.
 
 [![CI](https://github.com/Hydepwns/nix-mox/workflows/CI%20(Simplified)/badge.svg)](https://github.com/Hydepwns/nix-mox/actions/workflows/ci.yml)
 [![Platforms](https://img.shields.io/badge/platforms-x86_64%20%7C%20aarch64%20%7C%20Linux%20%7C%20macOS-blue.svg)](https://github.com/Hydepwns/nix-mox/actions)
 [![Tests](https://img.shields.io/badge/tests-97%25%20passing-brightgreen.svg)](https://github.com/Hydepwns/nix-mox/actions)
+[![Devenv](https://img.shields.io/badge/devenv-ready-brightgreen.svg)](https://devenv.sh/)
+[![Zed](https://img.shields.io/badge/zed-editor-blue.svg)](https://zed.dev/)
 
 ## Quick Start
 
 ```bash
 git clone https://github.com/Hydepwns/nix-mox.git
 cd nix-mox
+
+# Setup devenv and direnv (automatic environment loading)
+direnv allow
+
+# Setup Hydepwns dotfiles integration
+./scripts/setup-hydepwns-dotfiles.sh
 
 # Quick setup
 nu scripts/core/setup.nu
@@ -20,6 +28,10 @@ cp config/templates/development.nix config/nixos/configuration.nix
 
 # Build and switch
 sudo nixos-rebuild switch --flake .#nixos
+
+# Quick functionality test
+nix flake check
+nix develop --command zsh -c "which zed && which blender && which rustc && which elixir"
 ```
 
 ## Documentation
@@ -30,13 +42,49 @@ sudo nixos-rebuild switch --flake .#nixos
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
 - **[Archive](docs/archive/)** - Legacy documentation and detailed guides
 
+## Development Environment
+
+```bash
+# Enter development environment
+nix develop
+
+# Or use direnv (automatic loading)
+direnv allow
+
+# Available tools
+zed         # Open Zed editor (primary)
+blender     # Open Blender 3D
+kitty       # Open Kitty terminal
+rustc       # Rust compiler
+cargo       # Rust package manager
+elixir      # Elixir runtime
+elixir-ls   # Elixir language server
+
+# Available commands
+nix run .#fmt     # Format code
+nix run .#test    # Run tests
+nix run .#update  # Update flake inputs
+nix run .#dev     # Show development help
+```
+
+### Hydepwns Dotfiles Integration
+
+```bash
+# Setup dotfiles integration
+./scripts/setup-hydepwns-dotfiles.sh
+
+# The dotfiles will be automatically loaded in your shell
+# Customize configuration as needed
+
+# Available tools from dotfiles:
+# bat, eza, fzf, htop, tree, gh, curl, wget, nmap
+```
+
 ## Maintenance Tools
 
 - **Cleanup**: `nu scripts/tools/cleanup.nu` - Comprehensive project cleanup
 - **Health Check**: `nu scripts/core/health-check.nu` - System health validation
 - **Size Analysis**: `nu scripts/tools/analyze-sizes.nu` - Repository size analysis
-
-## Templates
 
 ## Multi-Host Management
 
@@ -99,7 +147,7 @@ Each host can have its own:
 | `server` | Production server | Monitoring, management tools |
 | `ci-runner` | CI/CD infrastructure | Parallel job execution, monitoring, metrics |
 
-> **Note**: The `desktop` template has been consolidated into the base profile. See [Templates](docs/TEMPLATES.md) for details.
+> **Note**: Templates are available in `config/templates/`. See [Templates](docs/TEMPLATES.md) for details.
 
 ## Structure
 
@@ -229,57 +277,17 @@ nix run .#install             # Install nix-mox
 nix run .#uninstall           # Uninstall nix-mox
 ```
 
-## Documentation
-
-- **[Quick Start](docs/QUICK_START.md)** - Get started in minutes
-- **[Templates](docs/TEMPLATES.md)** - Template and profile reference
-- **[Platform Setup](docs/PLATFORM.md)** - Platform-specific guides
-- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
-- **[Contributing](docs/archive/CONTRIBUTING.md)** - Development guidelines (archived)
-
 ## Features
 
-### Core Infrastructure
+[![Multi-Host](https://img.shields.io/badge/multi--host-management-blue.svg)](https://github.com/Hydepwns/nix-mox) [![Templates](https://img.shields.io/badge/template-system-green.svg)](https://github.com/Hydepwns/nix-mox) [![Modules](https://img.shields.io/badge/module-integration-orange.svg)](https://github.com/Hydepwns/nix-mox) [![Security](https://img.shields.io/badge/security-hardened-red.svg)](https://github.com/Hydepwns/nix-mox) [![Testing](https://img.shields.io/badge/tests-97%25-brightgreen.svg)](https://github.com/Hydepwns/nix-mox) [![Platforms](https://img.shields.io/badge/platforms-linux%20%7C%20macos%20%7C%20windows-blue.svg)](https://github.com/Hydepwns/nix-mox)
 
-- **Multi-host management** - Centralized configuration for multiple NixOS hosts
-- **Template system** - Pre-built configurations for development, gaming, server, desktop
-- **Module integration** - Extensible architecture with plug-and-play modules
-- **Personal data separation** - Secure separation of personal settings in `config/personal/`
-
-### Security & Hardening
-
-- **Built-in security profiles** - Pre-configured security hardening
-- **Environment-based configuration** - Different security levels per environment
-- **Secrets management** - Secure handling of sensitive data
-- **Network security** - Automated firewall and network configuration
-
-### Development Tools
-
-- **Multi-language formatting** - Consistent code style across all supported languages
-- **Comprehensive testing** - 97% test pass rate with CI/CD pipeline
-- **Development shells** - Isolated environments for different tasks
-- **Quick commands** - Streamlined development workflows
-
-### Platform Support
-
-- **Linux** - Full NixOS support with optimized configurations
-- **macOS** - Homebrew integration and macOS optimizations
-- **Windows** - Gaming and development tools
-- **Containers** - Docker and orchestration support
-
-### System Management
-
-- **Health monitoring** - System health checks and diagnostics
-- **Backup automation** - Automated VM and container backups
-- **Performance optimization** - Gaming and workstation tuning
-- **Storage management** - ZFS integration with caching and snapshots
-
-### Advanced Capabilities
-
-- **Proxmox integration** - Automated host management and updates
-- **Service orchestration** - Multi-service deployment
-- **Monitoring stack** - Built-in monitoring and alerting
-- **Gaming optimization** - Steam integration and performance tuning
+**Core**: Multi-host NixOS management • Template system • Module integration • Personal data separation  
+**Security**: Built-in hardening • Environment-based config • Secrets management • Network security  
+**Development**: Zed editor • Multi-language formatting • Development shells • Rust & Elixir support  
+**Creative**: Blender • Kitty terminal • Hydepwns dotfiles integration  
+**Platforms**: Linux (NixOS) • macOS (Homebrew) • Windows • Containers  
+**Management**: Health monitoring • Backup automation • Performance tuning • ZFS integration  
+**Advanced**: Proxmox integration • Service orchestration • Monitoring stack • Gaming optimization
 
 ## License
 
