@@ -64,6 +64,30 @@ in
     docker
     docker-compose
 
+    # Primary editor
+    zed
+
+    # 3D and graphics
+    blender
+
+    # Development environment tools
+    direnv
+    devenv
+
+    # Additional tools from Hydepwns dotfiles
+    bat
+    eza
+    fzf
+    htop
+    tree
+    curl
+    wget
+    nmap
+    pciutils
+    usbutils
+    lshw
+    gh
+
     # Proxmox and virtualization tools
     proxmox-backup-client
     proxmox-auto-install-assistant
@@ -120,8 +144,11 @@ in
       };
 
       initContent = ''
-        export EDITOR=nvim
-        export VISUAL=nvim
+        export EDITOR=zed
+        export VISUAL=zed
+
+        # Initialize direnv
+        eval "$(direnv hook zsh)"
 
         # Nix flake aliases
         alias nrs="sudo nixos-rebuild switch --flake .#nixos"
@@ -143,6 +170,16 @@ in
 
         # Custom prompt
         PROMPT='%F{green}%n@%m%f %F{blue}%~%f %F{red}%#%f '
+
+        # Load Hydepwns dotfiles if available
+        if [ -f "$HOME/.config/zsh/.zshrc" ]; then
+          source "$HOME/.config/zsh/.zshrc"
+        fi
+
+        # Devenv integration
+        if [ -n "$NIX_MOX_DEVENV_LOADED" ]; then
+          echo "🚀 nix-mox devenv active"
+        fi
       '';
     };
 
@@ -155,16 +192,15 @@ in
         init.defaultBranch = "main";
         push.autoSetupRemote = true;
         pull.rebase = true;
-        core.editor = "nvim";
+        core.editor = "zed";
       };
     };
 
-    # Development tools
+        # Development tools
     programs = {
-      # Neovim for editing
+      # Neovim as fallback
       neovim = {
         enable = true;
-        defaultEditor = true;
         viAlias = true;
         vimAlias = true;
       };
@@ -217,6 +253,9 @@ in
       cargo
       go
 
+      # Primary editor
+      zed
+
       # Utilities
       ripgrep
       fd
@@ -253,11 +292,6 @@ in
 
       # Additional essential tools
       vim
-      wget
-      curl
-      git
-      htop
-      tree
       nix-index
       nix-tree
       inetutils
@@ -271,6 +305,7 @@ in
       imagemagick
       gimp
       inkscape
+      blender
 
       # Office and productivity
       libreoffice
@@ -282,6 +317,10 @@ in
       jetbrains.idea-community
       docker
       docker-compose
+
+      # Development environment tools
+      direnv
+      devenv
 
       # Proxmox and virtualization tools
       proxmox-backup-client
