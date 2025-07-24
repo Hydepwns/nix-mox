@@ -53,6 +53,9 @@
       url = "github:nix-community/home-manager/863842639722dd12ae9e37ca83bcb61a63b36f6c";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Development environment tools
+    devenv.url = "github:cachix/devenv";
+    devenv.inputs.nixpkgs.follows = "nixpkgs";
     # Add additional useful inputs
     nixpkgs-fmt.url = "github:nix-community/nixpkgs-fmt/bdb15b4c7e0cb49ae091dd43113d0a938afae02c";
     treefmt-nix.url = "github:numtide/treefmt-nix/ac8e6f32e11e9c7f153823abc3ab007f2a65d3e1";
@@ -68,7 +71,7 @@
     ];
   };
 
-  outputs = { self, nixpkgs, flake-utils, home-manager, nixpkgs-fmt, treefmt-nix, ... }@inputs:
+  outputs = { self, nixpkgs, flake-utils, home-manager, devenv, nixpkgs-fmt, treefmt-nix, ... }@inputs:
     let
       # ============================================================================
       # CONSTANTS AND CONFIGURATION
@@ -192,6 +195,7 @@
             default = devShell.default or null;
             development = devShell.development or null;
             testing = devShell.testing or null;
+
           };
         in
         if isLinux system then
@@ -299,7 +303,7 @@
 
         in
         {
-          # Development shells with platform-specific availability
+                    # Development shells with platform-specific availability
           devShells = createDevShells system pkgs devShell;
 
           # Packages with architecture checking

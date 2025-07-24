@@ -9,6 +9,7 @@
   macos = import ./macos/default.nix { inherit pkgs; };
   gaming = if pkgs.stdenv.isLinux then import ./gaming/default.nix { inherit pkgs; } else null;
 
+
   # Default shell (inline mkShell definition)
   default = pkgs.mkShell {
     buildInputs = [
@@ -19,10 +20,30 @@
       pkgs.nixpkgs-fmt
       pkgs.shellcheck
       pkgs.coreutils
-      pkgs.fd
-      pkgs.ripgrep
+      pkgs.eza
+      pkgs.btop
       pkgs.code-cursor # Cursor AI IDE
       pkgs.kitty # Terminal emulator
+      pkgs.zed # Primary editor
+      pkgs.blender # 3D software
+      pkgs.direnv # Development environment
+      pkgs.devenv # Development environment
+      # Additional tools from Hydepwns dotfiles
+      pkgs.bat
+      pkgs.eza
+      pkgs.fzf
+      pkgs.htop
+      pkgs.tree
+      pkgs.curl
+      pkgs.wget
+      pkgs.nmap
+      pkgs.gh
+      # Development languages and tools
+      pkgs.rustc
+      pkgs.cargo
+      pkgs.elixir
+      pkgs.elixir-ls
+      pkgs.tree-sitter
       # Formatters for treefmt
       pkgs.nodePackages.prettier
       pkgs.shfmt
@@ -40,6 +61,10 @@
       ] else if pkgs.stdenv.isLinux then [
         pkgs.zlib
         pkgs.openssl
+        # Linux-specific tools
+        pkgs.pciutils
+        pkgs.usbutils
+        pkgs.lshw
         # Proxmox tools (Linux only)
         pkgs.qemu # QEMU for VM management
         pkgs.virt-manager # Virtual machine manager
@@ -58,7 +83,9 @@
       # Ensure prettier is in PATH for treefmt
       export PATH=${pkgs.nodePackages.prettier}/bin:$PATH
 
-      # Set default terminal to Kitty
+      # Set default editor and terminal
+      export EDITOR=zed
+      export VISUAL=zed
       export TERMINAL=kitty
       export TERM=xterm-kitty
 
@@ -111,15 +138,15 @@
         echo "    - ls -la                          # List files with details"
         echo "    - cp -r source dest              # Copy recursively"
         echo ""
-        echo "fd: (v${pkgs.fd.version})"
+        echo "eza: (v${pkgs.eza.version})"
         echo "    Commands:"
-        echo "    - fd '\.rs$'                     # Find Rust files"
-        echo "    - fd -e md                       # Find Markdown files"
+        echo "    - eza -la                        # List files with details"
+        echo "    - eza --tree                     # Show directory tree"
         echo ""
-        echo "ripgrep: (v${pkgs.ripgrep.version})"
+        echo "btop: (v${pkgs.btop.version})"
         echo "    Commands:"
-        echo "    - rg 'TODO'                      # Find TODOs"
-        echo "    - rg -t py 'def '                # Find Python functions"
+        echo "    - btop                           # System monitor"
+        echo "    - btop -p                        # Process view"
         echo ""
         echo "📝 Development Tools"
         echo "------------------"
