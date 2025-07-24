@@ -211,10 +211,12 @@ jobs:
           for script in $scripts {
             print $"Checking ($script)..."
             try {
-              nu --check $script
+              # Validate syntax by trying to execute the script content
+              let content = (open --raw $script)
+              $content | nu -c $in
               print $"  ✅ ($script) syntax OK"
             } catch {
-              print $"  ❌ ($script) syntax error"
+              print $"  ❌ ($script) syntax error: ($env.LAST_ERROR)"
               $errors = $errors + 1
             }
           }
