@@ -33,6 +33,10 @@ desktop.ini
 .env
 .env.local
 
+# Devenv files
+.devenv/
+devenv.local.nix
+
 # Personal configuration files (uncomment if needed)
 #configuration.nix
 #hardware-configuration.nix
