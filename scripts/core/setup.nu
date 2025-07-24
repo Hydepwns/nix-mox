@@ -13,7 +13,7 @@ def main [] {
     print "4. Server setup"
     print "5. Minimal system"
 
-    let choice = (input "Enter choice (1-5): ")
+    let choice = (get_input "Enter choice (1-5): ")
 
     match $choice {
         "1" => { setup-personal }
@@ -35,7 +35,7 @@ def setup-personal [] {
     # Check if personal config already exists
     if (ls config/personal/user.nix | length) > 0 {
         print "⚠️  Personal configuration already exists!"
-        let response = (input "Do you want to overwrite it? (y/N): ")
+        let response = (get_input "Do you want to overwrite it? (y/N): ")
         if $response != "y" and $response != "Y" {
             print "Setup cancelled."
             exit 0
@@ -44,13 +44,13 @@ def setup-personal [] {
 
     # Get user input
     print "\n📝 Please provide your personal information:"
-    let username = (input "Username: ")
-    let email = (input "Email: ")
-    let timezone = (input "Timezone (e.g., America/New_York): ")
-    let hostname = (input "Hostname: ")
-    let git_username = (input "Git username: ")
-    let git_email = (input "Git email: ")
-    let initial_password = (input "Initial password: ")
+    let username = (get_input "Username: ")
+    let email = (get_input "Email: ")
+    let timezone = (get_input "Timezone (e.g., America/New_York): ")
+    let hostname = (get_input "Hostname: ")
+    let git_username = (get_input "Git username: ")
+    let git_email = (get_input "Git email: ")
+    let initial_password = (get_input "Initial password: ")
 
     # Create personal configuration
     print "\n🔧 Creating personal configuration..."
@@ -226,9 +226,9 @@ def setup-minimal [] {
 }
 
 # Helper function to get user input
-def input [prompt: string] {
+def get_input [prompt: string] {
     print -n $prompt
-    $in | str trim
+    input | str trim
 }
 
 # Show help
