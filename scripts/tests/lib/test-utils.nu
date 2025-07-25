@@ -1,142 +1,158 @@
-export-env {
-    # Base directories
-    $env.TEST_DIR = "."
-    $env.UNIT_TEST_DIR = $"($env.TEST_DIR)/scripts/tests/unit"
-    $env.INTEGRATION_TEST_DIR = $"($env.TEST_DIR)/scripts/tests/integration"
-    $env.FIXTURES_DIR = $"($env.TEST_DIR)/scripts/tests/fixtures"
-    # Test environment
-    $env.LOG_LEVEL = "INFO"
-    $env.TEST_TEMP_DIR = (if ($env.TMPDIR? | is-empty) { "coverage-tmp/nix-mox-tests" } else { $env.TMPDIR + "/nix-mox-tests" })
-    $env.PLATFORM = (sys host | get hostname | str downcase)
-    $env.COMPONENT_NAME = "nix-mox"
-    $env.LAST_ERROR = ""
-    # ANSI colors for output
-    $env.GREEN = (ansi green)
-    $env.YELLOW = (ansi yellow)
-    $env.RED = (ansi red)
-    $env.NC = (ansi reset)
-}
-# --- Platform Detection ---
-export def is_linux [] {
-    $env.PLATFORM == "linux"
-}
+#!/usr/bin/env nu
 
-export def is_darwin [] {
-    $env.PLATFORM == "darwin"
-}
-# --- Test Environment Management ---
+# Test utilities for nix-mox
+# Provides common testing functions and utilities
+
+# --- Environment Setup ---
 export def setup_test_env [] {
-    print $"DEBUG: TEST_TEMP_DIR is ($env.TEST_TEMP_DIR)"
-    print $"($env.GREEN)Setting up test environment...($env.NC)"
-    if not ($env.TEST_TEMP_DIR | path exists) {
-        mkdir $env.TEST_TEMP_DIR
-    }
-    print $"($env.GREEN)Test environment ready at: ($env.TEST_TEMP_DIR)($env.NC)"
+    # Set up test environment variables
+    $env.TEST_TEMP_DIR = ($env | get -i TEMP | default "/tmp") + "/nix-mox-tests"
+    $env.TEST_LOG_FILE = $env.TEST_TEMP_DIR + "/test.log"
+
+    # Create test directories
+    mkdir $env.TEST_TEMP_DIR
+
+    # Set up color codes for output
+    $env.GREEN = (ansi green)
+    $env.RED = (ansi red)
+    $env.YELLOW = (ansi yellow)
+    $env.BLUE = (ansi blue)
+    $env.NC = (ansi reset)  # No Color
 }
 
-export def cleanup_test_env [] {
-    print $"($env.YELLOW)Cleaning up test environment...($env.NC)"
-    rm -rf $env.TEST_TEMP_DIR
-    print $"($env.GREEN)Test environment cleaned up($env.NC)"
-}
-# --- Test Assertions ---
-export def assert_equal [expected: any, actual: any, message: string] {
-    if $expected == $actual {
-        print $"($env.GREEN)✓ ($message)($env.NC)"
-        true
-    } else {
-        print $"($env.RED)✗ ($message)($env.NC)"
-        print $"($env.RED)  Expected: ($expected)($env.NC)"
-        print $"($env.RED)  Actual: ($actual)($env.NC)"
-        false
-    }
-}
+# --- Assertion Functions ---
+export def assert_true [condition: bool, message: string = ""] {
+    let green = ($env | get -i GREEN | default (ansi green))
+    let nc = ($env | get -i NC | default (ansi reset))
 
-export def assert_true [condition: bool, message: string] {
     if $condition {
-        print $"($env.GREEN)✓ ($message)($env.NC)"
+        print $"($green)✓ PASS: ($message)($nc)"
         true
     } else {
-        print $"($env.RED)✗ ($message)($env.NC)"
+        let red = ($env | get -i RED | default (ansi red))
+        print $"($red)✗ FAIL: ($message)($nc)"
         false
     }
 }
 
-export def assert_false [condition: bool, message: string] {
-    if not $condition {
-        print $"($env.GREEN)✓ ($message)($env.NC)"
+export def assert_false [condition: bool, message: string = ""] {
+    assert_true (not $condition) $message
+}
+
+export def assert_equal [actual: any, expected: any, message: string = ""] {
+    let green = ($env | get -i GREEN | default (ansi green))
+    let red = ($env | get -i RED | default (ansi red))
+    let nc = ($env | get -i NC | default (ansi reset))
+
+    let result = ($actual == $expected)
+    if $result {
+        print $"($green)✓ PASS: ($message) - Expected: ($expected), Got: ($actual)($nc)"
         true
     } else {
-        print $"($env.RED)✗ ($message)($env.NC)"
+        print $"($red)✗ FAIL: ($message) - Expected: ($expected), Got: ($actual)($nc)"
         false
     }
 }
-# --- Test Retry Mechanism ---
-export def test_retry [max_retries: int, retry_delay: int, operation: closure, expected_result: bool] {
-    mut retries = 0
-    mut success = false
 
-    while $retries < $max_retries {
-        print $"($env.YELLOW)Attempt ($retries + 1) of ($max_retries)($env.NC)"
+export def assert_not_equal [actual: any, expected: any, message: string = ""] {
+    let green = ($env | get -i GREEN | default (ansi green))
+    let red = ($env | get -i RED | default (ansi red))
+    let nc = ($env | get -i NC | default (ansi reset))
 
-        if (do $operation) {
-            $success = true
-            break
-        }
-
-        $retries = $retries + 1
-        if $retries < $max_retries {
-            sleep ($retry_delay * 1sec)
-        }
-    }
-
-    assert_equal $expected_result $success $"Retry test after ($max_retries) attempts"
-}
-# --- Test Logging ---
-export def test_logging [level: string, message: string, expected_output: string] {
-    let output = $"[($level)] ($message)"
-    assert_equal $expected_output $output "Logging test"
-}
-
-export def log_error [message: string] {
-    print $"($env.RED)Error: ($message)($env.NC)"
-}
-# --- Test Configuration Validation ---
-export def test_config_validation [config: string, expected_error: string] {
-    if ($config | is-empty) {
-        assert_equal $expected_error $expected_error "Config validation"
-        false
-    } else {
+    let result = ($actual != $expected)
+    if $result {
+        print $"($green)✓ PASS: ($message) - Values are different as expected($nc)"
         true
+    } else {
+        print $"($red)✗ FAIL: ($message) - Values are equal: ($actual)($nc)"
+        false
     }
 }
-# --- Test Performance ---
-export def test_performance [operation: closure, max_duration: int] {
+
+export def assert_contains [haystack: string, needle: string, message: string = ""] {
+    let green = ($env | get -i GREEN | default (ansi green))
+    let red = ($env | get -i RED | default (ansi red))
+    let nc = ($env | get -i NC | default (ansi reset))
+
+    let result = ($haystack | str contains $needle)
+    if $result {
+        print $"($green)✓ PASS: ($message) - Found: ($needle)($nc)"
+        true
+    } else {
+        print $"($red)✗ FAIL: ($message) - Not found: ($needle) in ($haystack)($nc)"
+        false
+    }
+}
+
+export def assert_empty [value: any, message: string = ""] {
+    let green = ($env | get -i GREEN | default (ansi green))
+    let red = ($env | get -i RED | default (ansi red))
+    let nc = ($env | get -i NC | default (ansi reset))
+
+    let result = ($value | is-empty)
+    if $result {
+        print $"($green)✓ PASS: ($message) - Value is empty($nc)"
+        true
+    } else {
+        print $"($red)✗ FAIL: ($message) - Value is not empty: ($value)($nc)"
+        false
+    }
+}
+
+export def assert_not_empty [value: any, message: string = ""] {
+    let green = ($env | get -i GREEN | default (ansi green))
+    let red = ($env | get -i RED | default (ansi red))
+    let nc = ($env | get -i NC | default (ansi reset))
+
+    let result = (not ($value | is-empty))
+    if $result {
+        print $"($green)✓ PASS: ($message) - Value is not empty($nc)"
+        true
+    } else {
+        print $"($red)✗ FAIL: ($message) - Value is empty($nc)"
+        false
+    }
+}
+
+# --- Performance Testing ---
+export def benchmark [name: string, max_duration: float, code: closure] {
     let start_time = (date now | into int)
-    do $operation
-    let end_time = (date now | into int)
-    let duration_ms = ($end_time - $start_time)
-    let duration = ($duration_ms | into float) / 1000000000
 
-    assert_true ($duration <= $max_duration) $"Performance test completed in ($duration) seconds (max: ($max_duration) seconds)"
+    try {
+        do $code
+        let end_time = (date now | into int)
+        let duration = (($end_time - $start_time) | into float) / 1000000000
+
+        if ($duration <= $max_duration) {
+            print ($env.GREEN + "✓ Performance test passed: " + $name + " - " + ($duration | into string) + "s (max: " + ($max_duration | into string) + "s)" + $env.NC)
+            true
+        } else {
+            print ($env.RED + "✗ Performance test failed: " + $name + " - " + ($duration | into string) + "s (max: " + ($max_duration | into string) + "s)" + $env.NC)
+            false
+        }
+    } catch {
+        print $"($env.RED)✗ Performance test error: ($name) - ($env.LAST_ERROR)($env.NC)"
+        false
+    }
 }
 
 # --- Test Tracking ---
 export def track_test [name: string, category: string, status: string, duration: float] {
     let test_result = {
-        name: $name
-        category: $category
-        status: $status
-        duration: $duration
+        name: $name,
+        category: $category,
+        status: $status,
+        duration: $duration,
         timestamp: (date now | into int)
     }
 
     # Create the test temp directory if it doesn't exist
-    if not ($env.TEST_TEMP_DIR | path exists) {
-        mkdir $env.TEST_TEMP_DIR
+    let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "/tmp/nix-mox-tests");
+    if not ($test_temp_dir | path exists) {
+        mkdir $test_temp_dir
     }
 
-    let filename = $"($env.TEST_TEMP_DIR)/test_result_($name | str replace '.nu' '' | str replace '-' '_').json"
+    let filename = $"($test_temp_dir)/test_result_($name | str replace '.nu' '' | str replace '-' '_').json"
     $test_result | to json | save --force $filename
 }
 
@@ -233,14 +249,64 @@ export def run_performance_tests [] {
 }
 
 export def run_all_tests [] {
-    setup_test_env
-
     let unit_results = run_unit_tests
     let integration_results = run_integration_tests
-
-    cleanup_test_env
-
     $unit_results and $integration_results
+}
+
+# --- Core Test Functions ---
+export def test_retry [max_attempts: int, delay: int, test_func: closure, expected_result: bool] {
+    mut attempt = 1
+    mut last_result = null
+    mut passed = false
+    while $attempt <= $max_attempts {
+        let result = (do $test_func)
+        if $result == $expected_result {
+            print $"($env.GREEN)✓ PASS: test_retry succeeded on attempt ($attempt)($env.NC)"
+            $passed = true
+            break
+        } else {
+            print $"($env.YELLOW)Retry ($attempt) failed, retrying...($env.NC)"
+            $last_result = $result
+            if $attempt < $max_attempts {
+                sleep ($delay | into int)
+            }
+        }
+        let next_attempt = $attempt + 1
+        $attempt = $next_attempt
+    }
+    if not $passed {
+        print $"($env.RED)✗ FAIL: test_retry did not succeed after ($max_attempts) attempts. Last result: ($last_result)($env.NC)"
+    }
+    $passed
+}
+
+export def test_logging [level: string, message: string, expected_output: string] {
+    let log_prefix = match $level {
+        "DEBUG" => "[DEBUG] ",
+        "INFO" => "[INFO] ",
+        "WARN" => "[WARN] ",
+        "ERROR" => "[ERROR] ",
+        _ => "[LOG] "
+    }
+    let output = $"($log_prefix)($message)"
+    if $output == $expected_output {
+        print $"($env.GREEN)✓ PASS: test_logging output matched($env.NC)"
+        true
+    } else {
+        print $"($env.RED)✗ FAIL: test_logging output did not match. Got: ($output), Expected: ($expected_output)($env.NC)"
+        false
+    }
+}
+
+export def test_config_validation [config_value: string, error_message: string] {
+    if ($config_value | is-empty) {
+        print $"($env.RED)✗ FAIL: test_config_validation - ($error_message)($env.NC)"
+        false
+    } else {
+        print $"($env.GREEN)✓ PASS: test_config_validation - config is valid($env.NC)"
+        true
+    }
 }
 
 # --- Main Test Runner ---
@@ -249,9 +315,9 @@ export def main [] {
     let test_type = ($args | get 0 | default "all")
 
     match $test_type {
-        "unit" => { run_unit_tests }
-        "integration" => { run_integration_tests }
-        "all" => { run_all_tests }
+        "unit" => { run_unit_tests },
+        "integration" => { run_integration_tests },
+        "all" => { run_all_tests },
         _ => {
             print $"($env.RED)Unknown test type: ($test_type)($env.NC)"
             print $"($env.YELLOW)Available types: unit, integration, all($env.NC)"

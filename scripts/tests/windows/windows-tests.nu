@@ -8,16 +8,18 @@ def main [] {
 
     # Robust platform detection
     let sysinfo = sys
-    let platform = (if ($sysinfo | describe) == 'record' and ($sysinfo | columns | any {|c| $c == 'host'}) { $sysinfo.host.name } else { $sysinfo })
+    let platform = (
+        if ($sysinfo | describe) == 'record' and ($sysinfo | columns | any {|c| $c == 'host'}) {
+            $sysinfo.hostname
+        } else {
+            $sysinfo
+        }
+    )
     print $"Detected platform: ($platform)"
 
     # Test Windows/WSL-specific commands
     test-windows-commands
-
-    # Test Nushell
     test-nushell
-
-    # Test Nix
     test-nix
 
     print "✅ Windows/WSL-specific tests completed successfully!"
@@ -25,13 +27,8 @@ def main [] {
 
 def test-windows-commands [] {
     print "🔧 Testing Windows/WSL-specific commands..."
-    let commands = [
-        "powershell"
-        "cmd"
-        "wsl"
-        "python"
-        "python3"
-    ]
+    let commands = ["powershell", "cmd", "wsl", "python", "python3"]
+
     for cmd in $commands {
         if (which $cmd | is-empty) {
             print $"❌ Command ($cmd) not found"
@@ -49,6 +46,7 @@ def test-nushell [] {
 
 def test-nix [] {
     print "🧪 Testing Nix installation..."
+
     if (which nix | is-empty) {
         print "❌ Nix is not installed"
     } else {

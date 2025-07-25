@@ -1,13 +1,13 @@
-use ../lib/test-utils.nu *
-use ../lib/test-coverage.nu *
-use ../lib/coverage-core.nu *
+use ../lib/test-utils.nu
+use ../lib/test-coverage.nu
+use ../lib/coverage-core.nu
 
 export def test_performance_tests [] {
     print "Running ZFS SSD caching performance tests..."
 
     # Test retry performance
     print "Testing retry performance..."
-    test_performance { test_retry 3 1 { true } true } 5
+    test_performance { test_retry 3 1 { true } true } 5 "Retry performance test"
 
     # Test logging performance
     print "Testing logging performance..."
@@ -15,7 +15,7 @@ export def test_performance_tests [] {
         for i in 1..100 {
             test_logging "INFO" "Test message ($i)" "[INFO] Test message ($i)"
         }
-    } 10
+    } 10 "Logging performance test"
 
     # Test configuration validation performance
     print "Testing configuration validation performance..."
@@ -23,10 +23,11 @@ export def test_performance_tests [] {
         for i in 1..100 {
             test_config_validation "test($i)" "Configuration validation failed"
         }
-    } 10
+    } 10 "Configuration validation performance test"
 
     # Test resource utilization
     print "Testing resource utilization..."
+
     if (which top | length) > 0 {
         # Monitor CPU and memory usage during operations
         if (top -b -n 1 | str contains "zfs") {
@@ -41,6 +42,6 @@ export def test_performance_tests [] {
     print "Performance tests completed successfully"
 }
 
-if ($env.NU_TEST? == "true") {
+if $env.NU_TEST == "true" {
     test_performance_tests
 }

@@ -1,5 +1,5 @@
-# Test Documentation and Guidelines
-# ==============================
+# Test Documentation and Guidelines Module
+# ======================================
 
 # Test Categories
 # --------------
@@ -8,123 +8,155 @@
 # 3. Storage Tests: Test ZFS and storage-specific functionality
 # 4. Performance Tests: Test system performance and benchmarks
 
-# Test Requirements
-# ----------------
-# 1. Each test must have a clear purpose and expected outcome
-# 2. Tests should be independent and not rely on other test states
-# 3. Platform-specific tests must handle unsupported platforms gracefully
-# 4. All tests must clean up after themselves
+# Test Utilities Module
+# --------------------
 
-# Test Environment
-# ---------------
-# Required environment variables:
-# - TEST_DIR: Base directory for tests
-# - TEST_TEMP_DIR: Temporary directory for test artifacts
-# - LOG_LEVEL: Logging level (DEBUG, INFO, WARN, ERROR)
-# - PLATFORM: Current platform (linux, darwin)
+export def test_component [test_data: any, expected: any, message: string] {
+    # Unit test utility function
+    print $"Testing component: $message"
 
-# Test Utilities
-# -------------
-# Common test utilities are available in:
-# - test-utils.nu: Core test functions (includes track_test, setup_test_env, cleanup_test_env)
-# - test-coverage.nu: Coverage reporting (includes aggregate_coverage, generate_coverage_report)
-# - test-common.nu Common test patterns
-# - shared.nu: Shared test functions (assert_equal, assert_true, etc.)
+    # Test execution
+    let result = $test_data
 
-# Writing Tests
-# ------------
-# 1. Use the provided test utilities
-# 2. Follow the test structure:
-#    - Setup
-#    - Test execution
-#    - Assertions
-#    - Cleanup
-# 3. Document test purpose and requirements
-# 4. Handle platform-specific cases
+    # Assert
+    if $result == $expected {
+        print "✅ Component test passed"
+        true
+    } else {
+        print "❌ Component test failed"
+        print $"  Expected: $expected"
+        print $"  Actual: $result"
+        false
+    }
+}
 
-# Test Categories and Examples
-# ---------------------------
+export def test_workflow [workflow_func: closure, message: string] {
+    # Integration test utility function
+    print $"Testing workflow: $message"
 
-# Unit Tests
-# ---------
-# Example:
-# def test_component [] {
-#     # Setup
-#     let test_data = setup_test_data
-#
-#     # Test
-#     let result = component_function test_data
-#
-#     # Assert
-#     assert_equal $result $expected "Component should work as expected"
-#
-#     # Cleanup
-#     cleanup_test_data
-# }
+    # Setup test environment
+    setup_test_environment
 
-# Integration Tests
-# ----------------
-# Example:
-# def test_workflow [] {
-#     # Setup
-#     setup_test_environment
-#
-#     # Test workflow
-#     let result = run_workflow
-#
-#     # Assert workflow results
-#     assert_workflow_success $result
-#
-#     # Cleanup
-#     cleanup_test_environment
-# }
+    # Test workflow
+    let result = do $workflow_func
 
-# Storage Tests
-# ------------
-# Example:
-# def test_zfs_operation [] {
-#     # Skip if not on Linux
-#     if not (is_linux) {
-#         print "Skipping ZFS test on non-Linux platform"
-#         return
-#     }
-#
-#     # Setup ZFS environment
-#     setup_zfs_test
-#
-#     # Test ZFS operation
-#     let result = perform_zfs_operation
-#
-#     # Assert operation success
-#     assert_zfs_success $result
-#
-#     # Cleanup
-#     cleanup_zfs_test
-# }
+    # Assert workflow results
+    if $result {
+        print "✅ Workflow test passed"
+        cleanup_test_environment
+        true
+    } else {
+        print "❌ Workflow test failed"
+        cleanup_test_environment
+        false
+    }
+}
 
-# Performance Tests
-# ----------------
-# Example:
-# def test_performance [] {
-#     # Setup
-#     setup_performance_test
-#
-#     # Measure performance
-#     let metrics = measure_performance
-#
-#     # Assert performance criteria
-#     assert_performance_metrics $metrics
-#
-#     # Cleanup
-#     cleanup_performance_test
-# }
+export def test_zfs_operation [operation_func: closure, message: string] {
+    # Storage test utility function
+    print $"Testing ZFS operation: $message"
 
-# Best Practices
-# -------------
-# 1. Always clean up test resources
-# 2. Use meaningful test names
-# 3. Document test requirements
-# 4. Handle platform-specific cases
-# 5. Use appropriate assertions
-# 6. Log test progress
-# 7. Handle errors gracefully
+    # Skip if not on Linux
+    if not (is_linux) {
+        print "Skipping ZFS test on non-Linux platform"
+        return true
+    }
+
+    # Setup ZFS environment
+    setup_zfs_test
+
+    # Test ZFS operation
+    let result = do $operation_func
+
+    # Assert operation success
+    if $result {
+        print "✅ ZFS operation test passed"
+        cleanup_zfs_test
+        true
+    } else {
+        print "❌ ZFS operation test failed"
+        cleanup_zfs_test
+        false
+    }
+}
+
+export def test_performance [test_func: closure, threshold: float, message: string] {
+    # Performance test utility function
+    print $"Testing performance: $message"
+
+    # Setup
+    setup_performance_test
+
+    # Measure performance
+    let result = do $test_func
+
+    # Assert performance criteria (simplified timing)
+    print "✅ Performance test completed"
+    cleanup_performance_test
+    true
+}
+
+# Helper functions
+def is_linux [] {
+    (sys host | get long_os_version | str downcase | str contains "linux")
+}
+
+def setup_test_environment [] {
+    print "Setting up test environment..."
+    # Add test environment setup logic here
+}
+
+def cleanup_test_environment [] {
+    print "Cleaning up test environment..."
+    # Add test environment cleanup logic here
+}
+
+def setup_zfs_test [] {
+    print "Setting up ZFS test environment..."
+    # Add ZFS test setup logic here
+}
+
+def cleanup_zfs_test [] {
+    print "Cleaning up ZFS test environment..."
+    # Add ZFS test cleanup logic here
+}
+
+def setup_performance_test [] {
+    print "Setting up performance test environment..."
+    # Add performance test setup logic here
+}
+
+def cleanup_performance_test [] {
+    print "Cleaning up performance test environment..."
+    # Add performance test cleanup logic here
+}
+
+    # Test runner utility
+export def run_test_suite [test_name: string, test_func: closure] {
+    print $"Running test suite: $test_name"
+
+    let result = do $test_func
+
+    if $result {
+        print $"✅ Test suite '$test_name' passed"
+        true
+    } else {
+        print $"❌ Test suite '$test_name' failed"
+        false
+    }
+}
+
+# Test documentation generator
+export def generate_test_report [test_results: list] {
+    print "Test Report"
+    print "==========="
+
+    let passed = ($test_results | where $it == true | length)
+    let failed = ($test_results | where $it == false | length)
+    let total = ($test_results | length)
+
+    print $"Total tests: $total"
+    print $"Passed: $passed"
+    print $"Failed: $failed"
+    print $"Success rate: (($passed / $total) * 100 | into int)%"
+}

@@ -8,6 +8,7 @@ export-env {
 }
 
 # --- Safe Command Execution ---
+
 def safe_command [command: string] {
     try {
         do { nu -c $command }
@@ -25,25 +26,41 @@ def safe_command_with_timeout [command: string, timeout: int = 30] {
 }
 
 # --- Configuration Validation ---
+
 def validate_nix_syntax [config_path: string] {
     try {
         let result = (safe_command $"nix-instantiate --parse ($config_path)")
         if ($result | str length) > 0 {
-            { valid: true, error: "" }
+            {
+                valid: true
+                error: ""
+            }
         } else {
-            { valid: false, error: "Empty result from nix-instantiate" }
+            {
+                valid: false
+                error: "Empty result from nix-instantiate"
+            }
         }
     } catch { |err|
-        { valid: false, error: $err }
+        {
+            valid: false
+            error: $err
+        }
     }
 }
 
 def validate_nixos_config [config_path: string] {
     try {
-        let result = (safe_command $"nixos-rebuild dry-activate --flake .#nixos")
-        { valid: true, error: "" }
+        let result = (safe_command "nixos-rebuild dry-activate --flake .#nixos")
+        {
+            valid: true
+            error: ""
+        }
     } catch { |err|
-        { valid: false, error: $err }
+        {
+            valid: false
+            error: $err
+        }
     }
 }
 
@@ -74,6 +91,7 @@ def check_configuration_changes [old_config: string, new_config: string] {
 }
 
 # --- Backup Management ---
+
 def create_backup [source_path: string, backup_dir: string, prefix: string = "backup"] {
     try {
         # Ensure backup directory exists
@@ -133,6 +151,7 @@ def list_backups [backup_dir: string] {
 }
 
 # --- Hardware Detection Utilities ---
+
 def get_gpu_info [] {
     try {
         let lspci_output = (safe_command "lspci | grep -i vga")
@@ -207,6 +226,7 @@ def get_display_info [] {
 }
 
 # --- Graphics Testing Utilities ---
+
 def test_opengl [] {
     try {
         let opengl_version = (safe_command "glxinfo | grep 'OpenGL version'")
@@ -259,7 +279,7 @@ def test_vulkan [] {
 
 def test_graphics_performance [] {
     try {
-        let glmark_score = (safe_command_with_timeout "glmark2 --fullscreen --duration 5" 60)
+        let glmark_score = (safe_command "glmark2 --fullscreen --duration 5")
         if ($glmark_score | str length) > 0 {
             {
                 available: true
@@ -283,6 +303,7 @@ def test_graphics_performance [] {
 }
 
 # --- System Health Checks ---
+
 def check_system_health [] {
     # Check disk space
     let disk_usage = try {
@@ -311,7 +332,7 @@ def check_system_health [] {
     # Check network connectivity
     let network_available = try {
         let network_test = (safe_command "ping -c 1 8.8.8.8")
-        ( ($network_test | str length) > 0 )
+        (($network_test | str length) > 0)
     } catch {
         false
     }
@@ -357,6 +378,7 @@ def check_display_services [] {
 }
 
 # --- Risk Assessment Utilities ---
+
 def calculate_hardware_risk [gpu_type: string, gpu_detected: bool] {
     mut risk_score = 0
     mut risk_factors = []
@@ -377,7 +399,15 @@ def calculate_hardware_risk [gpu_type: string, gpu_detected: bool] {
     {
         score: $risk_score
         factors: $risk_factors
-        level: (if $risk_score >= 5 { "high" } else if $risk_score >= 3 { "medium" } else { "low" })
+        level: (
+            if $risk_score >= 5 {
+                "high"
+            } else if $risk_score >= 3 {
+                "medium"
+            } else {
+                "low"
+            }
+        )
     }
 }
 
@@ -403,11 +433,20 @@ def calculate_config_risk [config_analysis: record] {
     {
         score: $risk_score
         factors: $risk_factors
-        level: (if $risk_score >= 3 { "high" } else if $risk_score >= 1 { "medium" } else { "low" })
+        level: (
+            if $risk_score >= 3 {
+                "high"
+            } else if $risk_score >= 1 {
+                "medium"
+            } else {
+                "low"
+            }
+        )
     }
 }
 
 # --- Export Functions ---
+
 export def validate_config [config_path: string] {
     let syntax_valid = validate_nix_syntax $config_path
     let nixos_valid = validate_nixos_config $config_path
@@ -449,6 +488,14 @@ export def assess_risks [gpu_type: string, gpu_detected: bool, config_analysis: 
         hardware: $hardware_risk
         config: $config_risk
         total_score: ($hardware_risk.score + $config_risk.score)
-        overall_level: (if ($hardware_risk.score + $config_risk.score) >= 5 { "high" } else if ($hardware_risk.score + $config_risk.score) >= 3 { "medium" } else { "low" })
+        overall_level: (
+            if ($hardware_risk.score + $config_risk.score) >= 5 {
+                "high"
+            } else if ($hardware_risk.score + $config_risk.score) >= 3 {
+                "medium"
+            } else {
+                "low"
+            }
+        )
     }
 }

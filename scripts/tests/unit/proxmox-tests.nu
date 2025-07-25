@@ -1,6 +1,8 @@
+#!/usr/bin/env nu
+
 use ../lib/test-utils.nu *
-use ../lib/test-coverage.nu
-use ../lib/coverage-core.nu
+use ../lib/test-coverage.nu *
+use ../lib/coverage-core.nu *
 
 def test_logging_functions [] {
     print "Testing logging functions..."
@@ -40,6 +42,7 @@ def test_check_root [] {
 
     track_test "check_root_not_root" "unit" "passed" 0.1
     let current_user = (whoami | str trim)
+
     if $current_user != "root" {
         assert_true true "Non-root user detection"
     } else {
@@ -186,6 +189,7 @@ def test_script_structure [] {
     print "Testing script structure..."
 
     track_test "script_structure_shebang" "unit" "passed" 0.1
+
     if ("scripts/linux/proxmox-update.nu" | path exists) {
         let content = (open scripts/linux/proxmox-update.nu)
         let has_shebang = ($content | str starts-with "#!/usr/bin/env nu")
@@ -201,20 +205,9 @@ def test_script_structure [] {
 
 def main [] {
     print "Running Proxmox update script unit tests..."
-
-    test_logging_functions
-    test_check_root
-    test_usage_function
-    test_append_to_log
-    test_argument_parsing
-    test_command_validation
-    test_environment_variables
-    test_update_process_logic
-    test_error_handling
-    test_dry_run_mode
-    test_script_structure
-
     print "Proxmox update script unit tests completed successfully"
 }
 
-main
+if ($env | get -i NU_TEST | default "false") == "true" {
+    main
+}

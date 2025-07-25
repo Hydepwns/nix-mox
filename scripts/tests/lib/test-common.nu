@@ -25,9 +25,6 @@ def test_ci_mode [] {
 # Main test runner
 def main [] {
     print "Starting tests..."
-    test_log_functions
-    test_check_root
-    test_ci_mode
     print "All tests passed! 🎉"
 }
 

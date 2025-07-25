@@ -12,24 +12,26 @@ export-env {
 use ./lib/test-coverage.nu *
 
 # --- Test Configuration ---
+
 def setup_test_config [] {
     {
-        run_unit_tests: true
-        run_integration_tests: true
-        run_storage_tests: true
-        run_performance_tests: true
-        run_display_tests: true
-        generate_coverage: true
-        export_format: "json"
-        verbose: false
-        parallel: false
-        timeout: 300
-        retry_failed: false
+        run_unit_tests: true,
+        run_integration_tests: true,
+        run_storage_tests: true,
+        run_performance_tests: true,
+        run_display_tests: true,
+        generate_coverage: true,
+        export_format: "json",
+        verbose: false,
+        parallel: false,
+        timeout: 300,
+        retry_failed: false,
         max_retries: 3
     }
 }
 
 # --- Environment Setup ---
+
 def ensure_test_env [] {
     # Set default TEST_TEMP_DIR if not already set
     if not ($env | get -i TEST_TEMP_DIR | is-not-empty) {
@@ -45,9 +47,11 @@ def ensure_test_env [] {
 }
 
 # --- Test Environment Management ---
+
 def setup_test_env [] {
     # Ensure TEST_TEMP_DIR is set correctly for CI
-    if ($env.CI? == "true") {
+    let ci_val = ($env | get -i CI | default "");
+    if $ci_val == "true" {
         $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
     } else if not ($env | get -i TEST_TEMP_DIR | is-not-empty) {
         $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
@@ -67,20 +71,18 @@ def cleanup_test_env [] {
 }
 
 # --- Test Execution with Better Error Handling ---
+
 def run_test_suite [suite_name: string, test_func: closure, config: record] {
     print $"($env.GREEN)Running ($suite_name) tests...($env.NC)"
-
     let start_time = (date now | into int)
     let result = (try {
         do $test_func
-        { success: true, error_msg: "" }
-    } catch {
-        { success: false, error_msg: $env.LAST_ERROR }
+        {success: true, error_msg: ""}
+    } catch { |err|
+        {success: false, error_msg: $err}
     })
-
     let success = $result.success
     let error_msg = $result.error_msg
-
     let end_time = (date now | into int)
     let duration = (($end_time - $start_time) | into float) / 1000000000
 
@@ -133,42 +135,40 @@ def run_display_tests [] {
 
 def run_all_test_suites [config: record] {
     # Call setup_test_env from the imported module
-    setup_test_env
-
     mut overall_success = true
     mut test_results = []
 
     # Run unit tests
     if $config.run_unit_tests {
-        let unit_success = run_test_suite "unit" { run_unit_tests } $config
+        let unit_success = (run_test_suite "unit" { run_unit_tests } $config)
         $test_results = ($test_results | append { suite: "unit", success: $unit_success })
         $overall_success = ($overall_success and $unit_success)
     }
 
     # Run integration tests
     if $config.run_integration_tests {
-        let integration_success = run_test_suite "integration" { run_integration_tests } $config
+        let integration_success = (run_test_suite "integration" { run_integration_tests } $config)
         $test_results = ($test_results | append { suite: "integration", success: $integration_success })
         $overall_success = ($overall_success and $integration_success)
     }
 
     # Run storage tests
     if $config.run_storage_tests {
-        let storage_success = run_test_suite "storage" { run_storage_tests } $config
+        let storage_success = (run_test_suite "storage" { run_storage_tests } $config)
         $test_results = ($test_results | append { suite: "storage", success: $storage_success })
         $overall_success = ($overall_success and $storage_success)
     }
 
     # Run performance tests
     if $config.run_performance_tests {
-        let performance_success = run_test_suite "performance" { run_performance_tests } $config
+        let performance_success = (run_test_suite "performance" { run_performance_tests } $config)
         $test_results = ($test_results | append { suite: "performance", success: $performance_success })
         $overall_success = ($overall_success and $performance_success)
     }
 
     # Run display tests
     if $config.run_display_tests {
-        let display_success = run_test_suite "display" { run_display_tests } $config
+        let display_success = (run_test_suite "display" { run_display_tests } $config)
         $test_results = ($test_results | append { suite: "display", success: $display_success })
         $overall_success = ($overall_success and $display_success)
     }
@@ -177,28 +177,24 @@ def run_all_test_suites [config: record] {
     if $config.generate_coverage {
         try {
             print $"($env.GREEN)Generating coverage report...($env.NC)"
-            print "DEBUG: About to call generate_coverage_report"
-            let result = do { generate_coverage_report }
-            print "DEBUG: generate_coverage_report completed"
+            print "DEBUG: About to call export_coverage_report"
+            let report = do { export_coverage_report $config.export_format }
+            print $"DEBUG: Coverage data length: ($report | str length)"
 
-            # Export coverage report once and save to both locations
-            print "DEBUG: About to export coverage report"
-            let coverage_data = do { export_coverage_report $config.export_format }
-            print $"DEBUG: Coverage data length: ($coverage_data | str length)"
-
-            let coverage_path = $"($env.TEST_TEMP_DIR)/coverage.($config.export_format)"
-            $coverage_data | save --force $coverage_path
+            let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "/tmp/nix-mox-tests");
+            let coverage_path = $"($test_temp_dir)/coverage.($config.export_format)"
+            $report | save --force $coverage_path
             print $"($env.GREEN)Coverage report saved as ($coverage_path)($env.NC)"
 
             # Also save to /tmp for CI workflows to find
             let ci_coverage_path = $"/tmp/nix-mox-tests/coverage.($config.export_format)"
             if not ("/tmp/nix-mox-tests" | path exists) {
-              mkdir "/tmp/nix-mox-tests"
+                mkdir "/tmp/nix-mox-tests"
             }
-            $coverage_data | save --force $ci_coverage_path
+            $report | save --force $ci_coverage_path
             print $"($env.GREEN)CI coverage report saved as ($ci_coverage_path)($env.NC)"
-        } catch {
-            print $"($env.YELLOW)Warning: Failed to generate coverage report: ($env.LAST_ERROR)($env.NC)"
+        } catch { |err|
+            print $"($env.YELLOW)Warning: Failed to generate coverage report: ($err)($env.NC)"
         }
     }
 
@@ -209,7 +205,8 @@ def run_all_test_suites [config: record] {
     if not $config.generate_coverage {
         cleanup_test_env
     } else {
-        print $"($env.YELLOW)Test environment preserved for coverage analysis at: ($env.TEST_TEMP_DIR)($env.NC)"
+        let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "<unknown>");
+        print $"($env.YELLOW)Test environment preserved for coverage analysis at: ($test_temp_dir)($env.NC)"
     }
 
     # Exit with appropriate code
@@ -221,10 +218,10 @@ def run_all_test_suites [config: record] {
 }
 
 # --- Test Summary ---
+
 def print_summary [results: list] {
     print ""
     print $"($env.GREEN)=== Test Summary ===($env.NC)"
-
     let total_suites = ($results | length)
     let passed_suites = ($results | where { |r| $r.success } | length)
     let failed_suites = ($total_suites - $passed_suites)
@@ -248,6 +245,7 @@ def print_summary [results: list] {
 }
 
 # --- Enhanced Command Line Interface ---
+
 def parse_args [args: list, config: record] {
     if ($args | length) > 0 {
         # Handle help
@@ -299,9 +297,13 @@ def parse_args [args: list, config: record] {
 
         let test_flags = ["--unit", "--integration", "--storage", "--performance", "--display"]
         let has_specific_tests = ($args | any { |arg| $test_flags | any { |flag| $arg == $flag } })
-
         let config = if $has_specific_tests {
-            $config | upsert run_unit_tests ($args | any { |arg| $arg == "--unit" }) | upsert run_integration_tests ($args | any { |arg| $arg == "--integration" }) | upsert run_storage_tests ($args | any { |arg| $arg == "--storage" }) | upsert run_performance_tests ($args | any { |arg| $arg == "--performance" }) | upsert run_display_tests ($args | any { |arg| $arg == "--display" })
+            $config
+            | upsert run_unit_tests ($args | any { |arg| $arg == "--unit" })
+            | upsert run_integration_tests ($args | any { |arg| $arg == "--integration" })
+            | upsert run_storage_tests ($args | any { |arg| $arg == "--storage" })
+            | upsert run_performance_tests ($args | any { |arg| $arg == "--performance" })
+            | upsert run_display_tests ($args | any { |arg| $arg == "--display" })
         } else {
             $config
         }
@@ -327,6 +329,7 @@ def parse_args [args: list, config: record] {
 }
 
 # --- Help Function ---
+
 def print_help [] {
     print "nix-mox Test Runner"
     print "=================="
@@ -369,13 +372,15 @@ def print_help [] {
 }
 
 # --- Main Runner ---
+
 def main [args: list] {
     let config = setup_test_config
     let config = parse_args $args $config
 
     # Ensure test environment is properly set up
-    ensure_test_env
+    setup_test_env
 
+    # Run all test suites
     run_all_test_suites $config
 }
 
