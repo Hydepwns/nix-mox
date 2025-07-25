@@ -2,7 +2,6 @@
 
 # Documentation generation tool for nix-mox scripts
 # Automatically generates comprehensive documentation using enhanced modules
-
 use ../lib/common.nu *
 use ../lib/logging.nu *
 use ../lib/discovery.nu *
@@ -29,7 +28,8 @@ export def main [args: list] {
         exit 0
     }
 
-    info "Starting documentation generation" {
+    info "Starting documentation generation"
+    info "Configuration" {
         output_dir: $parsed_args.output_dir
         format: $parsed_args.format
         include_examples: $parsed_args.include_examples
@@ -42,8 +42,8 @@ export def main [args: list] {
     # Generate documentation
     try {
         let result = (generate_documentation $all_scripts $parsed_args)
-
-        info "Documentation generation completed" {
+        info "Documentation generation completed"
+        info "Results" {
             output_dir: $result.output_dir
             files_generated: $result.files_generated
             total_scripts: $result.total_scripts
@@ -51,10 +51,10 @@ export def main [args: list] {
 
         # Show summary
         show_generation_summary $result
-
         exit 0
     } catch { |err|
-        error "Documentation generation failed" { error: $err }
+        error "Documentation generation failed"
+        error "Error details" { error: $err }
         exit 1
     }
 }
@@ -151,7 +151,6 @@ export def generate_main_documentation [scripts: list, args: record] {
     # Table of contents
     $markdown = ($markdown | append "## Table of Contents")
     $markdown = ($markdown | append "")
-
     let categories = ($scripts | get category | uniq)
     for category in $categories {
         let category_scripts = ($scripts | where category == $category)
@@ -289,7 +288,6 @@ export def generate_readme [scripts: list, args: record] {
     $markdown = ($markdown | append "- Categories: ($categories | length)")
     $markdown = ($markdown | append "- Platforms supported: ($scripts | get platform | uniq | length)")
     $markdown = ($markdown | append "")
-
     $markdown = ($markdown | append "## Regeneration")
     $markdown = ($markdown | append "")
     $markdown = ($markdown | append "To regenerate this documentation:")
@@ -355,16 +353,14 @@ export def generate_script_example [script: record] {
 export def show_generation_summary [result: record] {
     print $"\n(ansi green_bold)Documentation Generation Complete!(ansi reset)"
     print $"\n(ansi cyan)Summary:(ansi reset)"
-    print $"  Output directory: ($result.output_dir)"
-    print $"  Files generated: ($result.files_generated | length)"
-    print $"  Total scripts: ($result.total_scripts)"
-    print $"  Categories: ($result.categories | length)"
-
+    print $"  Output directory:  ($result.output_dir)"
+    print $"  Files generated:  ($result.files_generated | length)"
+    print $"  Total scripts:  ($result.total_scripts)"
+    print $"  Categories:  ($result.categories | length)"
     print $"\n(ansi cyan)Generated files:(ansi reset)"
     for file in $result.files_generated {
         print $"  ✓ ($file)"
     }
-
     print $"\n(ansi yellow)Next steps:(ansi reset)"
     print "  1. Review the generated documentation"
     print "  2. Update any script metadata as needed"
@@ -394,9 +390,9 @@ export def show_help [] {
 }
 
 # Main execution
-if ($env.NIXMOX_ARGS? | is-not-empty) {
+if ($env | get -i NIXMOX_ARGS | is-not-empty) {
     let args = ($env.NIXMOX_ARGS | split row " ")
     main $args
 } else {
-    main $in
+    main ($in | default [])
 }

@@ -3,22 +3,20 @@
 # nix-mox Size Analysis Dashboard
 # Web-based interactive dashboard for analyzing package sizes and dependencies
 
-use ../lib/common.nu *
-
 def log_info [message: string] {
-    print $"📊 ($message)"
+    print $"📊  ($message)"
 }
 
 def log_success [message: string] {
-    print $"✅ ($message)"
+    print $"✅  ($message)"
 }
 
 def log_warning [message: string] {
-    print $"⚠️  ($message)"
+    print $"⚠️   ($message)"
 }
 
 def log_error [message: string] {
-    print $"❌ ($message)"
+    print $"❌  ($message)"
 }
 
 # Analyze package sizes and dependencies
@@ -61,7 +59,7 @@ def analyze_package_sizes [] {
                 deps_size_formatted: ($deps_size | into filesize)
             }
         } catch {
-            log_warning $"Could not analyze package ($pkg)"
+            log_error $"Could not analyze package ($pkg)"
             {
                 name: $pkg
                 package_size: 0
@@ -84,308 +82,74 @@ def generate_html_dashboard [analysis: list] {
     let timestamp = (date now | format date "%Y-%m-%d %H:%M:%S")
     let total_size = ($analysis | get total_size | math sum | into filesize)
     let total_packages = ($analysis | length)
+    let total_deps = ($analysis | get deps_count | math sum)
+    let heavy_builds = ($analysis | where build_time == "heavy" | length)
+
     let table_rows = ($analysis | each { |pkg|
         let build_class = (if $pkg.build_time == "heavy" { "size-heavy" } else { "size-light" })
-        $"<tr>
-            <td><strong>($pkg.name)</strong></td>
-            <td><span class=\"size-badge\">($pkg.size_formatted)</span></td>
-            <td>($pkg.package_size_formatted)</td>
-            <td>($pkg.deps_size_formatted)</td>
-            <td>($pkg.deps_count)</td>
-            <td><span class=\"size-badge ($build_class)\">($pkg.build_time)</span></td>
-        </tr>"
+        $"<tr><td><strong>($pkg.name)</strong></td><td><span class=\"size-badge\">($pkg.size_formatted)</span></td><td>($pkg.package_size_formatted)</td><td>($pkg.deps_size_formatted)</td><td>($pkg.deps_count)</td><td><span class=\"size-badge ($build_class)\">($pkg.build_time)</span></td></tr>"
     } | str join "\n")
-    let html = '
-<!DOCTYPE html>
-<html lang="en">
+
+    # Create a simple HTML template
+    let html = $"<!DOCTYPE html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>nix-mox Size Analysis Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <title>nix-mox Size Analysis</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            padding: 30px;
-            background: #f8f9fa;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #7f8c8d;
-            font-size: 0.9em;
-        }
-
-        .charts {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            padding: 30px;
-        }
-
-        .chart-container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .chart-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .table-container {
-            padding: 30px;
-            background: #f8f9fa;
-        }
-
-        .package-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .package-table th {
-            background: #2c3e50;
-            color: white;
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-        }
-
-        .package-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #ecf0f1;
-        }
-
-        .package-table tr:hover {
-            background: #f8f9fa;
-        }
-
-        .size-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            font-weight: bold;
-        }
-
-        .size-light { background: #d5f4e6; color: #27ae60; }
-        .size-heavy { background: #fadbd8; color: #e74c3c; }
-
-        .footer {
-            background: #2c3e50;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 0.9em;
-        }
-
-        @media (max-width: 768px) {
-            .charts {
-                grid-template-columns: 1fr;
-            }
-
-            .stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
+        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+        .header {{ background: #2c3e50; color: white; padding: 20px; text-align: center; }}
+        .stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; }}
+        .stat-card {{ background: #f8f9fa; padding: 15px; border-radius: 5px; text-align: center; }}
+        .package-table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+        .package-table th, .package-table td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+        .package-table th {{ background: #2c3e50; color: white; }}
+        .size-badge {{ padding: 2px 6px; border-radius: 3px; font-size: 0.8em; }}
+        .size-light {{ background: #d5f4e6; color: #27ae60; }}
+        .size-heavy {{ background: #fadbd8; color: #e74c3c; }}
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 nix-mox Size Analysis</h1>
-            <p>Comprehensive package size and dependency analysis dashboard</p>
-            <p style="margin-top: 10px; font-size: 0.9em;">Generated on ' + ($timestamp | into string) + '</p>
-        </div>
+    <div class=\"header\">
+        <h1>📊 nix-mox Size Analysis</h1>
+        <p>Generated on ($timestamp)</p>
+    </div>
 
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-value">' + ($total_packages | into string) + '</div>
-                <div class="stat-label">Total Packages</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">' + ($total_size | into string) + '</div>
-                <div class="stat-label">Total Size</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">' + (($analysis | get deps_count | math sum) | into string) + '</div>
-                <div class="stat-label">Total Dependencies</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">' + (($analysis | where build_time == "heavy" | length) | into string) + '</div>
-                <div class="stat-label">Heavy Builds</div>
-            </div>
+    <div class=\"stats\">
+        <div class=\"stat-card\">
+            <h3>Total Packages</h3>
+            <p>($total_packages)</p>
         </div>
-
-        <div class="charts">
-            <div class="chart-container">
-                <div class="chart-title">Package Sizes Comparison</div>
-                <canvas id="sizeChart" width="400" height="300"></canvas>
-            </div>
-            <div class="chart-container">
-                <div class="chart-title">Dependencies Distribution</div>
-                <canvas id="depsChart" width="400" height="300"></canvas>
-            </div>
+        <div class=\"stat-card\">
+            <h3>Total Size</h3>
+            <p>($total_size)</p>
         </div>
-
-        <div class="table-container">
-            <h2 style="margin-bottom: 20px; color: #2c3e50;">📦 Package Details</h2>
-            <table class="package-table">
-                <thead>
-                    <tr>
-                        <th>Package</th>
-                        <th>Total Size</th>
-                        <th>Package Size</th>
-                        <th>Dependencies</th>
-                        <th>Deps Count</th>
-                        <th>Build Type</th>
-                    </tr>
-                </thead>
-                <tbody>
-' + $table_rows + '
-                </tbody>
-            </table>
+        <div class=\"stat-card\">
+            <h3>Total Dependencies</h3>
+            <p>($total_deps)</p>
         </div>
-
-        <div class="footer">
-            <p>Generated by nix-mox Size Analysis Dashboard | <a href="https://github.com/Hydepwns/nix-mox" style="color: #3498db;">View on GitHub</a></p>
+        <div class=\"stat-card\">
+            <h3>Heavy Builds</h3>
+            <p>($heavy_builds)</p>
         </div>
     </div>
 
-    <script>
-        // Chart.js configuration
-        const analysisData = ' + ($analysis | to json | into string) + ';
-        const packages = analysisData.map(p => p.name);
-        const sizes = analysisData.map(p => p.total_size);
-        const deps = analysisData.map(p => p.deps_count);
-        const colors = ["#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6", "#1abc9c"];
-
-        // Size comparison chart
-        const sizeCtx = document.getElementById("sizeChart").getContext("2d");
-        new Chart(sizeCtx, {
-            type: "bar",
-            data: {
-                labels: packages,
-                datasets: [{
-                    label: "Total Size (bytes)",
-                    data: sizes,
-                    backgroundColor: colors,
-                    borderColor: colors.map(c => c + "80"),
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return (value / 1024 / 1024).toFixed(1) + " MB";
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Dependencies chart
-        const depsCtx = document.getElementById("depsChart").getContext("2d");
-        new Chart(depsCtx, {
-            type: "doughnut",
-            data: {
-                labels: packages,
-                datasets: [{
-                    data: deps,
-                    backgroundColor: colors,
-                    borderColor: "#fff",
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: "bottom"
-                    }
-                }
-            }
-        });
-    </script>
+    <table class=\"package-table\">
+        <thead>
+            <tr>
+                <th>Package</th>
+                <th>Total Size</th>
+                <th>Package Size</th>
+                <th>Dependencies</th>
+                <th>Deps Count</th>
+                <th>Build Type</th>
+            </tr>
+        </thead>
+        <tbody>
+($table_rows)
+        </tbody>
+    </table>
 </body>
-</html>
-'
+</html>"
 
     $html
 }
@@ -418,7 +182,7 @@ def generate_json_api [analysis: list] {
 
 # Start web server
 def start_dashboard [port: int = 8080] {
-    log_info $"Starting size analysis dashboard on port ($port)..."
+    print $"Starting size analysis dashboard on port ($port)..."
 
     # Generate analysis data
     let analysis = (analyze_package_sizes)
@@ -431,27 +195,27 @@ def start_dashboard [port: int = 8080] {
     let api_data = (generate_json_api $analysis)
     $api_data | to json --indent 2 | save size-api.json
 
-    log_success "Dashboard files generated:"
+    print "Dashboard files generated:"
     print "  - size-dashboard.html (Interactive dashboard)"
     print "  - size-api.json (JSON API data)"
 
     # Start simple HTTP server
     try {
-        log_info "Starting HTTP server..."
+        print "Starting HTTP server..."
         python3 -m http.server $port &
         let server_pid = $env.LAST_BACKGROUND_JOB_PID
 
-        log_success $"Dashboard available at: http://localhost:($port)/size-dashboard.html"
-        log_info "Press Ctrl+C to stop the server"
+        print $"Dashboard available at: http://localhost:($port)/size-dashboard.html"
+        print "Press Ctrl+C to stop the server"
 
         # Wait for user to stop
         read -s "Press Enter to stop the server..."
 
         # Stop server
         kill $server_pid
-        log_success "Server stopped"
+        print "Server stopped"
     } catch {
-        log_warning "Could not start HTTP server. You can open size-dashboard.html in your browser manually."
+        print "Could not start HTTP server. You can open size-dashboard.html in your browser manually."
     }
 }
 
@@ -464,14 +228,14 @@ export def generate-html [] {
     let analysis = (analyze_package_sizes)
     let html = (generate_html_dashboard $analysis)
     $html | save size-dashboard.html
-    log_success "HTML dashboard saved to size-dashboard.html"
+    print "HTML dashboard saved to size-dashboard.html"
 }
 
 export def generate-api [] {
     let analysis = (analyze_package_sizes)
     let api_data = (generate_json_api $analysis)
     $api_data | to json --indent 2 | save size-api.json
-    log_success "JSON API data saved to size-api.json"
+    print "JSON API data saved to size-api.json"
 }
 
 export def serve [port: int = 8080] {

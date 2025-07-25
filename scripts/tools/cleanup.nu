@@ -71,7 +71,10 @@ def main [
         print "  • Removed empty directories"
         print ""
         print "💡 Next steps:"
-        print "  • Review archived scripts in scripts/archive/"
+        print "  • Review quality scripts in scripts/quality/"
+        print "  • Review validation scripts in scripts/validation/"
+        print "  • Review benchmark scripts in scripts/benchmarks/"
+        print "  • Review CI scripts in scripts/ci/"
         print "  • Test the configuration with: nixos-rebuild switch --flake .#nixos"
         print "  • Commit changes to version control"
     }

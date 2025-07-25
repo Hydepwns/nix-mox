@@ -21,28 +21,28 @@ def main [] {
     print ""
 
     # Analyze packages
-    let packages = analyze_packages $system
+    let packages = (analyze_packages $system)
     print "📦 Package Analysis"
     print "------------------"
     display_package_analysis $packages
     print ""
 
     # Analyze devshells
-    let devshells = analyze_devshells $system
+    let devshells = (analyze_devshells $system)
     print "💻 Development Shell Analysis"
     print "----------------------------"
     display_devshell_analysis $devshells
     print ""
 
     # Analyze templates
-    let templates = analyze_templates $system
+    let templates = (analyze_templates $system)
     print "🏗️ Template Analysis"
     print "-------------------"
     display_template_analysis $templates
     print ""
 
     # Generate summary report
-    let summary = generate_summary $packages $devshells $templates
+    let summary = (generate_summary $packages $devshells $templates)
     print "📈 Summary Report"
     print "----------------"
     display_summary $summary
@@ -61,15 +61,7 @@ def main [] {
 }
 
 def analyze_packages [system: string] {
-    let package_names = [
-        "proxmox-update"
-        "vzdump-backup"
-        "zfs-snapshot"
-        "nixos-flake-update"
-        "install"
-        "uninstall"
-    ]
-
+    let package_names = ["proxmox-update", "vzdump-backup", "zfs-snapshot", "nixos-flake-update", "install", "uninstall"]
     mut results = []
 
     for package in $package_names {
@@ -77,13 +69,20 @@ def analyze_packages [system: string] {
 
         # Build package and get size
         let start_time = (date now)
-        let build_result = (do --ignore-errors { nix build .#($package) --json --no-link } | from json)
+        let build_result = (do --ignore-errors {
+            nix build .#($package) --json --no-link | from json
+        })
         let end_time = (date now)
         let build_duration = (($end_time - $start_time) | into duration)
 
         # Get closure size
-        let closure_size_raw = (do --ignore-errors { nix path-info --closure-size .#($package) })
-        let closure_size = if ($closure_size_raw | is-empty) { 0 } else {
+        let closure_size_raw = (do --ignore-errors {
+            nix path-info --closure-size .#($package)
+        })
+
+        let closure_size = if ($closure_size_raw | is-empty) {
+            0
+        } else {
             let parsed = ($closure_size_raw | lines | parse "{size} {path}")
             if ($parsed | is-empty) { 0 } else {
                 let size_str = $parsed.size.0
@@ -93,8 +92,13 @@ def analyze_packages [system: string] {
         }
 
         # Get individual package size
-        let package_size_raw = (do --ignore-errors { nix path-info --size .#($package) })
-        let package_size = if ($package_size_raw | is-empty) { 0 } else {
+        let package_size_raw = (do --ignore-errors {
+            nix path-info --size .#($package)
+        })
+
+        let package_size = if ($package_size_raw | is-empty) {
+            0
+        } else {
             let parsed = ($package_size_raw | lines | parse "{size} {path}")
             if ($parsed | is-empty) { 0 } else {
                 let size_str = $parsed.size.0
@@ -118,35 +122,34 @@ def analyze_packages [system: string] {
 }
 
 def analyze_devshells [system: string] {
-    let shell_names = [
-        "default"
-        "development"
-        "testing"
-        "services"
-        "monitoring"
-        "gaming"
-        "zfs"
-        "macos"
-    ]
-
+    let shell_names = ["default", "development", "testing", "services", "monitoring", "gaming", "zfs", "macos"]
     mut results = []
 
     for shell in $shell_names {
         print $"  Analyzing devshell: ($shell)..."
 
         # Check if shell exists for this system
-        let shell_exists = not (do --ignore-errors { nix flake show .#($shell) } | is-empty)
+        let shell_exists = not (do --ignore-errors {
+            nix flake show .#($shell) | is-empty
+        })
 
         if $shell_exists {
             # Get shell size by building it
             let start_time = (date now)
-            let build_result = (do --ignore-errors { nix build .#($shell) --json --no-link } | from json)
+            let build_result = (do --ignore-errors {
+                nix build .#($shell) --json --no-link | from json
+            })
             let end_time = (date now)
             let build_duration = (($end_time - $start_time) | into duration)
 
             # Get closure size
-            let closure_size_raw = (do --ignore-errors { nix path-info --closure-size .#($shell) })
-            let closure_size = if ($closure_size_raw | is-empty) { 0 } else {
+            let closure_size_raw = (do --ignore-errors {
+                nix path-info --closure-size .#($shell)
+            })
+
+            let closure_size = if ($closure_size_raw | is-empty) {
+                0
+            } else {
                 let parsed = ($closure_size_raw | lines | parse "{size} {path}")
                 if ($parsed | is-empty) { 0 } else {
                     let size_str = $parsed.size.0
@@ -181,25 +184,33 @@ def analyze_devshells [system: string] {
 def analyze_templates [system: string] {
     # Analyze NixOS configurations - check for common template names
     let template_names = ["nixos"]
-
     mut results = []
 
     for template in $template_names {
         print $"  Analyzing template: ($template)..."
 
         # Check if template exists
-        let template_exists = not (do --ignore-errors { nix flake show .#($template) } | is-empty)
+        let template_exists = not (do --ignore-errors {
+            nix flake show .#($template) | is-empty
+        })
 
         if $template_exists {
             # Get configuration size
             let start_time = (date now)
-            let build_result = (do --ignore-errors { nix build .#($template).config.system.build.toplevel --json --no-link } | from json)
+            let build_result = (do --ignore-errors {
+                nix build .#($template).config.system.build.toplevel --json --no-link | from json
+            })
             let end_time = (date now)
             let build_duration = (($end_time - $start_time) | into duration)
 
             # Get closure size
-            let closure_size_raw = (do --ignore-errors { nix path-info --closure-size .#($template).config.system.build.toplevel })
-            let closure_size = if ($closure_size_raw | is-empty) { 0 } else {
+            let closure_size_raw = (do --ignore-errors {
+                nix path-info --closure-size .#($template).config.system.build.toplevel
+            })
+
+            let closure_size = if ($closure_size_raw | is-empty) {
+                0
+            } else {
                 let parsed = ($closure_size_raw | lines | parse "{size} {path}")
                 if ($parsed | is-empty) { 0 } else {
                     let size_str = $parsed.size.0
@@ -223,7 +234,6 @@ def analyze_templates [system: string] {
 
 def display_package_analysis [packages: list] {
     let sorted_packages = ($packages | sort-by closure_size -r)
-
     print "Package Sizes (closure size):"
     print ""
 
@@ -243,7 +253,6 @@ def display_package_analysis [packages: list] {
 
 def display_devshell_analysis [devshells: list] {
     let available_shells = ($devshells | where available == true | sort-by closure_size -r)
-
     print "Development Shell Sizes (closure size):"
     print ""
 
@@ -263,7 +272,11 @@ def display_devshell_analysis [devshells: list] {
         print ""
     }
 
-    let total_size = if ($available_shells | length) > 0 { ($available_shells | get closure_size | math sum) } else { 0 }
+    let total_size = if ($available_shells | length) > 0 {
+        ($available_shells | get closure_size | math sum)
+    } else {
+        0
+    }
     let total_mb = (($total_size | into float) / 1024 / 1024 | into string | str substring 0..6)
     print $"Total devshell size: ($total_mb) MB"
 }
@@ -275,7 +288,6 @@ def display_template_analysis [templates: list] {
     }
 
     let sorted_templates = ($templates | sort-by closure_size -r)
-
     print "Template Sizes (closure size):"
     print ""
 
@@ -292,14 +304,43 @@ def display_template_analysis [templates: list] {
 }
 
 def generate_summary [packages: list, devshells: list, templates: list] {
-    let total_package_size = if ($packages | length) > 0 { ($packages | get closure_size | math sum) } else { 0 }
-    let total_devshell_size = if ($devshells | where available == true | length) > 0 { ($devshells | where available == true | get closure_size | math sum) } else { 0 }
-    let total_template_size = if ($templates | length) > 0 { ($templates | get closure_size | math sum) } else { 0 }
+    let total_package_size = if ($packages | length) > 0 {
+        ($packages | get closure_size | math sum)
+    } else {
+        0
+    }
+
+    let total_devshell_size = if ($devshells | where available == true | length) > 0 {
+        ($devshells | where available == true | get closure_size | math sum)
+    } else {
+        0
+    }
+
+    let total_template_size = if ($templates | length) > 0 {
+        ($templates | get closure_size | math sum)
+    } else {
+        0
+    }
+
     let grand_total = ($total_package_size + $total_devshell_size + $total_template_size)
 
-    let largest_package = if ($packages | length) > 0 { ($packages | sort-by closure_size -r | get 0) } else { null }
-    let largest_devshell = if ($devshells | where available == true | length) > 0 { ($devshells | where available == true | sort-by closure_size -r | get 0) } else { null }
-    let largest_template = if ($templates | length) > 0 { ($templates | sort-by closure_size -r | get 0) } else { null }
+    let largest_package = if ($packages | length) > 0 {
+        ($packages | sort-by closure_size -r | get 0)
+    } else {
+        null
+    }
+
+    let largest_devshell = if ($devshells | where available == true | length) > 0 {
+        ($devshells | where available == true | sort-by closure_size -r | get 0)
+    } else {
+        null
+    }
+
+    let largest_template = if ($templates | length) > 0 {
+        ($templates | sort-by closure_size -r | get 0)
+    } else {
+        null
+    }
 
     {
         timestamp: (date now | into string)
@@ -335,21 +376,38 @@ def display_summary [summary: record] {
     print $"   🏗️ Templates: ($templates_mb) MB"
     print ""
 
-    let largest_pkg_mb = if $summary.largest.package != null { (($summary.largest.package.closure_size | into float) / 1024 / 1024 | into string | str substring 0..6) } else { "0" }
-    let largest_shell_mb = if $summary.largest.devshell != null { (($summary.largest.devshell.closure_size | into float) / 1024 / 1024 | into string | str substring 0..6) } else { "0" }
-    let largest_template_mb = if $summary.largest.template != null { (($summary.largest.template.closure_size | into float) / 1024 / 1024 | into string | str substring 0..6) } else { "0" }
+    let largest_pkg_mb = if $summary.largest.package != null {
+        (($summary.largest.package.closure_size | into float) / 1024 / 1024 | into string | str substring 0..6)
+    } else {
+        "0"
+    }
+
+    let largest_shell_mb = if $summary.largest.devshell != null {
+        (($summary.largest.devshell.closure_size | into float) / 1024 / 1024 | into string | str substring 0..6)
+    } else {
+        "0"
+    }
+
+    let largest_template_mb = if $summary.largest.template != null {
+        (($summary.largest.template.closure_size | into float) / 1024 / 1024 | into string | str substring 0..6)
+    } else {
+        "0"
+    }
 
     print "🏆 Largest Components:"
+
     if $summary.largest.package != null {
         let pkg_name = $summary.largest.package.name
         let pkg_size_str = $"($largest_pkg_mb) MB"
         print $"   📦 Package: ($pkg_name) ($pkg_size_str)"
     }
+
     if $summary.largest.devshell != null {
         let shell_name = $summary.largest.devshell.name
         let shell_size_str = $"($largest_shell_mb) MB"
         print $"   💻 DevShell: ($shell_name) ($shell_size_str)"
     }
+
     if $summary.largest.template != null {
         let template_name = $summary.largest.template.name
         let template_size_str = $"($largest_template_mb) MB"
@@ -359,7 +417,6 @@ def display_summary [summary: record] {
 
 def display_recommendations [summary: record] {
     let total_mb = (($summary.totals.grand_total | into float) / 1024 / 1024)
-
     print "Based on the size analysis:"
     print ""
 

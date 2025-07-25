@@ -9,22 +9,16 @@ def main [] {
     print ""
 
     # Get project metadata
-    let project_info = get-project-info
-    print-project-info $project_info
-
-    # Check test status
-    let test_status = check-test-status
-    print-test-status $test_status
-
-    # Check documentation status
-    let docs = check-documentation
-    print-documentation $docs
-
-    # Check dependency status
-    let deps = check-dependencies
-    print-dependencies $deps
+    let project_info = (get-project-info)
+    let test_status = (check-test-status)
+    let docs = (check-documentation)
+    let deps = (check-dependencies)
 
     # Generate summary
+    print-project-info $project_info
+    print-test-status $test_status
+    print-documentation $docs
+    print-dependencies $deps
     print-summary $project_info $test_status $docs $deps
 
     # Save dashboard to file
@@ -34,7 +28,6 @@ def main [] {
 def get-project-info [] {
     let version = (open version/VERSION.txt | str trim)
     let total_files = (ls | length)
-
     {
         version: $version
         total_files: $total_files
@@ -54,7 +47,13 @@ def check-test-status [] {
 
     let test_results = try {
         # Check if we're in CI environment
-        let is_ci = (if ($env | get -i CI) == "true" { true } else { false })
+        let is_ci = (
+            if ($env | get -i CI) == "true" {
+                true
+            } else {
+                false
+            }
+        )
 
         if $is_ci {
             # In CI, assume tests passed since they were run in previous step
@@ -69,7 +68,6 @@ def check-test-status [] {
         } else {
             # Run tests and capture output
             let test_output = (nu -c "source scripts/tests/run-tests.nu; run ['--unit']" | complete)
-
             if $test_output.exit_code == 0 {
                 {
                     status: "✅ PASSED"
@@ -108,10 +106,34 @@ def check-documentation [] {
 
     let docs = {
         total_docs: (ls docs/ | length)
-        readme_exists: (if ("README.md" | path exists) { "✅" } else { "❌" })
-        contributing_exists: (if ("docs/CONTRIBUTING.md" | path exists) { "✅" } else { "❌" })
-        usage_docs: (if ("docs/USAGE.md" | path exists) { "✅" } else { "❌" })
-        platform_docs: (if ("docs/PLATFORM-SPECIFIC.md" | path exists) { "✅" } else { "❌" })
+        readme_exists: (
+            if ("README.md" | path exists) {
+                "✅"
+            } else {
+                "❌"
+            }
+        )
+        contributing_exists: (
+            if ("docs/CONTRIBUTING.md" | path exists) {
+                "✅"
+            } else {
+                "❌"
+            }
+        )
+        usage_docs: (
+            if ("docs/USAGE.md" | path exists) {
+                "✅"
+            } else {
+                "❌"
+            }
+        )
+        platform_docs: (
+            if ("docs/PLATFORM-SPECIFIC.md" | path exists) {
+                "✅"
+            } else {
+                "❌"
+            }
+        )
         examples_count: (ls docs/examples/ | length)
         guides_count: (ls docs/guides/ | length)
         last_updated: (git log -1 --format="%cr" -- docs/ | str trim)
@@ -126,7 +148,13 @@ def check-dependencies [] {
     let deps = {
         nix_version: (nix --version | str substring 0..20)
         nu_version: (nu --version | str substring 0..20)
-        flake_lock_exists: (if ("flake.lock" | path exists) { "✅" } else { "❌" })
+        flake_lock_exists: (
+            if ("flake.lock" | path exists) {
+                "✅"
+            } else {
+                "❌"
+            }
+        )
         last_update: (git log -1 --format="%cr" -- flake.lock | str trim)
     }
 
@@ -136,22 +164,23 @@ def check-dependencies [] {
 def print-project-info [info] {
     print "📋 Project Information"
     print "----------------------"
-    print $"Version: ($info.version)"
-    print $"Branch: ($info.branch)"
-    print $"Last Commit: ($info.last_commit)"
-    print $"Total Files: ($info.total_files)"
-    print $"Uncommitted Changes: ($info.ahead)"
+    print $"Version:  ($info.version)"
+    print $"Branch:  ($info.branch)"
+    print $"Last Commit:  ($info.last_commit)"
+    print $"Total Files:  ($info.total_files)"
+    print $"Uncommitted Changes:  ($info.ahead)"
     print ""
 }
 
 def print-test-status [status] {
     print "🧪 Test Status"
     print "--------------"
-    print $"Status: ($status.status)"
-    print $"Total Tests: ($status.total_tests)"
-    print $"Failed Tests: ($status.failed_tests)"
-    print $"Duration: ($status.duration)"
-    print $"Last Run: ($status.last_run)"
+    print $"Status:  ($status.status)"
+    print $"Total Tests:  ($status.total_tests)"
+    print $"Failed Tests:  ($status.failed_tests)"
+    print $"Duration:  ($status.duration)"
+    print $"Last Run:  ($status.last_run)"
+
     if ("error" in ($status | columns)) and ($status.error != null) {
         print $"Error: ($status.error)"
     }
@@ -161,24 +190,24 @@ def print-test-status [status] {
 def print-documentation [docs] {
     print "📚 Documentation Status"
     print "----------------------"
-    print $"Total Docs: ($docs.total_docs)"
-    print $"README: ($docs.readme_exists)"
-    print $"Contributing: ($docs.contributing_exists)"
-    print $"Usage Guide: ($docs.usage_docs)"
-    print $"Platform Guide: ($docs.platform_docs)"
-    print $"Examples: ($docs.examples_count)"
-    print $"Guides: ($docs.guides_count)"
-    print $"Last Updated: ($docs.last_updated)"
+    print $"Total Docs:  ($docs.total_docs)"
+    print $"README:  ($docs.readme_exists)"
+    print $"Contributing:  ($docs.contributing_exists)"
+    print $"Usage Guide:  ($docs.usage_docs)"
+    print $"Platform Guide:  ($docs.platform_docs)"
+    print $"Examples:  ($docs.examples_count)"
+    print $"Guides:  ($docs.guides_count)"
+    print $"Last Updated:  ($docs.last_updated)"
     print ""
 }
 
 def print-dependencies [deps] {
     print "📦 Dependency Status"
     print "-------------------"
-    print $"Nix Version: ($deps.nix_version)"
-    print $"Nushell Version: ($deps.nu_version)"
-    print $"Flake Lock: ($deps.flake_lock_exists)"
-    print $"Last Update: ($deps.last_update)"
+    print $"Nix Version:  ($deps.nix_version)"
+    print $"Nushell Version:  ($deps.nu_version)"
+    print $"Flake Lock:  ($deps.flake_lock_exists)"
+    print $"Last Update:  ($deps.last_update)"
     print ""
 }
 
@@ -195,8 +224,20 @@ def print-summary [info, test, docs, deps] {
     }
 
     print $"Overall Status: ($overall_status)"
-    print $"Test Pass Rate: (if $test.total_tests > 0 { (($test.total_tests - $test.failed_tests) * 100 / $test.total_tests) } else { 0 })%"
-    print $"Documentation: (if $docs.readme_exists == '✅' { 'Complete' } else { 'Incomplete' })"
+    print $"Test Pass Rate: (
+        if $test.total_tests > 0 {
+            (($test.total_tests - $test.failed_tests) * 100 / $test.total_tests)
+        } else {
+            0
+        }
+    )%"
+    print $"Documentation: (
+        if $docs.readme_exists == '✅' {
+            'Complete'
+        } else {
+            'Incomplete'
+        }
+    )"
     print ""
 }
 
@@ -213,7 +254,65 @@ def save-dashboard [info, test, docs, deps] {
     $dashboard_data | to json | save --force tmp/dashboard.json
 
     # Save as Markdown
-    let md = $"# nix-mox Project Status Dashboard\n\n**Generated:** (date now | format date '%Y-%m-%d %H:%M:%S')\n\n## Project Information\n- Version: $($info.version)\n- Branch: $($info.branch)\n- Last Commit: $($info.last_commit)\n- Total Files: $($info.total_files)\n- Uncommitted Changes: $($info.ahead)\n\n## Test Status\n- Status: $($test.status)\n- Total Tests: $($test.total_tests)\n- Failed Tests: $($test.failed_tests)\n- Duration: $($test.duration)\n- Last Run: $($test.last_run)\n\n## Documentation Status\n- Total Docs: $($docs.total_docs)\n- README: $($docs.readme_exists)\n- Contributing: $($docs.contributing_exists)\n- Usage Guide: $($docs.usage_docs)\n- Platform Guide: $($docs.platform_docs)\n- Examples: $($docs.examples_count)\n- Guides: $($docs.guides_count)\n- Last Updated: $($docs.last_updated)\n\n## Dependency Status\n- Nix Version: $($deps.nix_version)\n- Nushell Version: $($deps.nu_version)\n- Flake Lock: $($deps.flake_lock_exists)\n- Last Update: $($deps.last_update)\n\n## Summary\n- Overall Status: (if $test.status == '✅ PASSED' { '🟢 HEALTHY' } else if $test.status == '⚠️  ERROR' { '🟡 NEEDS ATTENTION' } else { '🔴 CRITICAL' })\n- Test Pass Rate: (if $test.total_tests > 0 { (($test.total_tests - $test.failed_tests) * 100 / $test.total_tests) } else { 0 })%\n- Documentation: (if $docs.readme_exists == '✅' { 'Complete' } else { 'Incomplete' })\n"
+    let md = $"# nix-mox Project Status Dashboard
+
+**Generated:** (date now | format date '%Y-%m-%d %H:%M:%S')
+
+## Project Information
+- Version: $($info.version)
+- Branch: $($info.branch)
+- Last Commit: $($info.last_commit)
+- Total Files: $($info.total_files)
+- Uncommitted Changes: $($info.ahead)
+
+## Test Status
+- Status: $($test.status)
+- Total Tests: $($test.total_tests)
+- Failed Tests: $($test.failed_tests)
+- Duration: $($test.duration)
+- Last Run: $($test.last_run)
+
+## Documentation Status
+- Total Docs: $($docs.total_docs)
+- README: $($docs.readme_exists)
+- Contributing: $($docs.contributing_exists)
+- Usage Guide: $($docs.usage_docs)
+- Platform Guide: $($docs.platform_docs)
+- Examples: $($docs.examples_count)
+- Guides: $($docs.guides_count)
+- Last Updated: $($docs.last_updated)
+
+## Dependency Status
+- Nix Version: $($deps.nix_version)
+- Nushell Version: $($deps.nu_version)
+- Flake Lock: $($deps.flake_lock_exists)
+- Last Update: $($deps.last_update)
+
+## Summary
+- Overall Status: (
+    if $test.status == '✅ PASSED' {
+        '🟢 HEALTHY'
+    } else if $test.status == '⚠️  ERROR' {
+        '🟡 NEEDS ATTENTION'
+    } else {
+        '🔴 CRITICAL'
+    }
+)
+- Test Pass Rate: (
+    if $test.total_tests > 0 {
+        (($test.total_tests - $test.failed_tests) * 100 / $test.total_tests)
+    } else {
+        0
+    }
+)%
+- Documentation: (
+    if $docs.readme_exists == '✅' {
+        'Complete'
+    } else {
+        'Incomplete'
+    }
+)"
+
     $md | save --force tmp/dashboard.md
 
     print "💾 Dashboard saved to:"
