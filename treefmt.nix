@@ -23,6 +23,7 @@
       "version"
       "sbom"
       "coverage-tmp"
+      "scripts"
     ];
   };
 

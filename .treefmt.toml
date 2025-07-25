@@ -21,6 +21,7 @@ excludes = [
   "version",
   "sbom",
   "coverage-tmp",
+  "scripts",
 ]
 
 # Nix code formatting
@@ -100,7 +101,7 @@ command = "gofmt"
 options = ["-w", "-s"]
 includes = ["*.go"]
 
-# Nushell formatting
-[formatter.nushell]
-command = "nufmt"
-includes = ["*.nu"]
+# Nushell formatting - Disabled due to ANSI color code conflicts
+# [formatter.nushell]
+# command = "nufmt"
+# includes = ["*.nu"]

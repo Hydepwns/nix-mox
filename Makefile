@@ -149,52 +149,58 @@ gaming-workstation-interactive:
 	@echo "🎮 Interactive Gaming Workstation Setup..."
 	$(NUSHELL) scripts/core/setup.nu
 
-gaming-benchmark:
+gaming-benchmark: check-nushell
 	@echo "🎮 Running Gaming Performance Benchmark..."
-	@echo "⚠️  This feature has been moved to scripts/archive/"
+	$(NUSHELL) scripts/benchmarks/gaming-benchmark.nu
 
-validate-gaming:
+validate-gaming: check-nushell
 	@echo "🎮 Validating Gaming Configuration..."
-	@echo "⚠️  This feature has been moved to scripts/archive/"
+	$(NUSHELL) scripts/validation/validate-gaming-config.nu
 
-test-gaming:
-	@echo "🎮 Testing Gaming Setup..."
-	@echo "⚠️  This feature has been moved to scripts/archive/"
+test-gaming: validate-gaming
 
-validate-display:
+validate-display: check-nushell
 	@echo "🖥️  Testing Display Configuration..."
-	@echo "⚠️  This feature has been moved to scripts/archive/"
+	$(NUSHELL) scripts/validation/validate-display-config.nu
 
-validate-display-interactive:
+validate-display-interactive: check-nushell
 	@echo "🖥️  Interactive Display Configuration Testing..."
-	@echo "⚠️  This feature has been moved to scripts/archive/"
+	$(NUSHELL) scripts/validation/validate-display-config.nu --interactive
 
-validate-display-backup:
+validate-display-backup: check-nushell
 	@echo "🖥️  Testing Display Configuration with Backup..."
-	@echo "⚠️  This feature has been moved to scripts/archive/"
+	$(NUSHELL) scripts/validation/validate-display-config.nu --backup
 
-validate-display-verbose:
+validate-display-verbose: check-nushell
 	@echo "🖥️  Verbose Display Configuration Testing..."
-	@echo "⚠️  This feature has been moved to scripts/archive/"
+	$(NUSHELL) scripts/validation/validate-display-config.nu --verbose
 
-validate-display-full:
+validate-display-full: check-nushell
 	@echo "🖥️  Comprehensive Display Configuration Testing..."
-	@echo "⚠️  This feature has been moved to scripts/archive/"
+	$(NUSHELL) scripts/validation/validate-display-config.nu --full
 
 # Code quality targets
 code-quality: check-nushell
 	@echo "🔍 Running comprehensive code quality analysis..."
-	@echo "⚠️  This feature has been moved to scripts/archive/"
+	$(NUSHELL) scripts/quality/code-quality.nu
 
 code-syntax: check-nushell
 	@echo "🔍 Checking code syntax..."
-	@echo "⚠️  This feature has been moved to scripts/archive/"
+	$(NUSHELL) scripts/quality/code-quality.nu --syntax-only
 
 code-security: check-nushell
 	@echo "🔍 Checking for security issues..."
-	@echo "⚠️  This feature has been moved to scripts/archive/"
+	$(NUSHELL) scripts/quality/code-quality.nu --security-only
 
 quality: code-quality
+
+performance-optimize: check-nushell
+	@echo "⚡ Running performance optimization analysis..."
+	$(NUSHELL) scripts/quality/performance-optimize.nu
+
+pre-commit: check-nushell
+	@echo "🔍 Running pre-commit checks..."
+	$(NUSHELL) scripts/ci/pre-commit.nu
 
 # New flake-based targets
 fmt:
