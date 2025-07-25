@@ -1,6 +1,5 @@
 # performance.nu - Performance monitoring module for nix-mox scripts
 # Tracks execution times, resource usage, and provides performance analytics
-
 use ./common.nu
 use ./logging.nu
 
@@ -20,7 +19,6 @@ export def start_performance_monitor [operation: string, context: record = {}] {
     let start_time = (date now)
     let start_memory = (sys | get mem.used)
     let start_cpu = (sys | get cpu.usage_percent)
-
     let monitor_id = (random uuid)
 
     let monitor_data = {
@@ -43,13 +41,12 @@ export def start_performance_monitor [operation: string, context: record = {}] {
     }
 
     logging::debug "Performance monitoring started" $debug_context
-
     $monitor_id
 }
 
 # End performance monitoring and calculate metrics
 export def end_performance_monitor [monitor_id: string] {
-    if ($env.PERFORMANCE_MONITOR? | is-empty) {
+    if ($env.PERFORMANCE_MONITOR | is-empty) {
         log_warn "No performance monitor found to end"
         return null
     }
@@ -143,7 +140,7 @@ export def check_performance_issues [metrics: record] {
 
 # Store performance metrics for analysis
 export def store_performance_metrics [metrics: record] {
-    let metrics_file = ($env.PERFORMANCE_METRICS_FILE? | default "logs/performance.json")
+    let metrics_file = ($env.PERFORMANCE_METRICS_FILE | default "logs/performance.json")
 
     # Ensure directory exists
     let metrics_dir = ($metrics_file | path dirname)
@@ -191,10 +188,8 @@ export def get_performance_stats [metrics_file: string = "logs/performance.json"
         let total_operations = ($metrics | length)
         let average_duration = ($metrics | get duration_seconds | math avg)
         let slow_operations = ($metrics | where duration_seconds > $PERFORMANCE_METRICS.thresholds.slow_operation | length)
-
         let memory_average = ($metrics | get memory_end | math avg)
         let memory_peak = ($metrics | get memory_end | math max)
-
         let cpu_average = ($metrics | get cpu_average | math avg)
         let cpu_peak = ($metrics | get cpu_average | math max)
 
@@ -238,18 +233,13 @@ export def get_operation_performance [operation: string, metrics_file: string = 
         let average_duration = ($operation_metrics | get duration_seconds | math avg)
         let min_duration = ($operation_metrics | get duration_seconds | math min)
         let max_duration = ($operation_metrics | get duration_seconds | math max)
-
         let average_memory = ($operation_metrics | get memory_end | math avg)
         let average_cpu = ($operation_metrics | get cpu_average | math avg)
 
         {
             operation: $operation
             total_runs: $total_runs
-            duration: {
-                average: $average_duration
-                min: $min_duration
-                max: $max_duration
-            }
+            duration: { average: $average_duration, min: $min_duration, max: $max_duration }
             memory: { average: $average_memory }
             cpu: { average: $average_cpu }
             recent_runs: ($operation_metrics | last 5)
@@ -273,7 +263,6 @@ export def clean_performance_metrics [days: int = 30, metrics_file: string = "lo
     try {
         let cutoff_date = ((date now) - ($days * 24hr))
         let metrics = (open $metrics_file | lines | each { |line| $line | from json })
-
         let recent_metrics = ($metrics | where { |metric|
             let metric_date = ($metric.start_time | into datetime)
             $metric_date > $cutoff_date
@@ -305,8 +294,8 @@ export def measure_performance [operation: string, context: record = {}] {
 
 # Get system resource usage
 export def get_system_resources [] {
-    let memory = sys | get mem
-    let cpu = sys | get cpu
+    let memory = (sys | get mem)
+    let cpu = (sys | get cpu)
     let disk = (df | where filesystem =~ "/" | get used_pct.0 | into float)
 
     {
@@ -345,7 +334,6 @@ export def monitor_system_resources [duration: duration, interval: duration = 1s
 export def generate_performance_report [output_file: string = "logs/performance-report.json"] {
     let stats = (get_performance_stats)
     let system_resources = (get_system_resources)
-
     let report = {
         generated_at: (date now)
         summary: $stats

@@ -1,8 +1,7 @@
 # Security module for nix-mox scripts
 # Validates scripts for dangerous patterns and provides security recommendations
-
-use ./common.nu
-use ./logging.nu
+use ./common.nu *
+use ./logging.nu *
 
 # Security threat levels
 export const THREAT_LEVELS = {
@@ -14,47 +13,10 @@ export const THREAT_LEVELS = {
 
 # Dangerous command patterns
 export const DANGEROUS_PATTERNS = {
-    CRITICAL: [
-        "rm -rf"
-        "sudo rm -rf"
-        "chmod 777"
-        "chown root"
-        "eval"
-        "exec"
-        "system"
-        "shell_exec"
-    ]
-    HIGH: [
-        "sudo"
-        "su -"
-        "sudo su"
-        "sudo -i"
-        "sudo -s"
-        "chmod 666"
-        "chmod 777"
-        "dd if="
-        "mkfs"
-        "fdisk"
-        "parted"
-    ]
-    MEDIUM: [
-        "curl -O"
-        "wget -O"
-        "scp"
-        "rsync"
-        "tar -xzf"
-        "unzip"
-        "gunzip"
-        "bunzip2"
-    ]
-    LOW: [
-        "echo"
-        "print"
-        "cat"
-        "ls"
-        "find"
-        "grep"
-    ]
+    CRITICAL: ["rm -rf", "sudo rm -rf", "chmod 777", "chown root", "eval", "exec", "system", "shell_exec"]
+    HIGH: ["sudo", "su -", "sudo su", "sudo -i", "sudo -s", "chmod 666", "chmod 777", "dd if=", "mkfs", "fdisk", "parted"]
+    MEDIUM: ["curl -O", "wget -O", "scp", "rsync", "tar -xzf", "unzip", "gunzip", "bunzip2"]
+    LOW: ["echo", "print", "cat", "ls", "find", "grep"]
 }
 
 # Security validation rules
@@ -72,7 +34,11 @@ export def validate_script_security [script_path: string, rules: record = $SECUR
     if not ($script_path | path exists) {
         return {
             secure: false
-            threats: [{ level: "CRITICAL", message: "Script file does not exist", pattern: "file_not_found" }]
+            threats: [{
+                level: "CRITICAL"
+                message: "Script file does not exist"
+                pattern: "file_not_found"
+            }]
             recommendations: ["Check script path and permissions"]
         }
     }
@@ -117,7 +83,6 @@ export def validate_script_security [script_path: string, rules: record = $SECUR
     # Determine overall security status
     let has_critical = ($threats | where level == "CRITICAL" | length) > 0
     let has_high = ($threats | where level == "HIGH" | length) > 0
-
     let secure = not ($has_critical or $has_high)
 
     {
@@ -139,7 +104,6 @@ export def check_dangerous_patterns [content: string] {
 
     for level in ($DANGEROUS_PATTERNS | columns) {
         let patterns = $DANGEROUS_PATTERNS | get $level
-
         for pattern in $patterns {
             if ($content | str contains $pattern) {
                 $threats = ($threats | append {
@@ -204,6 +168,7 @@ export def check_file_permissions [file_path: string] {
                 recommendation: "Consider changing ownership to appropriate user"
             })
         }
+
         $threats
     } catch { |err|
         [{
@@ -222,17 +187,7 @@ export def check_dependency_security [content: string] {
     mut threats = []
 
     # Check for potentially dangerous commands
-    let dangerous_commands = [
-        "nc"
-        "netcat"
-        "telnet"
-        "ftp"
-        "tftp"
-        "rsh"
-        "rlogin"
-        "rexec"
-    ]
-
+    let dangerous_commands = ["nc", "netcat", "telnet", "ftp", "tftp", "rsh", "rlogin", "rexec"]
     for cmd in $dangerous_commands {
         if ($content | str contains $cmd) {
             $threats = ($threats | append {
@@ -252,16 +207,7 @@ export def check_network_access [content: string] {
     mut threats = []
 
     # Check for direct network access
-    let network_patterns = [
-        "curl http://"
-        "wget http://"
-        "nc -l"
-        "netcat -l"
-        "python -m http.server"
-        "php -S"
-        "ruby -run -e httpd"
-    ]
-
+    let network_patterns = ["curl http://", "wget http://", "nc -l", "netcat -l", "python -m http.server", "php -S", "ruby -run -e httpd"]
     for pattern in $network_patterns {
         if ($content | str contains $pattern) {
             $threats = ($threats | append {
@@ -281,17 +227,7 @@ export def check_file_operations [content: string] {
     mut threats = []
 
     # Check for potentially dangerous file operations
-    let file_patterns = [
-        "> /etc/"
-        ">> /etc/"
-        "> /var/"
-        ">> /var/"
-        "> /usr/"
-        ">> /usr/"
-        "> /boot/"
-        ">> /boot/"
-    ]
-
+    let file_patterns = ["> /etc/", ">> /etc/", "> /var/", ">> /var/", "> /usr/", ">> /usr/", "> /boot/", ">> /boot/"]
     for pattern in $file_patterns {
         if ($content | str contains $pattern) {
             $threats = ($threats | append {
@@ -323,7 +259,7 @@ export def generate_security_recommendations [threats: list] {
 
     # Add specific recommendations from threats
     for threat in $threats {
-        if ($threat.recommendation? | is-not-empty) {
+        if ($threat.recommendation | is-not-empty) {
             $recommendations = ($recommendations | append $threat.recommendation)
         }
     }
@@ -359,7 +295,6 @@ export def scan_all_scripts [scripts_dir: string = "scripts"] {
 # Generate security report
 export def generate_security_report [output_file: string = "logs/security-report.json"] {
     let scan_results = (scan_all_scripts)
-
     let total_scripts = ($scan_results | length)
     let secure_scripts = ($scan_results | where secure == true | length)
     let insecure_scripts = ($scan_results | where secure == false | length)
@@ -421,8 +356,7 @@ export def generate_overall_recommendations [scan_results: list] {
 # Log security event
 export def log_security_event [event_type: string, script_path: string, details: record = {}] {
     let security_context = ($details | upsert event_type $event_type | upsert script_path $script_path | upsert timestamp (date now))
-
-    log_security_event $event_type $"Security event in script ($script_path)" $security_context
+    log_event $event_type $"Security event in script ($script_path)" $security_context
 }
 
 # Check if script is safe to execute

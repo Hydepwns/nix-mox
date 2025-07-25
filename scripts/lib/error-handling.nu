@@ -1,8 +1,7 @@
 # Error handling module for nix-mox scripts
 # Provides structured error handling with recovery suggestions
-
-use ./common.nu *
-use ./platform.nu *
+use ./common.nu
+use ./platform.nu
 
 # Error types and their recovery strategies
 export const ERROR_TYPES = {
@@ -65,28 +64,28 @@ export def generate_error_id [] {
 
 # Create structured error record
 export def create_error [message: string, type: string = "UNKNOWN", context: record = {}] {
-    let error_id = generate_error_id
+    let error_id = (generate_error_id)
     let timestamp = (date now | format date '%Y-%m-%d %H:%M:%S')
-    let error_info = $ERROR_TYPES | get $type | default ($ERROR_TYPES | get UNKNOWN)
+    let error_info = ($ERROR_TYPES | get $type | default ($ERROR_TYPES | get UNKNOWN))
 
     {
         id: $error_id
         timestamp: $timestamp
         message: $message
         type: $type
-        code: $error_info.code
-        category: $error_info.category
-        recovery: $error_info.recovery
+        code: ($error_info | get code)
+        category: ($error_info | get category)
+        recovery: ($error_info | get recovery)
         context: $context
-        script: ($env.SCRIPT_NAME? | default "unknown")
-        platform: (detect_platform)
+        script: (try { $env | get SCRIPT_NAME } catch { "unknown" })
+        platform: (platform detect_platform)
         user: (whoami)
     }
 }
 
 # Log error to structured log file
 export def log_error_structured [error: record] {
-    let log_file = ($env.ERROR_LOG_FILE? | default "logs/errors.json")
+    let log_file = (try { $env | get ERROR_LOG_FILE } catch { "logs/errors.json" })
 
     # Ensure log directory exists
     let log_dir = ($log_file | path dirname)
@@ -105,7 +104,7 @@ export def log_error_structured [error: record] {
 # Provide recovery suggestions based on error type
 export def suggest_recovery [error: record] {
     print $"\n(ansi yellow_bold)Recovery Suggestions:(ansi reset)"
-    print $"  ($error.recovery)"
+    print $"   ($error.recovery)"
 
     match $error.category {
         "permission" => { suggest_permission_recovery $error }
@@ -190,27 +189,41 @@ def suggest_general_recovery [error: record] {
     print "  1. Check script logs for details"
     print "  2. Verify system requirements"
     print "  3. Try running with --debug flag"
-    print "  4. Contact support with error ID: ($error.id)"
+    print $"  4. Contact support with error ID: ($error.id)"
 }
 
 # Main error handling function
 export def handle_script_error [message: string, type: string = "UNKNOWN", context: record = {}, exit_on_error: bool = true] {
-    let error = create_error $message $type $context
+    let error = (create_error $message $type $context)
 
     # Log error using common module
-    error $"Error ID: ($error.id)"
-    error $"Type: ($error.type)"
-    error $"Message: ($error.message)"
+    common error $"Error ID: ($error.id)"
+    common error $"Type: ($error.type)"
+    common error $"Message: ($error.message)"
 
     # Log to structured file
     log_error_structured $error
+
+    # Integrate with metrics collection if available
+    try {
+        # Try to import and use metrics module
+        let platform = ($context | get -i platform | default (try { (sys host).name } catch { "unknown" }))
+        
+        # This will be dynamically loaded if metrics.nu is available
+        if ($env | get -i NIX_MOX_METRICS_ENABLED | default "false") == "true" {
+            # Increment error counter - this would be called via metrics module
+            print $"DEBUG: Would track error - type: ($type), platform: ($platform)"
+        }
+    } catch {
+        # Metrics integration is optional - don't fail if unavailable
+    }
 
     # Show recovery suggestions
     suggest_recovery $error
 
     # Exit if requested
     if $exit_on_error {
-        exit $error.code
+        exit ($error.code)
     }
 
     $error
@@ -224,14 +237,21 @@ export def validate_error_type [type: string] {
 # Get error statistics
 export def get_error_stats [log_file: string = "logs/errors.json"] {
     if not ($log_file | path exists) {
-        return { total: 0, by_type: {}, by_category: {} }
+        return {
+            total: 0
+            by_type: {}
+            by_category: {}
+        }
     }
 
     try {
         let errors = (open $log_file | lines | each { |line| $line | from json })
-
-        let by_type = ($errors | group-by type | each { |group| { type: $group.0, count: ($group.1 | length) } })
-        let by_category = ($errors | group-by category | each { |group| { category: $group.0, count: ($group.1 | length) } })
+        let by_type = ($errors | group-by type | each { |group|
+            { type: $group.0, count: ($group.1 | length) }
+        })
+        let by_category = ($errors | group-by category | each { |group|
+            { category: $group.0, count: ($group.1 | length) }
+        })
 
         {
             total: ($errors | length)
@@ -239,14 +259,18 @@ export def get_error_stats [log_file: string = "logs/errors.json"] {
             by_category: $by_category
         }
     } catch { |err|
-        error $"Failed to read error stats: ($err)"
-        { total: 0, by_type: [], by_category: [] }
+        common error $"Failed to read error stats: ($err)"
+        {
+            total: 0
+            by_type: []
+            by_category: []
+        }
     }
 }
 
 # Clean old error logs
 export def clean_error_logs [days: int = 30] {
-    let log_file = ($env.ERROR_LOG_FILE? | default "logs/errors.json")
+    let log_file = (try { $env | get ERROR_LOG_FILE } catch { "logs/errors.json" })
 
     if not ($log_file | path exists) {
         return
@@ -255,7 +279,6 @@ export def clean_error_logs [days: int = 30] {
     try {
         let cutoff_date = ((date now) - ($days * 24hr))
         let errors = (open $log_file | lines | each { |line| $line | from json })
-
         let recent_errors = ($errors | where { |error|
             let error_date = ($error.timestamp | into datetime)
             $error_date > $cutoff_date
@@ -267,6 +290,6 @@ export def clean_error_logs [days: int = 30] {
         let removed_count = ($errors | length) - ($recent_errors | length)
         info $"Cleaned ($removed_count) old error entries"
     } catch { |err|
-        error $"Failed to clean error logs: ($err)"
+        common error $"Failed to clean error logs: ($err)"
     }
 }

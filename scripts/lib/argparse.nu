@@ -1,7 +1,7 @@
 # Argument parsing module for nix-mox
 # This replaces the bash argparse.sh with a more robust Nushell implementation
 
-def show_help [] {
+export def show_help [] {
     print "Usage: scripts/nix-mox [options] [script-arguments]"
     print ""
     print "Options:"
@@ -19,9 +19,9 @@ def show_help [] {
     print "  --help                  Show this help message"
 }
 
-def parse_args [] {
+export def parse_args [] {
     let args = $env._args
-    $env.config = {
+    let config0 = {
         platform: "auto"
         script: "install"
         dry_run: false
@@ -34,67 +34,32 @@ def parse_args [] {
         retry_count: 0
         retry_delay: 5
     }
-
-    $env.i = 0
-    while $env.i < ($args | length) {
-        let arg = ($args | get $env.i)
-        match $arg {
-            "--platform" => {
-                $env.config.platform = ($args | get ($env.i + 1))
-                $env.i = $env.i + 2
+    let i0 = 0
+    mut config = $config0
+    mut i = $i0
+    while $i < ($args | length) {
+        let arg = ($args | get $i)
+        let result = (
+            match $arg {
+                "--platform" => { [($config | upsert platform ($args | get ($i + 1))), $i + 2] }
+                "--script" => { [($config | upsert script ($args | get ($i + 1))), $i + 2] }
+                "--dry-run" => { [($config | upsert dry_run true), $i + 1] }
+                "--verbose" | "-v" => { [($config | upsert verbose true), $i + 1] }
+                "--force" | "-f" => { [($config | upsert force true), $i + 1] }
+                "--quiet" | "-q" => { [($config | upsert quiet true), $i + 1] }
+                "--log-file" => { [($config | upsert log_file ($args | get ($i + 1))), $i + 2] }
+                "--parallel" | "-p" => { [($config | upsert parallel true), $i + 1] }
+                "--timeout" => { [($config | upsert timeout ($args | get ($i + 1) | into int)), $i + 2] }
+                "--retry" => { [($config | upsert retry_count ($args | get ($i + 1) | into int)), $i + 2] }
+                "--retry-delay" => { [($config | upsert retry_delay ($args | get ($i + 1) | into int)), $i + 2] }
+                "--help" => { show_help; exit 0 }
+                _ => { print $"Unknown option: ($arg)"; exit 1 }
             }
-            "--script" => {
-                $env.config.script = ($args | get ($env.i + 1))
-                $env.i = $env.i + 2
-            }
-            "--dry-run" => {
-                $env.config.dry_run = true
-                $env.i = $env.i + 1
-            }
-            "--verbose" | "-v" => {
-                $env.config.verbose = true
-                $env.i = $env.i + 1
-            }
-            "--force" | "-f" => {
-                $env.config.force = true
-                $env.i = $env.i + 1
-            }
-            "--quiet" | "-q" => {
-                $env.config.quiet = true
-                $env.i = $env.i + 1
-            }
-            "--log-file" => {
-                $env.config.log_file = ($args | get ($env.i + 1))
-                $env.i = $env.i + 2
-            }
-            "--parallel" | "-p" => {
-                $env.config.parallel = true
-                $env.i = $env.i + 1
-            }
-            "--timeout" => {
-                $env.config.timeout = ($args | get ($env.i + 1) | into int)
-                $env.i = $env.i + 2
-            }
-            "--retry" => {
-                $env.config.retry_count = ($args | get ($env.i + 1) | into int)
-                $env.i = $env.i + 2
-            }
-            "--retry-delay" => {
-                $env.config.retry_delay = ($args | get ($env.i + 1) | into int)
-                $env.i = $env.i + 2
-            }
-            "--help" => {
-                show_help
-                exit 0
-            }
-            _ => {
-                print $"Unknown option: ($arg)"
-                show_help
-                exit 1
-            }
-        }
+        )
+        let config = ($result | get 0)
+        let i = ($result | get 1)
     }
-    $env.config
+    $config
 }
 
 # Export the functions
@@ -114,16 +79,16 @@ export-env {
 
 # Main function to parse arguments and update environment
 def main [] {
-    parse_args
-    $env.PLATFORM = $env.config.platform
-    $env.SCRIPT = $env.config.script
-    $env.DRY_RUN = $env.config.dry_run
-    $env.VERBOSE = $env.config.verbose
-    $env.FORCE = $env.config.force
-    $env.QUIET = $env.config.quiet
-    $env.LOG_FILE = $env.config.log_file
-    $env.PARALLEL = $env.config.parallel
-    $env.TIMEOUT = $env.config.timeout
-    $env.RETRY_COUNT = $env.config.retry_count
-    $env.RETRY_DELAY = $env.config.retry_delay
-} 
+    let config = parse_args
+    $env.PLATFORM = $config.platform
+    $env.SCRIPT = $config.script
+    $env.DRY_RUN = $config.dry_run
+    $env.VERBOSE = $config.verbose
+    $env.FORCE = $config.force
+    $env.QUIET = $config.quiet
+    $env.LOG_FILE = $config.log_file
+    $env.PARALLEL = $config.parallel
+    $env.TIMEOUT = $config.timeout
+    $env.RETRY_COUNT = $config.retry_count
+    $env.RETRY_DELAY = $config.retry_delay
+}

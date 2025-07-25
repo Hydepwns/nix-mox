@@ -1,8 +1,7 @@
 # Configuration management module for nix-mox scripts
 # Handles loading, validating, and managing configuration files
-
-use ./common.nu *
-use ./error-handling.nu *
+use ./common.nu
+use ./error-handling.nu
 
 # Default configuration schema
 export const DEFAULT_CONFIG = {
@@ -28,13 +27,7 @@ export const DEFAULT_CONFIG = {
         validate_scripts: true
         check_permissions: true
         allowed_commands: []
-        blocked_patterns: [
-            "rm -rf"
-            "sudo"
-            "chmod 777"
-            "eval"
-            "exec"
-        ]
+        blocked_patterns: ["rm -rf", "sudo", "chmod 777", "eval", "exec"]
     }
     performance: {
         enable_monitoring: true
@@ -69,7 +62,7 @@ export def load_config_file [path: string] {
         let config = ($content | from json)
 
         # Validate configuration
-        let validation = validate_config $config
+        let validation = (validate_config $config)
         if not $validation.valid {
             handle_script_error $"Invalid configuration in ($path): ($validation.errors | str join ', ')" "CONFIG_INVALID" { file: $path, errors: $validation.errors }
         }
@@ -86,7 +79,7 @@ export def load_config [] {
 
     # Load from each config path in order
     for path in $CONFIG_PATHS {
-        let file_config = load_config_file $path
+        let file_config = (load_config_file $path)
         if $file_config != null {
             $config = (merge_config $config $file_config)
             log_debug $"Loaded configuration from ($path)"
@@ -97,7 +90,7 @@ export def load_config [] {
     $config = (apply_env_overrides $config)
 
     # Final validation
-    let validation = validate_config $config
+    let validation = (validate_config $config)
     if not $validation.valid {
         handle_script_error $"Configuration validation failed: ($validation.errors | str join ', ')" "CONFIG_INVALID" { errors: $validation.errors }
     }
@@ -134,30 +127,30 @@ export def apply_env_overrides [config: record] {
     mut result = $config
 
     # Logging overrides
-    if ($env.NIXMOX_LOG_LEVEL? | is-not-empty) {
+    if ($env.NIXMOX_LOG_LEVEL | is-not-empty) {
         $result = ($result | upsert logging.level $env.NIXMOX_LOG_LEVEL)
     }
 
-    if ($env.NIXMOX_LOG_FILE? | is-not-empty) {
+    if ($env.NIXMOX_LOG_FILE | is-not-empty) {
         $result = ($result | upsert logging.file $env.NIXMOX_LOG_FILE)
     }
 
     # Platform overrides
-    if ($env.NIXMOX_PLATFORM? | is-not-empty) {
+    if ($env.NIXMOX_PLATFORM | is-not-empty) {
         $result = ($result | upsert platform.preferred $env.NIXMOX_PLATFORM)
     }
 
     # Script overrides
-    if ($env.NIXMOX_TIMEOUT? | is-not-empty) {
+    if ($env.NIXMOX_TIMEOUT | is-not-empty) {
         $result = ($result | upsert scripts.timeout ($env.NIXMOX_TIMEOUT | into int))
     }
 
-    if ($env.NIXMOX_RETRY_ATTEMPTS? | is-not-empty) {
+    if ($env.NIXMOX_RETRY_ATTEMPTS | is-not-empty) {
         $result = ($result | upsert scripts.retry_attempts ($env.NIXMOX_RETRY_ATTEMPTS | into int))
     }
 
     # Security overrides
-    if ($env.NIXMOX_VALIDATE_SCRIPTS? | is-not-empty) {
+    if ($env.NIXMOX_VALIDATE_SCRIPTS | is-not-empty) {
         $result = ($result | upsert security.validate_scripts ($env.NIXMOX_VALIDATE_SCRIPTS | into bool))
     }
 
@@ -238,7 +231,7 @@ export def validate_config [config: record] {
 export def save_config [config: record, path: string] {
     try {
         # Validate before saving
-        let validation = validate_config $config
+        let validation = (validate_config $config)
         if not $validation.valid {
             handle_script_error $"Cannot save invalid configuration: ($validation.errors | str join ', ')" "CONFIG_INVALID" { errors: $validation.errors }
         }
@@ -251,7 +244,6 @@ export def save_config [config: record, path: string] {
 
         # Save configuration
         $config | to json | save $path
-
         log_info $"Configuration saved to ($path)"
     } catch { |err|
         handle_script_error $"Failed to save configuration to ($path): ($err)" "CONFIG_INVALID" { file: $path }
@@ -274,26 +266,21 @@ export def get_config_value [config: record, path: string, default: any = null] 
     $current
 }
 
-# Set configuration value
+# Set configuration value (deep update, recursive)
 export def set_config_value [config: record, path: string, value: any] {
     let keys = ($path | split row ".")
-    mut result = $config
-    mut current = $result
-
-    # Navigate to the parent of the target key
-    for i in 0..(($keys | length) - 1) {
-        let key = $keys | get $i
-        if ($current | get -i $key) == null {
-            $current = ($current | upsert $key {})
+    if ($keys | length) == 1 {
+        $config | upsert ($keys | get 0) $value
+    } else {
+        let first = ($keys | get 0)
+        let rest = ($keys | skip 1 | str join ".")
+        let sub = if ($config | get -i $first) == null {
+            {}
+        } else {
+            $config | get $first
         }
-        $current = ($current | get $key)
+        $config | upsert $first (set_config_value $sub $rest $value)
     }
-
-    # Set the final value
-    let final_key = $keys | last
-    $current = ($current | upsert $final_key $value)
-
-    $result
 }
 
 # Create default configuration file
@@ -304,15 +291,30 @@ export def create_default_config [path: string = "./nix-mox.json"] {
 # Show configuration summary
 export def show_config_summary [config: record] {
     print $"\n(ansi cyan_bold)Configuration Summary:(ansi reset)"
-    print $"  Log Level: ($config.logging.level)"
-    let logfile = if $config.logging.file != null { $config.logging.file } else { "stdout" }
+    print $"  Log Level:  ($config.logging.level)"
+
+    let logfile = if $config.logging.file != null {
+        $config.logging.file
+    } else {
+        "stdout"
+    }
     print $"  Log File: ($logfile)"
     print $"  Platform: ($config.platform.preferred)"
     print $"  Script Timeout: ($config.scripts.timeout)s"
     print $"  Retry Attempts: ($config.scripts.retry_attempts)"
-    let security_validation = if $config.security.validate_scripts { "enabled" } else { "disabled" }
+
+    let security_validation = if $config.security.validate_scripts {
+        "enabled"
+    } else {
+        "disabled"
+    }
     print $"  Security Validation: ($security_validation)"
-    let performance_monitoring = if $config.performance.enable_monitoring { "enabled" } else { "disabled" }
+
+    let performance_monitoring = if $config.performance.enable_monitoring {
+        "enabled"
+    } else {
+        "disabled"
+    }
     print $"  Performance Monitoring: ($performance_monitoring)"
 }
 

@@ -15,7 +15,7 @@ export def detect_platform [] {
 
 export def validate_platform [platform: string] {
     let valid_platforms = ["linux", "windows", "darwin", "auto"]
-    $valid_platforms | any {|p| $p == $platform}
+    $valid_platforms | any { |p| $p == $platform }
 }
 
 export def get_platform_script [platform: string, script: string] {
@@ -53,7 +53,7 @@ export def get_platform_script [platform: string, script: string] {
 }
 
 export def script_exists_for_platform [platform: string, script: string] {
-    let script_file = get_platform_script $platform $script
+    let script_file = (get_platform_script $platform $script)
     if $script_file != null {
         ($script_file | path exists)
     } else {
@@ -72,7 +72,8 @@ export def get_platform_info [] {
 }
 
 export def check_platform_requirements [platform: string] {
-    let info = get_platform_info
+    let info = (get_platform_info)
+
     match $platform {
         "linux" => {
             if $info.os != "Linux" {
@@ -134,17 +135,17 @@ export def check_platform_requirements [platform: string] {
 export def get_available_scripts [platform: string] {
     match $platform {
         "linux" => {
-            ls scripts/linux/*.sh | each { |f| $f | path basename }
+            ls scripts/linux/*.sh | get name | each { |f| $f | path basename }
         }
         "windows" => {
-            ls scripts/windows/*.{nu,bat} | each { |f| $f | path basename }
+            ls scripts/windows/*.{nu,bat} | get name | each { |f| $f | path basename }
         }
         _ => []
     }
 }
 
 export def get_script_dependencies [script_path: string] {
-    let content = open $script_path
+    let content = (open $script_path)
     mut deps = []
 
     # Look for common dependency patterns

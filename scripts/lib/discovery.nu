@@ -1,6 +1,5 @@
 # Script discovery module for nix-mox scripts
 # Helps find and manage available scripts with metadata extraction
-
 use ./common.nu *
 use ./logging.nu *
 
@@ -99,13 +98,13 @@ export def extract_script_metadata [script_path: string] {
         let platform = (extract_platform_from_path $script_path)
 
         # Check if script requires root
-        let requires_root = (check_requires_root $content)
+        let requires_root = (extract_requires_root_from_content $content)
 
         # Extract dependencies
-        let dependencies = (extract_dependencies $content)
+        let dependencies = (extract_dependencies_from_content $content)
 
         # Determine category
-        let category = (determine_script_category $script_path)
+        let category = (extract_category_from_path $script_path)
 
         # Check if executable
         let executable = (is_executable $script_path)
@@ -175,19 +174,18 @@ export def extract_platform_from_path [script_path: string] {
     }
 }
 
-# Check if script requires root privileges
-export def check_requires_root [content: string] {
-    let root_indicators = [
-        "sudo"
-        "root"
-        "privileges"
-        "elevated"
-        "admin"
-    ]
+# Extract requires_root from script content
+export def extract_requires_root_from_content [content: string] {
+    let lines = ($content | lines)
 
-    for indicator in $root_indicators {
-        if ($content | str contains $indicator) {
-            return true
+    for line in $lines {
+        let trimmed = ($line | str trim)
+        if ($trimmed | str contains "requires_root:") {
+            if ($trimmed | str contains "true") {
+                return true
+            } else if ($trimmed | str contains "false") {
+                return false
+            }
         }
     }
 
@@ -195,67 +193,50 @@ export def check_requires_root [content: string] {
 }
 
 # Extract dependencies from script content
-export def extract_dependencies [content: string] {
-    mut deps = []
+export def extract_dependencies_from_content [content: string] {
+    let lines = ($content | lines)
+    mut dependencies = []
 
-    # Look for shebang lines
-    let shebang_lines = ($content | lines | where { |line| $line | str starts-with "#!" })
-    for line in $shebang_lines {
-        let interpreter = ($line | str replace "#!" "" | str trim | split row " " | get 0)
-        $deps = ($deps | append $interpreter)
-    }
-
-    # Look for common command dependencies
-    let common_commands = [
-        "nix"
-        "nixos-rebuild"
-        "zfs"
-        "systemctl"
-        "docker"
-        "kubectl"
-        "git"
-        "curl"
-        "wget"
-    ]
-
-    for cmd in $common_commands {
-        if ($content | str contains $cmd) {
-            $deps = ($deps | append $cmd)
+    for line in $lines {
+        let trimmed = ($line | str trim)
+        if ($trimmed | str contains "dependencies:") {
+            # Simple extraction - could be enhanced
+            let deps_str = ($trimmed | str replace "dependencies:" "" | str trim)
+            if ($deps_str | str starts-with "[") and ($deps_str | str ends-with "]") {
+                # Parse array format
+                $dependencies = ($deps_str | str substring 1..-1 | split row "," | each { |it| $it | str trim })
+            }
         }
     }
 
-    $deps | uniq
+    $dependencies
 }
 
-# Determine script category based on path and content
-export def determine_script_category [script_path: string] {
+# Extract category from script path
+export def extract_category_from_path [script_path: string] {
     if ($script_path | str contains "core") {
-        $SCRIPT_CATEGORIES.CORE
+        "core"
     } else if ($script_path | str contains "platform") {
-        $SCRIPT_CATEGORIES.PLATFORM
+        "platform"
     } else if ($script_path | str contains "tools") {
-        $SCRIPT_CATEGORIES.TOOLS
-    } else if ($script_path | str contains "test") {
-        $SCRIPT_CATEGORIES.TESTING
-    } else if ($script_path | str contains "deploy") {
-        $SCRIPT_CATEGORIES.DEPLOYMENT
-    } else if ($script_path | str contains "dev") {
-        $SCRIPT_CATEGORIES.DEVELOPMENT
-    } else if ($script_path | str contains "maintain") {
-        $SCRIPT_CATEGORIES.MAINTENANCE
+        "tools"
+    } else if ($script_path | str contains "development") {
+        "development"
+    } else if ($script_path | str contains "deployment") {
+        "deployment"
+    } else if ($script_path | str contains "maintenance") {
+        "maintenance"
+    } else if ($script_path | str contains "testing") {
+        "testing"
     } else {
-        $SCRIPT_CATEGORIES.TOOLS
+        "general"
     }
 }
 
 # Check if file is executable
 export def is_executable [file_path: string] {
-    if not ($file_path | path exists) {
-        return false
-    }
-
     try {
-        let perms = (ls -l $file_path | get mode.0)
+        let perms = (ls $file_path | get mode.0)
         ($perms | str contains "x")
     } catch {
         false
@@ -263,195 +244,55 @@ export def is_executable [file_path: string] {
 }
 
 # Get scripts by category
-export def get_scripts_by_category [category: string] {
-    let all_scripts = (discover_scripts)
-    $all_scripts | where category == $category
+export def get_scripts_by_category [scripts: list, category: string] {
+    $scripts | where category == $category
 }
 
 # Get scripts by platform
-export def get_scripts_by_platform [platform: string] {
-    let all_scripts = (discover_scripts)
-    $all_scripts | where platform in [$platform "all" "multi"]
+export def get_scripts_by_platform [scripts: list, platform: string] {
+    $scripts | where platform == $platform or platform == "all"
+}
+
+# Get scripts that require root
+export def get_root_scripts [scripts: list] {
+    $scripts | where requires_root == true
 }
 
 # Search scripts by name or description
-export def search_scripts [query: string] {
-    let all_scripts = (discover_scripts)
-    $all_scripts | where { |script|
-        (($script.name | str downcase | str contains ($query | str downcase)) or
-        ($script.description | str downcase | str contains ($query | str downcase)))
-    }
+export def search_scripts [scripts: list, query: string] {
+    $scripts | where name =~ $query or description =~ $query
 }
 
-# Get script dependencies
-export def get_script_dependencies [script_path: string] {
-    let metadata = (extract_script_metadata $script_path)
-    if $metadata != null {
-        $metadata.dependencies
-    } else {
-        []
-    }
-}
-
-# Check if script dependencies are available
-export def check_script_dependencies [script_path: string] {
-    let dependencies = (get_script_dependencies $script_path)
-    mut available = []
-    mut missing = []
-
-    for dep in $dependencies {
-        if (which $dep | length) > 0 {
-            $available = ($available | append $dep)
-        } else {
-            $missing = ($missing | append $dep)
-        }
-    }
-
-    {
-        available: $available
-        missing: $missing
-        all_available: (($missing | length | into int) == 0)
-    }
-}
-
-# Generate script documentation
-export def generate_script_docs [output_dir: string = "docs/scripts"] {
-    let all_scripts = (discover_scripts)
-
-    # Ensure output directory exists
-    if not ($output_dir | path exists) {
-        mkdir $output_dir
-    }
-
-    # Generate markdown documentation
-    let markdown = generate_markdown_docs $all_scripts
-    $markdown | save $"($output_dir)/scripts-reference.md"
-
-    # Generate JSON index
-    $all_scripts | to json | save $"($output_dir)/scripts-index.json"
-
-    # Generate category-specific docs
-    for category in ($SCRIPT_CATEGORIES | values) {
-        let category_scripts = (get_scripts_by_category $category)
-        if ($category_scripts | length) > 0 {
-            let category_doc = generate_category_doc $category $category_scripts
-            $category_doc | save $"($output_dir)/($category)-scripts.md"
-        }
-    }
-
-    info "Script documentation generated" {
-        output_dir: $output_dir
-        total_scripts: ($all_scripts | length)
-    }
-}
-
-# Generate markdown documentation
-export def generate_markdown_docs [scripts: list] {
-    mut markdown = []
-
-    $markdown = ($markdown | append "# nix-mox Scripts Reference")
-    $markdown = ($markdown | append "")
-    $markdown = ($markdown | append "This document provides a comprehensive reference for all available scripts in the nix-mox toolkit.")
-    $markdown = ($markdown | append "")
-
-    # Generate table of contents
-    $markdown = ($markdown | append "## Table of Contents")
-    $markdown = ($markdown | append "")
-
-    for category in ($SCRIPT_CATEGORIES | values) {
-        let category_scripts = ($scripts | where category == $category)
-        if ($category_scripts | length) > 0 {
-            $markdown = ($markdown | append $"- [$category Scripts](#$category-scripts)")
-        }
-    }
-
-    $markdown = ($markdown | append "")
-
-    # Generate category sections
-    for category in ($SCRIPT_CATEGORIES | values) {
-        let category_scripts = ($scripts | where category == $category)
-        if ($category_scripts | length) > 0 {
-            $markdown = ($markdown | append $"## $category Scripts")
-            $markdown = ($markdown | append "")
-
-            for script in $category_scripts {
-                $markdown = ($markdown | append $"### $script.name")
-                $markdown = ($markdown | append "")
-                $markdown = ($markdown | append $"**Path:** `$script.path`")
-                $markdown = ($markdown | append $"**Description:** $script.description")
-                $markdown = ($markdown | append $"**Platform:** $script.platform")
-                $markdown = ($markdown | append $"**Requires Root:** $script.requires_root")
-                $markdown = ($markdown | append "")
-
-                if ($script.dependencies | length) > 0 {
-                    $markdown = ($markdown | append $"**Dependencies:** ($script.dependencies | str join ', ')")
-                    $markdown = ($markdown | append "")
-                }
-            }
-        }
-    }
-
-    $markdown | str join "\n"
-}
-
-# Generate category-specific documentation
-export def generate_category_doc [category: string, scripts: list] {
-    mut markdown = []
-
-    $markdown = ($markdown | append $"# $category Scripts")
-    $markdown = ($markdown | append "")
-    $markdown = ($markdown | append $"This document lists all scripts in the $category category.")
-    $markdown = ($markdown | append "")
-
-    for script in $scripts {
-        $markdown = ($markdown | append $"## $script.name")
-        $markdown = ($markdown | append "")
-        $markdown = ($markdown | append $script.description)
-        $markdown = ($markdown | append "")
-        $markdown = ($markdown | append $"**Usage:** `$script.path`")
-        $markdown = ($markdown | append "")
-    }
-
-    $markdown | str join "\n"
-}
-
-# Get script suggestions for auto-completion
-export def get_script_suggestions [partial: string] {
-    let all_scripts = (discover_scripts)
-    $all_scripts | where { |script|
-        (($script.name | str starts-with $partial) or
-        ($script.name | str contains $partial))
-    } | get name
-}
-
-# Validate script configuration
-export def validate_script_config [script_path: string] {
-    let metadata = (extract_script_metadata $script_path)
-    if $metadata == null {
-        return { valid: false, errors: ["Failed to extract metadata"] }
-    }
-
+# Validate script metadata
+export def validate_script_metadata [script: record] {
+    let required_fields = ["name", "path", "description", "platform", "requires_root", "category"]
     mut errors = []
 
-    # Check if script exists
-    if not ($script_path | path exists) {
+    for field in $required_fields {
+        if not ($script | get $field | is-not-empty) {
+            $errors = ($errors | append $"Missing required field: $field")
+        }
+    }
+
+    if not ($script.path | path exists) {
         $errors = ($errors | append "Script file does not exist")
     }
 
-    # Check if script is executable
-    if not $metadata.executable {
-        $errors = ($errors | append "Script is not executable")
-    }
+    $errors
+}
 
-    # Check dependencies
-    let dep_check = (check_script_dependencies $script_path)
-    if not $dep_check.all_available {
-        $errors = ($errors | append $"Missing dependencies: ($dep_check.missing | str join ', ')")
-    }
+# Generate script summary
+export def generate_script_summary [scripts: list] {
+    let total = ($scripts | length)
+    let categories = ($scripts | get category | uniq | length)
+    let platforms = ($scripts | get platform | uniq | length)
+    let root_scripts = ($scripts | where requires_root == true | length)
 
     {
-        valid: (($errors | length | into int) == 0)
-        errors: $errors
-        metadata: $metadata
+        total_scripts: $total
+        categories: $categories
+        platforms: $platforms
+        root_scripts: $root_scripts
+        category_breakdown: ($scripts | group-by category | each { |it| { category: $it.0, count: ($it.1 | length) } })
     }
 }
