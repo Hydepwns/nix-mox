@@ -1,0 +1,57 @@
+{
+  "name": "nix-mox",
+  "version": "1.0.0",
+  "description": "Enhanced Nushell development experience with nix-mox integration",
+  "authors": ["Hydepwns"],
+  "repository": "https://github.com/Hydepwns/nix-mox",
+  "license": "MIT",
+  "categories": ["Programming Languages", "Other"],
+  "keywords": ["nushell", "nu", "nix", "nixos", "shell", "scripting"],
+  "main": "main.rs",
+  "dependencies": {
+    "zed": "0.0.0"
+  },
+  "capabilities": {
+    "languages": ["nushell"],
+    "themes": ["nix-mox-dark", "nix-mox-light"],
+    "commands": [
+      "nix-mox:run-script",
+      "nix-mox:test-script",
+      "nix-mox:validate-security",
+      "nix-mox:show-metrics",
+      "nix-mox:generate-docs",
+      "nix-mox:setup-wizard"
+    ]
+  },
+  "language_servers": {
+    "nushell": {
+      "command": "nu",
+      "args": ["--lsp"],
+      "env": {
+        "NIX_MOX_EXTENSION": "true"
+      }
+    }
+  },
+  "grammars": {
+    "nushell": {
+      "file_types": ["nu"],
+      "scope_name": "source.nushell",
+      "grammar": "syntaxes/nushell.tmGrammar.json"
+    }
+  },
+  "themes": {
+    "nix-mox-dark": {
+      "path": "themes/nix-mox-dark.json",
+      "name": "nix-mox Dark"
+    },
+    "nix-mox-light": {
+      "path": "themes/nix-mox-light.json",
+      "name": "nix-mox Light"
+    }
+  },
+  "snippets": {
+    "nushell": {
+      "path": "snippets/nix-mox.json"
+    }
+  }
+}

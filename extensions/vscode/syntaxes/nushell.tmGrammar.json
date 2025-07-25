@@ -1,0 +1,35 @@
+{
+  "scopeName": "source.nushell",
+  "name": "Nushell",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#string" },
+    { "include": "#keyword" },
+    { "include": "#number" }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [
+        { "name": "comment.line.number-sign.nushell", "match": "#.*$" }
+      ]
+    },
+    "string": {
+      "patterns": [
+        { "name": "string.quoted.double.nushell", "begin": "`", "end": "`" },
+        { "name": "string.quoted.single.nushell", "begin": "'", "end": "'" }
+      ]
+    },
+    "keyword": {
+      "patterns": [
+        { "name": "keyword.control.nushell", "match": "\\b(def|let|use|source|if|else|for|in|match|try|catch|return|break|continue)\\b" }
+      ]
+    },
+    "number": {
+      "patterns": [
+        { "name": "constant.numeric.nushell", "match": "\\b[0-9]+(\\.[0-9]+)?\\b" }
+      ]
+    }
+  },
+  "fileTypes": [".nu"],
+  "uuid": "b1e1e1e1-1111-1111-1111-111111111111"
+}

@@ -1,0 +1,238 @@
+{
+  "name": "nix-mox-nushell",
+  "displayName": "nix-mox Nushell Support",
+  "description": "Nushell scripting for nix-mox: run, test, validate, and document .nu scripts in VSCode",
+  "version": "1.0.0",
+  "publisher": "nix-mox",
+  "icon": "images/icon.png",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Debuggers",
+    "Linters"
+  ],
+  "keywords": [
+    "nushell",
+    "nu",
+    "nix-mox",
+    "nixos",
+    "shell",
+    "scripting"
+  ],
+  "activationEvents": [
+    "onLanguage:nushell",
+    "onCommand:nix-mox.runScript",
+    "onCommand:nix-mox.testScript",
+    "workspaceContains:**/*.nu"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "nushell",
+        "aliases": ["Nushell", "nu"],
+        "extensions": [".nu"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "nushell",
+        "scopeName": "source.nushell",
+        "path": "./syntaxes/nushell.tmGrammar.json"
+      }
+    ],
+    "themes": [
+      {
+        "label": "Synthwave '84",
+        "uiTheme": "vs-dark",
+        "path": "./themes/synthwave84-color-theme.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "nix-mox.runScript",
+        "title": "Run nix-mox Script",
+        "category": "nix-mox",
+        "icon": "$(play)"
+      },
+      {
+        "command": "nix-mox.testScript",
+        "title": "Test nix-mox Script",
+        "category": "nix-mox",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "nix-mox.validateScript",
+        "title": "Validate Script Security",
+        "category": "nix-mox",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "nix-mox.showMetrics",
+        "title": "Show Performance Metrics",
+        "category": "nix-mox",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "nix-mox.generateDocs",
+        "title": "Generate Documentation",
+        "category": "nix-mox",
+        "icon": "$(book)"
+      },
+      {
+        "command": "nix-mox.setupWizard",
+        "title": "Run Setup Wizard",
+        "category": "nix-mox",
+        "icon": "$(wand)"
+      },
+      {
+        "command": "nix-mox.formatDocument",
+        "title": "Format Nushell Document",
+        "category": "nix-mox",
+        "icon": "$(symbol-color)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "nix-mox.runScript",
+        "key": "ctrl+f5",
+        "when": "editorTextFocus && resourceExtname == .nu"
+      },
+      {
+        "command": "nix-mox.testScript",
+        "key": "ctrl+shift+t",
+        "when": "editorTextFocus && resourceExtname == .nu"
+      },
+      {
+        "command": "nix-mox.formatDocument",
+        "key": "ctrl+shift+f",
+        "when": "editorTextFocus && resourceExtname == .nu"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceExtname == .nu",
+          "command": "nix-mox.runScript",
+          "group": "nix-mox@1"
+        },
+        {
+          "when": "resourceExtname == .nu",
+          "command": "nix-mox.testScript",
+          "group": "nix-mox@2"
+        },
+        {
+          "when": "resourceExtname == .nu",
+          "command": "nix-mox.validateScript",
+          "group": "nix-mox@3"
+        },
+        {
+          "when": "resourceExtname == .nu",
+          "command": "nix-mox.formatDocument",
+          "group": "nix-mox@4"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .nu",
+          "command": "nix-mox.runScript",
+          "group": "nix-mox@1"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "nushell",
+        "path": "./snippets/nix-mox.json"
+      }
+    ],
+    "configuration": {
+      "title": "nix-mox",
+      "properties": {
+        "nix-mox.nushellPath": {
+          "type": "string",
+          "default": "nu",
+          "description": "Path to the Nushell executable"
+        },
+        "nix-mox.enableMetrics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable performance metrics collection"
+        },
+        "nix-mox.securityValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic security validation"
+        },
+        "nix-mox.autoFormat": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-format Nushell code on save"
+        },
+        "nix-mox.testTimeout": {
+          "type": "number",
+          "default": 30,
+          "description": "Test execution timeout in seconds"
+        },
+        "nix-mox.enableLinting": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable linting and diagnostics for Nushell files"
+        },
+        "nix-mox.enableFormatting": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable auto-formatting for Nushell files"
+        },
+        "nix-mox.formatOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Format Nushell files automatically on save"
+        },
+        "nix-mox.lintSeverity": {
+          "type": "string",
+          "enum": ["error", "warning", "info"],
+          "default": "warning",
+          "description": "Default severity level for linting issues"
+        }
+      }
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "nix-mox-scripts",
+          "name": "nix-mox Scripts",
+          "when": "workspaceContains:**/*.nu"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "nix-mox",
+          "title": "nix-mox",
+          "icon": "$(server-process)"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.74.0",
+    "typescript": "^4.9.0"
+  },
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7"
+  }
+}

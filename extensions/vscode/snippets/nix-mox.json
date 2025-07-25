@@ -1,0 +1,185 @@
+{
+  "nix-mox script header": {
+    "prefix": "nixmox-header",
+    "body": [
+      "#!/usr/bin/env nu",
+      "",
+      "# ${1:Script description}",
+      "# Part of nix-mox framework",
+      "",
+      "use ../lib/logging.nu *",
+      "use ../lib/error-handling.nu *",
+      "use ../lib/platform.nu *",
+      "",
+      "def main [] {",
+      "    log_info \"Starting ${2:script_name}...\"",
+      "    ",
+      "    try {",
+      "        ${3:# Script logic here}",
+      "        log_info \"${2:script_name} completed successfully\"",
+      "    } catch {|err|",
+      "        handle_script_error \"${2:script_name} failed\" \"EXECUTION\" {error: \\$err}",
+      "    }",
+      "}",
+      "",
+      "if (\\$env.PWD? != null) {",
+      "    main",
+      "}"
+    ],
+    "description": "Create a new nix-mox script with standard structure"
+  },
+
+  "Test function template": {
+    "prefix": "nixmox-test",
+    "body": [
+      "def test_${1:function_name} [] {",
+      "    print \"Testing ${1:function_name}...\"",
+      "    ",
+      "    try {",
+      "        ${2:# Test logic}",
+      "        assert_true ${3:condition} \"${4:test description}\"",
+      "        track_test \"${1:function_name}\" \"unit\" \"passed\" 0.1",
+      "    } catch {",
+      "        track_test \"${1:function_name}\" \"unit\" \"failed\" 0.1",
+      "        print \"${1:function_name} test failed\"",
+      "    }",
+      "}"
+    ],
+    "description": "Create a test function with error handling"
+  },
+
+  "Error handling block": {
+    "prefix": "nixmox-error",
+    "body": [
+      "try {",
+      "    ${1:# Code that might fail}",
+      "} catch {|err|",
+      "    handle_script_error \"${2:Operation failed}\" \"${3:ERROR_TYPE}\" {",
+      "        context: \"${4:additional_context}\",",
+      "        error: \\$err",
+      "    }",
+      "}"
+    ],
+    "description": "Add structured error handling"
+  },
+
+  "Platform detection": {
+    "prefix": "nixmox-platform",
+    "body": [
+      "let platform = detect_platform",
+      "match \\$platform {",
+      "    \"linux\" => {",
+      "        ${1:# Linux-specific code}",
+      "    }",
+      "    \"darwin\" => {",
+      "        ${2:# macOS-specific code}",
+      "    }",
+      "    \"windows\" => {",
+      "        ${3:# Windows-specific code}",
+      "    }",
+      "    _ => {",
+      "        handle_script_error \"Unsupported platform: \\$platform\" \"PLATFORM\"",
+      "    }",
+      "}"
+    ],
+    "description": "Add platform-specific logic"
+  },
+
+  "Configuration loader": {
+    "prefix": "nixmox-config",
+    "body": [
+      "let config = try {",
+      "    load_config",
+      "} catch {",
+      "    log_warn \"Failed to load config, using defaults\"",
+      "    create_default_config",
+      "}",
+      "",
+      "let ${1:setting} = get_config_value \\$config \"${2:path.to.setting}\" \"${3:default_value}\""
+    ],
+    "description": "Load and access configuration"
+  },
+
+  "Performance monitoring": {
+    "prefix": "nixmox-perf",
+    "body": [
+      "let monitor_id = start_performance_monitor \"${1:operation_name}\" {component: \"${2:component}\"}",
+      "",
+      "try {",
+      "    ${3:# Operation to monitor}",
+      "} catch {|err|",
+      "    log_error \"Performance monitoring failed: \\$err\"",
+      "} finally {",
+      "    end_performance_monitor \\$monitor_id",
+      "}"
+    ],
+    "description": "Add performance monitoring"
+  },
+
+  "Security validation": {
+    "prefix": "nixmox-security",
+    "body": [
+      "# Validate script security",
+      "let security_result = validate_script_security \"${1:script_path}\"",
+      "",
+      "if not \\$security_result.is_safe {",
+      "    log_warn \"Security issues detected:\"",
+      "    for threat in \\$security_result.threats {",
+      "        log_warn \\$\"  - \\$threat.description\"",
+      "    }",
+      "    ",
+      "    let proceed = (input \"Continue anyway? [y/N]: \")",
+      "    if \\$proceed != \"y\" {",
+      "        exit 1",
+      "    }",
+      "}"
+    ],
+    "description": "Add security validation"
+  },
+
+  "Metrics tracking": {
+    "prefix": "nixmox-metrics",
+    "body": [
+      "# Track metrics",
+      "increment_counter \"${1:metric_name}\" {${2:label_key}: \"${3:label_value}\"}",
+      "set_gauge \"${4:gauge_name}\" ${5:value}",
+      "observe_histogram \"${6:histogram_name}\" ${7:observation}"
+    ],
+    "description": "Add metrics tracking"
+  },
+
+  "Module import template": {
+    "prefix": "nixmox-imports",
+    "body": [
+      "use ../lib/platform.nu *",
+      "use ../lib/logging.nu *",
+      "use ../lib/error-handling.nu *",
+      "use ../lib/config.nu *",
+      "use ../lib/performance.nu *",
+      "use ../lib/security.nu *"
+    ],
+    "description": "Import common nix-mox modules"
+  },
+
+  "Assertion helpers": {
+    "prefix": "nixmox-assert",
+    "body": [
+      "assert_true ${1:condition} \"${2:message}\"",
+      "assert_false ${3:condition} \"${4:message}\"", 
+      "assert_equal ${5:actual} ${6:expected} \"${7:message}\"",
+      "assert_not_equal ${8:actual} ${9:unexpected} \"${10:message}\""
+    ],
+    "description": "Common assertion patterns"
+  },
+
+  "Logging helpers": {
+    "prefix": "nixmox-log",
+    "body": [
+      "log_info \"${1:info_message}\"",
+      "log_warn \"${2:warning_message}\"",
+      "log_error \"${3:error_message}\"",
+      "log_debug \"${4:debug_message}\""
+    ],
+    "description": "Logging function calls"
+  }
+}
