@@ -14,7 +14,7 @@ let
   };
 in
 {
-    # System user configuration - keep droo user but add hydepwns
+  # System user configuration - keep droo user but add hydepwns
   users.users.droo = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
@@ -196,7 +196,7 @@ in
       };
     };
 
-        # Development tools
+    # Development tools
     programs = {
       # Neovim as fallback
       neovim = {

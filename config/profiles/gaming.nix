@@ -20,7 +20,7 @@
     vkd3d
 
     # Performance monitoring
-   # htop
+    # htop
     nvtop
     radeontop
     mesa-demos

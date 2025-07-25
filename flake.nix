@@ -303,7 +303,7 @@
 
         in
         {
-                    # Development shells with platform-specific availability
+          # Development shells with platform-specific availability
           devShells = createDevShells system pkgs devShell;
 
           # Packages with architecture checking

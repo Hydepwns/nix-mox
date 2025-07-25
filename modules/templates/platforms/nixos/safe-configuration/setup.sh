@@ -98,10 +98,10 @@ main() {
   prompt_with_default "Enter your choice (1-3)" "1" display_manager_choice
 
   case $display_manager_choice in
-  1) display_manager="lightdm" ;;
-  2) display_manager="sddm" ;;
-  3) display_manager="gdm" ;;
-  *) display_manager="lightdm" ;;
+    1) display_manager="lightdm" ;;
+    2) display_manager="sddm" ;;
+    3) display_manager="gdm" ;;
+    *) display_manager="lightdm" ;;
   esac
 
   # Desktop environment selection
@@ -116,12 +116,12 @@ main() {
   prompt_with_default "Enter your choice (1-5)" "1" de_choice
 
   case $de_choice in
-  1) desktop_environment="gnome" ;;
-  2) desktop_environment="plasma6" ;;
-  3) desktop_environment="xfce" ;;
-  4) desktop_environment="i3" ;;
-  5) desktop_environment="awesome" ;;
-  *) desktop_environment="gnome" ;;
+    1) desktop_environment="gnome" ;;
+    2) desktop_environment="plasma6" ;;
+    3) desktop_environment="xfce" ;;
+    4) desktop_environment="i3" ;;
+    5) desktop_environment="awesome" ;;
+    *) desktop_environment="gnome" ;;
   esac
 
   # Graphics driver selection
@@ -135,11 +135,11 @@ main() {
   prompt_with_default "Enter your choice (1-4)" "1" gpu_choice
 
   case $gpu_choice in
-  1) graphics_driver="auto" ;;
-  2) graphics_driver="nvidia" ;;
-  3) graphics_driver="amdgpu" ;;
-  4) graphics_driver="intel" ;;
-  *) graphics_driver="auto" ;;
+    1) graphics_driver="auto" ;;
+    2) graphics_driver="nvidia" ;;
+    3) graphics_driver="amdgpu" ;;
+    4) graphics_driver="intel" ;;
+    *) graphics_driver="auto" ;;
   esac
 
   # Additional options
@@ -177,7 +177,7 @@ main() {
   print_status "Generating configuration files..."
 
   # Generate flake.nix
-  cat >flake.nix <<EOF
+  cat > flake.nix << EOF
 {
   description = "NixOS configuration using nix-mox fragment system";
 
@@ -208,7 +208,7 @@ main() {
 EOF
 
   # Generate config/default.nix
-  cat >config/default.nix <<EOF
+  cat > config/default.nix << EOF
 { inputs, ... }:
 let
   userConfig = import ./nixos/configuration.nix;
@@ -234,7 +234,7 @@ in
 EOF
 
   # Generate nixos/configuration.nix using fragment system
-  cat >nixos/configuration.nix <<EOF
+  cat > nixos/configuration.nix << EOF
 { config, pkgs, inputs, ... }:
 
 {
@@ -256,69 +256,69 @@ EOF
 
   # Add display manager override if not lightdm
   if [ "$display_manager" != "lightdm" ]; then
-    cat >>nixos/configuration.nix <<EOF
+    cat >> nixos/configuration.nix << EOF
 
   # Override display manager
   services.xserver.displayManager = {
     lightdm.enable = false;
 EOF
     case $display_manager in
-    "sddm")
-      echo "    sddm.enable = true;" >>nixos/configuration.nix
-      ;;
-    "gdm")
-      echo "    gdm.enable = true;" >>nixos/configuration.nix
-      ;;
+      "sddm")
+        echo "    sddm.enable = true;" >> nixos/configuration.nix
+        ;;
+      "gdm")
+        echo "    gdm.enable = true;" >> nixos/configuration.nix
+        ;;
     esac
-    echo "  };" >>nixos/configuration.nix
+    echo "  };" >> nixos/configuration.nix
   fi
 
   # Add desktop environment override if not gnome
   if [ "$desktop_environment" != "gnome" ]; then
-    cat >>nixos/configuration.nix <<EOF
+    cat >> nixos/configuration.nix << EOF
 
   # Override desktop environment
   services.xserver.desktopManager = {
     gnome.enable = false;
 EOF
     case $desktop_environment in
-    "plasma6")
-      echo "    plasma6.enable = true;" >>nixos/configuration.nix
-      ;;
-    "xfce")
-      echo "    xfce.enable = true;" >>nixos/configuration.nix
-      ;;
+      "plasma6")
+        echo "    plasma6.enable = true;" >> nixos/configuration.nix
+        ;;
+      "xfce")
+        echo "    xfce.enable = true;" >> nixos/configuration.nix
+        ;;
     esac
-    echo "  };" >>nixos/configuration.nix
+    echo "  };" >> nixos/configuration.nix
 
     # Add window manager if selected
     if [ "$desktop_environment" = "i3" ] || [ "$desktop_environment" = "awesome" ]; then
-      cat >>nixos/configuration.nix <<EOF
+      cat >> nixos/configuration.nix << EOF
 
   # Window manager
   services.xserver.windowManager = {
 EOF
       case $desktop_environment in
-      "i3")
-        echo "    i3.enable = true;" >>nixos/configuration.nix
-        ;;
-      "awesome")
-        echo "    awesome.enable = true;" >>nixos/configuration.nix
-        ;;
+        "i3")
+          echo "    i3.enable = true;" >> nixos/configuration.nix
+          ;;
+        "awesome")
+          echo "    awesome.enable = true;" >> nixos/configuration.nix
+          ;;
       esac
-      echo "  };" >>nixos/configuration.nix
+      echo "  };" >> nixos/configuration.nix
     fi
   fi
 
   # Add graphics driver configuration
   if [ "$graphics_driver" != "auto" ]; then
-    cat >>nixos/configuration.nix <<EOF
+    cat >> nixos/configuration.nix << EOF
 
   # Graphics driver
 EOF
     case $graphics_driver in
-    "nvidia")
-      cat >>nixos/configuration.nix <<EOF
+      "nvidia")
+        cat >> nixos/configuration.nix << EOF
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia = {
     modesetting.enable = true;
@@ -328,19 +328,19 @@ EOF
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 EOF
-      ;;
-    "amdgpu")
-      echo '  services.xserver.videoDrivers = [ "amdgpu" ];' >>nixos/configuration.nix
-      ;;
-    "intel")
-      echo '  services.xserver.videoDrivers = [ "intel" ];' >>nixos/configuration.nix
-      ;;
+        ;;
+      "amdgpu")
+        echo '  services.xserver.videoDrivers = [ "amdgpu" ];' >> nixos/configuration.nix
+        ;;
+      "intel")
+        echo '  services.xserver.videoDrivers = [ "intel" ];' >> nixos/configuration.nix
+        ;;
     esac
   fi
 
   # Add optional services
   if [[ $enable_steam =~ ^[Yy]$ ]]; then
-    cat >>nixos/configuration.nix <<EOF
+    cat >> nixos/configuration.nix << EOF
 
   # Steam gaming
   programs.steam = {
@@ -352,7 +352,7 @@ EOF
   fi
 
   if [[ $enable_ssh =~ ^[Yy]$ ]]; then
-    cat >>nixos/configuration.nix <<EOF
+    cat >> nixos/configuration.nix << EOF
 
   # SSH server
   services.openssh = {
@@ -366,7 +366,7 @@ EOF
   fi
 
   if [[ $enable_docker =~ ^[Yy]$ ]]; then
-    cat >>nixos/configuration.nix <<EOF
+    cat >> nixos/configuration.nix << EOF
 
   # Docker
   services.docker = {
@@ -378,7 +378,7 @@ EOF
 
   # Add messaging and communication configuration
   if [[ $enable_messaging =~ ^[Yy]$ ]] || [[ $enable_video_calling =~ ^[Yy]$ ]] || [[ $enable_email_clients =~ ^[Yy]$ ]]; then
-    cat >>nixos/configuration.nix <<EOF
+    cat >> nixos/configuration.nix << EOF
 
   # Messaging and communication services
   services.dbus.enable = true;
@@ -388,7 +388,7 @@ EOF
   services.dbus.packages = with pkgs; [
 EOF
     if [[ $enable_messaging =~ ^[Yy]$ ]]; then
-      cat >>nixos/configuration.nix <<EOF
+      cat >> nixos/configuration.nix << EOF
     signal-desktop
     telegram-desktop
     discord
@@ -398,13 +398,13 @@ EOF
 EOF
     fi
     if [[ $enable_video_calling =~ ^[Yy]$ ]]; then
-      cat >>nixos/configuration.nix <<EOF
+      cat >> nixos/configuration.nix << EOF
     zoom-us
     teams
     skypeforlinux
 EOF
     fi
-    cat >>nixos/configuration.nix <<EOF
+    cat >> nixos/configuration.nix << EOF
   ];
 
   # Firewall ports for messaging and communication
@@ -422,10 +422,10 @@ EOF
 EOF
   fi
 
-  echo "}" >>nixos/configuration.nix
+  echo "}" >> nixos/configuration.nix
 
   # Generate home/home.nix
-  cat >home/home.nix <<EOF
+  cat > home/home.nix << EOF
 { config, pkgs, inputs, ... }:
 
 {
@@ -490,14 +490,14 @@ EOF
         defaultApplications = {
 EOF
   if [[ $enable_messaging =~ ^[Yy]$ ]]; then
-    cat >>home/home.nix <<EOF
+    cat >> home/home.nix << EOF
           "x-scheme-handler/signal" = "signal-desktop.desktop";
           "x-scheme-handler/telegram" = "telegram-desktop.desktop";
           "x-scheme-handler/discord" = "discord.desktop";
           "x-scheme-handler/slack" = "slack.desktop";
 EOF
   fi
-  cat >>home/home.nix <<EOF
+  cat >> home/home.nix << EOF
         };
       };
     };
@@ -510,12 +510,12 @@ EOF
 
   # Generate hardware configuration
   print_status "Generating hardware configuration..."
-  if command -v nixos-generate-config >/dev/null 2>&1; then
-    sudo nixos-generate-config --show-hardware-config | sudo tee hardware/hardware-configuration.nix >/dev/null
+  if command -v nixos-generate-config > /dev/null 2>&1; then
+    sudo nixos-generate-config --show-hardware-config | sudo tee hardware/hardware-configuration.nix > /dev/null
     print_success "Hardware configuration generated"
   else
     print_warning "nixos-generate-config not found. Creating minimal hardware config..."
-    cat >hardware/hardware-configuration.nix <<EOF
+    cat > hardware/hardware-configuration.nix << EOF
 # Minimal hardware configuration
 # Run 'sudo nixos-generate-config --show-hardware-config > hardware/hardware-configuration.nix' on your target system
 

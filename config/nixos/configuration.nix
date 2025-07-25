@@ -190,7 +190,7 @@
 
   # Set Kitty as the default terminal for all users in KDE Plasma
   environment.etc."xdg/kdeglobals".text = ''
-[General]
-TerminalApplication=kitty
-'';
+    [General]
+    TerminalApplication=kitty
+  '';
 }

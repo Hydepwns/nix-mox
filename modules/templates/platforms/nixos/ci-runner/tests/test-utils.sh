@@ -8,7 +8,7 @@ testJobQueue() {
 
   # Initialize queue
   queue_file="/tmp/test-queue"
-  echo "$job" >"$queue_file"
+  echo "$job" > "$queue_file"
 
   # Process job
   result=$(head -n 1 "$queue_file")
