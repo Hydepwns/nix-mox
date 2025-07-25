@@ -9,31 +9,31 @@ echo "🔧 Setting up Hydepwns dotfiles integration..."
 
 # Check if chezmoi is available
 if command -v chezmoi &> /dev/null; then
-    echo "✅ Chezmoi found, setting up dotfiles..."
+  echo "✅ Chezmoi found, setting up dotfiles..."
 
-    # Initialize chezmoi with Hydepwns dotfiles
-    chezmoi init --apply https://github.com/Hydepwns/dotfiles
+  # Initialize chezmoi with Hydepwns dotfiles
+  chezmoi init --apply https://github.com/Hydepwns/dotfiles
 
-    echo "✅ Dotfiles initialized successfully!"
-    echo ""
-    echo "📝 Next steps:"
-    echo "  1. Review the dotfiles configuration"
-    echo "  2. Customize as needed"
-    echo "  3. The dotfiles will be automatically loaded in your shell"
-    echo ""
+  echo "✅ Dotfiles initialized successfully!"
+  echo ""
+  echo "📝 Next steps:"
+  echo "  1. Review the dotfiles configuration"
+  echo "  2. Customize as needed"
+  echo "  3. The dotfiles will be automatically loaded in your shell"
+  echo ""
 else
-    echo "⚠️  Chezmoi not found. Installing..."
+  echo "⚠️  Chezmoi not found. Installing..."
 
-    # Try to install chezmoi
-    if command -v nix &> /dev/null; then
-        echo "📦 Installing chezmoi via nix..."
-        nix profile install nixpkgs#chezmoi
-        echo "✅ Chezmoi installed! Please run this script again."
-    else
-        echo "❌ Could not install chezmoi automatically."
-        echo "   Please install chezmoi manually and run this script again."
-        echo "   Visit: https://www.chezmoi.io/install/"
-    fi
+  # Try to install chezmoi
+  if command -v nix &> /dev/null; then
+    echo "📦 Installing chezmoi via nix..."
+    nix profile install nixpkgs#chezmoi
+    echo "✅ Chezmoi installed! Please run this script again."
+  else
+    echo "❌ Could not install chezmoi automatically."
+    echo "   Please install chezmoi manually and run this script again."
+    echo "   Visit: https://www.chezmoi.io/install/"
+  fi
 fi
 
 # Create symlinks for common tools
@@ -44,21 +44,21 @@ CONFIG_DIR="$HOME_DIR/.config"
 
 # Ensure config directory exists
 if [ ! -d "$CONFIG_DIR" ]; then
-    mkdir -p "$CONFIG_DIR"
+  mkdir -p "$CONFIG_DIR"
 fi
 
 # Set up Zed configuration
 ZED_CONFIG="$CONFIG_DIR/zed"
 if [ ! -d "$ZED_CONFIG" ]; then
-    mkdir -p "$ZED_CONFIG"
-    echo "✅ Created Zed config directory"
+  mkdir -p "$ZED_CONFIG"
+  echo "✅ Created Zed config directory"
 fi
 
 # Set up Kitty configuration
 KITTY_CONFIG="$CONFIG_DIR/kitty"
 if [ ! -d "$KITTY_CONFIG" ]; then
-    mkdir -p "$KITTY_CONFIG"
-    echo "✅ Created Kitty config directory"
+  mkdir -p "$KITTY_CONFIG"
+  echo "✅ Created Kitty config directory"
 fi
 
 echo ""

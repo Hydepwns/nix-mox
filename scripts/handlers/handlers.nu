@@ -1,6 +1,5 @@
 # Handlers module for nix-mox
 # This replaces the bash handlers.sh with a more robust Nushell implementation
-
 export-env {
     $env.SCRIPT_HANDLERS = {
         bash: "bash"
@@ -28,7 +27,7 @@ export def validate_dependencies [dependencies: list<string>] {
     for dep in $dependencies {
         if (which $dep | length) == 0 {
             log "ERROR" $"Required dependency not found: ($dep)"
-            handle_error $env.ERROR_CODES.DEPENDENCY_MISSING "Missing dependency" $"Please install ($dep) and try again"
+            handle_error $env ERROR_CODES.DEPENDENCY_MISSING "Missing dependency" $"Please install ($dep) and try again"
         }
     }
 }
@@ -36,26 +35,23 @@ export def validate_dependencies [dependencies: list<string>] {
 export def check_permissions [path: string] {
     if not ($path | path exists) {
         log "ERROR" $"Path does not exist: ($path)"
-        handle_error $env.ERROR_CODES.FILE_NOT_FOUND "File not found" $"Path: ($path)"
+        handle_error $env ERROR_CODES.FILE_NOT_FOUND "File not found" $"Path: ($path)"
     }
-
     if not ($path | path type) == "file" {
         log "ERROR" $"Not a file: ($path)"
-        handle_error $env.ERROR_CODES.INVALID_ARGUMENT "Invalid file" $"Path: ($path)"
+        handle_error $env ERROR_CODES.INVALID_ARGUMENT "Invalid file" $"Path: ($path)"
     }
 }
 
 export def run_platform_script [platform: string, script: string, ...args: string] {
     let script_file = get_platform_script $platform $script
     if $script_file == null {
-        handle_error $env.ERROR_CODES.HANDLER_NOT_FOUND "Script not found" $"Platform: ($platform), Script: ($script)"
+        handle_error $env ERROR_CODES.HANDLER_NOT_FOUND "Script not found" $"Platform: ($platform), Script: ($script)"
     }
-
     if $env.DRY_RUN {
         log "INFO" $"Would execute: ($script_file)"
         return
     }
-
     if $env.PARALLEL {
         run_parallel [$platform]
     } else {
@@ -64,38 +60,30 @@ export def run_platform_script [platform: string, script: string, ...args: strin
 }
 
 export def handle_script [script_path: string, ...args: string] {
-    check_permissions $script_path
     let handler = get_script_handler $script_path
-
     match $handler {
-        "bash" | "sh" => {
-            validate_dependencies ["bash"]
-            run_script $script_path ...$args
-        }
-        "nu" => {
-            validate_dependencies ["nu"]
-            run_script $script_path ...$args
-        }
-        "powershell" => {
-            validate_dependencies ["powershell"]
-            run_script $script_path ...$args
-        }
-        "python3" => {
-            validate_dependencies ["python3"]
-            run_script $script_path ...$args
-        }
-        _ => {
-            validate_dependencies [$handler]
-            run_script $script_path ...$args
-        }
+        "bash" | "sh" => { ["bash"] | run_script $script_path ...$args }
+        "nu" => { ["nu"] | run_script $script_path ...$args }
+        "powershell" => { ["powershell"] | run_script $script_path ...$args }
+        "python3" => { ["python3"] | run_script $script_path ...$args }
+        _ => { [$handler] | run_script $script_path ...$args }
     }
 }
 
 export def main [] {
     let args = $in
-    match $args.0 {
-        "run" => { handle_script $args.1 ($args | skip 2) }
-        "platform" => { run_platform_script $args.1 $args.2 ($args | skip 3) }
+    match ($args | get 0) {
+        "run" => {
+            let script = $args | get 1
+            let script_args = $args | skip 2
+            handle_script $script ...$script_args
+        }
+        "platform" => {
+            let platform = $args | get 1
+            let script = $args | get 2
+            let script_args = $args | skip 3
+            run_platform_script $platform $script ...$script_args
+        }
         _ => { print "Unknown handler operation" }
     }
-} 
+}
