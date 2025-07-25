@@ -5,7 +5,6 @@
 # - Reads the install manifest at /etc/nix-mox/install_manifest.txt
 # - Removes all files and directories listed in the manifest.
 # - Is idempotent and safe to re-run.
-
 use ../lib/common.nu
 
 # --- Global Variables ---
@@ -44,7 +43,9 @@ def main [] {
 
     # Iterate in reverse order to remove files before their parent directories
     for item in ($items_to_remove | reverse) {
-        if ($item | str trim | is-empty) { continue }
+        if ($item | str trim | is-empty) {
+            continue
+        }
 
         if $env.DRY_RUN {
             if ($item | path exists) {

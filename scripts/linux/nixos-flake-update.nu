@@ -6,11 +6,10 @@
 #   --dry-run         Show what would be done, but make no changes
 #   --flake-path PATH Set flake path (default: /etc/nixos or $FLAKE_PATH)
 #   --help            Show this help message
-
-use ../lib/common.nu *
+use ../lib/common.nu
 
 # Script-specific variables
-$env.FLAKE_PATH = ($env.FLAKE_PATH? | default "/etc/nixos")
+$env.FLAKE_PATH = ($env.FLAKE_PATH | default "/etc/nixos")
 $env.HOSTNAME = (hostname)
 $env.DRY_RUN = false
 
@@ -19,12 +18,16 @@ def main [] {
     let args = $env._args
     for arg in $args {
         match $arg {
-            "--dry-run" => { $env.DRY_RUN = true }
+            "--dry-run" => {
+                $env.DRY_RUN = true
+            }
             "--flake-path" => {
                 let idx = ($args | find $arg | get 0)
                 $env.FLAKE_PATH = ($args | get ($idx + 1))
             }
-            "--help" | "-h" => { usage }
+            "--help" | "-h" => {
+                usage
+            }
             _ => {
                 log_error $"Unknown option: ($arg)"
                 usage

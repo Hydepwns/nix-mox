@@ -5,25 +5,19 @@
 
 def main [] {
     print "🧹 Starting nix-mox cleanup..."
-
     # Clean temporary build artifacts
     cleanup_temp_files
-
     # Clean old user/group entries
     cleanup_user_groups
-
     # Validate configuration consistency
     validate_configuration
-
     # Check for obsolete references
     check_obsolete_references
-
     print "✅ Cleanup completed!"
 }
 
 def cleanup_temp_files [] {
     print "📁 Cleaning temporary files..."
-
     # Remove build artifacts
     if ("tmp/result-*" | path exists) {
         rm -rf tmp/result-*
@@ -45,7 +39,6 @@ def cleanup_temp_files [] {
 
 def cleanup_user_groups [] {
     print "👥 Checking for old user/group entries..."
-
     # Check for old display manager users
     let old_users = ["lightdm", "gdm"]
     let old_groups = ["lightdm", "gdm"]
@@ -65,12 +58,8 @@ def cleanup_user_groups [] {
 
 def validate_configuration [] {
     print "🔍 Validating configuration consistency..."
-
     # Check for conflicting display managers
-    let config_files = [
-        "config/profiles/base.nix",
-        "modules/templates/base/common.nix"
-    ]
+    let config_files = ["config/profiles/base.nix", "modules/templates/base/common.nix"]
 
     for file in $config_files {
         if ($file | path exists) {
@@ -81,7 +70,6 @@ def validate_configuration [] {
             if $lightdm_count > 0 {
                 print $"  ⚠️  Found ($lightdm_count) LightDM references in ($file)"
             }
-
             if $sddm_count > 0 {
                 print $"  ✓ Found ($sddm_count) SDDM references in ($file)"
             }
@@ -95,7 +83,6 @@ def validate_configuration [] {
     if $plasma5_count > 0 {
         print $"  ⚠️  Found ($plasma5_count) plasma5 references"
     }
-
     if $plasma6_count > 0 {
         print $"  ✓ Found ($plasma6_count) plasma6 references"
     }
@@ -103,8 +90,8 @@ def validate_configuration [] {
 
 def check_obsolete_references [] {
     print "🔍 Checking for obsolete references..."
-
     # Check for removed desktop template and profile
+
     if ("config/templates/desktop.nix" | path exists) {
         print "  ⚠️  Found obsolete desktop.nix template"
     } else {
@@ -118,10 +105,7 @@ def check_obsolete_references [] {
     }
 
     # Check for old documentation references
-    let docs_files = [
-        "docs/guides/nixos-on-proxmox.md",
-        "QUICK_START.md"
-    ]
+    let docs_files = ["docs/guides/nixos-on-proxmox.md", "QUICK_START.md"]
 
     for file in $docs_files {
         if ($file | path exists) {
@@ -132,7 +116,6 @@ def check_obsolete_references [] {
             if $lightdm_refs > 0 {
                 print $"  ⚠️  Found ($lightdm_refs) LightDM references in ($file)"
             }
-
             if $plasma5_refs > 0 {
                 print $"  ⚠️  Found ($plasma5_refs) plasma5 references in ($file)"
             }

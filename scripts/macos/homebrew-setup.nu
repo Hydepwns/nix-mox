@@ -25,21 +25,7 @@ def main [] {
 
     # Install common development tools
     print "📦 Installing common development tools..."
-    let common_tools = [
-        "git"
-        "curl"
-        "neovim"
-        "chezmoi"
-        "wget"
-        "jq"
-        "yq"
-        "htop"
-        "tmux"
-        "zsh"
-        "nu"
-        "eza"
-    ]
-
+    let common_tools = ["git", "curl", "neovim", "chezmoi", "wget", "jq", "yq", "htop", "tmux", "zsh", "nu", "eza"]
     for tool in $common_tools {
         if (brew list | where name == $tool | is-empty) {
             print $"Installing ($tool)..."
@@ -51,12 +37,7 @@ def main [] {
 
     # Add useful taps
     print "🔧 Adding useful Homebrew taps..."
-    let taps = [
-        "homebrew/cask"
-        "homebrew/core"
-        "homebrew/services"
-    ]
-
+    let taps = ["homebrew/cask", "homebrew/core", "homebrew/services"]
     for tap in $taps {
         if (brew tap | where name == $tap | is-empty) {
             print $"Adding tap ($tap)..."

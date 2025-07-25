@@ -13,7 +13,7 @@ def main [] {
     print "4. Server setup"
     print "5. Minimal system"
 
-    let choice = (get_input "Enter choice (1-5): ")
+    let choice = (input "Enter choice (1-5): " | str trim)
 
     match $choice {
         "1" => { setup-personal }
@@ -35,7 +35,7 @@ def setup-personal [] {
     # Check if personal config already exists
     if (ls config/personal/user.nix | length) > 0 {
         print "⚠️  Personal configuration already exists!"
-        let response = (get_input "Do you want to overwrite it? (y/N): ")
+        let response = (input "Do you want to overwrite it? (y/N): " | str trim)
         if $response != "y" and $response != "Y" {
             print "Setup cancelled."
             exit 0
@@ -44,13 +44,13 @@ def setup-personal [] {
 
     # Get user input
     print "\n📝 Please provide your personal information:"
-    let username = (get_input "Username: ")
-    let email = (get_input "Email: ")
-    let timezone = (get_input "Timezone (e.g., America/New_York): ")
-    let hostname = (get_input "Hostname: ")
-    let git_username = (get_input "Git username: ")
-    let git_email = (get_input "Git email: ")
-    let initial_password = (get_input "Initial password: ")
+    let username = (input "Username: " | str trim)
+    let email = (input "Email: " | str trim)
+    let timezone = (input "Timezone (e.g., America/New_York): " | str trim)
+    let hostname = (input "Hostname: " | str trim)
+    let git_username = (input "Git username: " | str trim)
+    let git_email = (input "Git email: " | str trim)
+    let initial_password = (input "Initial password: " | str trim)
 
     # Create personal configuration
     print "\n🔧 Creating personal configuration..."
@@ -223,12 +223,6 @@ def setup-minimal [] {
     print "\n📋 Next steps:"
     print "1. Build and switch: sudo nixos-rebuild switch --flake .#nixos"
     print "2. Add packages as needed: edit config/personal/user.nix"
-}
-
-# Helper function to get user input
-def get_input [prompt: string] {
-    print -n $prompt
-    input | str trim
 }
 
 # Show help

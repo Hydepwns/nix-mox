@@ -13,7 +13,6 @@ def main [] {
         print "   nix-env -iA cachix -f https://cachix.org/api/v1/install"
         exit 1
     }
-
     print "✅ Cachix is installed"
 
     # Check if user is logged in
@@ -30,7 +29,6 @@ def main [] {
         print "5. Generate a new token"
         exit 1
     }
-
     print $"✅ Logged in as: ($auth_status)"
 
     # Check if nix-mox cache exists
@@ -40,14 +38,12 @@ def main [] {
         print "   Please create it at https://app.cachix.org/"
         exit 1
     }
-
     print "✅ nix-mox cache found"
 
     # Get cache info
     print ""
     print "📋 Cache Information:"
     print "====================="
-
     let cache_info = (cachix show nix-mox)
     print $cache_info
 
@@ -63,8 +59,8 @@ def main [] {
     print "🎫 Auth Token:"
     print "============="
     print "To get your auth token, run: cachix authtoken"
-
     print ""
+
     print "📝 GitHub Secrets Setup:"
     print "========================"
     print "Add these secrets to your GitHub repository:"
@@ -73,7 +69,7 @@ def main [] {
     print "2. Navigate to Settings → Secrets and variables → Actions"
     print "3. Add these secrets:"
     print ""
-    print $"   CACHIX_AUTH_TOKEN: (your auth token)"
+    print "   CACHIX_AUTH_TOKEN: (your auth token)"
     print $"   CACHIX_SIGNING_KEY: ($signing_key)"
     print ""
     print "✅ Setup complete!"

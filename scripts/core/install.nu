@@ -5,30 +5,30 @@
 
 # Script metadata
 export const SCRIPT_METADATA = {
-    name: "install"
-    description: "Install nix-mox on the current system"
-    platform: "all"
-    requires_root: false
+    name: "install",
+    description: "Install nix-mox on the current system",
+    platform: "all",
+    requires_root: false,
     category: "core"
 }
 
 # Simple logging functions
 def info [message: string, data: any = {}] {
-    print $"(ansi green)INFO:(ansi reset) ($message)"
+    print $"(ansi green)INFO: (ansi reset)  ($message)"
     if ($data != {} and $data != []) {
         print $"  Data: ($data | to json)"
     }
 }
 
 def warn [message: string, data: any = {}] {
-    print $"(ansi yellow)WARN:(ansi reset) ($message)"
+    print $"(ansi yellow)WARN: (ansi reset)  ($message)"
     if ($data != {} and $data != []) {
         print $"  Data: ($data | to json)"
     }
 }
 
 def error [message: string, data: any = {}] {
-    print $"(ansi red)ERROR:(ansi reset) ($message)"
+    print $"(ansi red)ERROR: (ansi reset)  ($message)"
     if ($data != {} and $data != []) {
         print $"  Data: ($data | to json)"
     }
@@ -36,11 +36,7 @@ def error [message: string, data: any = {}] {
 
 # Main installation function
 export def main [args: list] {
-    info "Starting nix-mox installation" {
-        version: "1.0.0"
-        platform: (detect_platform)
-        user: (whoami)
-    }
+    info "Starting nix-mox installation" {version: "1.0.0", platform: (detect_platform), user: (whoami)}
 
     # Parse arguments
     let parsed_args = (parse_install_args $args)
@@ -54,31 +50,20 @@ export def main [args: list] {
     # Validate installation prerequisites
     let prereq_check = (check_prerequisites)
     if not $prereq_check.valid {
-        error "Prerequisites not met" {
-            missing: $prereq_check.missing
-            errors: $prereq_check.errors
-        }
+        error "Prerequisites not met" {missing: $prereq_check.missing, errors: $prereq_check.errors}
         exit 1
     }
 
     # Perform installation
     try {
         let install_result = (perform_installation $parsed_args)
-
-        info "Installation completed successfully" {
-            installed_components: $install_result.components
-            duration: $install_result.duration
-        }
+        info "Installation completed successfully" {installed_components: $install_result.components, duration: $install_result.duration}
 
         # Show post-installation instructions
         show_post_install_instructions $install_result
-
         exit 0
     } catch { |err|
-        error $"Installation failed: ($err)" {
-            error: $err
-            args: $parsed_args
-        }
+        error $"Installation failed: ($err)" {error: $err, args: $parsed_args}
         exit 1
     }
 }
@@ -95,26 +80,18 @@ export def parse_install_args [args: list] {
     let components = (get_component_selection $args)
 
     {
-        help: $help
-        dry_run: $dry_run
-        verbose: $verbose
-        strict_security: $strict_security
-        force: $force
+        help: $help,
+        dry_run: $dry_run,
+        verbose: $verbose,
+        strict_security: $strict_security,
+        force: $force,
         components: $components
     }
 }
 
 # Get component selection from arguments
 export def get_component_selection [args: list] {
-    let component_flags = [
-        "--core"
-        "--tools"
-        "--development"
-        "--gaming"
-        "--monitoring"
-        "--security"
-    ]
-
+    let component_flags = ["--core", "--tools", "--development", "--gaming", "--monitoring", "--security"]
     mut selected_components = []
 
     for flag in $component_flags {
@@ -157,11 +134,7 @@ export def check_prerequisites [] {
     let errors_count = ($errors | length | into int)
     let valid = ($missing_count == 0) and ($errors_count == 0)
 
-    {
-        valid: $valid
-        missing: $missing
-        errors: $errors
-    }
+    {valid: $valid, missing: $missing, errors: $errors}
 }
 
 # Perform the actual installation
@@ -169,15 +142,11 @@ export def perform_installation [args: record] {
     let start_time = (date now)
     mut installed_components = []
 
-    info "Starting installation process" {
-        components: $args.components
-        dry_run: $args.dry_run
-    }
+    info "Starting installation process" {components: $args.components, dry_run: $args.dry_run}
 
     # Install each selected component
     for component in $args.components {
         info $"Installing component: ($component)"
-
         if $args.dry_run {
             info $"Would install ($component) (dry run)"
             $installed_components = ($installed_components | append $component)
@@ -188,14 +157,10 @@ export def perform_installation [args: record] {
                     $installed_components = ($installed_components | append $component)
                     info $"Successfully installed ($component)"
                 } else {
-                    warn $"Failed to install ($component)" {
-                        error: $result.error
-                    }
+                    error $"Failed to install ($component)" {error: $result.error}
                 }
             } catch { |err|
-                warn $"Error installing ($component)" {
-                    error: $err
-                }
+                error $"Error installing ($component)" {error: $err}
             }
         }
     }
@@ -208,13 +173,7 @@ export def perform_installation [args: record] {
     let end_time = (date now)
     let duration = (($end_time | into datetime) - ($start_time | into datetime) | into duration)
 
-    {
-        success: true
-        components: $installed_components
-        duration: $duration
-        start_time: $start_time
-        end_time: $end_time
-    }
+    {success: true, components: $installed_components, duration: $duration, start_time: $start_time, end_time: $end_time}
 }
 
 # Install a specific component
@@ -226,10 +185,7 @@ export def install_component [component: string] {
         "gaming" => { install_gaming_component }
         "monitoring" => { install_monitoring_component }
         "security" => { install_security_component }
-        _ => {
-            error $"Unknown component: ($component)"
-            { success: false, error: $"Unknown component: ($component)" }
-        }
+        _ => { error $"Unknown component: ($component)" {success: false, error: $"Unknown component: ($component)"} }
     }
 }
 
@@ -238,12 +194,7 @@ export def install_core_component [] {
     info "Installing core component"
 
     # Create necessary directories
-    let dirs = [
-        "~/.config/nix-mox"
-        "~/.local/bin"
-        "~/.local/share/nix-mox"
-    ]
-
+    let dirs = ["~/.config/nix-mox", "~/.local/bin", "~/.local/share/nix-mox"]
     for dir in $dirs {
         if not ($dir | path exists) {
             mkdir $dir
@@ -255,40 +206,40 @@ export def install_core_component [] {
     try {
         info "Copying core files..."
         # In a real implementation, this would copy actual files
-        { success: true, error: null }
+        {success: true, error: null}
     } catch { |err|
-        { success: false, error: $err }
+        {success: false, error: $err}
     }
 }
 
 # Install tools component
 export def install_tools_component [] {
     info "Installing tools component"
-    { success: true, error: null }
+    {success: true, error: null}
 }
 
 # Install development component
 export def install_development_component [] {
     info "Installing development component"
-    { success: true, error: null }
+    {success: true, error: null}
 }
 
 # Install gaming component
 export def install_gaming_component [] {
     info "Installing gaming component"
-    { success: true, error: null }
+    {success: true, error: null}
 }
 
 # Install monitoring component
 export def install_monitoring_component [] {
     info "Installing monitoring component"
-    { success: true, error: null }
+    {success: true, error: null}
 }
 
 # Install security component
 export def install_security_component [] {
     info "Installing security component"
-    { success: true, error: null }
+    {success: true, error: null}
 }
 
 # Create configuration files
@@ -298,24 +249,24 @@ export def create_configuration_files [] {
     # Create default configuration
     let default_config = {
         logging: {
-            level: "INFO"
-            file: "~/.config/nix-mox/logs/nix-mox.log"
+            level: "INFO",
+            file: "~/.config/nix-mox/logs/nix-mox.log",
             format: "text"
-        }
+        },
         platform: {
-            auto_detect: true
+            auto_detect: true,
             preferred: "auto"
-        }
+        },
         scripts: {
-            timeout: 300
+            timeout: 300,
             retry_attempts: 3
-        }
+        },
         security: {
-            validate_scripts: true
+            validate_scripts: true,
             check_permissions: true
-        }
+        },
         performance: {
-            enable_monitoring: true
+            enable_monitoring: true,
             log_performance: true
         }
     }
@@ -324,14 +275,14 @@ export def create_configuration_files [] {
         $default_config | to json | save "~/.config/nix-mox/config.json"
         info "Configuration file created"
     } catch { |err|
-        warn "Failed to create configuration file" { error: $err }
+        error "Failed to create configuration file" {error: $err}
     }
 }
 
 # Show post-installation instructions
 export def show_post_install_instructions [install_result: record] {
     print $"\n(ansi green_bold)Installation Complete!(ansi reset)"
-    print $"\n(ansi cyan)Installed components:(ansi reset)"
+    print $"\n(ansi cyan)Installed components: (ansi reset)"
     for component in $install_result.components {
         print $"  ✓ ($component)"
     }
@@ -352,9 +303,9 @@ export def show_post_install_instructions [install_result: record] {
 export def detect_platform [] {
     let os = (sys host | get name)
     match $os {
-        "Linux" => "linux"
-        "Windows" => "windows"
-        "Darwin" => "darwin"
+        "Linux" => "linux",
+        "Windows" => "windows",
+        "Darwin" => "darwin",
         _ => "unknown"
     }
 }
@@ -389,7 +340,7 @@ export def show_help [] {
 }
 
 # Main execution
-if ($env.NIXMOX_ARGS? | is-not-empty) {
+if ($env | get --ignore-errors NIXMOX_ARGS | default "" | str length) > 0 {
     let args = ($env.NIXMOX_ARGS | split row " ")
     main $args
 } else {

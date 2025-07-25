@@ -8,7 +8,7 @@ let RED = (char -u "001b[0;31m")
 let GREEN = (char -u "001b[0;32m")
 let YELLOW = (char -u "001b[1;33m")
 let BLUE = (char -u "001b[0;34m")
-let NC = (char -u "001b[0m") # No Color
+let NC = (char -u "001b[0m")  # No Color
 
 # Function to print colored output
 def print_status [message: string] {
@@ -47,9 +47,7 @@ def check_ssh_key [] {
     if not ($ssh_key_path | path exists) {
         print_warning "SSH public key not found at $ssh_key_path"
         print_status "Generating SSH key pair..."
-        do {
-            ssh-keygen -t rsa -b 4096 -f ($env.HOME + "/.ssh/id_rsa") -N ""
-        } | complete | ignore
+        do { ssh-keygen -t rsa -b 4096 -f ($env.HOME + "/.ssh/id_rsa") -N "" } | complete | ignore
         print_success "SSH key pair generated"
     }
 }
@@ -134,10 +132,7 @@ echo \"Remote setup complete!\""
 
     # Copy and execute remote setup script
     print_status "Copying setup script to remote machine..."
-    let scp_result = (do {
-        scp -P $ssh_port /tmp/remote_nix_setup.sh $"($remote_user)@($remote_host):/tmp/"
-    } | complete)
-
+    let scp_result = (do { scp -P $ssh_port /tmp/remote_nix_setup.sh $"($remote_user)@($remote_host):/tmp/" } | complete)
     if $scp_result.exit_code != 0 {
         print_error "Failed to copy setup script to remote machine"
         exit 1
@@ -145,10 +140,7 @@ echo \"Remote setup complete!\""
 
     print_status "Executing setup script on remote machine..."
     let ssh_key_content = (open $ssh_key_path)
-    let ssh_result = (do {
-        ssh -p $ssh_port $"($remote_user)@($remote_host)" $"chmod +x /tmp/remote_nix_setup.sh && /tmp/remote_nix_setup.sh '($remote_user)' '($ssh_key_content)'"
-    } | complete)
-
+    let ssh_result = (do { ssh -p $ssh_port $"($remote_user)@($remote_host)" $"chmod +x /tmp/remote_nix_setup.sh && /tmp/remote_nix_setup.sh '($remote_user)' '($ssh_key_content)'" } | complete)
     if $ssh_result.exit_code != 0 {
         print_error "Failed to execute setup script on remote machine"
         exit 1
@@ -156,10 +148,7 @@ echo \"Remote setup complete!\""
 
     # Cleanup
     rm /tmp/remote_nix_setup.sh
-    do {
-        ssh -p $ssh_port $"($remote_user)@($remote_host)" "rm /tmp/remote_nix_setup.sh"
-    } | complete | ignore
-
+    do { ssh -p $ssh_port $"($remote_user)@($remote_host)" "rm /tmp/remote_nix_setup.sh" } | complete | ignore
     print_success "Remote machine setup complete"
 }
 
@@ -186,7 +175,6 @@ def setup_local_machine [remote_host: string, remote_user: string, ssh_port: str
 
     # Add builder configuration
     $builder_config | save --append $nix_conf
-
     print_success "Local machine setup complete"
 }
 
@@ -196,16 +184,12 @@ def test_remote_builder [] {
 
     # Test with a simple derivation
     let test_expr = 'derivation { name = "test"; system = "x86_64-linux"; builder = "/bin/sh"; args = ["-c" "echo hello > $out"]; }'
-    let test_drv = (do {
-        nix-instantiate --expr $test_expr
-    } | complete)
+    let test_drv = (do { nix-instantiate --expr $test_expr } | complete)
 
     if $test_drv.exit_code == 0 {
         let drv_path = ($test_drv.stdout | str trim)
         print_status "Testing build on remote machine..."
-        let dry_run = (do {
-            nix-store --realise $drv_path --dry-run
-        } | complete)
+        let dry_run = (do { nix-store --realise $drv_path --dry-run } | complete)
 
         if ($dry_run.stderr | str contains "will be built") {
             print_success "Remote builder is working correctly"
@@ -213,7 +197,7 @@ def test_remote_builder [] {
             print_warning "Remote builder may not be working as expected"
         }
     } else {
-        print_warning "Could not create test derivation"
+        print_error "Could not create test derivation"
     }
 }
 
@@ -233,10 +217,10 @@ def main [args: list] {
     }
 
     print_status "Starting remote Nix builder setup..."
-    print_status $"Remote host: $remote_host"
-    print_status $"Remote user: $remote_user"
-    print_status $"SSH port: $ssh_port"
-    print_status $"Systems: $systems"
+    print $"Remote host: $remote_host"
+    print $"Remote user: $remote_user"
+    print $"SSH port: $ssh_port"
+    print $"Systems: $systems"
 
     # Check prerequisites
     check_macos
@@ -244,16 +228,13 @@ def main [args: list] {
 
     # Test SSH connection
     print_status $"Testing SSH connection to $remote_host..."
-    let ssh_test = (do {
-        ssh -p $ssh_port -o ConnectTimeout=10 -o BatchMode=yes $"($remote_user)@($remote_host)" exit
-    } | complete)
-
+    let ssh_test = (do { ssh -p $ssh_port -o ConnectTimeout=10 -o BatchMode=yes $"($remote_user)@($remote_host)" exit } | complete)
     if $ssh_test.exit_code != 0 {
         print_error $"Cannot connect to $remote_host as $remote_user"
-        print_status "Please ensure:"
-        print_status "1. The remote host is accessible"
-        print_status "2. SSH key authentication is set up"
-        print_status "3. The remote user exists and has SSH access"
+        print_error "Please ensure:"
+        print_error "1. The remote host is accessible"
+        print_error "2. SSH key authentication is set up"
+        print_error "3. The remote user exists and has SSH access"
         exit 1
     }
     print_success "SSH connection successful"
@@ -269,9 +250,15 @@ def main [args: list] {
 
     print_success "Remote Nix builder setup complete!"
     print_status "You can now build Linux packages from macOS using:"
-    print_status "nix build .#packages.x86_64-linux.default"
-    print_status "nix build .#packages.aarch64-linux.default"
+    print "  nix build .#packages.x86_64-linux.default"
+    print "  nix build .#packages.aarch64-linux.default"
 }
 
 # Run the setup with command line arguments
-main $env.ARGS
+if ($env | get --ignore-errors ARGS | default [] | length) > 0 {
+    let args = ($env.ARGS | split row " ")
+    main $args
+} else {
+    show_usage
+    exit 1
+}

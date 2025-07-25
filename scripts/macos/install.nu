@@ -51,7 +51,6 @@ def install-nix [] {
 
     # Note: Nix will be available in new shell sessions
     # You may need to restart your terminal or run: source ~/.nix-profile/etc/profile.d/nix.sh
-
     print "✅ Nix installation complete. Restart your terminal or run: source ~/.nix-profile/etc/profile.d/nix.sh"
 }
 

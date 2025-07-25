@@ -12,7 +12,7 @@ if (not (scope commands | where name == 'error' | is-not-empty)) {
 
 # --- Command Line Arguments ---
 def get_flag_value [args: list, flag: string, default: any] {
-    let idx = ($args | enumerate | where item == $flag | get index.0? )
+    let idx = ($args | enumerate | where item == $flag | get index.0?)
     if ($idx | is-not-empty) and ($args | length) > ($idx + 1) {
         $args | get ($idx + 1)
     } else {
@@ -64,7 +64,7 @@ def show_help [] {
 # --- Error Handling ---
 def handle_error [error_msg: string, exit_code: int = 1] {
     error $error_msg
-    if ($env.LOG_FILE? | is-not-empty) {
+    if ($env.LOG_FILE | is-not-empty) {
         error "Check the log file for more details: ($env.LOG_FILE)"
     }
     exit $exit_code
@@ -72,26 +72,26 @@ def handle_error [error_msg: string, exit_code: int = 1] {
 
 def check_command [cmd: string] {
     if (which $cmd | is-empty) {
-        handle_error $"Required command not found: ($cmd)"
+        $"Required command not found: ($cmd)"
     }
 }
 
 def check_file [file: string, error_msg: string] {
     if not ($file | path exists) {
-        handle_error $"($error_msg): ($file)"
+        $"($error_msg): ($file)"
     }
 }
 
 def check_directory [dir: string, error_msg: string] {
     if not ($dir | path exists) {
-        handle_error $"($error_msg): ($dir)"
+        $"($error_msg): ($dir)"
     }
 }
 
 def check_permissions [path: string, required: string] {
     let perms = (ls -l $path | get mode)
     if not ($perms | str contains $required) {
-        handle_error $"Insufficient permissions on ($path). Required: ($required), Got: ($perms)"
+        $"Insufficient permissions on ($path). Required: ($required), Got: ($perms)"
     }
 }
 
@@ -99,13 +99,13 @@ def check_permissions [path: string, required: string] {
 def run_script [script: string, dry_run: bool] {
     # Validate script name
     if ($script | is-empty) {
-        handle_error "No script specified"
+        "No script specified"
     }
 
     # Check if script is supported
     let supported_scripts = ["install", "update", "zfs-snapshot", "setup-interactive"]
     if not ($supported_scripts | any { |s| $s == $script }) {
-        handle_error $"Unsupported script: ($script). Supported scripts: ($supported_scripts | str join ', ')"
+        $"Unsupported script: ($script). Supported scripts: ($supported_scripts | str join ', ')"
     }
 
     match $script {
@@ -114,16 +114,14 @@ def run_script [script: string, dry_run: bool] {
                 info "Would execute interactive setup script"
             } else {
                 info "Running interactive setup script..."
-
                 let setup_script = "scripts/linux/setup-interactive.nu"
                 check_file $setup_script "Setup script not found"
                 check_permissions $setup_script "x"
-
                 try {
                     nu $setup_script
                     info "Interactive setup completed successfully"
                 } catch { |err|
-                    handle_error $"Interactive setup failed: ($err)"
+                    $"Interactive setup failed: ($err)"
                 }
             }
         }
@@ -132,16 +130,13 @@ def run_script [script: string, dry_run: bool] {
                 info "Would execute install script"
             } else {
                 info "Running install script..."
-
                 # Get platform-specific install script
                 let platform = detect_platform
                 let install_script = match $platform {
-                    "linux" => "modules/scripts/linux/install.nu",
-                    "darwin" => "modules/scripts/linux/install.nu",
-                    "windows" => "modules/scripts/windows/install-steam-rust.nu",
-                    _ => {
-                        handle_error $"Unsupported platform: ($platform)"
-                    }
+                    "linux" => "modules/scripts/linux/install.nu"
+                    "darwin" => "modules/scripts/linux/install.nu"
+                    "windows" => "modules/scripts/windows/install-steam-rust.nu"
+                    _ => { $"Unsupported platform: ($platform)" }
                 }
 
                 # Check if install script exists and is executable
@@ -154,7 +149,7 @@ def run_script [script: string, dry_run: bool] {
                     nu $install_script
                     info "Installation completed successfully"
                 } catch { |err|
-                    handle_error $"Installation failed: ($err)"
+                    $"Installation failed: ($err)"
                 }
             }
         }
@@ -163,7 +158,6 @@ def run_script [script: string, dry_run: bool] {
                 info "Would execute update script"
             } else {
                 info "Running update script..."
-
                 # Get platform-specific update script
                 let platform = detect_platform
                 match $platform {
@@ -179,7 +173,7 @@ def run_script [script: string, dry_run: bool] {
                             nix-env -u '*'
                             info "Nix packages updated successfully"
                         } catch { |err|
-                            handle_error $"Failed to update Nix packages: ($err)"
+                            $"Failed to update Nix packages: ($err)"
                         }
                     }
                     "windows" => {
@@ -187,17 +181,14 @@ def run_script [script: string, dry_run: bool] {
                         let win_update_script = "modules/scripts/windows/install-steam-rust.nu"
                         check_file $win_update_script "Update script not found"
                         check_permissions $win_update_script "x"
-
                         try {
                             nu $win_update_script
                             info "Steam and Rust updated successfully"
                         } catch { |err|
-                            handle_error $"Failed to update Steam and Rust: ($err)"
+                            $"Failed to update Steam and Rust: ($err)"
                         }
                     }
-                    _ => {
-                        handle_error $"Unsupported platform: ($platform)"
-                    }
+                    _ => { $"Unsupported platform: ($platform)" }
                 }
             }
         }
@@ -250,9 +241,7 @@ def run_script [script: string, dry_run: bool] {
                 }
             }
         }
-        _ => {
-            handle_error $"Invalid script: ($script)"
-        }
+        _ => { $"Invalid script: ($script)" }
     }
 }
 
@@ -284,28 +273,36 @@ def setup_file_logging [log_file: string] {
             # Override logging functions to write to file
             def info [message: string] {
                 let timestamp = (date now | format date '%Y-%m-%d %H:%M:%S')
-                log_to_file $"[INFO] ($timestamp) ($message)" $log_file
+                let log_message = $"[INFO] ($timestamp) ($message)"
+                print $log_message
+                log_to_file $log_message $log_file
             }
 
             def error [message: string] {
                 let timestamp = (date now | format date '%Y-%m-%d %H:%M:%S')
-                log_to_file $"[ERROR] ($timestamp) ($message)" $log_file
+                let log_message = $"[ERROR] ($timestamp) ($message)"
+                print $log_message
+                log_to_file $log_message $log_file
             }
 
             def log_dryrun [message: string] {
                 let timestamp = (date now | format date '%Y-%m-%d %H:%M:%S')
-                log_to_file $"[DRYRUN] ($timestamp) ($message)" $log_file
+                let log_message = $"[DRYRUN] ($timestamp) ($message)"
+                print $log_message
+                log_to_file $log_message $log_file
             }
 
             def warn [message: string] {
                 let timestamp = (date now | format date '%Y-%m-%d %H:%M:%S')
-                log_to_file $"[WARN] ($timestamp) ($message)" $log_file
+                let log_message = $"[WARN] ($timestamp) ($message)"
+                print $log_message
+                log_to_file $log_message $log_file
             }
         } catch { |err|
-            handle_error $"Failed to setup logging to ($log_file): ($err)"
+            $"Failed to setup logging to ($log_file): ($err)"
         }
     } catch { |err|
-        handle_error $"Failed to create log directory ($log_dir): ($err)"
+        $"Failed to create log directory ($log_dir): ($err)"
     }
 }
 
@@ -326,7 +323,7 @@ def main [args: list] {
 
     # Only require --script if not showing help
     if ($parsed_args.script | is-empty) {
-        handle_error "No script specified. Use --script <name> to run a script."
+        "No script specified. Use --script <name> to run a script."
     }
 
     # Detect platform and print info only if running a script
@@ -347,11 +344,13 @@ def main [args: list] {
 # argument passing reliably. The wrapper sets NIXMOX_ARGS as a string of all arguments.
 
 # Read arguments from NIXMOX_ARGS environment variable
-let args = (if ($env.NIXMOX_ARGS? | default "") == "" {
-    []
-} else {
-    $env.NIXMOX_ARGS | split row " "
-})
+let args = (
+    if ($env.NIXMOX_ARGS | default "") == "" {
+        []
+    } else {
+        $env.NIXMOX_ARGS | split row " "
+    }
+)
 
 # Call main with parsed arguments
 main $args

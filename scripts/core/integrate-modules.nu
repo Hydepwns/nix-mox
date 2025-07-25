@@ -6,20 +6,19 @@
 def main [] {
     print "🔧 nix-mox Module Integration"
     print "============================="
-
     print "\n📋 Available Modules:"
     print "====================="
 
     # List available modules
     let modules = [
-        { name: "services/infisical", description: "Infisical secrets management" }
-        { name: "services/tailscale", description: "Tailscale VPN" }
-        { name: "gaming", description: "Gaming support and tools" }
-        { name: "monitoring", description: "System monitoring" }
-        { name: "storage", description: "Storage management" }
-        { name: "packages/development", description: "Development packages" }
-        { name: "packages/gaming", description: "Gaming packages" }
-        { name: "security", description: "Security features" }
+        {name: "services/infisical", description: "Infisical secrets management"},
+        {name: "services/tailscale", description: "Tailscale VPN"},
+        {name: "gaming", description: "Gaming support and tools"},
+        {name: "monitoring", description: "System monitoring"},
+        {name: "storage", description: "Storage management"},
+        {name: "packages/development", description: "Development packages"},
+        {name: "packages/gaming", description: "Gaming packages"},
+        {name: "security", description: "Security features"}
     ]
 
     for item in ($modules | enumerate) {
@@ -33,13 +32,18 @@ def main [] {
     print "4. Exit"
 
     let choice = (input "Enter your choice (1-4): ")
-
     match $choice {
         "1" => { add-modules-to-templates }
         "2" => { create-template-with-modules }
         "3" => { list-module-details }
-        "4" => { print "Goodbye!"; exit 0 }
-        _ => { print "Invalid choice. Exiting."; exit 1 }
+        "4" => {
+            print "Goodbye!"
+            exit 0
+        }
+        _ => {
+            print "Invalid choice. Exiting."
+            exit 1
+        }
     }
 }
 
@@ -56,21 +60,11 @@ def add-modules-to-templates [] {
     }
 
     let template_choice = (input "Select template (number): ")
-    let template_name = ($templates | get ($template_choice | into int) - 1)
-
+    let template_name = ($templates | get (($template_choice | into int) - 1))
     print $"\nSelected template: {$template_name}"
 
     # List available modules
-    let modules = [
-        "services/infisical"
-        "services/tailscale"
-        "gaming"
-        "monitoring"
-        "storage"
-        "packages/development"
-        "packages/gaming"
-        "security"
-    ]
+    let modules = ["services/infisical", "services/tailscale", "gaming", "monitoring", "storage", "packages/development", "packages/gaming", "security"]
 
     print "\nAvailable modules:"
     for item in ($modules | enumerate) {
@@ -78,8 +72,7 @@ def add-modules-to-templates [] {
     }
 
     let module_choice = (input "Select module to add (number): ")
-    let module_name = ($modules | get ($module_choice | into int) - 1)
-
+    let module_name = ($modules | get (($module_choice | into int) - 1))
     print $"\nAdding module {$module_name} to template {$template_name}..."
 
     # Read current template
@@ -95,7 +88,6 @@ def add-modules-to-templates [] {
 
     # Save updated template
     $updated_content | save $template_path
-
     print $"✅ Added module {$module_name} to template {$template_name}"
 }
 
@@ -107,16 +99,7 @@ def create-template-with-modules [] {
     let template_description = (input "Enter template description: ")
 
     # List available modules
-    let modules = [
-        "services/infisical"
-        "services/tailscale"
-        "gaming"
-        "monitoring"
-        "storage"
-        "packages/development"
-        "packages/gaming"
-        "security"
-    ]
+    let modules = ["services/infisical", "services/tailscale", "gaming", "monitoring", "storage", "packages/development", "packages/gaming", "security"]
 
     print "\nSelect modules to include (comma-separated numbers):"
     for item in ($modules | enumerate) {
@@ -124,28 +107,26 @@ def create-template-with-modules [] {
     }
 
     let module_choices = (input "Enter module numbers: ")
-    let selected_modules = ($module_choices | split row "," | each { |i| $modules | get ($i | into int) - 1 })
+    let selected_modules = ($module_choices | split row "," | each { |i| $modules | get (($i | into int) - 1) })
 
     # Create template content
     let imports = ($selected_modules | each { |m| $"  ../../modules/{$m}/index.nix" } | str join "\n")
-
     let header = $"# {$template_description}"
     let modules_line = $"# Template with modules: ($selected_modules | str join ', ')"
     let nix_header = "{ config, pkgs, ... }:"
-    let nix_start = "{{"
+    let nix_start = "{"
     let imports_start = "  imports = ["
     let base_imports = "    ../profiles/base.nix\n    ../profiles/security.nix"
     let imports_end = "  ];"
     let packages_section = "  # Template-specific configuration\n  environment.systemPackages = with pkgs; [\n    # Add your packages here\n  ];"
-    let services_section = "  # Template-specific services\n  services = {{\n    # Add your services here\n  }};"
-    let nix_end = "}}"
+    let services_section = "  # Template-specific services\n  services = {\n    # Add your services here\n  };"
+    let nix_end = "}"
 
     let template_content = $"($header)\n($modules_line)\n($nix_header)\n($nix_start)\n($imports_start)\n($base_imports)\n($imports)\n($imports_end)\n\n($packages_section)\n\n($services_section)\n($nix_end)"
 
     # Save template
     $template_content | save $"config/templates/{$template_name}.nix"
-
-    print $"✅ Created template {$template_name} with modules: {$selected_modules | str join ", "}"
+    print $"✅ Created template {$template_name} with modules: ($selected_modules | str join ', ')"
 }
 
 def list-module-details [] {
@@ -153,14 +134,14 @@ def list-module-details [] {
     print "================="
 
     let modules = [
-        { name: "services/infisical", file: "modules/services/infisical.nix" }
-        { name: "services/tailscale", file: "modules/services/tailscale.nix" }
-        { name: "gaming", file: "modules/gaming/index.nix" }
-        { name: "monitoring", file: "modules/monitoring/index.nix" }
-        { name: "storage", file: "modules/storage/index.nix" }
-        { name: "packages/development", file: "modules/packages/development/index.nix" }
-        { name: "packages/gaming", file: "modules/packages/gaming/index.nix" }
-        { name: "security", file: "modules/security/index.nix" }
+        {name: "services/infisical", file: "modules/services/infisical.nix"},
+        {name: "services/tailscale", file: "modules/services/tailscale.nix"},
+        {name: "gaming", file: "modules/gaming/index.nix"},
+        {name: "monitoring", file: "modules/monitoring/index.nix"},
+        {name: "storage", file: "modules/storage/index.nix"},
+        {name: "packages/development", file: "modules/packages/development/index.nix"},
+        {name: "packages/gaming", file: "modules/packages/gaming/index.nix"},
+        {name: "security", file: "modules/security/index.nix"}
     ]
 
     for module in $modules {

@@ -22,22 +22,22 @@ log() {
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
-  -v | --verbose)
-    VERBOSE=true
-    shift
-    ;;
-  -f | --force)
-    FORCE=true
-    shift
-    ;;
-  -l | --log-file)
-    LOG_FILE="$2"
-    shift 2
-    ;;
-  *)
-    log "error" "Unknown option: $1"
-    exit 1
-    ;;
+    -v | --verbose)
+      VERBOSE=true
+      shift
+      ;;
+    -f | --force)
+      FORCE=true
+      shift
+      ;;
+    -l | --log-file)
+      LOG_FILE="$2"
+      shift 2
+      ;;
+    *)
+      log "error" "Unknown option: $1"
+      exit 1
+      ;;
   esac
 done
 

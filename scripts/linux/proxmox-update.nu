@@ -5,7 +5,6 @@
 # - Updates Proxmox VE packages
 # - Maintains an update log
 # - Is idempotent and safe to re-run
-
 use ../lib/common.nu
 
 # --- Common Functions ---
@@ -82,7 +81,9 @@ def main [args: list] {
                 $env.APT_OPTIONS = "--dry-run"
                 $env.PVE_OPTIONS = "--dry-run"
             }
-            "--help" | "-h" => { usage }
+            "--help" | "-h" => {
+                usage
+            }
             _ => {
                 log_error $"Unknown option: ($arg)"
                 usage
@@ -135,4 +136,4 @@ def main [args: list] {
 }
 
 # --- Execution ---
-main $in
+main $env._args

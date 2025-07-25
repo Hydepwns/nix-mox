@@ -31,7 +31,7 @@ log_error() {
 
 # Check if Nix is installed
 check_nix() {
-  if ! command -v nix &>/dev/null; then
+  if ! command -v nix &> /dev/null; then
     log_error "Nix is not installed. Please install Nix first."
     exit 1
   fi
@@ -60,30 +60,30 @@ build_packages() {
 
   # Map to Nix system format
   case "$current_system" in
-  "Darwin")
-    case "$current_arch" in
-    "arm64") nix_system="aarch64-darwin" ;;
-    "x86_64") nix_system="x86_64-darwin" ;;
+    "Darwin")
+      case "$current_arch" in
+        "arm64") nix_system="aarch64-darwin" ;;
+        "x86_64") nix_system="x86_64-darwin" ;;
+        *)
+          log_error "Unsupported macOS architecture: $current_arch"
+          return 1
+          ;;
+      esac
+      ;;
+    "Linux")
+      case "$current_arch" in
+        "x86_64") nix_system="x86_64-linux" ;;
+        "aarch64") nix_system="aarch64-linux" ;;
+        *)
+          log_error "Unsupported Linux architecture: $current_arch"
+          return 1
+          ;;
+      esac
+      ;;
     *)
-      log_error "Unsupported macOS architecture: $current_arch"
+      log_error "Unsupported operating system: $current_system"
       return 1
       ;;
-    esac
-    ;;
-  "Linux")
-    case "$current_arch" in
-    "x86_64") nix_system="x86_64-linux" ;;
-    "aarch64") nix_system="aarch64-linux" ;;
-    *)
-      log_error "Unsupported Linux architecture: $current_arch"
-      return 1
-      ;;
-    esac
-    ;;
-  *)
-    log_error "Unsupported operating system: $current_system"
-    return 1
-    ;;
   esac
 
   log_info "Detected system: $nix_system"
@@ -171,7 +171,7 @@ release_dry_run() {
   log_info "Running release job (dry run)..."
 
   # Check if we're on a tag (simulate release condition)
-  if git describe --tags --exact-match 2>/dev/null; then
+  if git describe --tags --exact-match 2> /dev/null; then
     log_info "Running on tag: $(git describe --tags --exact-match)"
 
     # Check if build artifacts exist
@@ -211,7 +211,7 @@ run_checks() {
 
   # Check formatter
   log_info "Checking formatter..."
-  if nix run .#formatter -- --help >/dev/null 2>&1; then
+  if nix run .#formatter -- --help > /dev/null 2>&1; then
     log_success "Formatter is available"
   else
     log_error "Formatter check failed"
@@ -277,37 +277,37 @@ main() {
 
 # Handle script arguments
 case "${1:-}" in
-"build")
-  check_nix
-  check_flake
-  build_packages
-  ;;
-"test")
-  check_nix
-  check_flake
-  run_tests
-  ;;
-"checks")
-  check_nix
-  check_flake
-  run_checks
-  ;;
-"clean")
-  cleanup
-  ;;
-"help" | "-h" | "--help")
-  echo "Usage: $0 [build|test|checks|clean|help]"
-  echo ""
-  echo "Commands:"
-  echo "  build   - Run only the build_packages job"
-  echo "  test    - Run only the test job"
-  echo "  checks  - Run only the checks"
-  echo "  clean   - Clean up artifacts"
-  echo "  help    - Show this help message"
-  echo ""
-  echo "If no command is provided, runs all CI jobs"
-  ;;
-*)
-  main
-  ;;
+  "build")
+    check_nix
+    check_flake
+    build_packages
+    ;;
+  "test")
+    check_nix
+    check_flake
+    run_tests
+    ;;
+  "checks")
+    check_nix
+    check_flake
+    run_checks
+    ;;
+  "clean")
+    cleanup
+    ;;
+  "help" | "-h" | "--help")
+    echo "Usage: $0 [build|test|checks|clean|help]"
+    echo ""
+    echo "Commands:"
+    echo "  build   - Run only the build_packages job"
+    echo "  test    - Run only the test job"
+    echo "  checks  - Run only the checks"
+    echo "  clean   - Clean up artifacts"
+    echo "  help    - Show this help message"
+    echo ""
+    echo "If no command is provided, runs all CI jobs"
+    ;;
+  *)
+    main
+    ;;
 esac

@@ -38,18 +38,17 @@ def check_macos [] {
 
 # Function to check Nix configuration
 def check_nix_config [] {
-    let nix_conf = $env.HOME + "/.config/nix/nix.conf"
-
+    let nix_conf = ($env.HOME + "/.config/nix/nix.conf")
     if not ($nix_conf | path exists) {
         print_error $"Nix configuration file not found at $nix_conf"
-        print_status "Run the setup script first: ./scripts/setup-remote-builder.sh REMOTE_HOST"
+        print_error "Run the setup script first: ./scripts/setup-remote-builder.sh REMOTE_HOST"
         exit 1
     }
 
-    let config_content = open $nix_conf
+    let config_content = (open $nix_conf)
     if not ($config_content | str contains "builders = ssh-ng://") {
         print_error $"No remote builder configuration found in $nix_conf"
-        print_status "Run the setup script first: ./scripts/setup-remote-builder.sh REMOTE_HOST"
+        print_error "Run the setup script first: ./scripts/setup-remote-builder.sh REMOTE_HOST"
         exit 1
     }
 
@@ -61,8 +60,8 @@ def test_ssh_connection [] {
     print_status "Testing SSH connection to remote builder..."
 
     # Extract remote host from nix.conf
-    let nix_conf = $env.HOME + "/.config/nix/nix.conf"
-    let config_content = open $nix_conf
+    let nix_conf = ($env.HOME + "/.config/nix/nix.conf")
+    let config_content = (open $nix_conf)
     let builder_line = ($config_content | lines | where ($it | str contains "builders = ssh-ng://") | get 0)
 
     if ($builder_line | is-empty) {
@@ -93,10 +92,10 @@ def test_ssh_connection [] {
         print_success "SSH connection successful"
     } else {
         print_error "SSH connection failed"
-        print_status "Please check:"
-        print_status "1. Remote host is accessible"
-        print_status "2. SSH key authentication is working"
-        print_status "3. Remote user has proper permissions"
+        print_error "Please check:"
+        print_error "1. Remote host is accessible"
+        print_error "2. SSH key authentication is working"
+        print_error "3. Remote user has proper permissions"
         exit 1
     }
 }
@@ -112,24 +111,20 @@ def test_simple_derivation [] {
         args = ["-c" "echo \"Remote builder test successful\" > $out"];
     }'
 
-    let test_drv = (do {
-        nix-instantiate --expr $test_expr
-    } | complete)
+    let test_drv = (do { nix-instantiate --expr $test_expr } | complete)
 
     if $test_drv.exit_code == 0 {
         let drv_path = ($test_drv.stdout | str trim)
         print_status "Testing build on remote machine..."
 
-        let dry_run = (do {
-            nix-store --realise $drv_path --dry-run
-        } | complete)
+        let dry_run = (do { nix-store --realise $drv_path --dry-run } | complete)
 
         if ($dry_run.stderr | str contains "will be built") {
             print_success "Remote builder is working correctly"
-            print_status "Build will be performed on remote machine"
+            print_success "Build will be performed on remote machine"
         } else {
             print_warning "Remote builder may not be working as expected"
-            print_status "Build might be performed locally"
+            print_warning "Build might be performed locally"
         }
     } else {
         print_error "Could not create test derivation"
@@ -148,9 +143,7 @@ def test_actual_build [] {
         args = [\"-c\" \"echo \\\"Build completed at $(date)\\\" > \$out\"];
     }}"
 
-    let test_drv = (do {
-        nix-instantiate --expr $test_expr
-    } | complete)
+    let test_drv = (do { nix-instantiate --expr $test_expr } | complete)
 
     if $test_drv.exit_code != 0 {
         print_error "Could not create test derivation"
@@ -160,9 +153,7 @@ def test_actual_build [] {
     let drv_path = ($test_drv.stdout | str trim)
     print_status "Building test derivation..."
 
-    let build_result = (do {
-        nix-store --realise $drv_path
-    } | complete)
+    let build_result = (do { nix-store --realise $drv_path } | complete)
 
     if $build_result.exit_code == 0 {
         let result_path = ($build_result.stdout | str trim)
@@ -173,9 +164,7 @@ def test_actual_build [] {
         print_status $"Content: $content"
 
         # Cleanup
-        do {
-            nix-store --delete $result_path
-        } | complete | ignore
+        do { nix-store --delete $result_path } | complete | ignore
         print_status "Cleaned up test build"
     } else {
         print_error "Build failed"
@@ -188,29 +177,29 @@ def show_builder_status [] {
     print_status "Current builder configuration:"
     print ""
 
-    let nix_conf = $env.HOME + "/.config/nix/nix.conf"
-    let config_content = open $nix_conf
+    let nix_conf = ($env.HOME + "/.config/nix/nix.conf")
+    let config_content = (open $nix_conf)
     let builder_lines = ($config_content | lines | where ($it | str contains "builders"))
 
     if ($builder_lines | length) > 0 {
         print ($builder_lines | str join "\n")
     }
-    print ""
 
+    print ""
     print_status "Available builders:"
-    let nix_config = (do {
-        nix show-config
-    } | complete)
+
+    let nix_config = (do { nix show-config } | complete)
 
     if $nix_config.exit_code == 0 {
         let builder_config = ($nix_config.stdout | lines | where ($it | str contains "builders"))
+
         if ($builder_config | length) > 0 {
             print ($builder_config | str join "\n")
         } else {
             print_warning "No builder configuration found"
         }
     } else {
-        print_warning "Could not retrieve Nix configuration"
+        print_error "Could not retrieve Nix configuration"
     }
 }
 
@@ -223,15 +212,12 @@ def test_project_builds [] {
         print_status "Found flake.nix, testing project builds..."
 
         # Test x86_64-linux build
-        let x86_64_test = (do {
-            nix eval .#packages.x86_64-linux.default
-        } | complete)
+        let x86_64_test = (do { nix eval .#packages.x86_64-linux.default } | complete)
 
         if $x86_64_test.exit_code == 0 {
             print_status "Testing x86_64-linux build..."
-            let x86_64_dry_run = (do {
-                nix build .#packages.x86_64-linux.default --dry-run
-            } | complete)
+
+            let x86_64_dry_run = (do { nix build .#packages.x86_64-linux.default --dry-run } | complete)
 
             if ($x86_64_dry_run.stderr | str contains "will be built") {
                 print_success "x86_64-linux build will use remote builder"
@@ -243,15 +229,12 @@ def test_project_builds [] {
         }
 
         # Test aarch64-linux build
-        let aarch64_test = (do {
-            nix eval .#packages.aarch64-linux.default
-        } | complete)
+        let aarch64_test = (do { nix eval .#packages.aarch64-linux.default } | complete)
 
         if $aarch64_test.exit_code == 0 {
             print_status "Testing aarch64-linux build..."
-            let aarch64_dry_run = (do {
-                nix build .#packages.aarch64-linux.default --dry-run
-            } | complete)
+
+            let aarch64_dry_run = (do { nix build .#packages.aarch64-linux.default --dry-run } | complete)
 
             if ($aarch64_dry_run.stderr | str contains "will be built") {
                 print_success "aarch64-linux build will use remote builder"
@@ -269,28 +252,37 @@ def test_project_builds [] {
 # Main function
 def main [] {
     print_status "Testing remote Nix builder setup..."
+    print ""
 
+    # Check if we're on macOS
     check_macos
+
+    # Check Nix configuration
     check_nix_config
+
+    # Test SSH connection
     test_ssh_connection
+
+    # Show builder status
+    show_builder_status
+
+    # Test simple derivation
     test_simple_derivation
+
+    # Test project builds
+    test_project_builds
 
     print ""
     print_status "Do you want to run an actual build test? (y/N)"
-    let response = (input)
+    let response = (input | str trim)
+
     if ($response | str downcase | str contains "y") {
         test_actual_build
     }
 
     print ""
-    show_builder_status
-
-    print ""
-    test_project_builds
-
-    print ""
     print_success "Remote builder test complete!"
-    print_status "If all tests passed, you can now build Linux packages from macOS"
+    print_success "If all tests passed, you can now build Linux packages from macOS"
 }
 
 # Run main function

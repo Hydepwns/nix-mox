@@ -5,8 +5,7 @@
 # - Installs all .nu scripts to /usr/local/bin
 # - Creates an install manifest at /etc/nix-mox/install_manifest.txt
 # - Is idempotent and safe to re-run
-
-use ../lib/common.nu *
+use ../lib/common.nu
 
 # --- Global Variables ---
 const INSTALL_DIR = "/usr/local/bin"
@@ -28,7 +27,9 @@ def main [] {
     let args = $env._args
     for arg in $args {
         match $arg {
-            "--dry-run" => { update-state "dry_run" true }
+            "--dry-run" => {
+                $env.STATE = ($env.STATE | upsert dry_run true)
+            }
             "--windows-dir" => {
                 let idx = ($args | find $arg | get 0)
                 let new_dir = ($args | get ($idx + 1))
@@ -36,9 +37,11 @@ def main [] {
                     log_error "Windows path must be absolute."
                     exit 1
                 }
-                update-state "windows_dir" $new_dir
+                $env.STATE = ($env.STATE | upsert windows_dir $new_dir)
             }
-            "--help" | "-h" => { usage }
+            "--help" | "-h" => {
+                usage
+            }
             _ => {
                 log_error $"Unknown option: ($arg)"
                 usage
@@ -53,9 +56,9 @@ def main [] {
     } else {
         # Prepare manifest directory and file
         mkdir $MANIFEST_DIR
-        update-state "created_files" ($env.STATE.created_files | append $MANIFEST_DIR)
+        $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $MANIFEST_DIR))
         touch $MANIFEST_FILE
-        update-state "created_files" ($env.STATE.created_files | append $MANIFEST_FILE)
+        $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $MANIFEST_FILE))
     }
 
     # 1. Install Linux scripts
@@ -64,16 +67,15 @@ def main [] {
         if ($script.name == "_common.nu" or $script.name == "install.nu" or $script.name == "uninstall.nu") {
             continue
         }
-
         let dest_path = $INSTALL_DIR + "/" + ($script.name | str replace ".nu" "")
+
         if $env.STATE.dry_run {
             log_dryrun $"Would install '($script.name)' to '($dest_path)'"
         } else {
             log_info $"Installing '($script.name)' to '($dest_path)'..."
             cp $script.name $dest_path
             chmod 755 $dest_path
-            update-state "created_files" ($env.STATE.created_files | append $dest_path)
-            add_to_manifest $dest_path $env.STATE.dry_run
+            $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $dest_path))
         }
     }
 
@@ -86,15 +88,13 @@ def main [] {
             log_dryrun $"Would create directory '($env.STATE.windows_dir)' and copy files into it."
         } else {
             mkdir $env.STATE.windows_dir
-            update-state "created_files" ($env.STATE.created_files | append $env.STATE.windows_dir)
-            add_to_manifest $env.STATE.windows_dir $env.STATE.dry_run
+            $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $env.STATE.windows_dir))
 
             for f in (ls ($win_scripts_src + "/*")) {
                 let dest_file = $env.STATE.windows_dir + "/" + ($f.name | path basename)
                 log_info $"Copying '($f.name)' to '($dest_file)'..."
                 cp $f.name $dest_file
-                update-state "created_files" ($env.STATE.created_files | append $dest_file)
-                add_to_manifest $dest_file $env.STATE.dry_run
+                $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $dest_file))
             }
         }
     }
@@ -117,6 +117,7 @@ def cleanup [created_files: list] {
     }
 
     log_warn "An error occurred. Rolling back changes made during this installation run..."
+
     # Iterate in reverse to remove files before directories
     for item in ($created_files | reverse) {
         if ($item | path exists) {
@@ -134,12 +135,16 @@ def cleanup [created_files: list] {
             }
         }
     }
+
     log_warn "Rollback complete."
 }
 
 def add_to_manifest [file_path: string, dry_run: bool] {
     # Adds a file or directory path to the manifest for the uninstaller.
-    if $dry_run { return }
+    if $dry_run {
+        return
+    }
+
     # Ensure file exists before adding
     if not ((open $MANIFEST_FILE | lines | where $it == $file_path | length | into int) > 0) {
         $file_path | save --append $MANIFEST_FILE
