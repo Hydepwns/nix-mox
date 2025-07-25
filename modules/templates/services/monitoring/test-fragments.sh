@@ -30,7 +30,7 @@ run_test() {
 
   print_status "Running test: $test_name"
 
-  if eval "$test_command" 2>/dev/null; then
+  if eval "$test_command" 2> /dev/null; then
     print_success "✓ $test_name passed"
     ((TESTS_PASSED++))
   else
