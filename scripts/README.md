@@ -168,22 +168,26 @@ Run the script with:
 - `size-dashboard.nu`   — Size analysis dashboard
 - `advanced-cache.nu`   — Advanced caching utilities
 - `generate-coverage.nu` — Code coverage generation
+- `generate-sbom.nu`    — Software Bill of Materials generation
 - `analyze-sizes.sh`    — Shell-based size analysis (`--help` available)
 
-### **Archived Scripts (`archive/`)**
+### **Quality Scripts (`quality/`)**
 
-The following scripts have been archived due to infrequent use or consolidation:
+- `code-quality.nu`     — Code quality analysis and linting
+- `performance-optimize.nu` — Performance optimization and analysis
+
+### **Validation Scripts (`validation/`)**
+
+- `validate-gaming-config.nu` — Gaming configuration validation
+- `validate-display-config.nu` — Display configuration validation
+
+### **Benchmark Scripts (`benchmarks/`)**
 
 - `gaming-benchmark.nu` — Gaming performance benchmarking
-- `validate-gaming-config.nu` — Gaming configuration validation
-- `code-quality.nu`     — Code quality analysis and linting
-- `pre-commit.nu`       — Pre-commit hooks and checks
-- `validate-display-config.nu` — Display configuration validation
-- `performance-optimize.nu` — Performance optimization and analysis
-- `generate-sbom.nu`    — Software Bill of Materials generation
-- `advanced-cache.nu`   — Advanced caching utilities (archived version)
 
-> **Note**: Archived scripts are still functional but may not be actively maintained. Use the main tools for current functionality.
+### **CI Scripts (`ci/`)**
+
+- `pre-commit.nu`       — Pre-commit hooks and checks
 
 ### **Platform Scripts**
 
