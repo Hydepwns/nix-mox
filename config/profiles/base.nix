@@ -12,6 +12,7 @@
     curl
     git
     htop
+    btop  # Modern resource monitor
     tree
     ripgrep
     fd

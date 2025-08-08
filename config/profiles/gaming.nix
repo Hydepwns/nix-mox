@@ -32,7 +32,7 @@
 
     # Voice chat
     discord
-    teamspeak
+    teamspeak_client  # TeamSpeak voice chat client
     mumble
 
     # Game launchers

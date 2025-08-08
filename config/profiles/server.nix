@@ -6,6 +6,7 @@
   environment.systemPackages = with pkgs; [
     # Server management
     htop
+    btop
     iotop
     nethogs
     iftop
@@ -169,6 +170,7 @@
     
     # Monitoring
     alias cpu="htop"
+    alias monitor="btop"
     alias mem="free -h"
     alias disk="df -h"
     alias load="uptime"

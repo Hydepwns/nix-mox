@@ -79,6 +79,7 @@ in
     eza
     fzf
     htop
+    btop  # Better resource monitor
     tree
     curl
     wget
@@ -260,6 +261,7 @@ in
       bat
       eza
       htop
+    btop  # Better resource monitor
       tree
 
       # Version control

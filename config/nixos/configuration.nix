@@ -22,6 +22,7 @@
 
     # Performance monitoring
     htop
+    btop
     nvtop
     radeontop
 

@@ -176,6 +176,7 @@ in
 
       # System monitoring
       htop
+      btop
       glmark2
 
       # Additional gaming tools
