@@ -1,6 +1,6 @@
 # Gaming Profile
 # Gaming support and performance optimizations shared across gaming templates
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 {
   # Gaming packages
   environment.systemPackages = with pkgs; [
@@ -21,7 +21,7 @@
 
     # Performance monitoring
     # htop
-    nvtop
+    # nvtop # GPU monitoring - may not be available on all systems
     radeontop
     mesa-demos
 
@@ -78,7 +78,7 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-    jack.enable = true;
+    jack.enable = lib.mkDefault true;
   };
 
   # Graphics configuration

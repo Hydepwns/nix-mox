@@ -68,11 +68,11 @@
       PermitRootLogin = "no";
       PubkeyAuthentication = true;
       AuthorizedKeysFile = ".ssh/authorized_keys";
-      Protocol = 2;
-      HostKeyAlgorithms = "ssh-rsa,ssh-ed25519";
-      KexAlgorithms = "curve25519-sha256,curve25519-sha256@libssh.org";
-      Ciphers = "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com";
-      MACs = "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com";
+      # Protocol = 2; # Deprecated in newer SSH versions
+      # HostKeyAlgorithms = "ssh-rsa,ssh-ed25519"; # Commented out - causes type conflicts
+      # KexAlgorithms = "curve25519-sha256,curve25519-sha256@libssh.org"; # Commented out - causes type conflicts
+      # Ciphers = "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com"; # Commented out - causes type conflicts
+      # MACs = "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com"; # Commented out - causes type conflicts
       X11Forwarding = false;
       AllowTcpForwarding = false;
       AllowAgentForwarding = false;

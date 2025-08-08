@@ -1,6 +1,6 @@
 # Gaming Template Configuration
 # Gaming-focused configuration with performance optimizations
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 {
   imports = [
     ../profiles/base.nix
@@ -72,7 +72,7 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-    jack.enable = true;
+    jack.enable = lib.mkDefault true;
   };
 
   # Performance optimizations
