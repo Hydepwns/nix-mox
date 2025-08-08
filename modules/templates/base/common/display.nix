@@ -1,8 +1,9 @@
 { config, pkgs, inputs, ... }:
 {
-  # Display configuration module - SDDM configuration moved to common.nix to avoid conflicts
+  # Display configuration module - lightweight, specific display settings only
+  # Main desktop and display manager configuration is in common.nix
   services.xserver = {
     enable = true;
-    desktopManager.gnome.enable = true;
+    # Desktop manager configured in common.nix to avoid conflicts
   };
 }

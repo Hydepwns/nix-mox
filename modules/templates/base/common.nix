@@ -36,14 +36,17 @@
   # Time zone and locale (should be set in the importing config)
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # Display configuration
+  # Display configuration - KDE Plasma with SDDM
   services.xserver = {
     enable = true;
-    desktopManager.gnome.enable = true;
+    desktopManager.plasma5.enable = true;
   };
 
-  # Display manager (updated for newer NixOS)
-  services.displayManager.sddm.enable = true;
+  # Display manager (SDDM pairs perfectly with KDE)
+  services.displayManager.sddm = {
+    enable = true;
+    wayland.enable = true; # Enable Wayland support for KDE
+  };
 
   # Sound
   security.rtkit.enable = true;
@@ -65,18 +68,33 @@
 
   # System packages (add user/system-specific packages in the importing config)
   environment.systemPackages = with pkgs; [
+    # Core utilities
     vim
     wget
     git
     htop
+    
+    # Applications
     firefox
     kitty
     alacritty
+    vscode
+    
+    # KDE applications (excellent for productivity and customization)
+    kate # Advanced text editor
+    konsole # KDE terminal
+    dolphin # File manager
+    spectacle # Screenshot tool
+    okular # PDF viewer
+    gwenview # Image viewer
+    
+    # System tools
     inputs.nix-mox.packages.${pkgs.system}.proxmox-update
     inputs.nix-mox.packages.${pkgs.system}.vzdump-backup
     inputs.nix-mox.packages.${pkgs.system}.zfs-snapshot
     inputs.nix-mox.packages.${pkgs.system}.nixos-flake-update
-    vscode
+    
+    # Development
     docker
     docker-compose
   ];
