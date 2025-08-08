@@ -2,7 +2,7 @@
 
 Modern, modular Windows configuration templates using a fragment system for flexible and maintainable setups.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Basic Windows Setup
 
@@ -31,7 +31,7 @@ $env.SECURITY_LEVEL = "high"
 nu fragments/base.nu
 ```
 
-## 📋 Available Features
+## Available Features
 
 | Feature | Description | Environment Variable |
 |---------|-------------|-------------------|
@@ -43,7 +43,7 @@ nu fragments/base.nu
 | **virtualization** | Hyper-V, VirtualBox, WSL | `$env.FEATURES = "virtualization"` |
 | **performance** | Performance optimizations | `$env.FEATURES = "performance"` |
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -73,7 +73,7 @@ $env.CI = "true"                          # Enable debug logging
 $env.DRY_RUN = "true"                     # Test without making changes
 ```
 
-## 🎯 Configuration Examples
+## Configuration Examples
 
 ### Gaming PC Configuration
 
@@ -116,7 +116,7 @@ $env.PERFORMANCE_PROFILE = "balanced"
 nu fragments/base.nu
 ```
 
-## 📁 Structure
+## Structure
 
 ```bash
 modules/templates/windows/
@@ -143,7 +143,7 @@ modules/templates/windows/
     └── QUICK-START.md          # Quick start guide
 ```
 
-## 🔧 Testing and Debugging
+## Testing and Debugging
 
 ### Dry Run Mode
 
@@ -165,7 +165,7 @@ $env.FEATURES = "gaming"
 nu fragments/base.nu
 ```
 
-## 🔄 Migration from Old System
+## Migration from Old System
 
 If you're using the old monolithic templates:
 
@@ -179,7 +179,7 @@ $env.GAMES = "rust"
 nu fragments/base.nu
 ```
 
-## 🆘 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -203,13 +203,13 @@ nu fragments/base.nu
 4. **Review documentation** - Check `docs/` directory
 5. **Check examples** - Look at `examples/` directory
 
-## 📚 Documentation
+## Documentation
 
 - **[Fragment System Overview](docs/FRAGMENT-SYSTEM.md)** - Detailed system architecture
 - **[Migration Guide](docs/MIGRATION.md)** - Step-by-step migration instructions
 - **[Quick Start Guide](docs/QUICK-START.md)** - Get started in minutes
 
-## 🤝 Contributing
+## Contributing
 
 When adding new fragments:
 
@@ -219,7 +219,7 @@ When adding new fragments:
 4. **Follow conventions** - Use consistent naming and structure
 5. **Maintain compatibility** - Don't break existing configurations
 
-## 🔮 Features
+## Features
 
 - **Modular Architecture** - Reusable, focused fragments
 - **Environment-Based Configuration** - Flexible setup via environment variables
@@ -230,4 +230,4 @@ When adding new fragments:
 
 ---
 
-**Happy configuring! 🎉**
+**Happy configuring!**

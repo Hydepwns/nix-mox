@@ -6,7 +6,7 @@
 [![Platforms](https://img.shields.io/badge/platforms-linux%20%7C%20macos%20%7C%20windows-blue.svg)](https://github.com/Hydepwns/nix-mox/actions)
 [![Tests](https://img.shields.io/badge/tests-100%25-brightgreen.svg)](https://github.com/Hydepwns/nix-mox/actions)
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - **NixOS** (fresh install with working display and user account)  
@@ -50,22 +50,22 @@ nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu"
 nix-shell -p nushell --run "nu scripts/core/safe-rebuild.nu --backup --test-first"
 ```
 
-⚠️ **CRITICAL**: 
+**CRITICAL**: 
 - ALWAYS run `./bootstrap-check.sh` first on fresh systems
 - NEVER run `nixos-rebuild` directly - use the safe wrapper 
 - This prevents boot failures and display issues
 
-## ✨ Features
+## Features
 
 | Category | Features |
 |----------|----------|
-| 🔥 **Monitoring** | ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=prometheus&logoColor=white) ![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat&logo=grafana&logoColor=white) ![Alerts](https://img.shields.io/badge/Alerts-Real--time-orange) |
-| 🎯 **Setup** | ![Wizard](https://img.shields.io/badge/Wizard-Interactive-blue) ![Auto-Detection](https://img.shields.io/badge/Auto--Detection-Smart-green) ![Defaults](https://img.shields.io/badge/Defaults-Platform--Adaptive-purple) |
-| 🛠️ **DevEx** | ![VS Code](https://img.shields.io/badge/VS%20Code-Extension-007ACC?style=flat&logo=visual-studio-code&logoColor=white) ![Zed](https://img.shields.io/badge/Zed-Extension-000000?style=flat&logo=zed&logoColor=white) ![Completions](https://img.shields.io/badge/Completions-Universal-yellow) |
-| 🛡️ **Security** | ![Threat Detection](https://img.shields.io/badge/Threat%20Detection-20+%20Patterns-red) ![Vulnerability Scanning](https://img.shields.io/badge/Vulnerability%20Scanning-Automated-orange) ![Error Recovery](https://img.shields.io/badge/Error%20Recovery-Contextual-green) |
-| 🧪 **Testing** | ![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen) ![Unit Tests](https://img.shields.io/badge/Unit%20Tests-Passing-green) ![Integration](https://img.shields.io/badge/Integration-Continuous-blue) |
+| **Monitoring** | ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=prometheus&logoColor=white) ![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat&logo=grafana&logoColor=white) ![Alerts](https://img.shields.io/badge/Alerts-Real--time-orange) |
+| **Setup** | ![Wizard](https://img.shields.io/badge/Wizard-Interactive-blue) ![Auto-Detection](https://img.shields.io/badge/Auto--Detection-Smart-green) ![Defaults](https://img.shields.io/badge/Defaults-Platform--Adaptive-purple) |
+| **DevEx** | ![VS Code](https://img.shields.io/badge/VS%20Code-Extension-007ACC?style=flat&logo=visual-studio-code&logoColor=white) ![Zed](https://img.shields.io/badge/Zed-Extension-000000?style=flat&logo=zed&logoColor=white) ![Completions](https://img.shields.io/badge/Completions-Universal-yellow) |
+| **Security** | ![Threat Detection](https://img.shields.io/badge/Threat%20Detection-20+%20Patterns-red) ![Vulnerability Scanning](https://img.shields.io/badge/Vulnerability%20Scanning-Automated-orange) ![Error Recovery](https://img.shields.io/badge/Error%20Recovery-Contextual-green) |
+| **Testing** | ![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen) ![Unit Tests](https://img.shields.io/badge/Unit%20Tests-Passing-green) ![Integration](https://img.shields.io/badge/Integration-Continuous-blue) |
 
-## 📚 Documentation
+## Documentation
 
 - **[Quick Start Guide](docs/QUICK_START.md)** - Get started in minutes
 - **[Platform Guide](docs/PLATFORM.md)** - Platform-specific setup
@@ -74,7 +74,7 @@ nix-shell -p nushell --run "nu scripts/core/safe-rebuild.nu --backup --test-firs
 - **[Zed Extension](docs/ZED_EXTENSION.md)** - Zed editor integration
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
 
-## 🛠️ Development
+## Development
 
 ```bash
 # Enter dev environment
@@ -94,7 +94,7 @@ rustc       # Rust compiler
 elixir      # Elixir runtime
 ```
 
-## 🏗️ Multi-Host Management
+## Multi-Host Management
 
 ```bash
 # Build configurations
@@ -121,7 +121,7 @@ nixos-rebuild switch --flake .#host2
 }
 ```
 
-## 📦 Available Packages
+## Available Packages
 
 ### Linux
 
@@ -141,7 +141,7 @@ nix run .#xcode-setup         # Setup Xcode
 nix run .#security-audit      # Security audit
 ```
 
-## 🧹 Maintenance
+## Maintenance
 
 ```bash
 nu scripts/tools/cleanup.nu           # Project cleanup
@@ -149,7 +149,7 @@ nu scripts/core/health-check.nu       # Health validation
 nu scripts/tools/analyze-sizes.nu     # Size analysis
 ```
 
-## 📋 Templates
+## Templates
 
 | Template | Use Case |
 |----------|----------|
@@ -159,7 +159,7 @@ nu scripts/tools/analyze-sizes.nu     # Size analysis
 | ![Server](https://img.shields.io/badge/Server-Production-yellow) | ![Management](https://img.shields.io/badge/Management-Monitoring%20%7C%20Tools-blue) |
 | ![CI Runner](https://img.shields.io/badge/CI%20Runner-Infrastructure-orange) | ![Parallel](https://img.shields.io/badge/Parallel-Jobs%20%7C%20Metrics-green) |
 
-## 🔧 Development Shells
+## Development Shells
 
 ```bash
 nix develop                    # Default
@@ -170,7 +170,7 @@ nix develop .#services         # Service tools
 nix develop .#monitoring       # Monitoring tools
 ```
 
-## 📁 Structure
+## Structure
 
 ```
 config/
@@ -180,7 +180,7 @@ config/
 └── nixos/        # Main config
 ```
 
-## 🎨 Code Formatting
+## Code Formatting
 
 ```bash
 nix run .#fmt  # Format all files
@@ -188,7 +188,7 @@ nix run .#fmt  # Format all files
 
 **Supported:** ![Nix](https://img.shields.io/badge/Nix-5277C3?style=flat&logo=nixos&logoColor=white) ![Shell](https://img.shields.io/badge/Shell-Bash%20%7C%20Zsh%20%7C%20Fish-4EAA25?style=flat&logo=gnu-bash&logoColor=white) ![Markdown](https://img.shields.io/badge/Markdown-000000?style=flat&logo=markdown&logoColor=white) ![JSON](https://img.shields.io/badge/JSON-000000?style=flat&logo=json&logoColor=white) ![YAML](https://img.shields.io/badge/YAML-CB171E?style=flat&logo=yaml&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white) ![CSS](https://img.shields.io/badge/CSS-1572B6?style=flat&logo=css3&logoColor=white) ![HTML](https://img.shields.io/badge/HTML-E34F26?style=flat&logo=html5&logoColor=white) ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white) ![Rust](https://img.shields.io/badge/Rust-000000?style=flat&logo=rust&logoColor=white) ![Go](https://img.shields.io/badge/Go-00ADD8?style=flat&logo=go&logoColor=white)
 
-## 🧪 Testing
+## Testing
 
 ```bash
 nix run .#test                    # All tests

@@ -2,7 +2,7 @@
 
 > Enhanced Nushell development experience with intelligent features
 
-## 🎯 Overview
+## Overview
 
 The nix-mox VS Code extension provides comprehensive IDE support for Nushell script development with:
 
@@ -13,7 +13,7 @@ The nix-mox VS Code extension provides comprehensive IDE support for Nushell scr
 - **Performance metrics viewer** built into VS Code
 - **Interactive setup wizard** integration
 
-## 🚀 Installation
+## Installation
 
 ### Method 1: From Source (Recommended)
 
@@ -57,7 +57,7 @@ code .
    - Check that syntax highlighting is active
    - Press `Ctrl+Shift+P` and search "nix-mox"
 
-## ⚡ Features
+## Features
 
 ### 1. Enhanced Language Support
 
@@ -77,23 +77,23 @@ code .
 
 **Script Execution (Ctrl+F5):**
 ```
-⚡ Run current Nu script
-📊 Automatic performance tracking
-🔍 Real-time output in terminal
+Run current Nu script
+Automatic performance tracking
+Real-time output in terminal
 ```
 
 **Testing Integration (Ctrl+Shift+T):**
 ```
-🧪 Run individual test files
-📈 Execute full test suite
-📋 Coverage reporting
+Run individual test files
+Execute full test suite
+Coverage reporting
 ```
 
 **Security Validation:**
 ```
-🛡️ Scan for dangerous patterns
-⚠️ Real-time threat detection
-💡 Security recommendations
+Scan for dangerous patterns
+Real-time threat detection
+Security recommendations
 ```
 
 ### 3. Performance Monitoring
@@ -110,19 +110,19 @@ code .
 
 **Setup Wizard Integration:**
 ```
-🧙‍♂️ Launch interactive setup from VS Code
-⚙️ Guided configuration process
-📝 Automatic code generation
+Launch interactive setup from VS Code
+Guided configuration process
+Automatic code generation
 ```
 
 **Documentation Generation:**
 ```
-📚 Auto-generate API docs
-🔗 Link functions to source
-📖 Export comprehensive guides
+Auto-generate API docs
+Link functions to source
+Export comprehensive guides
 ```
 
-## 🎮 Usage Guide
+## Usage Guide
 
 ### Getting Started
 
@@ -199,7 +199,7 @@ nix-mox: Run Setup Wizard        - Interactive configuration
 | `Ctrl+Space` | Trigger completions |
 | `Ctrl+Shift+P` | Command palette |
 
-## ⚙️ Configuration
+## Configuration
 
 ### Extension Settings
 
@@ -247,7 +247,7 @@ The extension includes a custom dark theme optimized for nix-mox development:
 
 **Activate via:** `Ctrl+Shift+P` → "Preferences: Color Theme" → "nix-mox Dark"
 
-## 🔍 Advanced Features
+## Advanced Features
 
 ### Intelligent Code Completion
 
@@ -311,7 +311,7 @@ validate_script_security  # Security validation
 - Structured data visualization
 - Type information display
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Extension Not Loading
 
@@ -373,7 +373,7 @@ validate_script_security  # Security validation
    }
    ```
 
-## 🔧 Development
+## Development
 
 ### Building from Source
 
@@ -419,14 +419,14 @@ extensions/vscode/
 └── language-configuration.json  # Language config
 ```
 
-## 📚 Related Documentation
+## Related Documentation
 
 - **[Quick Start Guide](QUICK_START.md)** - Get started quickly
 - **[Templates Guide](TEMPLATES.md)** - Available configurations
 - **[Monitoring Setup](MONITORING.md)** - Performance monitoring
 - **[Troubleshooting](TROUBLESHOOTING.md)** - Common issues
 
-## 🎯 Tips & Best Practices
+## Tips & Best Practices
 
 1. **Use snippets extensively** - type `nixmox-` and tab through options
 2. **Enable auto-save** - security validation runs on save

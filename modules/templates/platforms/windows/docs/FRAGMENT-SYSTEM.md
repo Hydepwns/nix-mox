@@ -4,7 +4,7 @@
 
 The Windows template system has been updated to use a **fragment system** that allows you to compose Windows configurations from reusable, focused modules. This replaces the old monolithic approach with a more flexible and maintainable architecture.
 
-## 🆕 What's New
+## What's New
 
 ### Fragment-Based Architecture
 
@@ -49,7 +49,7 @@ source fragments/development.nu
 source fragments/productivity.nu
 ```
 
-## 🚀 Benefits
+## Benefits
 
 ### 1. **Modularity**
 - Each fragment handles one specific concern
@@ -76,7 +76,7 @@ source fragments/productivity.nu
 - Dry-run mode for testing
 - Debug logging for troubleshooting
 
-## 📊 Comparison
+## Comparison
 
 | Aspect | Old System | New Fragment System |
 |--------|------------|-------------------|
@@ -87,7 +87,7 @@ source fragments/productivity.nu
 | **Testing** | All-or-nothing | Per-fragment |
 | **Flexibility** | Fixed | Highly configurable |
 
-## 🎯 Use Cases
+## Use Cases
 
 ### Gaming PC
 ```powershell
@@ -114,7 +114,7 @@ $env.SECURITY_LEVEL = "high"
 nu fragments/base.nu
 ```
 
-## 🔧 Advanced Features
+## Advanced Features
 
 ### Conditional Fragment Loading
 ```nu
@@ -144,7 +144,7 @@ $env.SECURITY_LEVEL = "high"
 source ../fragments/base.nu
 ```
 
-## 🔄 Migration Path
+## Migration Path
 
 ### Phase 1: Start Using Fragments
 - Use fragments for new configurations
@@ -158,14 +158,14 @@ source ../fragments/base.nu
 - Remove old monolithic scripts
 - Standardize on fragment system
 
-## 📚 Documentation
+## Documentation
 
 - **`README-fragments.md`** - Comprehensive guide to the fragment system
 - **`MIGRATION.md`** - Step-by-step migration guide
 - **`examples/`** - Example configurations
 - **`fragments/`** - Individual fragment documentation
 
-## 🤝 Contributing
+## Contributing
 
 When adding new fragments:
 
@@ -175,7 +175,7 @@ When adding new fragments:
 4. **Follow conventions** - Use consistent naming and structure
 5. **Maintain compatibility** - Don't break existing configurations
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
 - **Fragment validation** - Validate fragment dependencies
 - **Fragment testing** - Automated testing for fragments
@@ -183,7 +183,7 @@ When adding new fragments:
 - **GUI configuration** - Visual fragment composer
 - **Cloud integration** - Deploy fragments to cloud environments
 
-## 📞 Support
+## Support
 
 For questions or issues with the fragment system:
 

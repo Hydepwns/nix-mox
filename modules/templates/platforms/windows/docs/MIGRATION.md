@@ -2,7 +2,7 @@
 
 This guide explains how to migrate from the old monolithic Windows templates to the new fragment system.
 
-## 🚀 Quick Migration
+## Quick Migration
 
 ### From Old Gaming Template to New Fragment System
 
@@ -22,7 +22,7 @@ nu fragments/base.nu
 nu examples/gaming-pc.nu
 ```
 
-## 📋 Migration Steps
+## Migration Steps
 
 ### 1. Update Your Scripts
 
@@ -70,7 +70,7 @@ def custom-setup [] {
 custom-setup
 ```
 
-## 🔄 Backward Compatibility
+## Backward Compatibility
 
 ### Legacy Support
 
@@ -88,7 +88,7 @@ You can migrate gradually:
 2. **Migrate existing projects**: Convert one template at a time
 3. **Test thoroughly**: Ensure all functionality works after migration
 
-## 📚 Migration Examples
+## Migration Examples
 
 ### Gaming Template Migration
 
@@ -136,7 +136,7 @@ $env.FEATURES = "gaming,performance"
 source fragments/base.nu
 ```
 
-## 🛠️ Advanced Migration
+## Advanced Migration
 
 ### Complex Configurations
 
@@ -170,7 +170,7 @@ $env.SECURITY_LEVEL = "high"
 source ../fragments/base.nu
 ```
 
-## 🔧 Troubleshooting Migration
+## Troubleshooting Migration
 
 ### Common Issues
 
@@ -196,7 +196,7 @@ $env.DRY_RUN = "true"
 nu fragments/base.nu
 ```
 
-## 📖 Migration Checklist
+## Migration Checklist
 
 - [ ] Identify existing monolithic templates
 - [ ] Create new fragment-based configurations
@@ -205,7 +205,7 @@ nu fragments/base.nu
 - [ ] Train team on new system
 - [ ] Remove old templates (optional)
 
-## 🤝 Getting Help
+## Getting Help
 
 If you encounter issues during migration:
 

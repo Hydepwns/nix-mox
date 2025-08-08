@@ -9,7 +9,7 @@
 
 ## Safe Setup Process
 
-⚠️ **Critical**: This framework modifies your NixOS system. Follow these steps exactly to prevent boot failures.
+**Critical**: This framework modifies your NixOS system. Follow these steps exactly to prevent boot failures.
 
 ```bash
 # 1. Clone repository  
@@ -176,10 +176,10 @@ nu scripts/core/cleanup.nu
 
 ## Status
 
-- ✅ **CI Pipeline**: Fully functional with 97% test pass rate
-- ✅ **Cross-platform**: Supports Linux, macOS, and Windows
-- ✅ **Production Ready**: Comprehensive testing and validation
-- ✅ **Documentation**: Complete guides and examples
+- **CI Pipeline**: Fully functional with 97% test pass rate
+- **Cross-platform**: Supports Linux, macOS, and Windows
+- **Production Ready**: Comprehensive testing and validation
+- **Documentation**: Complete guides and examples
 
 ## Reproducibility
 

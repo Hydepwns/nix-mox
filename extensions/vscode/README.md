@@ -4,7 +4,7 @@ Enhanced Nushell scripting tools for nix-mox: run, test, validate, and document 
 
 ## Features
 
-### 🚀 Core Functionality
+### Core Functionality
 
 - **Script Execution**: Run Nushell scripts directly from VS Code (Ctrl+F5)
 - **Testing**: Execute and manage test suites (Ctrl+Shift+T)
@@ -12,21 +12,21 @@ Enhanced Nushell scripting tools for nix-mox: run, test, validate, and document 
 - **Performance Metrics**: Real-time monitoring and analytics
 - **Documentation Generation**: Auto-generate documentation for your scripts
 
-### 🎨 Language Support
+### Language Support
 
 - **Syntax Highlighting**: Full Nushell syntax support with Synthwave '84 theme
 - **IntelliSense**: Smart completions for nix-mox functions and Nushell commands
 - **Hover Information**: Inline documentation and help
 - **Go to Definition**: Navigate to function definitions
 
-### 🔧 Code Quality Tools
+### Code Quality Tools
 
 - **Linting & Diagnostics**: Real-time error detection and warnings
 - **Auto-formatting**: Clean up code formatting (Ctrl+Shift+F)
 - **Code Actions**: Quick fixes for common issues
 - **Snippets**: Pre-built templates for common nix-mox patterns
 
-### 📝 Snippets Included
+### Snippets Included
 
 - `nixmox-header`: Standard script template with error handling
 - `nixmox-test`: Test function template

@@ -2,7 +2,7 @@
 
 This template has been updated to use a **fragment system** that allows you to compose VM configurations from reusable, focused modules.
 
-## 🧩 Fragment System Overview
+## Fragment System Overview
 
 The fragment system breaks down the monolithic `base.nix` into focused, reusable components:
 
@@ -21,7 +21,7 @@ fragments/
 └── ci-runner.nix    # CI/CD runner configuration
 ```
 
-## 🚀 Quick Start with Fragments
+## Quick Start with Fragments
 
 ### Use Pre-built Examples
 
@@ -80,7 +80,7 @@ nixosConfigurations.my-custom-vm = nixpkgs.lib.nixosSystem {
 nixos-rebuild switch --flake .#my-custom-vm
 ```
 
-## 📋 Available Fragments
+## Available Fragments
 
 ### Base Fragments (Always Included)
 
@@ -99,7 +99,7 @@ nixos-rebuild switch --flake .#my-custom-vm
 - **`database.nix`**: Database servers (PostgreSQL, MySQL, Redis, MongoDB)
 - **`ci-runner.nix`**: CI/CD tools (Docker, build tools, languages)
 
-## 🎯 Fragment Composition Examples
+## Fragment Composition Examples
 
 ### Minimal VM (SSH only)
 
@@ -135,7 +135,7 @@ imports = [
 ];
 ```
 
-## 🔧 Customizing Fragments
+## Customizing Fragments
 
 ### Override Fragment Settings
 
@@ -185,7 +185,7 @@ in
 }
 ```
 
-## 🔒 Security Best Practices
+## Security Best Practices
 
 ### SSH Key Authentication
 
@@ -212,7 +212,7 @@ networking.firewall.allowedTCPPorts = [ 22 ]; # SSH only
 users.users.example.isLocked = true;
 ```
 
-## 🏗️ Hardware Configuration
+## Hardware Configuration
 
 ### Different VM Environments
 
@@ -243,7 +243,7 @@ fileSystems."/" = {
 };
 ```
 
-## 🔄 Migration from Old System
+## Migration from Old System
 
 ### Legacy Configurations Still Work
 
@@ -264,7 +264,7 @@ nixosConfigurations.legacy-vm = nixpkgs.lib.nixosSystem {
 2. **Gradually migrate**: Convert existing VMs one by one
 3. **Test thoroughly**: Ensure all functionality works after migration
 
-## 📚 Advanced Usage
+## Advanced Usage
 
 ### Environment-Specific Configurations
 
@@ -309,7 +309,7 @@ in
 }
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Test Configuration Syntax
 
@@ -329,11 +329,11 @@ nix build .#nixosConfigurations.web-server-vm.config.system.build.vm
 ./result/bin/run-*-vm
 ```
 
-## 📖 Fragment Reference
+## Fragment Reference
 
 See individual fragment files for detailed configuration options and examples.
 
-## 🤝 Contributing
+## Contributing
 
 When adding new fragments:
 

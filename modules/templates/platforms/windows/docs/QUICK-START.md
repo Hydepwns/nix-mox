@@ -2,7 +2,7 @@
 
 Get started with the new Windows fragment system in minutes!
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Basic Windows Setup
 
@@ -40,7 +40,7 @@ $env.SECURITY_LEVEL = "high"
 nu fragments/base.nu
 ```
 
-## 📋 Available Features
+## Available Features
 
 | Feature | Description | Environment Variable |
 |---------|-------------|-------------------|
@@ -52,7 +52,7 @@ nu fragments/base.nu
 | **virtualization** | Hyper-V, VirtualBox, WSL | `$env.FEATURES = "virtualization"` |
 | **performance** | Performance optimizations | `$env.FEATURES = "performance"` |
 
-## ⚙️ Configuration Options
+## Configuration Options
 
 ### Environment Variables
 
@@ -89,7 +89,7 @@ $env.DRY_RUN = "true"                     # Test without making changes
 $env.FEATURES = "gaming,development,multimedia,performance"
 ```
 
-## 🎯 Common Use Cases
+## Common Use Cases
 
 ### Gaming PC
 ```powershell
@@ -128,7 +128,7 @@ $env.PERFORMANCE_PROFILE = "balanced"
 nu fragments/base.nu
 ```
 
-## 🔧 Testing and Debugging
+## Testing and Debugging
 
 ### Dry Run Mode
 Test your configuration without making changes:
@@ -183,7 +183,7 @@ modules/templates/windows/
 └── QUICK-START.md              # This file
 ```
 
-## 🆘 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -207,7 +207,7 @@ modules/templates/windows/
 4. **Review documentation** - Check `README-fragments.md`
 5. **Check examples** - Look at `examples/` directory
 
-## 🔄 Migration from Old System
+## Migration from Old System
 
 If you're using the old monolithic templates:
 
@@ -223,11 +223,11 @@ nu fragments/base.nu
 
 See `MIGRATION.md` for detailed migration instructions.
 
-## 📚 Next Steps
+## Next Steps
 
 1. **Try the examples** - Run the example configurations
 2. **Create custom configs** - Build your own configurations
 3. **Read the docs** - Check `README-fragments.md` for advanced usage
 4. **Contribute** - Add new fragments or improve existing ones
 
-Happy configuring! 🎉 
+Happy configuring! 

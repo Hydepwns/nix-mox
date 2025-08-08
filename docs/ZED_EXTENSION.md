@@ -2,7 +2,7 @@
 
 > Enhanced Nushell development experience with intelligent features for Zed editor
 
-## 🎯 Overview
+## Overview
 
 The nix-mox Zed extension provides comprehensive IDE support for Nushell script development with:
 
@@ -13,7 +13,7 @@ The nix-mox Zed extension provides comprehensive IDE support for Nushell script 
 - **Performance metrics viewer** built into Zed
 - **Interactive setup wizard** integration
 
-## 🚀 Installation
+## Installation
 
 ### Method 1: From Source (Recommended)
 
@@ -59,7 +59,7 @@ cp -r target/release/nix-mox-zed-1.0.0 ~/.config/zed/extensions/
    - Check that syntax highlighting is active
    - Use `Cmd/Ctrl+Shift+P` and search "nix-mox"
 
-## ⚡ Features
+## Features
 
 ### 1. Enhanced Language Support
 
@@ -82,25 +82,25 @@ cp -r target/release/nix-mox-zed-1.0.0 ~/.config/zed/extensions/
 **Script Execution (Cmd/Ctrl+Shift+P → "nix-mox:run-script"):**
 
 ```
-⚡ Run current Nu script
-📊 Automatic performance tracking
-🔍 Real-time output in terminal
+Run current Nu script
+Automatic performance tracking
+Real-time output in terminal
 ```
 
 **Testing Integration (Cmd/Ctrl+Shift+P → "nix-mox:test-script"):**
 
 ```
-🧪 Run individual test files
-📈 Execute full test suite
-📋 Coverage reporting
+Run individual test files
+Execute full test suite
+Coverage reporting
 ```
 
 **Security Validation (Cmd/Ctrl+Shift+P → "nix-mox:validate-security"):**
 
 ```
-🛡️ Scan for dangerous patterns
-⚠️ Real-time threat detection
-💡 Security recommendations
+Scan for dangerous patterns
+Real-time threat detection
+Security recommendations
 ```
 
 ### 3. Performance Monitoring
@@ -117,20 +117,20 @@ cp -r target/release/nix-mox-zed-1.0.0 ~/.config/zed/extensions/
 **Setup Wizard Integration (Cmd/Ctrl+Shift+P → "nix-mox:setup-wizard"):**
 
 ```
-🧙‍♂️ Launch interactive setup from Zed
-⚙️ Guided configuration process
-📝 Automatic code generation
+Launch interactive setup from Zed
+Guided configuration process
+Automatic code generation
 ```
 
 **Documentation Generation (Cmd/Ctrl+Shift+P → "nix-mox:generate-docs"):**
 
 ```
-📚 Auto-generate API docs
-🔗 Link functions to source
-📖 Export comprehensive guides
+Auto-generate API docs
+Link functions to source
+Export comprehensive guides
 ```
 
-## 🎮 Usage Guide
+## Usage Guide
 
 ### Getting Started
 
@@ -210,7 +210,7 @@ nix-mox: Run Setup Wizard        - Interactive configuration
 | `Cmd/Ctrl+Space` | Trigger completions |
 | `F12` | Go to definition |
 
-## ⚙️ Configuration
+## Configuration
 
 ### Extension Settings
 
@@ -220,7 +220,7 @@ The extension automatically configures itself based on your nix-mox installation
 
 The extension integrates seamlessly with your existing nix-mox project structure.
 
-## 🔧 Development
+## Development
 
 ### Building from Source
 
@@ -263,7 +263,7 @@ extensions/zed/
 └── README.md           # Extension documentation
 ```
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -316,22 +316,22 @@ extensions/zed/
    - The extension is lightweight by default
    - No performance impact on normal usage
 
-## 📚 Additional Resources
+## Additional Resources
 
 - **[nix-mox Documentation](docs/)** - Complete project documentation
 - **[Zed Editor](https://zed.dev/)** - Official Zed documentation
 - **[Nushell](https://www.nushell.sh/)** - Nushell documentation
 - **[Rust](https://www.rust-lang.org/)** - Rust programming language
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-## 📄 License
+## License
 
 This extension is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Zed Team** for the excellent editor
 - **Nushell Team** for the amazing shell

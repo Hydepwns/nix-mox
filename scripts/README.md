@@ -2,9 +2,9 @@
 
 This directory contains all platform-specific and automation scripts for the nix-mox toolkit, featuring enhanced error handling, logging, configuration management, and security validation.
 
-## 🚀 Enhanced Features
+## Enhanced Features
 
-### **New Architecture**
+### New Architecture
 
 - **Modular Design**: Separated core, platform, and tools scripts
 - **Enhanced Error Handling**: Structured error handling with recovery suggestions
@@ -14,9 +14,9 @@ This directory contains all platform-specific and automation scripts for the nix
 - **Performance Monitoring**: Execution time and resource usage tracking
 - **Script Discovery**: Automatic script discovery with metadata extraction
 
-### **Key Improvements**
+### Key Improvements
 
-#### **1. Enhanced Error Handling (`lib/error-handling.nu`)**
+#### 1. Enhanced Error Handling (`lib/error-handling.nu`)
 
 - Structured error types with recovery strategies
 - Unique error IDs for tracking
@@ -30,7 +30,7 @@ use lib/error-handling.nu *
 handle_script_error "Command failed" "COMMAND_NOT_FOUND" { command: "nix" }
 ```
 
-#### **2. Advanced Configuration Management (`lib/config.nu`)**
+#### 2. Advanced Configuration Management (`lib/config.nu`)
 
 - Multi-source configuration loading (file, env, defaults)
 - Configuration validation and schema checking
@@ -44,7 +44,7 @@ let config = load_config
 show_config_summary $config
 ```
 
-#### **3. Enhanced Logging (`lib/logging.nu`)**
+#### 3. Enhanced Logging (`lib/logging.nu`)
 
 - Multiple output formats (text, JSON, structured)
 - Automatic log rotation
@@ -58,7 +58,7 @@ setup_logging $config
 info "Operation started" { operation: "install", user: (whoami) }
 ```
 
-#### **4. Security Validation (`lib/security.nu`)**
+#### 4. Security Validation (`lib/security.nu`)
 
 - Dangerous pattern detection
 - File permission validation
@@ -75,7 +75,7 @@ if not $security_result.secure {
 }
 ```
 
-#### **5. Performance Monitoring (`lib/performance.nu`)**
+#### 5. Performance Monitoring (`lib/performance.nu`)
 
 - Execution time tracking
 - Resource usage monitoring
@@ -90,7 +90,7 @@ let monitor_id = start_performance_monitor "installation"
 let metrics = end_performance_monitor $monitor_id
 ```
 
-#### **6. Script Discovery (`lib/discovery.nu`)**
+#### 6. Script Discovery (`lib/discovery.nu`)
 
 - Automatic script discovery
 - Metadata extraction
@@ -145,7 +145,7 @@ Run the script with:
 
 ## Directory Structure
 
-### **Core Scripts (`core/`)**
+### Core Scripts (`core/`)
 
 - `unified-setup.nu`    — Main unified setup script (RECOMMENDED - `--help` available)
 - `cleanup.nu`          — Core cleanup operations (`--help` available)
@@ -159,7 +159,7 @@ Run the script with:
 - `ci-test.sh`          — CI test script
 - `summarize-tests.sh`  — Test summarization
 
-### **Tools (`tools/`)**
+### Tools (`tools/`)
 
 - `cleanup.nu`          — Comprehensive project cleanup (`--help` available)
 - `project-dashboard.nu` — Project dashboard and metrics
@@ -171,31 +171,31 @@ Run the script with:
 - `generate-sbom.nu`    — Software Bill of Materials generation
 - `analyze-sizes.sh`    — Shell-based size analysis (`--help` available)
 
-### **Quality Scripts (`quality/`)**
+### Quality Scripts (`quality/`)
 
 - `code-quality.nu`     — Code quality analysis and linting
 - `performance-optimize.nu` — Performance optimization and analysis
 
-### **Validation Scripts (`validation/`)**
+### Validation Scripts (`validation/`)
 
 - `validate-gaming-config.nu` — Gaming configuration validation
 - `validate-display-config.nu` — Display configuration validation
 
-### **Benchmark Scripts (`benchmarks/`)**
+### Benchmark Scripts (`benchmarks/`)
 
 - `gaming-benchmark.nu` — Gaming performance benchmarking
 
-### **CI Scripts (`ci/`)**
+### CI Scripts (`ci/`)
 
 - `pre-commit.nu`       — Pre-commit hooks and checks
 
-### **Platform Scripts**
+### Platform Scripts
 
 - `linux/`              — Linux-specific implementations
 - `macos/`              — macOS-specific implementations  
 - `windows/`            — Windows-specific implementations
 
-### **Libraries (`lib/`)**
+### Libraries (`lib/`)
 
 - `common.nu`           — Common utilities and constants
 - `error-handling.nu`   — Enhanced error handling system
@@ -208,21 +208,21 @@ Run the script with:
 - `exec.nu`             — Execution helpers
 - `platform.nu`         — Platform detection
 
-### **Common Scripts (`common/`)**
+### Common Scripts (`common/`)
 
 - `nix-mox.nu`          — Main Nushell automation logic
 - `nix-mox`             — Bash wrapper script
 - `install-nix.sh`      — Nix installation script
 - `nix-mox-uninstall.sh` — Uninstallation script
 
-### **Legacy Scripts**
+### Legacy Scripts
 
 - `tests/`              — Test suite
 - `handlers/`           — Script handlers
 
 ## Configuration
 
-### **Default Configuration (`nix-mox.json`)**
+### Default Configuration (`nix-mox.json`)
 
 ```json
 {
@@ -242,7 +242,7 @@ Run the script with:
 }
 ```
 
-### **Configuration Sources (in order of precedence)**
+### Configuration Sources (in order of precedence)
 
 1. `./nix-mox.json`
 2. `./config/nix-mox.json`
@@ -252,7 +252,7 @@ Run the script with:
 
 ## Script Development
 
-### **Using Enhanced Modules**
+### Using Enhanced Modules
 
 ```nushell
 #!/usr/bin/env nu
@@ -276,7 +276,7 @@ try {
 }
 ```
 
-### **Best Practices**
+### Best Practices
 
 1. **Use the enhanced libraries** for error handling, logging, and configuration
 2. **Follow the modular structure** - place scripts in appropriate directories
@@ -287,7 +287,7 @@ try {
 
 ## Quick Reference
 
-### **Core Operations**
+### Core Operations
 
 ```bash
 # Unified Setup (RECOMMENDED)
@@ -300,7 +300,7 @@ nu scripts/core/health-check.nu
 nu scripts/core/integrate-modules.nu
 ```
 
-### **Gaming Operations**
+### Gaming Operations
 
 ```bash
 # Gaming benchmark
@@ -310,7 +310,7 @@ nu scripts/gaming/gaming-benchmark.nu
 nu scripts/gaming/validate-gaming-config.nu
 ```
 
-### **Development Operations**
+### Development Operations
 
 ```bash
 # Code quality
@@ -320,7 +320,7 @@ nu scripts/development/code-quality.nu
 nu scripts/development/pre-commit.nu
 ```
 
-### **Validation Operations**
+### Validation Operations
 
 ```bash
 # Display validation
@@ -330,7 +330,7 @@ nu scripts/validation/validate-display-config.nu
 nu scripts/validation/performance-optimize.nu
 ```
 
-### **Tool Operations**
+### Tool Operations
 
 ```bash
 # Generate documentation
@@ -345,7 +345,7 @@ nu scripts/tools/generate-sbom.nu
 
 ## Migration Guide
 
-### **From Old Structure**
+### From Old Structure
 
 If you have scripts referencing the old structure, update them as follows:
 
@@ -358,11 +358,11 @@ If you have scripts referencing the old structure, update them as follows:
 | `scripts/validate-display-config.nu` | `scripts/validation/validate-display-config.nu` |
 | `scripts/analyze-sizes.nu` | `scripts/tools/analyze-sizes.nu` |
 
-### **Makefile Updates**
+### Makefile Updates
 
 The Makefile has been updated with the new paths. All targets now use the reorganized structure.
 
-### **CI/CD Updates**
+### CI/CD Updates
 
 GitHub Actions and other CI/CD configurations have been updated to use the new script paths.
 

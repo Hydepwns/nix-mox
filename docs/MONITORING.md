@@ -2,7 +2,7 @@
 
 > Comprehensive real-time monitoring with Prometheus and Grafana
 
-## 🎯 Overview
+## Overview
 
 nix-mox provides enterprise-grade monitoring capabilities with:
 - **Real-time metrics collection** via Prometheus
@@ -10,7 +10,7 @@ nix-mox provides enterprise-grade monitoring capabilities with:
 - **Intelligent alerting** with 12+ pre-configured rules
 - **Multi-platform support** (Linux, macOS, Windows)
 
-## 🚀 Quick Setup
+## Quick Setup
 
 ### 1. Enable Metrics Collection
 
@@ -38,7 +38,7 @@ cp modules/templates/services/monitoring/monitoring.nix config/nixos/
 - **Prometheus**: http://localhost:9090
 - **Metrics endpoint**: http://localhost:9200/metrics
 
-## 📊 Available Metrics
+## Available Metrics
 
 ### Core System Metrics
 ```
@@ -65,7 +65,7 @@ nix_mox_config_validation_failures_total  # Config failures
 nix_mox_platform_errors_total       # Platform-specific errors
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Prometheus Configuration
 
@@ -124,7 +124,7 @@ Located in `modules/templates/services/monitoring/rules/nix-mox-alerts.yml`:
 - Low disk space (>90% for 5 minutes)
 - Test suite failures (<95% success rate)
 
-## 🔍 Monitoring Workflows
+## Monitoring Workflows
 
 ### Script Execution Monitoring
 
@@ -190,7 +190,7 @@ try {
 }
 ```
 
-## 🎨 Dashboard Customization
+## Dashboard Customization
 
 ### Adding Custom Panels
 
@@ -215,7 +215,7 @@ sum by (platform) (rate(nix_mox_platform_errors_total[5m]))
 topk(5, rate(nix_mox_script_failures_total[5m]))
 ```
 
-## 🚨 Alerting Setup
+## Alerting Setup
 
 ### Alertmanager Configuration
 
@@ -262,7 +262,7 @@ receivers:
       {{ end }}
 ```
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Metrics Not Appearing
 
@@ -311,7 +311,7 @@ Monitoring overhead is minimal:
 - **Grafana authentication** should be enabled in production
 - **Firewall rules** restrict external access
 
-## 📈 Advanced Scenarios
+## Advanced Scenarios
 
 ### Multi-Host Monitoring
 
@@ -362,7 +362,7 @@ def send_webhook_alert [alert: record] {
 }
 ```
 
-## 🎯 Best Practices
+## Best Practices
 
 1. **Set appropriate scrape intervals** (15-30s for most metrics)
 2. **Use labels effectively** for filtering and grouping
@@ -371,7 +371,7 @@ def send_webhook_alert [alert: record] {
 5. **Alert tuning** - avoid alert fatigue with proper thresholds
 6. **Retention policies** - balance storage vs. historical data needs
 
-## 📚 Further Reading
+## Further Reading
 
 - [Prometheus Best Practices](https://prometheus.io/docs/practices/)
 - [Grafana Dashboard Design](https://grafana.com/docs/grafana/latest/best-practices/)

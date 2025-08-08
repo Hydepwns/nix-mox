@@ -10,12 +10,12 @@ The main continuous integration workflow that runs on every push and pull reques
 
 **Features:**
 
-- ✅ **Cross-platform testing** - Runs on Ubuntu and macOS
-- ✅ **Package building** - Builds platform-specific packages
-- ✅ **Comprehensive testing** - Runs unit, integration, storage, and performance tests
-- ✅ **Coverage reporting** - Generates and uploads coverage reports to Codecov
-- ✅ **Heavy package builds** - Builds heavy packages on main branch only
-- ✅ **Release automation** - Creates releases on tags
+- **Cross-platform testing** - Runs on Ubuntu and macOS
+- **Package building** - Builds platform-specific packages
+- **Comprehensive testing** - Runs unit, integration, storage, and performance tests
+- **Coverage reporting** - Generates and uploads coverage reports to Codecov
+- **Heavy package builds** - Builds heavy packages on main branch only
+- **Release automation** - Creates releases on tags
 
 **Jobs:**
 
@@ -34,10 +34,10 @@ Manual workflow for running different types of tests locally.
 
 **Features:**
 
-- 🎯 **Manual triggering** - Can be run manually with different test types
-- 🧪 **Test type selection** - Choose between basic, performance, cross-platform, or all tests
-- 📊 **Coverage generation** - Generates coverage reports for analysis
-- 🚀 **Performance benchmarking** - Measures test execution times
+- **Manual triggering** - Can be run manually with different test types
+- **Test type selection** - Choose between basic, performance, cross-platform, or all tests
+- **Coverage generation** - Generates coverage reports for analysis
+- **Performance benchmarking** - Measures test execution times
 
 **Test Types:**
 

@@ -2,7 +2,7 @@
 
 This template has been updated to use a **fragment system** that allows you to compose monitoring configurations from reusable, focused modules.
 
-## 🧩 Fragment System Overview
+## Fragment System Overview
 
 The fragment system breaks down the monolithic monitoring configuration into focused, reusable components:
 
@@ -14,7 +14,7 @@ fragments/
 └── alertmanager.nix    # Alert routing and management
 ```
 
-## 🚀 Quick Start with Fragments
+## Quick Start with Fragments
 
 ### Use Complete Monitoring Stack
 
@@ -74,7 +74,7 @@ nixosConfigurations.my-monitoring = nixpkgs.lib.nixosSystem {
 nixos-rebuild switch --flake .#my-monitoring
 ```
 
-## 📋 Available Fragments
+## Available Fragments
 
 ### Core Monitoring Fragments
 
@@ -117,7 +117,7 @@ nixos-rebuild switch --flake .#my-monitoring
 - Webhook integration
 - Email notifications
 
-## 🎯 Fragment Composition Examples
+## Fragment Composition Examples
 
 ### Minimal Monitoring (Prometheus + Node Exporter)
 
@@ -157,7 +157,7 @@ imports = [
 ];
 ```
 
-## 🔧 Customizing Fragments
+## Customizing Fragments
 
 ### Override Fragment Settings
 
@@ -211,7 +211,7 @@ in
 }
 ```
 
-## 🔒 Security Best Practices
+## Security Best Practices
 
 ### Network Security
 
@@ -245,7 +245,7 @@ users.users.monitoring = {
 };
 ```
 
-## 🏗️ Production Configuration
+## Production Configuration
 
 ### High Availability Setup
 
@@ -298,7 +298,7 @@ in
 }
 ```
 
-## 🔄 Migration from Old System
+## Migration from Old System
 
 ### Legacy Configurations Still Work
 
@@ -319,7 +319,7 @@ nixosConfigurations.legacy-monitoring = nixpkgs.lib.nixosSystem {
 2. **Gradually migrate**: Convert existing monitoring configurations one by one
 3. **Test thoroughly**: Ensure all functionality works after migration
 
-## 📚 Advanced Usage
+## Advanced Usage
 
 ### Custom Dashboards
 
@@ -396,7 +396,7 @@ nixosConfigurations.legacy-monitoring = nixpkgs.lib.nixosSystem {
 }
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Test Configuration Syntax
 
@@ -417,7 +417,7 @@ nix build .#nixosConfigurations.monitoring-stack.config.system.build.vm
 ./result/bin/run-monitoring-stack-vm
 ```
 
-## 📖 Fragment Reference
+## Fragment Reference
 
 ### Prometheus Fragment Options
 
@@ -446,7 +446,7 @@ nix build .#nixosConfigurations.monitoring-stack.config.system.build.vm
 - `services.prometheus.alertmanager.port`: Alertmanager port (default: 9093)
 - `services.prometheus.alertmanager.configuration`: Alert routing configuration
 
-## 🤝 Contributing
+## Contributing
 
 When adding new fragments:
 
@@ -456,7 +456,7 @@ When adding new fragments:
 4. **Maintain compatibility**: Don't break existing configurations
 5. **Test thoroughly**: Ensure fragments work together correctly
 
-## 📊 Monitoring Stack Ports
+## Monitoring Stack Ports
 
 | Service | Port | Description |
 |---------|------|-------------|
@@ -465,7 +465,7 @@ When adding new fragments:
 | Node Exporter | 9100 | System metrics collection |
 | Alertmanager | 9093 | Alert routing and management |
 
-## 🔗 Useful URLs
+## Useful URLs
 
 - Prometheus: <http://localhost:9090>
 - Grafana: <http://localhost:3000> (admin/admin)
