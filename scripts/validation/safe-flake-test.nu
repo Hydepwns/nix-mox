@@ -39,7 +39,7 @@ def main [
         ]
     }
 
-    let mut test_results = []
+    mut test_results = []
 
     for test_config in $test_sequence {
         print $"🔍 Testing ($test_config.name): ($test_config.description)"
@@ -92,7 +92,7 @@ def backup_current_config [] {
 def test_flake_configuration [flake: string, verbose: bool] {
     if $verbose { print $"  Testing flake: ($flake)" }
     
-    let mut test_result = {
+    mut test_result = {
         status: "PASS",
         checks: {},
         errors: []

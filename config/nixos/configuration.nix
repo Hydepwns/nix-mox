@@ -1,196 +1,97 @@
-# ============================================================================
-# NIXOS CONFIGURATION
-# ============================================================================
-# Base NixOS configuration shared by all hosts
-# ============================================================================
-
-{ config, lib, pkgs, inputs, ... }:
-
+# Gaming Template Configuration
+# Gaming-focused configuration with performance optimizations
+{ config, pkgs, ... }:
 {
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
+  imports = [
+    ../profiles/base.nix
+    ../profiles/security.nix
+    ../profiles/gaming.nix
+  ];
 
-  # Nix settings
-  nix = {
-    settings = {
-      auto-optimise-store = true;
-      experimental-features = [ "nix-command" "flakes" ];
-      trusted-users = [ "root" "hydepwns" ];
-    };
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 30d";
-    };
-  };
-
-  # System packages
+  # Gaming-specific configuration
   environment.systemPackages = with pkgs; [
-    # Essential tools
-    vim
-    wget
-    curl
-    git
+    # Gaming platforms
+    steam
+    lutris
+    heroic
+
+    # Gaming tools
+    gamemode
+    mangohud
+    goverlay
+
+    # Performance monitoring
     htop
-    tree
+    nvtop
+    radeontop
+
+    # Media players
+    vlc
+    mpv
+
+    # Voice chat
+    discord
+    teamspeak
 
     # Terminal emulator
     kitty
-
-    # Nix tools
-    nix-index
-    nix-tree
-
-    # Network tools
-    inetutils
-    mtr
-    iperf3
   ];
 
-  # System settings
-  system = {
-    stateVersion = "23.11";
-    autoUpgrade = {
-      enable = false; # Disabled by default, enable per-host
-      channel = "https://nixos.org/channels/nixos-unstable";
-    };
-  };
-
-  # Security settings
-  security = {
-    sudo.wheelNeedsPassword = true;
-    auditd.enable = false; # Enable per-host if needed
-  };
-
-  # Networking
-  networking = {
-    firewall = {
-      enable = true;
-      allowedTCPPorts = [ 22 ]; # SSH only by default
-      allowedUDPPorts = [ ];
-    };
-  };
-
-  # Services
-  services = {
-    # SSH (basic config, can be overridden per-host)
-    openssh = {
-      enable = true;
-      settings = {
-        PermitRootLogin = "no";
-        PasswordAuthentication = false;
-        PubkeyAuthentication = true;
-      };
-    };
-
-    # Timesync
-    timesyncd.enable = true;
-
-    # Cron
-    cron.enable = true;
-  };
-
-  # Users - will be configured in personal config
-  users.mutableUsers = true;
-
-  # X11 and Display Manager (basic setup, can be overridden)
-  services.xserver = {
-    enable = true;
-    xkb = {
-      layout = "us";
-      variant = "";
-    };
-  };
-
-  # Display manager (updated for newer NixOS)
-  services.displayManager.sddm.enable = true;
-
-  # Enable Wayland support for SDDM (Plasma 6)
-  services.displayManager.sddm.wayland.enable = true;
-
-  # Desktop Manager (updated for Plasma 6)
-  services.desktopManager = {
-    plasma6.enable = true;
-  };
-
-  # Boot
-  boot = {
-    # Kernel settings
-    kernel.sysctl = {
-      "kernel.sysrq" = 1;
-      "net.ipv4.ip_forward" = 0;
-    };
-
-    # Loader (will be overridden by hardware configs)
-    loader.grub.enable = false;
-    loader.systemd-boot.enable = false;
-  };
-
-  # Hardware
-  hardware = {
-    # Basic hardware support
-    enableRedistributableFirmware = true;
-    # Graphics support (updated for newer NixOS)
-    graphics.enable = true;
-    graphics.enable32Bit = true;
-  };
-
-  # Internationalization
-  i18n = {
-    defaultLocale = "en_US.UTF-8";
-    supportedLocales = [ "en_US.UTF-8/UTF-8" ];
-  };
-
-  # Console
-  console = {
-    font = "Lat2-Terminus16";
-    keyMap = "us";
-  };
-
-  # Time
-  time.timeZone = "UTC"; # Will be overridden by hardware configs
-
-  # Documentation
-  documentation = {
-    nixos.enable = true;
-    man.enable = true;
-    info.enable = true;
-  };
-
-  # Programs
+  # Gaming programs
   programs = {
-    # Shell
-    bash.completion.enable = true;
-
-    # SSH
-    ssh.startAgent = false;
-
-    # Less
-    less.enable = true;
-
-    # Zsh
     zsh.enable = true;
+    git.enable = true;
 
-    # Note: Kitty configuration is handled by home-manager in personal config
-  };
-
-  # Environment
-  environment = {
-    # Variables
-    variables = {
-      EDITOR = "vim";
-      PAGER = "less";
+    # Steam configuration
+    steam = {
+      enable = true;
+      remotePlay.openFirewall = true;
+      dedicatedServer.openFirewall = true;
     };
-
-    # Shell init
-    shellInit = ''
-      # Add any global shell initialization here
-    '';
   };
 
-  # Set Kitty as the default terminal for all users in KDE Plasma
-  environment.etc."xdg/kdeglobals".text = ''
-    [General]
-    TerminalApplication=kitty
-  '';
+  # Gaming services
+  services = {
+    # Gaming support
+    gaming = {
+      enable = true;
+      gpu.type = "auto";
+      performance.enable = true;
+      audio.enable = true;
+      audio.pipewire = true;
+      platforms.steam = true;
+      platforms.lutris = true;
+      platforms.heroic = true;
+    };
+  };
+
+  # Audio configuration for gaming
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    jack.enable = true;
+  };
+
+  # Performance optimizations
+  boot.kernelParams = [
+    "nvidia-drm.modeset=1"
+    "amdgpu.si_support=1"
+    "amdgpu.cik_support=1"
+  ];
+
+  # Gaming environment variables
+  environment.variables = {
+    # Vulkan
+    VK_ICD_FILENAMES = "/run/opengl-driver/share/vulkan/icd.d/intel_icd.x86_64.json:/run/opengl-driver/share/vulkan/icd.d/radeon_icd.x86_64.json";
+
+    # Wine
+    WINEDEBUG = "-all";
+
+    # Performance
+    __GL_SYNC_TO_VBLANK = "0";
+    __GL_THREADED_OPTIMIZATIONS = "1";
+  };
 }

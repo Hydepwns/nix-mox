@@ -50,8 +50,13 @@ devenv.local.nix
 config/personal/secrets.nix
 config/personal/local.nix
 
-# Hardware configuration with real UUIDs
-config/hardware/hardware-configuration-actual.nix
+# Node modules and package files
+node_modules/
+package-lock.json
+*.lock
+
+# Archive directories
+.archive/
 
 # Nix remote builder keys
 nix-mox-public.key

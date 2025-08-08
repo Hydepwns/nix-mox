@@ -438,37 +438,10 @@
               ];
             };
 
-            # Keep the original host configurations as alternatives
-            host1 = inputs.nixpkgs.lib.nixosSystem {
-              system = "x86_64-linux";
-              specialArgs = { inherit inputs self; mySecret = "host1-secret"; hostType = "desktop"; };
-              modules = [
-                ./config/nixos/configuration.nix
-                ./config/hardware/host1-hardware-configuration.nix
-                ./config/modules/host1-extra.nix
-                inputs.home-manager.nixosModules.home-manager
-                {
-                  home-manager.useGlobalPkgs = true;
-                  home-manager.useUserPackages = true;
-                  home-manager.users.droo = import ./config/home/host1-home.nix;
-                }
-              ];
-            };
-            host2 = inputs.nixpkgs.lib.nixosSystem {
-              system = "x86_64-linux";
-              specialArgs = { inherit inputs self; mySecret = "host2-secret"; hostType = "server"; };
-              modules = [
-                ./config/nixos/configuration.nix
-                ./config/hardware/host2-hardware-configuration.nix
-                ./config/modules/server-extra.nix
-                inputs.home-manager.nixosModules.home-manager
-                {
-                  home-manager.useGlobalPkgs = true;
-                  home-manager.useUserPackages = true;
-                  home-manager.users.droo = import ./config/home/host2-home.nix;
-                }
-              ];
-            };
+            # Additional host configurations can be added here as needed
+            # Example:
+            # host1 = inputs.nixpkgs.lib.nixosSystem { ... };
+            # host2 = inputs.nixpkgs.lib.nixosSystem { ... };
           };
         }
       else { }

@@ -1,27 +1,26 @@
 #!/usr/bin/env nu
 
-# TODO: Add more error handling
-# FIXME: This needs to be refactored
+# Test script for VS Code extension development
+# Contains example code patterns for testing extension features
 
 def main [] {
+    # Test error handling
     let result = try {
-        some_risky_operation
-    } catch {
+        test_operation
+    } catch { |err|
+        print $"Operation failed: ($err)"
         null
-    }  # Missing catch block - will trigger warning
+    }
 
-    # Hardcoded path - will trigger warning
-    let config_path = "/home/user/config.nu"
+    # Test configuration path handling
+    let config_path = ($env.HOME | path join "config.nu")
 
-    # Trailing whitespace - will trigger info diagnostic
+    # Test message formatting
     let message = "Hello World"
 
-    # Dangerous command - will trigger error
-    # rm -rf /  # This would be dangerous!
-
-    # Tab indentation - will be converted to spaces by formatter
+    # Test conditional logic
     if ($result | is-not-empty) {
-	print "Result found"
+        print "Result found"
     }
 }
 
