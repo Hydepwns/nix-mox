@@ -22,7 +22,7 @@
 
     # Performance monitoring
     htop
-    nvtop
+    # nvtop  # GPU monitoring - not available in current nixpkgs
     radeontop
 
     # Media players
