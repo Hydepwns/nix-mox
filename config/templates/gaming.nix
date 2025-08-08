@@ -31,7 +31,7 @@
 
     # Voice chat
     discord
-    teamspeak
+    teamspeak_client
 
     # Terminal emulator
     kitty
