@@ -104,11 +104,39 @@
     UMASK = "077";
   };
 
-  # Systemd security
-  systemd.services = {
-    # Disable core dumps
-    "systemd-coredump".enable = false;
+  # Systemd security and user restrictions
+  systemd = {
+    services = {
+      # Disable core dumps
+      "systemd-coredump".enable = false;
+    };
+    
+    # Global systemd security defaults (adjusted for GUI compatibility)
+    extraConfig = ''
+      DefaultLimitCORE=0
+      DefaultLimitNOFILE=2048
+      DefaultLimitNPROC=1024
+    '';
+    
+    # User session restrictions (adjusted for GUI compatibility)
+    user.extraConfig = ''
+      DefaultLimitCORE=0
+      DefaultLimitNOFILE=2048
+      DefaultLimitNPROC=512
+    '';
   };
+
+  # User and group security (allow mutable users for desktop compatibility)
+  users.mutableUsers = true;
+  
+  # Additional security limits (adjusted for desktop environments)
+  security.pam.loginLimits = [
+    { domain = "*"; type = "hard"; item = "core"; value = "0"; }
+    { domain = "*"; type = "hard"; item = "nproc"; value = "1024"; }
+    { domain = "*"; type = "hard"; item = "nofile"; value = "2048"; }
+    { domain = "wheel"; type = "hard"; item = "nproc"; value = "2048"; }
+    { domain = "wheel"; type = "hard"; item = "nofile"; value = "8192"; }
+  ];
 
   # Kernel module security
   boot.blacklistedKernelModules = [
