@@ -95,20 +95,17 @@ in
     terraform-providers.proxmox
   ];
 
-  # Display manager configuration - use SDDM for Plasma 6
-  # Note: This will be merged with gaming configuration
-  services.xserver = {
+  # NOTE: services.xserver is already configured in config/nixos/configuration.nix
+  # Avoid duplicate configuration to prevent conflicts
+
+  # Display manager and desktop environment (consolidated configuration)
+  services.displayManager.sddm = {
     enable = true;
-    xkb = {
-      layout = "us";
-      variant = "";
-    };
+    # Enable Wayland support for Plasma 6 (can cause screen lock issues if misconfigured)
+    wayland.enable = true;
   };
 
-  # Display manager (updated for newer NixOS)
-  services.displayManager.sddm.enable = true;
-
-  # Desktop Manager (updated for Plasma 6)
+  # Desktop Manager (Plasma 6)
   services.desktopManager = {
     plasma6.enable = true;
   };
@@ -116,12 +113,12 @@ in
   # SSH configuration - use Plasma 6's ksshaskpass
   programs.ssh.askPassword = lib.mkForce "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass";
 
-  # Network configuration - enable network interfaces
-  networking.useDHCP = true;
+  # NOTE: networking.useDHCP is already set in hardware-configuration.nix
+  # Remove duplicate to avoid conflicts
 
   # Home Manager configuration
   home-manager.users.${personal.username} = lib.mkForce {
-    home.stateVersion = "23.11";
+    home.stateVersion = "24.05";
     home.username = personal.username;
     home.homeDirectory = "/home/${personal.username}";
 

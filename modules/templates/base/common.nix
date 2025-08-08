@@ -132,5 +132,5 @@
   nixpkgs.config.allowUnfree = true;
 
   # This value determines the NixOS release from which the default settings for stateful data, like file locations and database versions were taken.
-  system.stateVersion = "23.11";
+  system.stateVersion = "24.05";
 }

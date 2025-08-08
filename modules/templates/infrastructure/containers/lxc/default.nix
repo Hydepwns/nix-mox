@@ -18,7 +18,7 @@ in
   ];
 
   # Basic system configuration
-  system.stateVersion = "23.11";
+  system.stateVersion = "24.05";
   time.timeZone = cfg.timezone;
   i18n.defaultLocale = cfg.locale;
 

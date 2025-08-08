@@ -3,7 +3,7 @@
 { config, pkgs, ... }:
 {
   # Basic system configuration
-  system.stateVersion = "23.11";
+  system.stateVersion = "24.05";
 
   # Essential system packages
   environment.systemPackages = with pkgs; [
@@ -96,10 +96,6 @@
     TERM = "xterm-256color";
   };
 
-  # Desktop environment
-  services.desktopManager.plasma6.enable = true;
-  # Optional: Enable GNOME instead of Plasma
-  # services.desktopManager.gnome.enable = true;
-  # Enable Wayland support for SDDM (Plasma 6)
-  services.displayManager.sddm.wayland.enable = true;
+  # NOTE: Desktop environment and display manager are configured in personal configs
+  # to avoid conflicts. Remove from base profile.
 }
