@@ -59,36 +59,61 @@ def check_display_manager_conflicts [] {
     mut status = "OK"
     
     try {
-        # Check for multiple display manager definitions
-        let sddm_files = (rg -l 'displayManager.*sddm' --type nix .)
-        let gdm_files = (rg -l 'displayManager.*gdm' --type nix .)
-        let lightdm_files = (rg -l 'displayManager.*lightdm' --type nix .)
+        # Check for multiple display manager definitions using glob instead of rg
+        let nix_files = (glob **/*.nix)
         
-        let total_dm_configs = ($sddm_files | length) + ($gdm_files | length) + ($lightdm_files | length)
+        mut sddm_count = 0
+        mut gdm_count = 0  
+        mut lightdm_count = 0
+        mut xserver_dm_count = 0
+        mut new_dm_count = 0
+        mut gnome_sddm_conflicts = []
+        
+        for file in $nix_files {
+            try {
+                let content = (open $file)
+                
+                # Count display manager types
+                if ($content | str contains "displayManager") and ($content | str contains "sddm") {
+                    $sddm_count = $sddm_count + 1
+                }
+                if ($content | str contains "displayManager") and ($content | str contains "gdm") {
+                    $gdm_count = $gdm_count + 1  
+                }
+                if ($content | str contains "displayManager") and ($content | str contains "lightdm") {
+                    $lightdm_count = $lightdm_count + 1
+                }
+                
+                # Check for old vs new syntax
+                if ($content | str contains "services.xserver") and ($content | str contains "displayManager") {
+                    $xserver_dm_count = $xserver_dm_count + 1
+                }
+                if ($content | str contains "services.displayManager") {
+                    $new_dm_count = $new_dm_count + 1
+                }
+                
+                # Check for GNOME + SDDM conflicts
+                if ($content | str contains "desktopManager.gnome") and ($content | str contains "enable") and ($content | str contains "displayManager.sddm") {
+                    $gnome_sddm_conflicts = ($gnome_sddm_conflicts | append $file)
+                }
+            } catch {
+                # Skip files that can't be read
+            }
+        }
+        
+        let total_dm_configs = $sddm_count + $gdm_count + $lightdm_count
         
         if $total_dm_configs > 1 {
             $issues = ($issues | append "Multiple display manager configurations found")
             $status = "CRITICAL"
         }
         
-        # Check for conflicting X server configurations
-        let xserver_configs = (rg -l 'services\.xserver.*displayManager' --type nix .)
-        let new_displaymanager_configs = (rg -l 'services\.displayManager' --type nix .)
-        
-        if ($xserver_configs | length) > 0 and ($new_displaymanager_configs | length) > 0 {
+        if $xserver_dm_count > 0 and $new_dm_count > 0 {
             $issues = ($issues | append "Mixed old (xserver.displayManager) and new (displayManager) syntax")
             $status = "CRITICAL"
         }
         
-        # Check for services.desktopManager.gnome conflicts with SDDM
-        let gnome_sddm_conflict = (rg -l 'desktopManager\.gnome.*enable.*true' --type nix . | each { |file|
-            let content = (open $file)
-            if ($content | str contains "displayManager.sddm") {
-                $file
-            }
-        } | compact)
-        
-        if ($gnome_sddm_conflict | length) > 0 {
+        if ($gnome_sddm_conflicts | length) > 0 {
             $issues = ($issues | append "GNOME desktop manager with SDDM display manager conflict")
             $status = "CRITICAL"
         }
@@ -97,11 +122,11 @@ def check_display_manager_conflicts [] {
             status: $status,
             issues: $issues,
             details: {
-                sddm_files: $sddm_files,
-                gdm_files: $gdm_files,
-                lightdm_files: $lightdm_files,
-                xserver_configs: $xserver_configs,
-                new_displaymanager_configs: $new_displaymanager_configs
+                sddm_count: $sddm_count,
+                gdm_count: $gdm_count,
+                lightdm_count: $lightdm_count,
+                xserver_dm_count: $xserver_dm_count,
+                new_dm_count: $new_dm_count
             }
         }
     } catch { |e|
@@ -257,10 +282,8 @@ def check_build_phase_issues [] {
         if ($config_file | path exists) {
             let content = (open $config_file)
             
-            # Check if we're importing conflicting profiles
-            let imports = ($content | rg 'imports = \[' -A 10 | rg '\.\./profiles/')
-            
-            if ($imports | str contains "security.nix") and ($imports | str contains "gaming.nix") {
+            # Check if we're importing conflicting profiles using string matching
+            if ($content | str contains "imports") and ($content | str contains "../profiles/security.nix") and ($content | str contains "../profiles/gaming.nix") {
                 $issues = ($issues | append "Gaming and security profiles may have conflicting systemd settings")
                 $status = "WARNING"
             }
@@ -301,20 +324,41 @@ def check_session_services [] {
     mut status = "OK"
     
     try {
-        # Check if we have proper desktop environment setup
-        let has_desktop = (rg -l 'desktopManager\.' --type nix .) 
-        let has_window_manager = (rg -l 'windowManager\.' --type nix .)
+        # Check if we have proper desktop environment setup using glob
+        let nix_files = (glob **/*.nix)
         
-        if ($has_desktop | length) == 0 and ($has_window_manager | length) == 0 {
+        mut desktop_count = 0
+        mut window_manager_count = 0
+        mut x11_count = 0
+        mut wayland_count = 0
+        
+        for file in $nix_files {
+            try {
+                let content = (open $file)
+                
+                if ($content | str contains "desktopManager.") {
+                    $desktop_count = $desktop_count + 1
+                }
+                if ($content | str contains "windowManager.") {
+                    $window_manager_count = $window_manager_count + 1
+                }
+                if ($content | str contains "services.xserver") {
+                    $x11_count = $x11_count + 1
+                }
+                if ($content | str contains "wayland") {
+                    $wayland_count = $wayland_count + 1
+                }
+            } catch {
+                # Skip files that can't be read
+            }
+        }
+        
+        if $desktop_count == 0 and $window_manager_count == 0 {
             $issues = ($issues | append "No desktop environment or window manager configured")
             $status = "CRITICAL"
         }
         
-        # Check for X11 vs Wayland conflicts with unlock managers
-        let x11_configs = (rg -l 'services\.xserver' --type nix .)
-        let wayland_configs = (rg -l "wayland" --type nix .)
-        
-        if ($x11_configs | length) > 0 and ($wayland_configs | length) > 0 {
+        if $x11_count > 0 and $wayland_count > 0 {
             $issues = ($issues | append "Mixed X11/Wayland configuration may cause session issues")
             $status = "WARNING"
         }
@@ -323,10 +367,10 @@ def check_session_services [] {
             status: $status,
             issues: $issues,
             details: {
-                has_desktop: ($has_desktop | length),
-                has_window_manager: ($has_window_manager | length),
-                x11_configs: ($x11_configs | length),
-                wayland_configs: ($wayland_configs | length)
+                desktop_count: $desktop_count,
+                window_manager_count: $window_manager_count,
+                x11_count: $x11_count,
+                wayland_count: $wayland_count
             }
         }
     } catch { |e|

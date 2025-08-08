@@ -39,7 +39,7 @@
   # Display configuration
   services.xserver = {
     enable = true;
-    services.desktopManager.gnome.enable = true;
+    desktopManager.gnome.enable = true;
   };
 
   # Display manager (updated for newer NixOS)
