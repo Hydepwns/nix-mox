@@ -8,7 +8,7 @@ let
 
   # Import appropriate configuration
   baseConfig = ./nixos/configuration.nix;
-  personalConfig = if hasPersonalConfig then import ./personal/hydepwns.nix else { };
+  personalConfig = if hasPersonalConfig then import ./personal/combined.nix else { };
   userHome = import ./home/home.nix;
   userHardware = import ./hardware/hardware-configuration.nix;
 in

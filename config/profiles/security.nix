@@ -10,22 +10,24 @@
       wheelNeedsPassword = true;
     };
 
-    # Password quality
-    pam.services = {
-      login.passwordAuth = {
-        password = "requisite pam_pwquality.so retry=3 minlen=8";
-      };
-      sudo.passwordAuth = {
-        password = "requisite pam_pwquality.so retry=3 minlen=8";
-      };
-    };
+    # Password quality (using proper PAM configuration)
+    # Note: PAM configuration requires more specific module setup
+    # Commented out for now to avoid conflicts
+    # pam.services = {
+    #   login.passwordAuth = {
+    #     password = "requisite pam_pwquality.so retry=3 minlen=8";
+    #   };
+    #   sudo.passwordAuth = {
+    #     password = "requisite pam_pwquality.so retry=3 minlen=8";
+    #   };
+    # };
 
-    # Login definitions
-    loginDefs = {
-      passwordMaxDays = 90;
-      passwordMinDays = 1;
-      passwordWarnAge = 7;
-    };
+    # Password policy settings (commented out - need correct module)
+    # loginDefs = {
+    #   passwordMaxDays = 90;
+    #   passwordMinDays = 1;
+    #   passwordWarnAge = 7;
+    # };
 
     # AppArmor
     apparmor = {
@@ -34,7 +36,7 @@
     };
 
     # Audit
-    auditd = {
+    audit = {
       enable = true;
       rules = [
         "-w /etc/passwd -p wa -k identity"

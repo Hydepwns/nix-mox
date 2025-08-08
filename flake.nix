@@ -409,8 +409,8 @@
               modules = [
                 ./config/nixos/configuration.nix
                 ./config/hardware/hardware-configuration.nix
-                # Import personal configuration (hydepwns.nix)
-                ./config/personal/hydepwns.nix
+                # Import personal configuration (includes projects)
+                ./config/personal/combined.nix
                 # Import gaming configuration
                 ./config/nixos/gaming.nix
                 ./config/nixos/gaming-tools.nix
