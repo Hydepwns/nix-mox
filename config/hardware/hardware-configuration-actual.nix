@@ -46,4 +46,31 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  
+  # Hardware-specific optimizations
+  hardware = {
+    # Enable firmware redistribution
+    enableRedistributableFirmware = true;
+    
+    # Graphics hardware detection
+    opengl = {
+      enable = true;
+      # driSupport deprecated in NixOS 24.05+ - removed
+    };
+    
+    # NVIDIA RTX 4070 specific configuration
+    nvidia = {
+      modesetting.enable = true;
+      powerManagement.enable = false;
+      powerManagement.finegrained = false;
+      open = false; # Use proprietary driver for RTX 4070
+      nvidiaSettings = true;
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
+    };
+  };
+  
+  # Intel UHD Graphics 770 support
+  boot.kernelParams = [
+    "i915.force_probe=*"
+  ];
 }
