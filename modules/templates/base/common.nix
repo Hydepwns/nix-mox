@@ -36,16 +36,10 @@
   # Time zone and locale (should be set in the importing config)
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # Display configuration - KDE Plasma with SDDM
+  # Display configuration - KDE Plasma (SDDM configured in personal configs)
   services.xserver = {
     enable = true;
     desktopManager.plasma5.enable = true;
-  };
-
-  # Display manager (SDDM pairs perfectly with KDE)
-  services.displayManager.sddm = {
-    enable = true;
-    wayland.enable = true; # Enable Wayland support for KDE
   };
 
   # Sound

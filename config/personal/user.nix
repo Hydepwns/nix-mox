@@ -18,9 +18,7 @@
 
   # Enable common services
   services.openssh.enable = true;
-  services.xserver.enable = true;
-  services.xserver.displayManager.sddm.enable = true;
-  services.xserver.desktopManager.plasma5.enable = true;
+  # X11 and desktop environment configured in common.nix to avoid conflicts
 
   # Git configuration
   programs.git = {
