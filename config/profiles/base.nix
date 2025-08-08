@@ -17,7 +17,7 @@
     ripgrep
     fd
     bat
-    exa
+    eza  # Modern ls replacement (formerly exa)
     fzf
 
     # Terminal emulator
