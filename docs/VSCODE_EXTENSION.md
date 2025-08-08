@@ -421,10 +421,10 @@ extensions/vscode/
 
 ## 📚 Related Documentation
 
-- **[Shell Completions](COMPLETIONS.md)** - Universal completion setup
-- **[API Reference](API.md)** - Complete function documentation  
-- **[Testing Guide](TESTING.md)** - Comprehensive test framework
+- **[Quick Start Guide](QUICK_START.md)** - Get started quickly
+- **[Templates Guide](TEMPLATES.md)** - Available configurations
 - **[Monitoring Setup](MONITORING.md)** - Performance monitoring
+- **[Troubleshooting](TROUBLESHOOTING.md)** - Common issues
 
 ## 🎯 Tips & Best Practices
 

@@ -32,15 +32,16 @@ nix-shell -p git nushell
 nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu --verbose"
 
 # 5. Run working setup scripts:
-# Option A: Simple install + setup (RECOMMENDED - WORKS)
+# Option A: Unified setup (RECOMMENDED - all-in-one solution)
+nix-shell -p nushell --run "nu scripts/core/unified-setup.nu"
+
+# Option B: Manual install + setup  
 nix-shell -p nushell --run "nu scripts/core/simple-install.nu --create-dirs"
 nix-shell -p nushell --run "nu scripts/core/simple-setup.nu"
 
-# Option B: Try interactive setup (MAY HAVE INPUT ISSUES)  
-nix-shell -p nushell --run "nu scripts/core/setup.nu"
-
-# Option C: Complex interactive wizard (CURRENTLY BROKEN - syntax errors)
-# nix-shell -p nushell --run "nu scripts/core/interactive-setup.nu"
+# Note: Other setup scripts have issues:
+# - setup.nu: input handling problems in some environments
+# - interactive-setup.nu: broken due to Nushell syntax errors
 
 # 7. Before rebuilding system, run safety check again
 nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu"
@@ -66,11 +67,12 @@ nix-shell -p nushell --run "nu scripts/core/safe-rebuild.nu --backup --test-firs
 
 ## 📚 Documentation
 
-- **[Setup Guide](docs/SETUP_WIZARD.md)** - Interactive wizard walkthrough
+- **[Quick Start Guide](docs/QUICK_START.md)** - Get started in minutes
 - **[Platform Guide](docs/PLATFORM.md)** - Platform-specific setup
+- **[Templates Guide](docs/TEMPLATES.md)** - Available configurations
 - **[VS Code Extension](docs/VSCODE_EXTENSION.md)** - IDE integration
 - **[Zed Extension](docs/ZED_EXTENSION.md)** - Zed editor integration
-- **[API Reference](docs/API.md)** - Function documentation
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
 
 ## 🛠️ Development
 

@@ -7,8 +7,8 @@
 ### Quick Setup
 
 ```bash
-# Use the safe-configuration template
-nu scripts/core/setup.nu
+# Use the unified setup
+nu scripts/core/unified-setup.nu
 
 # Or manually configure
 services.nix-mox.templates.customOptions.safe-configuration = {

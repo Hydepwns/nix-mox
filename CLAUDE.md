@@ -16,6 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Working Setup Scripts
 - `nix-shell -p nushell --run "nu scripts/core/simple-install.nu --create-dirs"` - **WORKS** - Basic install
+- `nix-shell -p nushell --run "nu scripts/core/unified-setup.nu"` - **WORKS** - Unified setup (RECOMMENDED)
 - `nix-shell -p nushell --run "nu scripts/core/simple-setup.nu"` - **WORKS** - Simple configuration setup
 - `nix-shell -p nushell --run "nu scripts/core/setup.nu"` - **PARTIAL** - May have input issues
 - `scripts/core/interactive-setup.nu` - **BROKEN** - Nushell syntax errors (closure defaults)

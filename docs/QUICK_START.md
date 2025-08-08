@@ -25,8 +25,8 @@ nix-shell -p git nushell
 # 4. MANDATORY: Run safety validation before any changes
 nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu --verbose"
 
-# 5. Interactive setup (recommended)
-nix-shell -p nushell --run "nu scripts/core/setup.nu"
+# 5. Unified setup (recommended - all features)
+nix-shell -p nushell --run "nu scripts/core/unified-setup.nu"
 
 # 6. Manual setup alternative
 cp env.example .env
@@ -165,7 +165,7 @@ See [Troubleshooting](TROUBLESHOOTING.md) for common issues and solutions.
 nixos-rebuild dry-activate --flake .#nixos
 
 # Regenerate personal config
-nu scripts/core/setup.nu
+nu scripts/core/unified-setup.nu
 
 # Switch to minimal template
 cp config/templates/minimal.nix config/nixos/configuration.nix
