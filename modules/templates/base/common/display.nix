@@ -1,10 +1,8 @@
 { config, pkgs, inputs, ... }:
 {
+  # Display configuration module - SDDM configuration moved to common.nix to avoid conflicts
   services.xserver = {
     enable = true;
     services.desktopManager.gnome.enable = true;
   };
-
-  # Display manager (updated for newer NixOS)
-  services.displayManager.sddm.enable = true;
 }
