@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Summarize test failures from a Nushell test run.
 # Usage: ./scripts/summarize-tests.sh
 

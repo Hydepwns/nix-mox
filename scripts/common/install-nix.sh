@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 # This script installs the Nix package manager on your system by
 # downloading a binary distribution and running its installer script

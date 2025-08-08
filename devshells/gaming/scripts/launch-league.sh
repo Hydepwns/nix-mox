@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # League of Legends Launch Script for nix-mox
 # This script launches League of Legends with proper Wine configuration

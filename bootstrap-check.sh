@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Bootstrap check script for fresh NixOS installs
 # Works with basic shell - no make or nushell required

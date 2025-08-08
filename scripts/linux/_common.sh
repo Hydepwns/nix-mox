@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Common functions for nix-mox Linux scripts (Bash)
 
 # Color codes

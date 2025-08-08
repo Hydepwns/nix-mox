@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Error handling utilities for nix-mox packages
 
 logMessage() {

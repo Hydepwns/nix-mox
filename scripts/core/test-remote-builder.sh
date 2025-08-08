@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Test Remote Nix Builder Script
 # This script tests if the remote Linux builder is working correctly

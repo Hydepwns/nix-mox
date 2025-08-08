@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Test utilities for CI runner tests
 
 # Test job queue

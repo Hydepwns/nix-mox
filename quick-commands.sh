@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Quick command reference for nix-mox (no make required)
 # Run this to see available commands on fresh NixOS installs

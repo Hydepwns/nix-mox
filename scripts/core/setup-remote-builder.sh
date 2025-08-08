@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Remote Nix Builder Setup Script
 # This script automates setting up a remote Linux builder for Nix on macOS
