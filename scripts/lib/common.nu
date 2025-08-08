@@ -54,7 +54,8 @@ export def log [level: string, message: string] {
     }
 }
 
-# Define convenience logging functions
+# Basic logging functions (for scripts that need simple logging without full logging.nu)
+# For advanced logging features, use logging.nu instead
 export def info [message: string] {
     log "INFO" $message
 }

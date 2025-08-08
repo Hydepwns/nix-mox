@@ -342,7 +342,7 @@ export def generate_script_example [script: record] {
         "install" => "nu scripts/core/install.nu --core --tools"
         "health-check" => "nu scripts/core/health-check.nu --check all"
         "generate-docs" => "nu scripts/tools/generate-docs.nu --examples"
-        "setup" => "nu scripts/core/setup.nu"
+        "setup" => "nu scripts/core/unified-setup.nu"
         "security-scan" => "nu scripts/tools/security-scan.nu --strict"
         "performance-report" => "nu scripts/tools/performance-report.nu"
         _ => ""

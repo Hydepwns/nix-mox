@@ -147,7 +147,7 @@ Run the script with:
 
 ### **Core Scripts (`core/`)**
 
-- `setup.nu`            — Main setup script with component selection (`--help` available)
+- `unified-setup.nu`    — Main unified setup script (RECOMMENDED - `--help` available)
 - `cleanup.nu`          — Core cleanup operations (`--help` available)
 - `health-check.nu`     — System health diagnostics
 - `integrate-modules.nu` — Module integration script
@@ -290,8 +290,8 @@ try {
 ### **Core Operations**
 
 ```bash
-# Setup
-nu scripts/core/setup.nu
+# Unified Setup (RECOMMENDED)
+nu scripts/core/unified-setup.nu
 
 # Health check
 nu scripts/core/health-check.nu
@@ -351,7 +351,7 @@ If you have scripts referencing the old structure, update them as follows:
 
 | Old Path | New Path |
 |----------|----------|
-| `scripts/setup.nu` | `scripts/core/setup.nu` |
+| `scripts/setup.nu` | `scripts/core/unified-setup.nu` |
 | `scripts/health-check.nu` | `scripts/core/health-check.nu` |
 | `scripts/code-quality.nu` | `scripts/development/code-quality.nu` |
 | `scripts/gaming-benchmark.nu` | `scripts/gaming/gaming-benchmark.nu` |

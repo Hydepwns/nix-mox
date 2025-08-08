@@ -21,7 +21,8 @@ PACKAGES = proxmox-update vzdump-backup zfs-snapshot nixos-flake-update install 
         performance-analyze performance-optimize performance-report perf \
         code-quality code-syntax code-security quality \
         validate-display validate-display-interactive validate-display-backup validate-display-verbose validate-display-full \
-        coverage coverage-grcov coverage-tarpaulin coverage-custom coverage-ci coverage-local
+        coverage coverage-grcov coverage-tarpaulin coverage-custom coverage-ci coverage-local \
+        safe-rebuild safety-check safe-test bootstrap-check
 
 # Default target - show help
 help:
@@ -105,7 +106,16 @@ help:
 	@echo "  packages    - Show available packages"
 	@echo "  shells      - Show available development shells"
 	@echo ""
+	@echo "🛡️  Safety & Bootstrap:"
+	@echo "  bootstrap-check - REQUIRED: Check bootstrap requirements"
+	@echo "  safety-check - REQUIRED: Validate system safety before rebuild"
+	@echo "  safe-test    - Comprehensive flake testing strategy"  
+	@echo "  safe-rebuild - Safe nixos-rebuild with mandatory validation"
+	@echo ""
 	@echo "💡 Tips:"
+	@echo "  - ALWAYS run 'make bootstrap-check' on fresh systems"
+	@echo "  - ALWAYS run 'make safety-check' before any nixos-rebuild"
+	@echo "  - Use 'make safe-rebuild' instead of direct nixos-rebuild"
 	@echo "  - Use 'make dev' to start development"
 	@echo "  - Use 'make test' before committing changes"
 	@echo "  - Use 'make format' to ensure consistent code style"
@@ -468,3 +478,25 @@ coverage-ci: check-nushell
 coverage-local: check-nushell
 	@echo "📊 Setting up coverage for local development..."
 	$(NUSHELL) -c "source scripts/tools/generate-coverage.nu; local_setup_coverage"
+
+# Bootstrap and safety targets
+bootstrap-check:
+	@echo "🔍 Checking bootstrap requirements..."
+	@echo "✓ Git: $$(command -v git >/dev/null 2>&1 && echo "installed" || echo "❌ MISSING - install with: nix-shell -p git")"
+	@echo "✓ Nushell: $$(command -v nu >/dev/null 2>&1 && echo "installed" || echo "❌ MISSING - install with: nix-shell -p nushell")"
+	@echo "✓ NixOS: $$(test -d /etc/nixos -o -f /etc/NIXOS && echo "detected" || echo "❌ NOT DETECTED - this script requires NixOS")"
+	@echo "✓ User in wheel group: $$(groups | grep -q wheel && echo "yes" || echo "❌ NO - add user to wheel group for sudo access")"
+	@echo ""
+	@echo "💡 If any checks failed, install missing components before proceeding"
+
+safety-check: check-nushell
+	@echo "🛡️  Running mandatory safety validation..."
+	$(NUSHELL) scripts/validation/pre-rebuild-safety-check.nu --verbose
+
+safe-test: check-nushell
+	@echo "🧪 Running comprehensive flake testing..."
+	$(NUSHELL) scripts/validation/safe-flake-test.nu --test-minimal --backup-current --verbose
+
+safe-rebuild: check-nushell
+	@echo "🚀 Running safe nixos-rebuild with validation..."
+	$(NUSHELL) scripts/core/safe-rebuild.nu --backup --test-first --verbose

@@ -4,23 +4,43 @@
 
 ## Prerequisites
 
-- NixOS or Linux with Nix package manager
-- Git
-- Nushell (optional, for interactive setup)
+- **NixOS** (fresh install with working display and user account)
+- Basic shell access (no additional packages required initially)
 
-## Quick Setup
+## Safe Setup Process
+
+⚠️ **Critical**: This framework modifies your NixOS system. Follow these steps exactly to prevent boot failures.
 
 ```bash
-# Clone repository
+# 1. Clone repository  
 git clone https://github.com/Hydepwns/nix-mox.git
 cd nix-mox
 
-# Interactive setup (recommended)
-nu scripts/core/setup.nu
+# 2. FIRST: Check bootstrap requirements (works without make/nushell)
+./bootstrap-check.sh
 
-# Or manual setup
+# 3. Install missing prerequisites (if bootstrap-check.sh shows failures)
+nix-shell -p git nushell
+
+# 4. MANDATORY: Run safety validation before any changes
+nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu --verbose"
+
+# 5. Interactive setup (recommended)
+nix-shell -p nushell --run "nu scripts/core/setup.nu"
+
+# 6. Manual setup alternative
 cp env.example .env
 nano .env
+
+# 7. Validate configuration before rebuilding
+nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu"
+
+# 8. NEVER use direct nixos-rebuild - use safe wrapper instead:
+nix-shell -p nushell --run "nu scripts/core/safe-rebuild.nu --backup --test-first"
+
+# 9. If you MUST use direct nixos-rebuild, always test first:
+# sudo nixos-rebuild dry-activate --flake .#nixos  # Test first  
+# sudo nixos-rebuild switch --flake .#nixos        # Apply if dry-run succeeds
 ```
 
 ## Choose Your Template

@@ -61,7 +61,7 @@ print "║                                                                      
 print "║ 🛠️  Available Commands                                                       ║"
 print "║   Health Check:     nu scripts/core/health-check.nu                         ║"
 print "║   Run Tests:        nu scripts/tests/run-tests.nu                           ║"
-print "║   Interactive Setup: nu scripts/core/interactive-setup.nu                   ║"
+print "║   Unified Setup:    nu scripts/core/unified-setup.nu                        ║"
 print "║   Project Cleanup:  nu scripts/tools/cleanup.nu                            ║"
 
 print "╠══════════════════════════════════════════════════════════════════════════════╣"

@@ -8,18 +8,51 @@
 
 ## 🚀 Quick Start
 
+### Prerequisites
+- **NixOS** (fresh install with working display and user account)  
+- Basic shell access (no additional packages required initially)
+
+### Safe Bootstrap Process
+
 ```bash
+# 1. Clone repository
 git clone https://github.com/Hydepwns/nix-mox.git
 cd nix-mox
 
-# Interactive setup (recommended)
-nu scripts/core/interactive-setup.nu
+# 2. CRITICAL: Check bootstrap requirements first  
+./bootstrap-check.sh
 
-# Or manual setup
-direnv allow
-./scripts/setup-hydepwns-dotfiles.sh
-nu scripts/core/setup.nu
+# 2b. Optional: See all available commands
+./quick-commands.sh
+
+# 3. Install missing prerequisites if needed (from bootstrap-check.sh output)
+nix-shell -p git nushell
+
+# 4. MANDATORY: Validate system safety before any changes  
+nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu --verbose"
+
+# 5. Run working setup scripts:
+# Option A: Simple install + setup (RECOMMENDED - WORKS)
+nix-shell -p nushell --run "nu scripts/core/simple-install.nu --create-dirs"
+nix-shell -p nushell --run "nu scripts/core/simple-setup.nu"
+
+# Option B: Try interactive setup (MAY HAVE INPUT ISSUES)  
+nix-shell -p nushell --run "nu scripts/core/setup.nu"
+
+# Option C: Complex interactive wizard (CURRENTLY BROKEN - syntax errors)
+# nix-shell -p nushell --run "nu scripts/core/interactive-setup.nu"
+
+# 7. Before rebuilding system, run safety check again
+nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu"
+
+# 8. Use SAFE rebuild wrapper (never direct nixos-rebuild!)
+nix-shell -p nushell --run "nu scripts/core/safe-rebuild.nu --backup --test-first"
 ```
+
+⚠️ **CRITICAL**: 
+- ALWAYS run `./bootstrap-check.sh` first on fresh systems
+- NEVER run `nixos-rebuild` directly - use the safe wrapper 
+- This prevents boot failures and display issues
 
 ## ✨ Features
 

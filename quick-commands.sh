@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# Quick command reference for nix-mox (no make required)
+# Run this to see available commands on fresh NixOS installs
+
+echo "🚀 nix-mox Quick Commands Reference"
+echo "=================================="
+echo ""
+
+echo "🔍 BOOTSTRAP (Fresh NixOS Install):"
+echo "  ./bootstrap-check.sh                    # Check requirements (no dependencies)"
+echo "  nix-shell -p git nushell                # Install prerequisites if needed"
+echo ""
+
+echo "🛡️  SAFETY (MANDATORY Before System Changes):"
+echo "  # Safety validation (run before ANY nixos-rebuild):"
+echo "  nix-shell -p nushell --run 'nu scripts/validation/pre-rebuild-safety-check.nu --verbose'"
+echo ""
+echo "  # Comprehensive testing:"  
+echo "  nix-shell -p nushell --run 'nu scripts/validation/safe-flake-test.nu --test-minimal --backup-current'"
+echo ""
+echo "  # Safe rebuild wrapper (use instead of nixos-rebuild):"
+echo "  nix-shell -p nushell --run 'nu scripts/core/safe-rebuild.nu --backup --test-first'"
+echo ""
+
+echo "⚙️  SETUP:"
+echo "  # Working install + setup (RECOMMENDED):"
+echo "  nix-shell -p nushell --run 'nu scripts/core/simple-install.nu --create-dirs'"
+echo "  nix-shell -p nushell --run 'nu scripts/core/simple-setup.nu'"
+echo ""
+echo "  # Alternative: Basic setup (may have input issues):"
+echo "  nix-shell -p nushell --run 'nu scripts/core/setup.nu'"
+echo ""
+echo "  # NOTE: interactive-setup.nu is currently broken (syntax errors)"
+echo ""
+
+echo "🧪 TESTING:"
+echo "  # Run all tests:"
+echo "  nix run .#test"
+echo ""
+echo "  # Test specific components:"
+echo "  nix build .#checks.x86_64-linux.unit"
+echo "  nix build .#checks.x86_64-linux.integration"
+echo ""
+
+echo "🎨 DEVELOPMENT:"
+echo "  # Enter development shell:"
+echo "  nix develop"
+echo ""
+echo "  # Format code:"
+echo "  nix run .#fmt"
+echo ""
+echo "  # Check flake:"
+echo "  nix flake check"
+echo ""
+
+echo "🏥 HEALTH & MAINTENANCE:"
+echo "  # Health check:"
+echo "  nix-shell -p nushell --run 'nu scripts/core/health-check.nu'"
+echo ""
+echo "  # Cleanup:"
+echo "  nix-shell -p nushell --run 'nu scripts/tools/cleanup.nu'"
+echo ""
+
+echo "🆘 EMERGENCY (If System Won't Boot):"
+echo "  # Boot from recovery media, then:"
+echo "  sudo nixos-rebuild --rollback switch"
+echo ""
+echo "  # Or select previous generation from boot menu"
+echo ""
+
+echo "💡 IMPORTANT REMINDERS:"
+echo "  ❌ NEVER run 'sudo nixos-rebuild switch' directly"
+echo "  ✅ ALWAYS use the safety validation scripts first"  
+echo "  ✅ ALWAYS use the safe-rebuild wrapper"
+echo "  ✅ Keep recovery media handy when testing"
+echo ""
+
+if [ -f "Makefile" ]; then
+    echo "📝 NOTE: Since Makefile exists, you can also use:"
+    echo "  make help                               # Full command reference"
+    echo "  make bootstrap-check                    # Bootstrap validation"
+    echo "  make safety-check                       # Safety validation"
+    echo "  make safe-rebuild                       # Safe rebuild"
+fi
