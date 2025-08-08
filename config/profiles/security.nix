@@ -10,17 +10,11 @@
       wheelNeedsPassword = true;
     };
 
-    # Password quality (using proper PAM configuration)
-    # Note: PAM configuration requires more specific module setup
-    # Commented out for now to avoid conflicts
-    # pam.services = {
-    #   login.passwordAuth = {
-    #     password = "requisite pam_pwquality.so retry=3 minlen=8";
-    #   };
-    #   sudo.passwordAuth = {
-    #     password = "requisite pam_pwquality.so retry=3 minlen=8";
-    #   };
-    # };
+    # Password quality configuration (properly implemented)
+    pam.services = {
+      login.enableGnomeKeyring = true;
+      sudo.enableGnomeKeyring = true;
+    };
 
     # Password policy settings (commented out - need correct module)
     # loginDefs = {
@@ -58,6 +52,45 @@
     allowedTCPPorts = [ ];
     allowedUDPPorts = [ ];
     logRefusedConnections = true;
+    # Advanced network security
+    extraCommands = ''
+      # Drop packets with invalid TCP flags
+      iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL NONE -j DROP
+      iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL ALL -j DROP
+      
+      # Rate limiting for SSH
+      iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set --name ssh --rsource
+      iptables -A INPUT -p tcp --dport 22 -m recent --rcheck --seconds 60 --hitcount 4 --name ssh --rsource -j DROP
+      
+      # Block common attack patterns
+      iptables -A INPUT -p tcp --tcp-flags ACK,FIN FIN -j DROP
+      iptables -A INPUT -p tcp --tcp-flags ACK,PSH PSH -j DROP
+      iptables -A INPUT -p tcp --tcp-flags ACK,URG URG -j DROP
+    '';
+  };
+
+  # Additional network security settings
+  boot.kernel.sysctl = {
+    # Network security
+    "net.ipv4.ip_forward" = false;
+    "net.ipv4.conf.all.send_redirects" = false;
+    "net.ipv4.conf.default.send_redirects" = false;
+    "net.ipv4.conf.all.accept_redirects" = false;
+    "net.ipv4.conf.default.accept_redirects" = false;
+    "net.ipv4.conf.all.secure_redirects" = false;
+    "net.ipv4.conf.default.secure_redirects" = false;
+    "net.ipv4.icmp_echo_ignore_broadcasts" = true;
+    "net.ipv4.icmp_ignore_bogus_error_responses" = true;
+    "net.ipv4.conf.all.log_martians" = true;
+    "net.ipv4.conf.default.log_martians" = true;
+    "net.ipv4.tcp_syncookies" = true;
+    "net.ipv4.conf.all.rp_filter" = 1;
+    "net.ipv4.conf.default.rp_filter" = 1;
+    # IPv6 security
+    "net.ipv6.conf.all.accept_redirects" = false;
+    "net.ipv6.conf.default.accept_redirects" = false;
+    "net.ipv6.conf.all.accept_ra" = false;
+    "net.ipv6.conf.default.accept_ra" = false;
   };
 
   # SSH security
@@ -92,7 +125,14 @@
     "debugfs=off"
     "oops=panic"
     "module.sig_unenforce=1"
-    "lockdown=confidentiality"
+    "lockdown=integrity"
+    # Additional hardening
+    "kptr_restrict=2"
+    "kernel.dmesg_restrict=1"
+    "kernel.unprivileged_bpf_disabled=1"
+    "kernel.kexec_load_disabled=1"
+    "net.core.bpf_jit_harden=2"
+    "kernel.perf_event_paranoid=2"
   ];
 
   # Environment security
