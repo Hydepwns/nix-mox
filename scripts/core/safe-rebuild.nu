@@ -165,16 +165,17 @@ def main [
 
 def run_preflight_checks [] {
     # Check if we're on NixOS
-    if not (ls /etc/nixos | length > 0 or ls /etc/NIXOS | length > 0) {
+    if not (("/etc/nixos" | path exists) or ("/etc/NIXOS" | path exists)) {
         print "❌ This doesn't appear to be a NixOS system"
         exit 1
     }
     
     # Check if we have sufficient permissions
-    if (whoami) != "root" {
-        if not (groups | any {|group| $group == "wheel"}) {
-            print "❌ User not in wheel group - cannot use sudo"
-            exit 1
+    if (whoami | str trim) != "root" {
+        # Check if user can use sudo (simplified check)
+        let can_sudo = (try { sudo -n true 2>/dev/null; $env.LAST_EXIT_CODE == 0 } catch { false })
+        if not $can_sudo {
+            print "⚠️  May need sudo permissions for rebuild"
         }
     }
     
@@ -186,7 +187,7 @@ def run_preflight_checks [] {
     }
     
     # Check if flake file exists
-    if not (ls flake.nix | length > 0) {
+    if not ("flake.nix" | path exists) {
         print "❌ flake.nix not found in current directory"
         exit 1
     }
@@ -204,13 +205,13 @@ def backup_current_system [] {
         nixos-rebuild list-generations | save $"($backup_dir)/generations.txt"
         
         # Backup current system info
-        uname -a | save $"($backup_dir)/system-info.txt"
+        sys | save $"($backup_dir)/system-info.txt"
         
         # Save current boot generation
         readlink /run/current-system | save $"($backup_dir)/current-system-link.txt"
         
         # Backup hardware config if exists
-        if (ls /etc/nixos/hardware-configuration.nix | length > 0) {
+        if ("/etc/nixos/hardware-configuration.nix" | path exists) {
             cp /etc/nixos/hardware-configuration.nix $"($backup_dir)/hardware-configuration.nix"
         }
         
