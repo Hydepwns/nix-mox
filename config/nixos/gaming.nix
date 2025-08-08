@@ -217,9 +217,11 @@ in
       # (mkIf cfg.audio.jack qjackctl)
     ];
 
-    # Kernel modules for gaming - CPU-specific virtualization
-    boot.kernelModules = lib.optionals (builtins.match ".*Intel.*" (builtins.readFile "/proc/cpuinfo") != null) [ "kvm-intel" ]
-                      ++ lib.optionals (builtins.match ".*AMD.*" (builtins.readFile "/proc/cpuinfo") != null) [ "kvm-amd" ];
+    # Kernel modules for gaming - include both Intel and AMD virtualization support
+    boot.kernelModules = [
+      "kvm-intel" # For Intel virtualization
+      "kvm-amd"   # For AMD virtualization
+    ];
 
     # Boot configuration for gaming
     boot = {
