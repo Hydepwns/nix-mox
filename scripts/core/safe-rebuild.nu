@@ -180,10 +180,14 @@ def run_preflight_checks [] {
     }
     
     # Check disk space
-    let root_usage = (df -h / | lines | last | split column -c " " | get column4 | str replace "%" "")
-    if ($root_usage | into int) > 95 {
-        print "⚠️  Root filesystem over 95% full - rebuild may fail"
-        print "   Consider running: nix-collect-garbage -d"
+    try {
+        let root_usage = (df -h / | lines | last | str trim | split row -r '\s+' | get 4 | str replace "%" "")
+        if ($root_usage | into int) > 95 {
+            print "⚠️  Root filesystem over 95% full - rebuild may fail"
+            print "   Consider running: nix-collect-garbage -d"
+        }
+    } catch {
+        # If df command fails, skip disk check
     }
     
     # Check if flake file exists
