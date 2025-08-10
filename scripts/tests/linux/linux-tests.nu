@@ -1,68 +1,12 @@
 #!/usr/bin/env nu
+# Linux-specific tests entrypoint
 
-# Linux-specific tests for nix-mox
-# These tests verify Linux-only functionality
-
-def main [] {
-    print "🐧 Running Linux-specific tests..."
-    # Check if we're on Linux
-    let os_info = (sys host | get long_os_version)
-    if not ($os_info | str contains "Linux") {
-        error make {msg: "These tests are only for Linux systems"}
-    }
-    # Test Linux-specific commands
-    # Test ZFS functionality (if available)
-    # Test systemd functionality
-    print "✅ Linux-specific tests completed successfully!"
+export-env {
+  use ../lib/test-common.nu *
 }
 
-def test-linux-commands [] {
-    print "🔧 Testing Linux-specific commands..."
-    # Test common Linux commands
-    let commands = ["ls", "cat", "grep", "ps", "df", "mount"]
-    for cmd in $commands {
-        if (which $cmd | is-empty) {
-            print $"❌ Command ($cmd) not found"
-        } else {
-            print $"✅ Command ($cmd) available"
-        }
-    }
+print "🔧 Running Linux storage guard..."
+if (^nu scripts/tests/linux/storage-guard.nu | complete | get exit_code) != 0 {
+  print "❌ Storage guard failed"; exit 1
 }
-
-def test-zfs-functionality [] {
-    print "💾 Testing ZFS functionality..."
-    # Check if ZFS is available
-    if (which zfs | is-empty) {
-        print "⚠️  ZFS not available, skipping ZFS tests"
-        return
-    }
-    # Test ZFS commands
-    let zfs_commands = ["zfs", "zpool"]
-    for cmd in $zfs_commands {
-        if (which $cmd | is-empty) {
-            print $"❌ ZFS command ($cmd) not found"
-        } else {
-            print $"✅ ZFS command ($cmd) available"
-        }
-    }
-}
-
-def test-systemd-functionality [] {
-    print "⚙️  Testing systemd functionality..."
-    # Check if systemd is available
-    if (which systemctl | is-empty) {
-        print "⚠️  systemd not available, skipping systemd tests"
-        return
-    }
-    # Test systemd commands
-    let systemd_commands = ["systemctl", "journalctl", "loginctl"]
-    for cmd in $systemd_commands {
-        if (which $cmd | is-empty) {
-            print $"❌ systemd command ($cmd) not found"
-        } else {
-            print $"✅ systemd command ($cmd) available"
-        }
-    }
-}
-
-# Run main function
+print "✅ Linux storage guard passed"

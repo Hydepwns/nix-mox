@@ -251,13 +251,21 @@
             # Full test suite
             test-suite = createTestCommand "tests" "scripts/tests/run-tests.nu; run []" pkgs;
           };
-        in
+
+                   in
         if isLinux system then
         # Linux-specific checks
-          baseChecks // {
-            # Linux-specific tests
-            linux-specific = createTestCommand "linux-tests" "scripts/tests/linux/linux-tests.nu" pkgs;
-          }
+                     baseChecks // {
+             # Linux-specific tests
+             linux-specific = createTestCommand "linux-tests" "scripts/tests/linux/linux-tests.nu" pkgs;
+             storage-guard = pkgs.runCommand "nix-mox-storage-guard"
+               { buildInputs = [ pkgs.nushell pkgs.findutils pkgs.utillinux pkgs.coreutils pkgs.nix ]; src = ./.; } ''
+                 cp -r $src $TMPDIR/src
+                 cd $TMPDIR/src
+                 nu scripts/tests/linux/storage-guard.nu || exit 1
+                 touch $out
+               '';
+           }
         else if isDarwin system then
         # macOS-specific checks
           baseChecks // {
@@ -390,6 +398,19 @@
               meta = {
                 description = "Show development help and available commands";
                 platforms = pkgs.lib.platforms.all;
+              };
+            };
+
+            # Storage guard app: run defensive storage checks on the live system
+            storage-guard = {
+              type = "app";
+              program = toString (pkgs.writeShellScript "storage-guard" ''
+                export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
+                exec ${pkgs.nushell}/bin/nu ${self}/scripts/tests/linux/storage-guard.nu
+              '');
+              meta = {
+                description = "Run defensive storage checks against the live system before reboot";
+                platforms = pkgs.lib.platforms.linux;
               };
             };
           };
