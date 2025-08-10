@@ -8,6 +8,9 @@
     ../profiles/gaming.nix
   ];
 
+  # Enable flakes CLI globally
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
   # Gaming-specific configuration
   environment.systemPackages = with pkgs; [
     # Gaming platforms
