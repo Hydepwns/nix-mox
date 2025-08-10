@@ -54,9 +54,8 @@
     enableRedistributableFirmware = true;
     
     # Graphics hardware detection
-    opengl = {
+    graphics = {
       enable = true;
-      # driSupport deprecated in NixOS 24.05+ - removed
     };
     
     # NVIDIA RTX 4070 specific configuration
