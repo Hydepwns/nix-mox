@@ -11,6 +11,24 @@
   # Enable flakes CLI globally
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # Locale configuration
+  i18n.defaultLocale = "en_US.UTF-8";
+  i18n.supportedLocales = [
+    "en_US.UTF-8/UTF-8"
+    "es_ES.UTF-8/UTF-8"
+  ];
+  i18n.extraLocaleSettings = {
+    LC_TIME = lib.mkForce "es_ES.UTF-8";
+    LC_NUMERIC = lib.mkForce "es_ES.UTF-8";
+    LC_MONETARY = lib.mkForce "es_ES.UTF-8";
+    LC_ADDRESS = lib.mkForce "es_ES.UTF-8";
+    LC_IDENTIFICATION = lib.mkForce "es_ES.UTF-8";
+    LC_MEASUREMENT = lib.mkForce "es_ES.UTF-8";
+    LC_PAPER = lib.mkForce "es_ES.UTF-8";
+    LC_TELEPHONE = lib.mkForce "es_ES.UTF-8";
+    LC_NAME = lib.mkForce "es_ES.UTF-8";
+  };
+
   # Gaming-specific configuration
   environment.systemPackages = with pkgs; [
     # Gaming platforms
