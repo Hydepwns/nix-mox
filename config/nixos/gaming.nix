@@ -94,10 +94,11 @@ in
             vaapiVdpau
           ]))
         ];
-        extraPackages32 = with pkgs.pkgsi686Linux; [
+        # Only include 32-bit packages on x86_64 systems
+        extraPackages32 = if pkgs.stdenv.hostPlatform.isx86_64 then with pkgs.pkgsi686Linux; [
           vaapiVdpau
           libvdpau-va-gl
-        ];
+        ] else [];
       };
     };
 
