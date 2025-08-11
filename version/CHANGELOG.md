@@ -178,7 +178,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Coverage Reporting**: Automatic test coverage generation with detailed reporting
 - **Cross-platform Support**: Tests run on Linux, macOS, and Windows with proper OS detection
 - **Sandbox Compatibility**: Test infrastructure works in Nix build environments
-- **Common Script Utilities**: `modules/scripts/linux/common.nu` with shared logging and platform detection
+- **Common Script Utilities**: `modules/scripts/platforms/linux/common.nu` with shared logging and platform detection
 - **Comprehensive Documentation**: Complete testing guide and updated architecture documentation
 
 ### Changed

@@ -1,373 +1,245 @@
 # nix-mox Scripts
 
-This directory contains all platform-specific and automation scripts for the nix-mox toolkit, featuring enhanced error handling, logging, configuration management, and security validation.
+This directory contains all platform-specific and automation scripts for the nix-mox toolkit, organized by functionality for better maintainability and discoverability.
 
-## Enhanced Features
+## 📁 Directory Structure
 
-### New Architecture
+```
+scripts/
+├── storage/           # Storage safety and configuration tools
+│   ├── storage-guard.nu          # Pre-reboot storage validation
+│   └── fix-storage-config.nu     # Auto-fix storage issues
+├── maintenance/       # System maintenance and health tools
+│   ├── health-check.nu           # System health validation
+│   ├── cleanup.nu                # Project cleanup
+│   ├── safe-rebuild.nu           # Safe system rebuild
+│   ├── integrate-modules.nu      # Module integration
+│   └── ci/                       # CI/CD tools
+├── analysis/          # Analysis and reporting tools
+│   ├── analyze-sizes.nu          # Package size analysis
+│   ├── analyze-sizes.sh          # Shell version of size analysis
+│   ├── advanced-cache.nu         # Cache optimization
+│   ├── generate-docs.nu          # Documentation generation
+│   ├── generate-sbom.nu          # Software bill of materials
+│   ├── dashboard.nu              # Main dashboard
+│   ├── project-dashboard.nu      # Project-specific dashboard
+│   ├── simple-dashboard.nu       # Simplified dashboard
+│   ├── size-dashboard.nu         # Size analysis dashboard
+│   ├── status-dashboard.nu       # Status dashboard
+│   ├── quality/                  # Code quality tools
+│   └── benchmarks/               # Performance benchmarks
+├── setup/            # System setup and installation
+│   ├── simple-install.nu         # Basic installation
+│   ├── simple-setup.nu           # Basic configuration setup
+│   ├── unified-setup.nu          # All-in-one setup
+│   ├── install.nu                # Installation tools
+│   ├── setup-cachix.nu           # Cachix configuration
+│   ├── setup-remote-builder.nu   # Remote builder setup
+│   ├── setup-remote-builder.sh   # Shell version
+│   ├── test-remote-builder.nu    # Remote builder testing
+│   └── test-remote-builder.sh    # Shell version
+├── testing/          # Testing and validation tools
+│   ├── run-tests.nu              # Main test runner
+│   ├── setup-coverage.nu         # Coverage setup
+│   ├── generate-codecov.nu       # Codecov integration
+│   ├── generate-lcov.nu          # LCOV coverage
+│   ├── test-coverage-debug.nu    # Coverage debugging
+│   ├── unit/                     # Unit tests
+│   ├── integration/              # Integration tests
+│   ├── performance/              # Performance tests
+│   ├── display/                  # Display tests
+│   ├── storage/                  # Storage tests
+│   ├── linux/                    # Linux-specific tests
+│   ├── macos/                    # macOS-specific tests
+│   ├── windows/                  # Windows-specific tests
+│   └── lib/                      # Test libraries
+├── validation/       # System validation tools
+│   ├── pre-rebuild-safety-check.nu    # Pre-rebuild validation
+│   ├── safe-flake-test.nu             # Flake testing
+│   ├── validate-display-config.nu     # Display validation
+│   └── validate-gaming-config.nu      # Gaming validation
+├── platforms/        # Platform-specific tools
+│   ├── linux/                    # Linux-specific scripts
+│   ├── macos/                    # macOS-specific scripts
+│   └── windows/                  # Windows-specific scripts
+├── lib/              # Shared libraries and utilities
+├── common/           # Common utilities and helpers
+└── handlers/         # Event handlers and automation
+```
 
-- **Modular Design**: Separated core, platform, and tools scripts
-- **Enhanced Error Handling**: Structured error handling with recovery suggestions
-- **Advanced Logging**: Multi-format logging with rotation and context tracking
-- **Configuration Management**: Hierarchical configuration with validation
-- **Security Validation**: Script security scanning and threat detection
-- **Performance Monitoring**: Execution time and resource usage tracking
-- **Script Discovery**: Automatic script discovery with metadata extraction
+## 🎯 Script Categories
 
-### Key Improvements
+### Storage Safety (Critical)
+- **Purpose**: Prevent boot failures due to storage configuration issues
+- **Location**: `scripts/storage/`
+- **Key Tools**: `storage-guard.nu`, `fix-storage-config.nu`
+- **Usage**: Run before every reboot
 
-#### 1. Enhanced Error Handling (`lib/error-handling.nu`)
+### Maintenance
+- **Purpose**: System health, cleanup, and safe operations
+- **Location**: `scripts/maintenance/`
+- **Key Tools**: `health-check.nu`, `cleanup.nu`, `safe-rebuild.nu`
+- **Usage**: Regular maintenance and before system changes
 
+### Analysis
+- **Purpose**: Performance analysis, reporting, and optimization
+- **Location**: `scripts/analysis/`
+- **Key Tools**: `analyze-sizes.nu`, `dashboard.nu`, `generate-docs.nu`
+- **Usage**: Performance monitoring and optimization
+
+### Setup
+- **Purpose**: System installation and configuration
+- **Location**: `scripts/setup/`
+- **Key Tools**: `unified-setup.nu`, `simple-install.nu`
+- **Usage**: Initial setup and configuration
+
+### Testing
+- **Purpose**: Comprehensive testing and validation
+- **Location**: `scripts/testing/`
+- **Key Tools**: `run-tests.nu`, `setup-coverage.nu`
+- **Usage**: Development and CI/CD
+
+### Validation
+- **Purpose**: System validation and safety checks
+- **Location**: `scripts/validation/`
+- **Key Tools**: `pre-rebuild-safety-check.nu`, `safe-flake-test.nu`
+- **Usage**: Before system changes
+
+## 🚀 Quick Reference
+
+### Critical Commands (Run Before Reboot)
+```bash
+# Storage safety (CRITICAL)
+nix run .#storage-guard
+nix run .#fix-storage
+
+# System validation
+nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu"
+```
+
+### Setup Commands
+```bash
+# Unified setup (recommended)
+nix-shell -p nushell --run "nu scripts/setup/unified-setup.nu"
+
+# Basic setup
+nix-shell -p nushell --run "nu scripts/setup/simple-setup.nu"
+```
+
+### Maintenance Commands
+```bash
+# Health check
+nix-shell -p nushell --run "nu scripts/maintenance/health-check.nu"
+
+# Cleanup
+nix-shell -p nushell --run "nu scripts/maintenance/cleanup.nu"
+
+# Safe rebuild
+nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu"
+```
+
+### Analysis Commands
+```bash
+# Size analysis
+nix-shell -p nushell --run "nu scripts/analysis/analyze-sizes.nu"
+
+# Dashboard
+nix-shell -p nushell --run "nu scripts/analysis/dashboard.nu"
+```
+
+### Testing Commands
+```bash
+# Run all tests
+nix-shell -p nushell --run "nu scripts/testing/run-tests.nu"
+
+# Setup coverage
+nix-shell -p nushell --run "nu scripts/testing/setup-coverage.nu"
+```
+
+## 🔧 Enhanced Features
+
+### Error Handling
 - Structured error types with recovery strategies
 - Unique error IDs for tracking
 - Context-aware error reporting
 - Automatic error logging and statistics
-- Recovery suggestions based on error type
 
-```nushell
-# Example usage
-use lib/error-handling.nu *
-handle_script_error "Command failed" "COMMAND_NOT_FOUND" { command: "nix" }
-```
-
-#### 2. Advanced Configuration Management (`lib/config.nu`)
-
-- Multi-source configuration loading (file, env, defaults)
+### Configuration Management
+- Multi-source configuration loading
 - Configuration validation and schema checking
 - Environment variable overrides
 - Hierarchical configuration merging
 
-```nushell
-# Example usage
-use lib/config.nu *
-let config = load_config
-show_config_summary $config
-```
-
-#### 3. Enhanced Logging (`lib/logging.nu`)
-
+### Logging
 - Multiple output formats (text, JSON, structured)
 - Automatic log rotation
 - Context-aware logging
 - Performance and security event logging
 
-```nushell
-# Example usage
-use lib/logging.nu *
-setup_logging $config
-info "Operation started" { operation: "install", user: (whoami) }
-```
-
-#### 4. Security Validation (`lib/security.nu`)
-
+### Security Validation
 - Dangerous pattern detection
 - File permission validation
 - Dependency security checking
 - Network access monitoring
-- Security threat classification
 
-```nushell
-# Example usage
-use lib/security.nu *
-let security_result = validate_script_security "scripts/install.nu"
-if not $security_result.secure {
-    warn "Security issues detected" { threats: $security_result.threats }
-}
-```
-
-#### 5. Performance Monitoring (`lib/performance.nu`)
-
+### Performance Monitoring
 - Execution time tracking
 - Resource usage monitoring
 - Performance threshold alerts
 - Performance reporting and recommendations
 
-```nushell
-# Example usage
-use lib/performance.nu *
-let monitor_id = start_performance_monitor "installation"
-# ... perform operation ...
-let metrics = end_performance_monitor $monitor_id
-```
+## 📋 Best Practices
 
-#### 6. Script Discovery (`lib/discovery.nu`)
-
-- Automatic script discovery
-- Metadata extraction
-- Dependency analysis
-- Documentation generation
-
-```nushell
-# Example usage
-use lib/discovery.nu *
-let scripts = discover_scripts
-let core_scripts = get_scripts_by_category "core"
-```
-
-## Main Entrypoint
-
-The primary entrypoint for automation is the bash wrapper script:
-
+### 1. Always Use Storage Safety
 ```bash
-./scripts/common/nix-mox
+# Before any reboot
+nix run .#storage-guard
 ```
 
-### Usage
-
-Run the script with:
-
+### 2. Use Safe Rebuild Wrapper
 ```bash
-./scripts/common/nix-mox --script install --dry-run
+# Instead of direct nixos-rebuild
+nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu"
 ```
 
-> **Note:** The wrapper script ensures robust argument passing for all Nushell versions and platforms. You no longer need to worry about double-dash (`--`) or Nushell quirks.
-
-### Options
-
-- `-h, --help`           Show help message
-- `--dry-run`           Show what would be done without making changes
-- `--debug`             Enable debug output
-- `--platform <os>`     Specify platform (auto, linux, darwin, nixos)
-- `--script <name>`     Run specific script (install, update, zfs-snapshot)
-- `--log <file>`        Log output to file
-
-### Platform & OS Info
-
-- When running a script, nix-mox prints detailed OS info (distro, version, kernel) for Linux/NixOS, macOS, or Windows.
-- NixOS is fully supported and detected as a Linux platform.
-
-### Error Handling & Logging
-
-- All error handling and logging is robust and platform-aware.
-- Errors are clearly reported with recovery suggestions.
-- Logs can be written to a file with `--log <file>`.
-- Structured error tracking with unique error IDs.
-
-## Directory Structure
-
-### Core Scripts (`core/`)
-
-- `unified-setup.nu`    — Main unified setup script (RECOMMENDED - `--help` available)
-- `cleanup.nu`          — Core cleanup operations (`--help` available)
-- `health-check.nu`     — System health diagnostics
-- `integrate-modules.nu` — Module integration script
-- `install.nu`          — Unified installation script
-- `setup-cachix.nu`     — Cachix setup script
-- `setup-remote-builder.sh` — Remote builder setup
-- `test-remote-builder.sh` — Remote builder testing
-- `test-ci-local.sh`    — Local CI testing
-- `ci-test.sh`          — CI test script
-- `summarize-tests.sh`  — Test summarization
-
-### Tools (`tools/`)
-
-- `cleanup.nu`          — Comprehensive project cleanup (`--help` available)
-- `project-dashboard.nu` — Project dashboard and metrics
-- `generate-docs.nu`    — Automatic documentation generation
-- `analyze-sizes.nu`    — Repository size analysis
-- `size-dashboard.nu`   — Size analysis dashboard
-- `advanced-cache.nu`   — Advanced caching utilities
-- `generate-coverage.nu` — Code coverage generation
-- `generate-sbom.nu`    — Software Bill of Materials generation
-- `analyze-sizes.sh`    — Shell-based size analysis (`--help` available)
-
-### Quality Scripts (`quality/`)
-
-- `code-quality.nu`     — Code quality analysis and linting
-- `performance-optimize.nu` — Performance optimization and analysis
-
-### Validation Scripts (`validation/`)
-
-- `validate-gaming-config.nu` — Gaming configuration validation
-- `validate-display-config.nu` — Display configuration validation
-
-### Benchmark Scripts (`benchmarks/`)
-
-- `gaming-benchmark.nu` — Gaming performance benchmarking
-
-### CI Scripts (`ci/`)
-
-- `pre-commit.nu`       — Pre-commit hooks and checks
-
-### Platform Scripts
-
-- `linux/`              — Linux-specific implementations
-- `macos/`              — macOS-specific implementations  
-- `windows/`            — Windows-specific implementations
-
-### Libraries (`lib/`)
-
-- `common.nu`           — Common utilities and constants
-- `error-handling.nu`   — Enhanced error handling system
-- `config.nu`           — Configuration management
-- `logging.nu`          — Advanced logging system
-- `security.nu`         — Security validation
-- `performance.nu`      — Performance monitoring
-- `discovery.nu`        — Script discovery and metadata
-- `argparse.nu`         — Argument parsing utilities
-- `exec.nu`             — Execution helpers
-- `platform.nu`         — Platform detection
-
-### Common Scripts (`common/`)
-
-- `nix-mox.nu`          — Main Nushell automation logic
-- `nix-mox`             — Bash wrapper script
-- `install-nix.sh`      — Nix installation script
-- `nix-mox-uninstall.sh` — Uninstallation script
-
-### Legacy Scripts
-
-- `tests/`              — Test suite
-- `handlers/`           — Script handlers
-
-## Configuration
-
-### Default Configuration (`nix-mox.json`)
-
-```json
-{
-  "logging": {
-    "level": "INFO",
-    "file": "logs/nix-mox.log",
-    "format": "text"
-  },
-  "security": {
-    "validate_scripts": true,
-    "check_permissions": true
-  },
-  "performance": {
-    "enable_monitoring": true,
-    "log_performance": true
-  }
-}
-```
-
-### Configuration Sources (in order of precedence)
-
-1. `./nix-mox.json`
-2. `./config/nix-mox.json`
-3. `~/.config/nix-mox/config.json`
-4. `/etc/nix-mox/config.json`
-5. Environment variables (`NIXMOX_*`)
-
-## Script Development
-
-### Using Enhanced Modules
-
-```nushell
-#!/usr/bin/env nu
-
-use lib/error-handling.nu *
-use lib/config.nu *
-use lib/logging.nu *
-use lib/security.nu *
-
-# Load configuration
-let config = load_config
-setup_logging $config
-
-# Main script logic
-try {
-    info "Starting operation"
-    # ... script logic ...
-    info "Operation completed"
-} catch { |err|
-    handle_script_error $"Operation failed: ($err)" "EXECUTION_FAILED"
-}
-```
-
-### Best Practices
-
-1. **Use the enhanced libraries** for error handling, logging, and configuration
-2. **Follow the modular structure** - place scripts in appropriate directories
-3. **Include comprehensive error handling** with recovery suggestions
-4. **Use structured logging** for better debugging and monitoring
-5. **Validate configurations** before execution
-6. **Include security validation** for sensitive operations
-
-## Quick Reference
-
-### Core Operations
-
+### 3. Run Health Checks Regularly
 ```bash
-# Unified Setup (RECOMMENDED)
-nu scripts/core/unified-setup.nu
-
-# Health check
-nu scripts/core/health-check.nu
-
-# Module integration
-nu scripts/core/integrate-modules.nu
+# Regular maintenance
+nix-shell -p nushell --run "nu scripts/maintenance/health-check.nu"
 ```
 
-### Gaming Operations
+### 4. Use Appropriate Script Categories
+- **Storage**: For storage-related operations
+- **Maintenance**: For system maintenance
+- **Analysis**: For performance and reporting
+- **Setup**: For installation and configuration
+- **Testing**: For validation and testing
+- **Validation**: For safety checks
 
-```bash
-# Gaming benchmark
-nu scripts/gaming/gaming-benchmark.nu
+## 🔍 Finding Scripts
 
-# Validate gaming config
-nu scripts/gaming/validate-gaming-config.nu
-```
+### By Function
+- **Storage issues**: `scripts/storage/`
+- **System health**: `scripts/maintenance/`
+- **Performance**: `scripts/analysis/`
+- **Installation**: `scripts/setup/`
+- **Testing**: `scripts/testing/`
+- **Validation**: `scripts/validation/`
 
-### Development Operations
+### By Platform
+- **Linux**: `scripts/platforms/linux/`
+- **macOS**: `scripts/platforms/macos/`
+- **Windows**: `scripts/platforms/windows/`
 
-```bash
-# Code quality
-nu scripts/development/code-quality.nu
+### By Type
+- **Nushell scripts**: `.nu` extension
+- **Shell scripts**: `.sh` extension
+- **Libraries**: `scripts/lib/`
+- **Common utilities**: `scripts/common/`
 
-# Pre-commit checks
-nu scripts/development/pre-commit.nu
-```
+## 📚 Related Documentation
 
-### Validation Operations
-
-```bash
-# Display validation
-nu scripts/validation/validate-display-config.nu
-
-# Performance optimization
-nu scripts/validation/performance-optimize.nu
-```
-
-### Tool Operations
-
-```bash
-# Generate documentation
-nu scripts/tools/generate-docs.nu --examples
-
-# Analyze sizes
-nu scripts/tools/analyze-sizes.nu
-
-# Generate SBOM
-nu scripts/tools/generate-sbom.nu
-```
-
-## Migration Guide
-
-### From Old Structure
-
-If you have scripts referencing the old structure, update them as follows:
-
-| Old Path | New Path |
-|----------|----------|
-| `scripts/setup.nu` | `scripts/core/unified-setup.nu` |
-| `scripts/health-check.nu` | `scripts/core/health-check.nu` |
-| `scripts/code-quality.nu` | `scripts/development/code-quality.nu` |
-| `scripts/gaming-benchmark.nu` | `scripts/gaming/gaming-benchmark.nu` |
-| `scripts/validate-display-config.nu` | `scripts/validation/validate-display-config.nu` |
-| `scripts/analyze-sizes.nu` | `scripts/tools/analyze-sizes.nu` |
-
-### Makefile Updates
-
-The Makefile has been updated with the new paths. All targets now use the reorganized structure.
-
-### CI/CD Updates
-
-GitHub Actions and other CI/CD configurations have been updated to use the new script paths.
-
-## Support
-
-- **Documentation**: See `docs/` for detailed guides
-- **Issues**: Report problems on GitHub
-- **Scripts**: All scripts include help text and examples
+- [CLAUDE.md](../CLAUDE.md) - Development guidance
+- [Storage Safety Guide](../docs/STORAGE_SAFETY.md) - Storage safety best practices
+- [Quick Start Guide](../docs/QUICK_START.md) - Getting started
+- [Troubleshooting](../docs/TROUBLESHOOTING.md) - Common issues

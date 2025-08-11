@@ -105,7 +105,7 @@ telegram://your-username
 
 ### Technical Changes
 
-- Test framework moved from `tests/` to `scripts/tests/` (internal change, doesn't affect safe config)
+- Test framework moved from `tests/` to `scripts/testing/` (internal change, doesn't affect safe config)
 - All tests continue to pass ✅
 - Display safety features remain intact
 - nix-mox integration working correctly
