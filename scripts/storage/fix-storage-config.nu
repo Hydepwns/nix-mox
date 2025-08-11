@@ -57,11 +57,15 @@ def main [] {
   let current = (get_current_identifiers)
   let config = (read_config)
   
-  print $"Current system:"
-  print $"  Root: ($current.root.device) (UUID: ($current.root.uuid), partuuid: ($current.root.partuuid))"
-  print $"  Boot: ($current.boot.device) (UUID: ($current.boot.uuid), partuuid: ($current.boot.partuuid))"
+  print "Current system:"
+  print $"  Root: ($current.root.device)"
+  print $"    UUID: ($current.root.uuid)"
+  print $"    PartUUID: ($current.root.partuuid)"
+  print $"  Boot: ($current.boot.device)"
+  print $"    UUID: ($current.boot.uuid)"
+  print $"    PartUUID: ($current.boot.partuuid)"
   print $""
-  print $"Configuration:"
+  print "Configuration:"
   print $"  Root: ($config.root)"
   print $"  Boot: ($config.boot)"
   print $""
@@ -101,7 +105,8 @@ def main [] {
   let use_uuid = ($choice == "1")
   
   # Create backup
-  let backup_file = $"($config_file).backup.($(date +%Y%m%d_%H%M%S))"
+  let timestamp = (date now | format date '%Y%m%d_%H%M%S')
+  let backup_file = $"($config_file).backup.($timestamp)"
   ^cp $config_file $backup_file
   print $"📋 Backup created: ($backup_file)"
   
