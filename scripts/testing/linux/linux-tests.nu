@@ -6,7 +6,12 @@ export-env {
 }
 
 print "🔧 Running Linux storage guard..."
-if (^nu scripts/storage/storage-guard.nu | complete | get exit_code) != 0 {
-  print "❌ Storage guard failed"; exit 1
+# Skip storage guard in CI/build environment where real devices don't exist
+if ($env.CI? == "true" or $env.CI? == "1" or $env.NIX_BUILD_TOP? != null) {
+  print "⏭️  Skipping storage guard in build environment"
+} else {
+  if (^nu scripts/storage/storage-guard.nu | complete | get exit_code) != 0 {
+    print "❌ Storage guard failed"; exit 1
+  }
+  print "✅ Linux storage guard passed"
 }
-print "✅ Linux storage guard passed"
