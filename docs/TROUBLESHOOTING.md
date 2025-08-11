@@ -164,7 +164,7 @@ sudo nixos-rebuild boot --flake .#nixos
 
 ```bash
 # Run cleanup script
-nu scripts/core/cleanup.nu
+nu scripts/maintenance/cleanup.nu
 
 # Check disk space
 df -h

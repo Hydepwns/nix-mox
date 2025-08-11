@@ -26,7 +26,7 @@ nix-shell -p git nushell
 nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu --verbose"
 
 # 5. Unified setup (recommended - all features)
-nix-shell -p nushell --run "nu scripts/core/unified-setup.nu"
+nix-shell -p nushell --run "nu scripts/setup/unified-setup.nu"
 
 # 6. Manual setup alternative
 cp env.example .env
@@ -36,7 +36,7 @@ nano .env
 nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu"
 
 # 8. NEVER use direct nixos-rebuild - use safe wrapper instead:
-nix-shell -p nushell --run "nu scripts/core/safe-rebuild.nu --backup --test-first"
+nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu --backup --test-first"
 
 # 9. If you MUST use direct nixos-rebuild, always test first:
 # sudo nixos-rebuild dry-activate --flake .#nixos  # Test first  
@@ -127,7 +127,7 @@ make integration
 
 1. **Customize personal settings** - Edit `config/personal/user.nix`
 2. **Configure hardware** - Edit `config/personal/hardware.nix`
-3. **Add modules** - Use `nu scripts/core/integrate-modules.nu`
+3. **Add modules** - Use `nu scripts/maintenance/integrate-modules.nu`
 4. **Explore templates** - See [Templates](TEMPLATES.md) for details
 5. **Platform-specific setup** - See [Platform Setup](PLATFORM.md)
 
@@ -152,7 +152,7 @@ For detailed multi-host configuration, see [Multi-Host Guide](archive/MULTI_HOST
 
 1. **Customize personal settings** - Edit `config/personal/user.nix`
 2. **Configure hardware** - Edit `config/personal/hardware.nix`
-3. **Add modules** - Use `nu scripts/core/integrate-modules.nu`
+3. **Add modules** - Use `nu scripts/maintenance/integrate-modules.nu`
 4. **Explore templates** - Check `config/templates/`
 5. **Read documentation** - See `docs/` for detailed guides
 
@@ -165,13 +165,13 @@ See [Troubleshooting](TROUBLESHOOTING.md) for common issues and solutions.
 nixos-rebuild dry-activate --flake .#nixos
 
 # Regenerate personal config
-nu scripts/core/unified-setup.nu
+nu scripts/setup/unified-setup.nu
 
 # Switch to minimal template
 cp config/templates/minimal.nix config/nixos/configuration.nix
 
 # Run cleanup script
-nu scripts/core/cleanup.nu
+nu scripts/maintenance/cleanup.nu
 ```
 
 ## Status

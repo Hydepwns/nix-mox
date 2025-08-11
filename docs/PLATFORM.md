@@ -8,7 +8,7 @@
 
 ```bash
 # Use the unified setup
-nu scripts/core/unified-setup.nu
+nu scripts/setup/unified-setup.nu
 
 # Or manually configure
 services.nix-mox.templates.customOptions.safe-configuration = {

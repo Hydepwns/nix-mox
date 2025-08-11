@@ -33,11 +33,11 @@ nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu --
 
 # 5. Run working setup scripts:
 # Option A: Unified setup (RECOMMENDED - all-in-one solution)
-nix-shell -p nushell --run "nu scripts/core/unified-setup.nu"
+nix-shell -p nushell --run "nu scripts/setup/unified-setup.nu"
 
 # Option B: Manual install + setup  
-nix-shell -p nushell --run "nu scripts/core/simple-install.nu --create-dirs"
-nix-shell -p nushell --run "nu scripts/core/simple-setup.nu"
+nix-shell -p nushell --run "nu scripts/setup/simple-install.nu --create-dirs"
+nix-shell -p nushell --run "nu scripts/setup/simple-setup.nu"
 
 # Note: Other setup scripts have issues:
 # - setup.nu: input handling problems in some environments
@@ -46,13 +46,17 @@ nix-shell -p nushell --run "nu scripts/core/simple-setup.nu"
 # 7. Before rebuilding system, run safety check again
 nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu"
 
-# 8. Use SAFE rebuild wrapper (never direct nixos-rebuild!)
-nix-shell -p nushell --run "nu scripts/core/safe-rebuild.nu --backup --test-first"
+# 8. CRITICAL: Validate storage configuration before reboot
+nix run .#storage-guard
+
+# 9. Use SAFE rebuild wrapper (never direct nixos-rebuild!)
+nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu --backup --test-first"
 ```
 
 **CRITICAL**: 
 - ALWAYS run `./bootstrap-check.sh` first on fresh systems
 - NEVER run `nixos-rebuild` directly - use the safe wrapper 
+- ALWAYS run `nix run .#storage-guard` before rebooting
 - This prevents boot failures and display issues
 
 ## Features
@@ -70,6 +74,7 @@ nix-shell -p nushell --run "nu scripts/core/safe-rebuild.nu --backup --test-firs
 - **[Quick Start Guide](docs/QUICK_START.md)** - Get started in minutes
 - **[Platform Guide](docs/PLATFORM.md)** - Platform-specific setup
 - **[Templates Guide](docs/TEMPLATES.md)** - Available configurations
+- **[Storage Safety Guide](docs/STORAGE_SAFETY.md)** - Prevent boot failures
 - **[VS Code Extension](docs/VSCODE_EXTENSION.md)** - IDE integration
 - **[Zed Extension](docs/ZED_EXTENSION.md)** - Zed editor integration
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
@@ -85,6 +90,7 @@ nix run .#fmt     # Format code
 nix run .#test    # Run tests
 nix run .#update  # Update flake inputs
 nix run .#dev     # Show help
+nix run .#storage-guard  # Validate storage before reboot
 
 # Available tools
 zed         # Primary editor
@@ -144,9 +150,9 @@ nix run .#security-audit      # Security audit
 ## Maintenance
 
 ```bash
-nu scripts/tools/cleanup.nu           # Project cleanup
-nu scripts/core/health-check.nu       # Health validation
-nu scripts/tools/analyze-sizes.nu     # Size analysis
+nu scripts/maintenance/cleanup.nu           # Project cleanup
+nu scripts/maintenance/health-check.nu       # Health validation
+nu scripts/analysis/analyze-sizes.nu     # Size analysis
 ```
 
 ## Templates

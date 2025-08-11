@@ -11,15 +11,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Safety-First Commands (Mandatory Before System Changes)
 - `nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu"` - **REQUIRED** 
 - `nix-shell -p nushell --run "nu scripts/validation/safe-flake-test.nu"` - Comprehensive testing
-- `nix-shell -p nushell --run "nu scripts/core/safe-rebuild.nu"` - Safe rebuild wrapper
+- `nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu"` - Safe rebuild wrapper
 - **NEVER** run `nixos-rebuild` directly - use the safe wrapper
 
+### Storage Safety Commands (Critical for Boot Reliability)
+- `nix run .#storage-guard` - **REQUIRED BEFORE REBOOT** - Validates storage configuration
+- `nix run .#fix-storage` - Auto-fix storage configuration issues
+- **ALWAYS** run storage-guard before rebooting to prevent boot failures
+
 ### Working Setup Scripts
-- `nix-shell -p nushell --run "nu scripts/core/simple-install.nu --create-dirs"` - **WORKS** - Basic install
-- `nix-shell -p nushell --run "nu scripts/core/unified-setup.nu"` - **WORKS** - Unified setup (RECOMMENDED)
-- `nix-shell -p nushell --run "nu scripts/core/simple-setup.nu"` - **WORKS** - Simple configuration setup
-- `nix-shell -p nushell --run "nu scripts/core/setup.nu"` - **PARTIAL** - May have input issues
-- `scripts/core/interactive-setup.nu` - **BROKEN** - Nushell syntax errors (closure defaults)
+- `nix-shell -p nushell --run "nu scripts/setup/simple-install.nu --create-dirs"` - **WORKS** - Basic install
+- `nix-shell -p nushell --run "nu scripts/setup/unified-setup.nu"` - **WORKS** - Unified setup (RECOMMENDED)
+- `nix-shell -p nushell --run "nu scripts/setup/simple-setup.nu"` - **WORKS** - Simple configuration setup
+- `nix-shell -p nushell --run "nu scripts/setup/setup.nu"` - **PARTIAL** - May have input issues
+- `scripts/setup/interactive-setup.nu` - **BROKEN** - Nushell syntax errors (closure defaults)
 
 ### Alternative: Using Make (if available)
 - `make safety-check` - Shorthand for safety validation 
@@ -37,7 +42,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `make test` - Run all tests (unit + integration)
 - `make test-unit` - Run unit tests only
 - `make test-integration` - Run integration tests only
-- `nu scripts/tests/run-tests.nu` - Run tests with Nushell
+- `nu scripts/testing/run-tests.nu` - Run tests with Nushell
 - Platform-specific: `make test-gaming`, `make validate-display`
 
 ### Development Shells
@@ -54,6 +59,103 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `nix run .#update` - Update flake inputs
 - `make clean` - Clean test artifacts
 - `make clean-all` - Deep clean including Nix store GC
+
+## Storage Configuration Issues and Prevention
+
+### Root Cause: PartUUID Instability
+The system experienced boot failures due to partuuid changes in storage configuration. This occurs when:
+- Partition table is modified (repair, resize, clone operations)
+- Disk is moved between systems
+- Backup/restore operations rewrite partition table
+- Disk firmware updates or hardware changes
+
+**Problem**: PartUUIDs can change while filesystem UUIDs remain constant, causing initrd to fail finding root partition.
+
+### Defensive Tools Implemented
+
+#### 1. Storage Guard (`nix run .#storage-guard`)
+- **Purpose**: Pre-reboot validation of storage configuration
+- **Checks**: Device resolution, UUID/partuuid consistency, initrd modules
+- **Usage**: Run before every reboot to catch configuration drift
+- **Output**: Clear error messages with suggested fixes
+
+#### 2. Fix Storage Tool (`nix run .#fix-storage`)
+- **Purpose**: Automatic detection and correction of storage issues
+- **Features**: 
+  - Detects mismatched partuuid/UUID
+  - Offers choice between UUID (more stable) or partuuid
+  - Creates backup before making changes
+  - Provides detailed analysis of current vs configured state
+
+#### 3. Enhanced Error Messages
+- Storage guard now provides specific guidance when issues are detected
+- Shows expected vs actual identifiers
+- Suggests exact configuration changes needed
+
+### Best Practices for Storage Configuration
+
+#### 1. Identifier Stability (Most to Least Stable)
+1. **Filesystem UUID** - Most stable, survives partition table changes
+2. **PartUUID** - Stable unless partition table modified
+3. **Device names** - Least stable, can change with hardware changes
+
+#### 2. Configuration Recommendations
+- **Prefer UUID over partuuid** for root filesystem
+- **Use partuuid for boot partition** (EFI partition partuuid is more stable)
+- **Avoid device names** like `/dev/nvme0n1p2` in configuration
+
+#### 3. Maintenance Workflow
+1. Run `nix run .#storage-guard` before any reboot
+2. If issues detected, run `nix run .#fix-storage` to auto-correct
+3. Verify fix with storage-guard again
+4. Test configuration with `nix build` before rebooting
+
+### Example Storage Configuration
+```nix
+# Recommended: Use UUID for root (most stable)
+fileSystems."/" = {
+  device = "/dev/disk/by-uuid/7938b5a4-ae4d-475c-acda-664f3d04f9f0";
+  fsType = "ext4";
+};
+
+# Acceptable: Use partuuid for boot (EFI partuuid is stable)
+fileSystems."/boot" = {
+  device = "/dev/disk/by-partuuid/8021e6ba-3192-4507-b0aa-d5836e86a0b9";
+  fsType = "vfat";
+  options = [ "fmask=0077" "dmask=0077" ];
+};
+```
+
+### Troubleshooting Storage Issues
+
+#### Symptoms of Storage Configuration Problems
+- System fails to boot after reboot
+- Initrd can't find root partition
+- "No such device" errors during boot
+- Successful rebuild but boot failure
+
+#### Diagnostic Commands
+```bash
+# Check current mount points and UUIDs
+findmnt -no UUID,FSTYPE,SOURCE /
+
+# Check partuuid vs UUID
+sudo blkid /dev/nvme0n1p2
+
+# List available identifiers
+ls -la /dev/disk/by-uuid/
+ls -la /dev/disk/by-partuuid/
+
+# Run storage validation
+nix run .#storage-guard
+```
+
+#### Recovery Steps
+1. Boot into rescue mode or live USB
+2. Mount the root filesystem
+3. Run `nix run .#fix-storage` to auto-correct configuration
+4. Verify with `nix run .#storage-guard`
+5. Rebuild and reboot
 
 ## Architecture Overview
 
@@ -86,7 +188,8 @@ The framework uses a **fragment-based module system**:
 2. Make changes to Nix files
 3. Format with `nix run .#fmt` before committing
 4. Test with `nix run .#test` or `make test`
-5. Build/deploy with `nixos-rebuild switch --flake .#nixos`
+5. **Run `nix run .#storage-guard` before rebooting**
+6. Build/deploy with `nixos-rebuild switch --flake .#nixos`
 
 ## Important Locations
 
@@ -97,10 +200,12 @@ The framework uses a **fragment-based module system**:
 - `config/hardware/` - Hardware-specific configurations
 
 ### Scripts and Tools
-- `scripts/core/setup.nu` - Interactive configuration wizard
-- `scripts/core/health-check.nu` - System health validation
-- `scripts/tests/` - Test suites organized by type
-- `scripts/tools/` - Utility scripts for analysis and maintenance
+- `scripts/setup/setup.nu` - Interactive configuration wizard
+- `scripts/maintenance/health-check.nu` - System health validation
+- `scripts/testing/` - Test suites organized by type
+- `scripts/analysis/` - Analysis and reporting scripts
+- `scripts/storage/storage-guard.nu` - Storage validation tool
+- `scripts/storage/fix-storage-config.nu` - Storage configuration fixer
 
 ### Module Categories
 - `modules/core/` - Essential framework modules
@@ -116,6 +221,7 @@ The framework uses a **fragment-based module system**:
 - Primary target platform with full feature support
 - Gaming tools, Proxmox integration, ZFS support
 - Service management and monitoring capabilities
+- **Storage safety tools available**
 
 ### macOS
 - Development shell support with Homebrew integration
@@ -155,5 +261,6 @@ The project uses comprehensive testing:
 - **Platform tests**: Test platform-specific functionality
 - **Display tests**: Test GUI and display configurations
 - **Gaming tests**: Test gaming setup and performance
+- **Storage tests**: Validate storage configuration stability
 
 All tests run in isolated environments with proper cleanup.
