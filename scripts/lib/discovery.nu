@@ -32,12 +32,16 @@ export def discover_scripts [base_path: string = "scripts"] {
 
     # Discover scripts in different directories
     let script_dirs = [
-        "scripts/core"
-        "scripts/platform"
-        "scripts/tools"
-        "scripts/linux"
-        "scripts/windows"
+        "scripts/storage"
+        "scripts/maintenance"
+        "scripts/analysis"
+        "scripts/setup"
+        "scripts/testing"
+        "scripts/validation"
+        "scripts/platforms"
+        "scripts/lib"
         "scripts/common"
+        "scripts/handlers"
     ]
 
     for dir in $script_dirs {

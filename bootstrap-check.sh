@@ -90,13 +90,13 @@ if [ $checks_failed -eq 0 ]; then
     echo "   nix-shell -p nushell --run 'nu scripts/validation/pre-rebuild-safety-check.nu --verbose'"
     echo ""
     echo "2. If safety check passes, run unified setup:"
-    echo "   nix-shell -p nushell --run 'nu scripts/core/unified-setup.nu'"
+    echo "   nix-shell -p nushell --run 'nu scripts/setup/unified-setup.nu'"
     echo ""
     echo "3. Before any nixos-rebuild, always run:"
     echo "   nix-shell -p nushell --run 'nu scripts/validation/pre-rebuild-safety-check.nu'"
     echo ""
     echo "4. Use safe rebuild wrapper instead of direct nixos-rebuild:"
-    echo "   nix-shell -p nushell --run 'nu scripts/core/safe-rebuild.nu'"
+    echo "   nix-shell -p nushell --run 'nu scripts/maintenance/safe-rebuild.nu'"
     exit 0
 else
     echo -e "${RED}❌ Bootstrap requirements not met!${NC}"

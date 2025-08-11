@@ -243,13 +243,13 @@
         let
           baseChecks = {
             # Unit tests only
-            unit = createTestCommand "unit-tests" "scripts/tests/unit/unit-tests.nu" pkgs;
+            unit = createTestCommand "unit-tests" "scripts/testing/unit/unit-tests.nu" pkgs;
 
             # Integration tests only
-            integration = createTestCommand "integration-tests" "scripts/tests/integration/integration-tests.nu" pkgs;
+            integration = createTestCommand "integration-tests" "scripts/testing/integration/integration-tests.nu" pkgs;
 
             # Full test suite
-            test-suite = createTestCommand "tests" "scripts/tests/run-tests.nu; run []" pkgs;
+            test-suite = createTestCommand "tests" "scripts/testing/run-tests.nu; run []" pkgs;
           };
 
                    in
@@ -257,12 +257,12 @@
         # Linux-specific checks
                      baseChecks // {
              # Linux-specific tests
-             linux-specific = createTestCommand "linux-tests" "scripts/tests/linux/linux-tests.nu" pkgs;
+             linux-specific = createTestCommand "linux-tests" "scripts/testing/linux/linux-tests.nu" pkgs;
              storage-guard = pkgs.runCommand "nix-mox-storage-guard"
                { buildInputs = [ pkgs.nushell pkgs.findutils pkgs.utillinux pkgs.coreutils pkgs.nix ]; src = ./.; } ''
                  cp -r $src $TMPDIR/src
                  cd $TMPDIR/src
-                 nu scripts/tests/linux/storage-guard.nu || exit 1
+                 nu scripts/storage/storage-guard.nu || exit 1
                  touch $out
                '';
            }
@@ -270,7 +270,7 @@
         # macOS-specific checks
           baseChecks // {
             # macOS-specific tests
-            macos-specific = createTestCommand "macos-tests" "scripts/tests/macos/macos-tests.nu" pkgs;
+            macos-specific = createTestCommand "macos-tests" "scripts/testing/macos/macos-tests.nu" pkgs;
           }
         else
         # Other platforms - only base checks
@@ -390,8 +390,10 @@
                 echo "  apps: fmt, test, update, dev"
                 echo ""
                 echo "  Maintenance tools:"
-                echo "    - nu scripts/tools/cleanup.nu     - Project cleanup"
-                echo "    - nu scripts/core/health-check.nu - System health check"
+                echo "    - nu scripts/maintenance/cleanup.nu     - Project cleanup"
+                echo "    - nu scripts/maintenance/health-check.nu - System health check"
+                echo "    - nix run .#storage-guard         - Pre-reboot storage validation"
+                echo "    - nix run .#fix-storage           - Auto-fix storage configuration"
                 echo ""
                 echo "For full details, run: nix flake show"
               '');
@@ -406,10 +408,23 @@
               type = "app";
               program = toString (pkgs.writeShellScript "storage-guard" ''
                 export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-                exec ${pkgs.nushell}/bin/nu ${self}/scripts/tests/linux/storage-guard.nu
+                exec ${pkgs.nushell}/bin/nu ${self}/scripts/storage/storage-guard.nu
               '');
               meta = {
                 description = "Run defensive storage checks against the live system before reboot";
+                platforms = pkgs.lib.platforms.linux;
+              };
+            };
+
+            # Fix storage configuration app: automatically fix storage issues
+            fix-storage = {
+              type = "app";
+              program = toString (pkgs.writeShellScript "fix-storage" ''
+                export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
+                exec ${pkgs.nushell}/bin/nu ${self}/scripts/storage/fix-storage-config.nu
+              '');
+              meta = {
+                description = "Automatically detect and fix storage configuration issues";
                 platforms = pkgs.lib.platforms.linux;
               };
             };

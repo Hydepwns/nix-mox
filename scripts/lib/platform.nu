@@ -36,14 +36,14 @@ export def get_platform_script [platform: string, script: string] {
     match $platform {
         "linux" => {
             if ($linux_scripts | get -i $script) != null {
-                $"scripts/linux/($linux_scripts | get $script)"
+                $"scripts/platforms/linux/($linux_scripts | get $script)"
             } else {
                 null
             }
         }
         "windows" => {
             if ($windows_scripts | get -i $script) != null {
-                $"scripts/windows/($windows_scripts | get $script)"
+                $"scripts/platforms/windows/($windows_scripts | get $script)"
             } else {
                 null
             }
@@ -135,10 +135,10 @@ export def check_platform_requirements [platform: string] {
 export def get_available_scripts [platform: string] {
     match $platform {
         "linux" => {
-            ls scripts/linux/*.sh | get name | each { |f| $f | path basename }
+            ls scripts/platforms/linux/*.sh | get name | each { |f| $f | path basename }
         }
         "windows" => {
-            ls scripts/windows/*.{nu,bat} | get name | each { |f| $f | path basename }
+            ls scripts/platforms/windows/*.{nu,bat} | get name | each { |f| $f | path basename }
         }
         _ => []
     }

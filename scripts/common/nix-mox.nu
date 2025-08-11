@@ -114,7 +114,7 @@ def run_script [script: string, dry_run: bool] {
                 info "Would execute interactive setup script"
             } else {
                 info "Running interactive setup script..."
-                let setup_script = "scripts/linux/setup-interactive.nu"
+                let setup_script = "scripts/platforms/linux/setup-interactive.nu"
                 check_file $setup_script "Setup script not found"
                 check_permissions $setup_script "x"
                 try {
@@ -133,9 +133,9 @@ def run_script [script: string, dry_run: bool] {
                 # Get platform-specific install script
                 let platform = detect_platform
                 let install_script = match $platform {
-                    "linux" => "modules/scripts/linux/install.nu"
-                    "darwin" => "modules/scripts/linux/install.nu"
-                    "windows" => "modules/scripts/windows/install-steam-rust.nu"
+                    "linux" => "modules/scripts/platforms/linux/install.nu"
+"darwin" => "modules/scripts/platforms/linux/install.nu"
+"windows" => "modules/scripts/platforms/windows/install-steam-rust.nu"
                     _ => { $"Unsupported platform: ($platform)" }
                 }
 
@@ -178,7 +178,7 @@ def run_script [script: string, dry_run: bool] {
                     }
                     "windows" => {
                         # For Windows, update Steam and Rust
-                        let win_update_script = "modules/scripts/windows/install-steam-rust.nu"
+                        let win_update_script = "modules/scripts/platforms/windows/install-steam-rust.nu"
                         check_file $win_update_script "Update script not found"
                         check_permissions $win_update_script "x"
                         try {

@@ -258,7 +258,7 @@ def show_deployment_guidance [] {
     print "   sudo nixos-rebuild --rollback switch"
     print ""
     print "4. Monitor system health after deployment:"
-    print "   nu scripts/core/health-check.nu"
+    print "   nu scripts/maintenance/health-check.nu"
     print ""
     print "⚠️  Keep a recovery USB/ISO handy in case of boot failures"
 }
