@@ -208,7 +208,8 @@
             (commonShells // {
               services = devShell.services or null;
               monitoring = devShell.monitoring or null;
-              gaming = devShell.gaming or null;
+              # Only include gaming shell on x86_64 systems
+              gaming = if system == "x86_64-linux" then devShell.gaming or null else null;
             })
         else if isDarwin system then
         # macOS - add macOS-specific shell
@@ -441,7 +442,8 @@
         }
       ) // (
       # Only include NixOS configs if explicitly requested or if not in CI
-      if builtins.getEnv "INCLUDE_NIXOS_CONFIGS" == "1" || (builtins.getEnv "CI" != "true" && builtins.getEnv "CI" != "1") then
+      # AND only on x86_64-linux systems (gaming config requires x86_64)
+      if (builtins.getEnv "INCLUDE_NIXOS_CONFIGS" == "1" || (builtins.getEnv "CI" != "true" && builtins.getEnv "CI" != "1")) then
         let
           # Create a pkgs instance for the default system
           defaultPkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };

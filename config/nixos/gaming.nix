@@ -2,7 +2,9 @@
 
 with lib;
 
+# Only enable gaming configuration on x86_64 systems
 let
+  isX86_64 = pkgs.stdenv.hostPlatform.isx86_64;
   cfg = config.services.gaming;
 in
 {
@@ -71,7 +73,7 @@ in
     };
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf (cfg.enable && isX86_64) {
     # Hardware configuration
     hardware = {
       # Graphics support (updated from opengl)
