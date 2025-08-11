@@ -68,24 +68,24 @@ let
 
   # Base packages (always available)
   basePackages = {
-    nixos-flake-update = createLinuxPackage "nixos-flake-update" "scripts/linux/nixos-flake-update.nu" [
+    nixos-flake-update = createLinuxPackage "nixos-flake-update" "scripts/platforms/linux/nixos-flake-update.nu" [
       pkgs.nix
       pkgs.bash
       pkgs.coreutils
     ];
-    install = createLinuxPackage "nix-mox-install" "scripts/linux/install.nu" [
+    install = createLinuxPackage "nix-mox-install" "scripts/platforms/linux/install.nu" [
       pkgs.bash
       pkgs.coreutils
     ];
-    uninstall = createLinuxPackage "nix-mox-uninstall" "scripts/linux/uninstall.nu" [
+    uninstall = createLinuxPackage "nix-mox-uninstall" "scripts/platforms/linux/uninstall.nu" [
       pkgs.bash
       pkgs.coreutils
     ];
-    proxmox-update = createLinuxPackage "proxmox-update" "scripts/linux/proxmox-update.nu" [
+    proxmox-update = createLinuxPackage "proxmox-update" "scripts/platforms/linux/proxmox-update.nu" [
       pkgs.bash
       pkgs.coreutils
     ];
-    remote-builder-setup = createLinuxPackage "remote-builder-setup" "scripts/setup-remote-builder.sh" ([
+    remote-builder-setup = createLinuxPackage "remote-builder-setup" "scripts/setup/setup-remote-builder.sh" ([
       pkgs.bash
       pkgs.coreutils
       pkgs.openssh
@@ -93,7 +93,7 @@ let
       pkgs.gnugrep
       pkgs.gnused
     ] ++ optionals (safeGetPkg "rsync" != null) [ (safeGetPkg "rsync") ]);
-    test-remote-builder = createLinuxPackage "test-remote-builder" "scripts/test-remote-builder.sh" ([
+    test-remote-builder = createLinuxPackage "test-remote-builder" "scripts/setup/test-remote-builder.sh" ([
       pkgs.bash
       pkgs.coreutils
       pkgs.openssh
@@ -106,8 +106,8 @@ let
   # Heavy packages (conditional based on environment)
   heavyPackages =
     if shouldBuildHeavyPackages then {
-      vzdump-backup = createLinuxPackage "vzdump-backup" "scripts/linux/vzdump-backup.nu" (getArchDeps pkgs.system);
-      zfs-snapshot = createLinuxPackage "zfs-snapshot" "scripts/linux/zfs-snapshot.nu" (getArchDeps pkgs.system);
+      vzdump-backup = createLinuxPackage "vzdump-backup" "scripts/platforms/linux/vzdump-backup.nu" (getArchDeps pkgs.system);
+zfs-snapshot = createLinuxPackage "zfs-snapshot" "scripts/platforms/linux/zfs-snapshot.nu" (getArchDeps pkgs.system);
     } else { };
 
 in

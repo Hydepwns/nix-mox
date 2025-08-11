@@ -640,9 +640,9 @@ let
 
   # Update test fixture references
   testFixtures = {
-    nixos = ./../scripts/tests/fixtures/nixos/default.nix;
-    cachix = ./../scripts/tests/fixtures/cachix/default.nix;
-    utils = ./../scripts/tests/fixtures/utils/default.nix;
+    nixos = ./../scripts/testing/fixtures/nixos/default.nix;
+cachix = ./../scripts/testing/fixtures/cachix/default.nix;
+utils = ./../scripts/testing/fixtures/utils/default.nix;
   };
 in
 {

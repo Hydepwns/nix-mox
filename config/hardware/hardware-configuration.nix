@@ -28,6 +28,8 @@ else {
   boot.extraModulePackages = [ ];
 
   # File systems - replace with your actual file system configuration
+  # Note: UUID is more stable than partuuid for filesystem identification
+  # partuuid can change when partition table is modified, while UUID remains constant
   fileSystems."/" = {
     device = "/dev/disk/by-uuid/YOUR-ROOT-UUID";
     fsType = "ext4";

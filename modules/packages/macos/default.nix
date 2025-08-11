@@ -70,16 +70,16 @@ let
 in
 {
   # macOS-specific installation script
-  install = createMacOSPackage "nix-mox-install" "scripts/macos/install.nu" (getArchDeps pkgs.system);
+  install = createMacOSPackage "nix-mox-install" "scripts/platforms/macos/install.nu" (getArchDeps pkgs.system);
 
   # macOS-specific uninstallation script
-  uninstall = createMacOSPackage "nix-mox-uninstall" "scripts/macos/uninstall.nu" [
+  uninstall = createMacOSPackage "nix-mox-uninstall" "scripts/platforms/macos/uninstall.nu" [
     pkgs.bash
     pkgs.coreutils
   ];
 
   # Homebrew management script
-  homebrew-setup = createMacOSPackage "homebrew-setup" "scripts/macos/homebrew-setup.nu" [
+  homebrew-setup = createMacOSPackage "homebrew-setup" "scripts/platforms/macos/homebrew-setup.nu" [
     pkgs.bash
     pkgs.coreutils
     pkgs.curl
@@ -87,7 +87,7 @@ in
   ];
 
   # macOS system maintenance script
-  macos-maintenance = createMacOSPackage "macos-maintenance" "scripts/macos/macos-maintenance.nu" [
+  macos-maintenance = createMacOSPackage "macos-maintenance" "scripts/platforms/macos/macos-maintenance.nu" [
     pkgs.bash
     pkgs.coreutils
     pkgs.gnugrep
@@ -95,14 +95,14 @@ in
   ];
 
   # Xcode command line tools setup
-  xcode-setup = createMacOSPackage "xcode-setup" "scripts/macos/xcode-setup.nu" [
+  xcode-setup = createMacOSPackage "xcode-setup" "scripts/platforms/macos/xcode-setup.nu" [
     pkgs.bash
     pkgs.coreutils
     pkgs.curl
   ];
 
   # macOS security audit script
-  security-audit = createMacOSPackage "security-audit" "scripts/macos/security-audit.nu" [
+  security-audit = createMacOSPackage "security-audit" "scripts/platforms/macos/security-audit.nu" [
     pkgs.bash
     pkgs.coreutils
     pkgs.gnugrep

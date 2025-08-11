@@ -56,16 +56,16 @@ let
 in
 {
   # Windows-specific install script
-  install = createWindowsPackage "nix-mox-install" "scripts/windows/install.ps1" (getArchDeps pkgs.system);
+  install = createWindowsPackage "nix-mox-install" "scripts/platforms/windows/install.ps1" (getArchDeps pkgs.system);
 
   # Windows-specific uninstall script
-  uninstall = createWindowsPackage "nix-mox-uninstall" "scripts/windows/uninstall.ps1" [
+  uninstall = createWindowsPackage "nix-mox-uninstall" "scripts/platforms/windows/uninstall.ps1" [
     pkgs.bash
     pkgs.coreutils
   ];
 
   # Windows gaming setup script
-  install-steam-rust = createWindowsPackage "install-steam-rust" "scripts/windows/install-steam-rust.nu" [
+  install-steam-rust = createWindowsPackage "install-steam-rust" "scripts/platforms/windows/install-steam-rust.nu" [
     pkgs.bash
     pkgs.coreutils
     pkgs.curl
@@ -76,7 +76,7 @@ in
       pkgs.stdenv.mkDerivation
         {
           name = "windows-automation-assets-sources";
-          src = ./../scripts/windows;
+          src = ./../scripts/platforms/windows;
           installPhase = ''
             mkdir -p $out
             cp $src/install-steam-rust.nu $out/
