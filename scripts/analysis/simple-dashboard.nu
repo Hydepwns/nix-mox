@@ -4,6 +4,7 @@
 # Shows system status without complex formatting
 
 use ../lib/platform.nu *
+use ../lib/common.nu *
 
 def show_simple_dashboard [] {
     print "╔══════════════════════════════════════════════════════════════════════════════╗"

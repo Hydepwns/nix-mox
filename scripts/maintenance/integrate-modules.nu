@@ -3,6 +3,9 @@
 # nix-mox Module Integration Script
 # This script helps integrate existing modules with the new template system
 
+# Import common functions
+use scripts/lib/common.nu *
+
 def main [] {
     print "🔧 nix-mox Module Integration"
     print "============================="

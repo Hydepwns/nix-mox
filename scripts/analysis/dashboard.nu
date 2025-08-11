@@ -7,6 +7,7 @@ use ../lib/platform.nu *
 use ../lib/logging.nu *
 use ../lib/error-handling.nu *
 use ../lib/performance.nu *
+use ../lib/common.nu *
 # use ../lib/metrics.nu *  # Disabled due to syntax issues
 
 # Global dashboard state

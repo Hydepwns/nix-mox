@@ -3,6 +3,9 @@
 # Safe NixOS rebuild wrapper with mandatory validation
 # Prevents system damage by enforcing safety checks
 
+# Import common functions
+use scripts/lib/common.nu *
+
 def main [
     --flake: string = ".#nixos"     # Flake configuration to deploy
     --action: string = "switch"     # Action: switch, boot, test, dry-activate
