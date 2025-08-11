@@ -38,7 +38,7 @@ pub fn test_script(cx: &mut CommandContext) -> Result<()> {
         if path.extension().and_then(|s| s.to_str()) == Some("nu") {
             // Run tests for the script
             let output = std::process::Command::new("nu")
-                .arg("scripts/tests/unit/comprehensive-config-tests.nu")
+                .arg("scripts/testing/unit/comprehensive-config-tests.nu")
                 .output()?;
 
             if output.status.success() {
@@ -67,7 +67,7 @@ pub fn validate_security(cx: &mut CommandContext) -> Result<()> {
         if path.extension().and_then(|s| s.to_str()) == Some("nu") {
             // Run security validation
             let output = std::process::Command::new("nu")
-                .arg("scripts/core/security-validation.nu")
+                .arg("scripts/validation/security-validation.nu")
                 .arg(path)
                 .output()?;
 
@@ -92,7 +92,7 @@ pub fn validate_security(cx: &mut CommandContext) -> Result<()> {
 pub fn show_metrics(cx: &mut CommandContext) -> Result<()> {
     // Show nix-mox performance metrics
     let output = std::process::Command::new("nu")
-        .arg("scripts/tools/size-dashboard.nu")
+        .arg("scripts/analysis/size-dashboard.nu")
         .output()?;
 
     if output.status.success() {
@@ -113,7 +113,7 @@ pub fn show_metrics(cx: &mut CommandContext) -> Result<()> {
 pub fn generate_docs(cx: &mut CommandContext) -> Result<()> {
     // Generate nix-mox documentation
     let output = std::process::Command::new("nu")
-        .arg("scripts/tools/generate-docs.nu")
+        .arg("scripts/analysis/generate-docs.nu")
         .output()?;
 
     if output.status.success() {
@@ -131,7 +131,7 @@ pub fn generate_docs(cx: &mut CommandContext) -> Result<()> {
 pub fn setup_wizard(cx: &mut CommandContext) -> Result<()> {
     // Launch nix-mox setup wizard
     let output = std::process::Command::new("nu")
-        .arg("scripts/core/setup.nu")
+        .arg("scripts/setup/unified-setup.nu")
         .output()?;
 
     if output.status.success() {

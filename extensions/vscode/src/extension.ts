@@ -208,7 +208,7 @@ async function runTests(scriptPath: string) {
         terminal.sendText(`nu "${scriptPath}"`);
     } else {
         // Run the full test suite
-        terminal.sendText('nu -c "source scripts/tests/run-tests.nu; run []"');
+        terminal.sendText('nu -c "source scripts/testing/run-tests.nu; run []"');
     }
 }
 
@@ -292,7 +292,7 @@ async function generateDocumentation() {
         });
 
         terminal.show();
-        terminal.sendText('nu scripts/tools/generate-docs.nu');
+        terminal.sendText('nu scripts/analysis/generate-docs.nu');
     });
 }
 
@@ -309,7 +309,7 @@ async function runSetupWizard() {
     });
 
     terminal.show();
-    terminal.sendText('nu scripts/core/interactive-setup.nu');
+    terminal.sendText('nu scripts/setup/unified-setup.nu');
 }
 
 function getNixMoxCompletions(document: vscode.TextDocument, position: vscode.Position): vscode.CompletionItem[] {
@@ -368,7 +368,7 @@ function getNixMoxDefinition(document: vscode.TextDocument, position: vscode.Pos
         'detect_platform': 'scripts/lib/platform.nu',
         'log_info': 'scripts/lib/logging.nu',
         'create_error': 'scripts/lib/error-handling.nu',
-        'track_test': 'scripts/tests/lib/test-utils.nu'
+        'track_test': 'scripts/testing/lib/test-utils.nu'
     };
 
     const filePath = functionFiles[word];
