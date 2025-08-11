@@ -108,7 +108,7 @@ def select_setup_type [] {
     print "5. Minimal system (bare minimum configuration)"
     print ""
 
-    let choice = (bash -c "read -p 'Enter choice (1-5): ' choice; echo $choice" | str trim)
+    let choice = (input "Enter choice (1-5): " | str trim)
 
     match $choice {
         "1" => { "personal" }
@@ -129,11 +129,11 @@ def collect_personal_info [] {
     print "Please provide your personal information:"
     print ""
 
-    let username = (bash -c "read -p 'Username (for system account): ' username; echo $username" | str trim)
-    let email = (bash -c "read -p 'Email address: ' email; echo $email" | str trim)
-    let git_username = (bash -c "read -p 'Git username: ' git_username; echo $git_username" | str trim)
-    let git_email = (bash -c "read -p 'Git email: ' git_email; echo $git_email" | str trim)
-    let initial_password = (bash -c "read -p 'Initial password (for system account): ' initial_password; echo $initial_password" | str trim)
+    let username = (input "Username (for system account): " | str trim)
+    let email = (input "Email address: " | str trim)
+    let git_username = (input "Git username: " | str trim)
+    let git_email = (input "Git email: " | str trim)
+    let initial_password = (input "Initial password (for system account): " | str trim)
 
     {
         username: $username
@@ -150,8 +150,8 @@ def collect_system_info [] {
     print "Please provide system configuration:"
     print ""
 
-    let hostname = (bash -c "read -p 'Hostname: ' hostname; echo $hostname" | str trim)
-    let timezone = (bash -c "read -p 'Timezone (e.g., America/New_York): ' timezone; echo $timezone" | str trim)
+    let hostname = (input "Hostname: " | str trim)
+    let timezone = (input "Timezone (e.g., America/New_York): " | str trim)
 
     {
         hostname: $hostname
@@ -182,7 +182,7 @@ def setup_environment [] {
     # Setup Hydepwns dotfiles if available
     let dotfiles_script = "scripts/setup/setup-hydepwns-dotfiles.sh"
     if (file_exists $dotfiles_script) {
-        let response = (bash -c "read -p 'Setup Hydepwns dotfiles integration? (y/N): ' response; echo $response" | str trim)
+        let response = (input "Setup Hydepwns dotfiles integration? (y/N): " | str trim)
         if $response == "y" or $response == "Y" {
             log_info "Setting up Hydepwns dotfiles..."
             if not $env.STATE.dry_run {
@@ -215,7 +215,7 @@ def select_template [setup_type: string] {
 
     if (file_exists ($TEMPLATES_DIR + "/" + $default_template)) {
         print $"Recommended template for ($setup_type) setup: ($default_template)"
-        let response = (bash -c $"read -p 'Use recommended template? (Y/n): ' response; echo $response" | str trim)
+        let response = (input "Use recommended template? (Y/n): " | str trim)
 
         if $response == "" or $response == "y" or $response == "Y" {
             $default_template
@@ -225,7 +225,7 @@ def select_template [setup_type: string] {
             for template in (ls ($TEMPLATES_DIR + "/*.nix") | get name | path basename) {
                 print $"  • ($template)"
             }
-            let custom_template = (bash -c "read -p 'Enter template name: ' custom_template; echo $custom_template" | str trim)
+            let custom_template = (input "Enter template name: " | str trim)
             if (file_exists ($TEMPLATES_DIR + "/" + $custom_template)) {
                 $custom_template
             } else {

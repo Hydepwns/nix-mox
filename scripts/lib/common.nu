@@ -169,3 +169,8 @@ export def usage [] {
 export def log_trace [message: string] {
     log "DEBUG" $message
 }
+
+# Input function for user interaction
+export def input [prompt: string] {
+    bash -c $"read -p '($prompt)' response; echo $response"
+}
