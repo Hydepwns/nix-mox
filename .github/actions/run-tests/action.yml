@@ -50,14 +50,14 @@ runs:
 
         print $"Current directory: (pwd)"
         print $"GitHub workspace: ${{ github.workspace }}"
-        print $"Test script exists: (ls scripts/tests/run-tests.nu | length | $in > 0)"
+        print $"Test script exists: (ls scripts/testing/run-tests.nu | length | $in > 0)"
 
         try {
           cd ${{ github.workspace }}
           print $"Changed to directory: (pwd)"
-          print $"Test script exists after cd: (ls scripts/tests/run-tests.nu | length | $in > 0)"
+          print $"Test script exists after cd: (ls scripts/testing/run-tests.nu | length | $in > 0)"
 
-          let script_path = "scripts/tests/run-tests.nu"
+          let script_path = "scripts/testing/run-tests.nu"
           print $"Using script path: ($script_path)"
           print $"Script exists: (ls $script_path | length | $in > 0)"
 
@@ -92,7 +92,7 @@ runs:
           
           # Run the LCOV generation script using nu -c instead of source
           try {
-            let script_path = $"(${{ github.workspace }})/scripts/tests/generate-lcov.nu"
+            let script_path = $"(${{ github.workspace }})/scripts/testing/generate-lcov.nu"
             print $"Using absolute script path: ($script_path)"
             print $"Script exists: (ls $script_path | length | $in > 0)"
             
@@ -103,7 +103,7 @@ runs:
             print "Creating fallback LCOV report..."
             
             # Create minimal LCOV report for Codecov
-            let minimal_lcov = "TN:\nSF:scripts/tests/run-tests.nu\nFN:1,main\nFNDA:1,main\nDA:1,1\nDA:2,1\nDA:3,1\nend_of_record"
+            let minimal_lcov = "TN:\nSF:scripts/testing/run-tests.nu\nFN:1,main\nFNDA:1,main\nDA:1,1\nDA:2,1\nDA:3,1\nend_of_record"
             $minimal_lcov | save --force "coverage-tmp/coverage.lcov"
             print "✅ Fallback LCOV report created"
           }
@@ -111,7 +111,7 @@ runs:
           print "⚠️ No test results found, creating minimal LCOV report..."
           
           # Create minimal LCOV report for Codecov
-          let minimal_lcov = "TN:\nSF:scripts/tests/run-tests.nu\nFN:1,main\nFNDA:0,main\nDA:1,0\nend_of_record"
+          let minimal_lcov = "TN:\nSF:scripts/testing/run-tests.nu\nFN:1,main\nFNDA:0,main\nDA:1,0\nend_of_record"
           $minimal_lcov | save --force "coverage-tmp/coverage.lcov"
           print "✅ Minimal LCOV report created"
         }

@@ -61,7 +61,7 @@ jobs:
           time ./scripts/common/nix-mox --script install --platform auto --debug
 
           # Run unit tests
-          time nu -c "source scripts/tests/run-tests.nu; run ['--unit']"
+          time nu -c "source scripts/testing/run-tests.nu; run ['--unit']"
 
       - name: Cross-Platform Tests
         if: ${{ github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'cross-platform' }}
@@ -74,7 +74,7 @@ jobs:
           ./scripts/common/nix-mox --script install --debug
 
           # Run tests
-          nu -c "source scripts/tests/run-tests.nu; run ['--unit', '--integration']"
+          nu -c "source scripts/testing/run-tests.nu; run ['--unit', '--integration']"
 
           # Test flake evaluation for different systems
           nix eval .#packages.x86_64-linux --accept-flake-config --json

@@ -46,6 +46,6 @@ ignore:
   - "result*"
   - "tmp/"
   - "coverage-tmp/"
-  - "scripts/tests/"
+  - "scripts/testing/"
   - "config/"
   - "modules/templates/"
