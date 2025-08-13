@@ -21,7 +21,10 @@ scripts/
 │   ├── advanced-cache.nu         # Cache optimization
 │   ├── generate-docs.nu          # Documentation generation
 │   ├── generate-sbom.nu          # Software bill of materials
-│   ├── dashboard.nu              # Main dashboard
+│   ├── dashboard.nu              # Main dashboard (modular)
+│   ├── modules/                  # Dashboard modules
+│   │   ├── system.nu            # System monitoring
+│   │   └── display.nu           # Display rendering
 │   ├── project-dashboard.nu      # Project-specific dashboard
 │   ├── simple-dashboard.nu       # Simplified dashboard
 │   ├── size-dashboard.nu         # Size analysis dashboard
@@ -46,8 +49,17 @@ scripts/
 │   ├── test-coverage-debug.nu    # Coverage debugging
 │   ├── unit/                     # Unit tests
 │   ├── integration/              # Integration tests
-│   ├── performance/              # Performance tests
-│   ├── display/                  # Display tests
+│   ├── performance/              # Performance tests (modular)
+│   │   ├── performance-tests.nu # Main performance tests
+│   │   └── modules/             # Performance test modules
+│   │       ├── system.nu        # System performance
+│   │       └── build.nu         # Build performance
+│   ├── display/                  # Display tests (modular)
+│   │   ├── display-tests.nu     # Main display tests
+│   │   └── modules/             # Display test modules
+│   │       ├── hardware.nu      # Hardware detection
+│   │       ├── config.nu        # Configuration analysis
+│   │       └── safety.nu        # Safety procedures
 │   ├── storage/                  # Storage tests
 │   ├── linux/                    # Linux-specific tests
 │   ├── macos/                    # macOS-specific tests

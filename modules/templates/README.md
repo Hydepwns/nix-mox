@@ -15,7 +15,10 @@ This directory contains template configurations for various systems and environm
 - `platforms/`: Platform-specific templates
   - `nixos/`: NixOS-specific templates and configurations
   - `windows/`: Windows-specific templates
-- `templates.nix`: Core template functionality and shared configurations
+- `templates.nix`: Core template functionality and shared configurations (modular)
+- `definitions/`: Individual template definitions
+  - `monitoring.nix`: Monitoring template definition
+  - `windows-gaming.nix`: Windows gaming template definition
 
 ## Usage
 

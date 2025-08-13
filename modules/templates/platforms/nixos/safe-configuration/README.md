@@ -16,8 +16,12 @@ A complete NixOS configuration using nix-mox's modular fragment system. Prevents
 ### Option 1: Use Setup Script (Recommended)
 
 ```bash
-# Run the interactive setup script
+# Run the interactive setup script (modular)
 ./modules/templates/nixos/safe-configuration/setup.sh
+
+# The setup script is now modular with components in scripts/:
+# - utils.sh: Utility functions and helpers
+# - config.sh: Configuration collection and validation
 ```
 
 ### Option 2: Manual Setup
