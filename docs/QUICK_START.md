@@ -51,6 +51,9 @@ cp config/templates/development.nix config/nixos/configuration.nix
 
 # Gaming workstation
 cp config/templates/gaming.nix config/nixos/configuration.nix
+# Note: For modular gaming configuration, use:
+# cp -r config/nixos/gaming/ config/nixos/
+# And import ./gaming/default.nix in your configuration.nix
 
 # Server setup
 cp config/templates/server.nix config/nixos/configuration.nix

@@ -148,6 +148,9 @@ def setup_gaming [] {
     
     # Copy gaming template  
     cp config/templates/gaming.nix config/nixos/configuration.nix
+# Note: For modular gaming configuration, use:
+# cp -r config/nixos/gaming/ config/nixos/
+# And import ./gaming/default.nix in your configuration.nix
     
     print "✅ Gaming configuration applied!"
     print ""

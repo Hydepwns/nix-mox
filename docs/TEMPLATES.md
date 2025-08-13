@@ -8,6 +8,9 @@
 # Choose your template
 cp config/templates/development.nix config/nixos/configuration.nix
 cp config/templates/gaming.nix config/nixos/configuration.nix
+# Note: For modular gaming configuration, use:
+# cp -r config/nixos/gaming/ config/nixos/
+# And import ./gaming/default.nix in your configuration.nix
 cp config/templates/minimal.nix config/nixos/configuration.nix
 cp config/templates/server.nix config/nixos/configuration.nix
 ```
@@ -65,7 +68,16 @@ Templates use these shared profiles:
 - **`base.nix`**: Common system config, Plasma 6, SDDM
 - **`security.nix`**: Security hardening, firewall, SSH
 - **`development.nix`**: Development tools and environments
-- **`gaming.nix`**: Gaming support and optimizations
+- **`gaming/`**: Modular gaming configuration (recommended)
+  - `default.nix`: Main entry point
+  - `options.nix`: Option definitions
+  - `hardware.nix`: Hardware configuration
+  - `audio.nix`: Audio configuration
+  - `performance.nix`: Performance optimizations
+  - `platforms.nix`: Gaming platforms
+  - `networking.nix`: Network configuration
+  - `security.nix`: Security settings
+- **`gaming.nix`**: Legacy monolithic gaming configuration
 - **`server.nix`**: Server management and monitoring
 
 ## Customization
