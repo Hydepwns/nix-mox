@@ -77,30 +77,25 @@
 
   outputs = { self, nixpkgs, flake-utils, home-manager, devenv, nixpkgs-fmt, treefmt-nix, ... }@inputs:
     let
-      # ============================================================================
-      # CONSTANTS AND CONFIGURATION
-      # ============================================================================
+      # Import helper functions
+      helpers = import ./flake-helpers.nix { inherit nixpkgs flake-utils home-manager devenv nixpkgs-fmt treefmt-nix; };
+      inherit (helpers)
+        supportedSystems
+        isSupported
+        isLinux
+        isMacOS
+        isX86_64
+        createFormatter
+        createPackage
+        createApp
+        commonPackages
+        linuxPackages
+        macosPackages
+        commonApps
+        linuxApps;
 
-      # Supported systems with clear documentation
-      supportedSystems = [
-        "aarch64-darwin" # Apple Silicon Macs
-        "x86_64-darwin" # Intel Macs
-        "x86_64-linux" # Intel/AMD Linux
-        "aarch64-linux" # ARM Linux (Raspberry Pi, etc.)
-      ];
-
-      # ============================================================================
-      # HELPER FUNCTIONS
-      # ============================================================================
-
-      # Helper function to check if system is supported
-      isSupported = system: builtins.elem system supportedSystems;
-
-      # Helper function to check if system is Linux
-      isLinux = system: builtins.elem system [ "x86_64-linux" "aarch64-linux" ];
-
-      # Helper function to check if system is Darwin
-      isDarwin = system: builtins.elem system [ "aarch64-darwin" "x86_64-darwin" ];
+      # Helper function to check if system is Darwin (alias for isMacOS)
+      isDarwin = isMacOS;
 
       # Helper function to safely import modules with error handling
       safeImport = path: args:
@@ -283,21 +278,6 @@
         # Other platforms - only base checks
           baseChecks;
 
-      # ============================================================================
-      # FORMATTER CONFIGURATION
-      # ============================================================================
-
-      # Create formatter configuration
-      createFormatter = system: pkgs: treefmt-nix:
-        treefmt-nix.lib.mkWrapper pkgs {
-          projectRootFile = "flake.nix";
-          programs = {
-            nixpkgs-fmt.enable = true;
-            shellcheck.enable = true;
-            shfmt.enable = true;
-          };
-        };
-
     in
     flake-utils.lib.eachSystem supportedSystems
       (system:
@@ -460,7 +440,7 @@
                 # Import personal configuration (includes projects)
                 ./config/personal/combined.nix
                 # Import gaming configuration
-                ./config/nixos/gaming.nix
+                ./config/nixos/gaming/default.nix
                 ./config/nixos/gaming-tools.nix
                 inputs.home-manager.nixosModules.home-manager
                 {
