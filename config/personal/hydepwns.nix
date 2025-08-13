@@ -26,6 +26,9 @@ in
     description = "Hydepwns User";
     extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" "qemu-libvirtd" ];
     shell = pkgs.zsh;
+    openssh.authorizedKeys.keyFiles = [
+      (builtins.fetchurl "https://github.com/hydepwns.keys")
+    ];
   };
 
   # System configuration
