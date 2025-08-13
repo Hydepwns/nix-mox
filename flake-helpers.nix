@@ -61,13 +61,13 @@ let
     # Installation script (all platforms)
     install = createPackage system pkgs "install" (pkgs.writeShellScript "install" ''
       export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-      exec ${pkgs.nushell}/bin/nu ${pkgs.lib.cleanSource ./}/scripts/setup/install.nu "$@"
+      exec ${pkgs.nushell}/bin/nu ${./scripts/setup/install.nu} "$@"
     '');
 
     # Uninstallation script (all platforms)
     uninstall = createPackage system pkgs "uninstall" (pkgs.writeShellScript "uninstall" ''
       export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-      exec ${pkgs.nushell}/bin/nu ${pkgs.lib.cleanSource ./}/scripts/setup/unified-setup.nu --uninstall "$@"
+      exec ${pkgs.nushell}/bin/nu ${./scripts/setup/unified-setup.nu} --uninstall "$@"
     '');
   };
 
@@ -76,25 +76,25 @@ let
     # Proxmox update script (Linux only)
     proxmox-update = createPackage system pkgs "proxmox-update" (pkgs.writeShellScript "proxmox-update" ''
       export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-      exec ${pkgs.nushell}/bin/nu ${pkgs.lib.cleanSource ./}/scripts/platforms/linux/proxmox-update.nu "$@"
+      exec ${pkgs.nushell}/bin/nu ${./scripts/platforms/linux/proxmox-update.nu} "$@"
     '');
 
     # Proxmox backup script (Linux only)
     vzdump-backup = createPackage system pkgs "vzdump-backup" (pkgs.writeShellScript "vzdump-backup" ''
       export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-      exec ${pkgs.nushell}/bin/nu ${pkgs.lib.cleanSource ./}/scripts/platforms/linux/vzdump-backup.nu "$@"
+      exec ${pkgs.nushell}/bin/nu ${./scripts/platforms/linux/vzdump-backup.nu} "$@"
     '');
 
     # ZFS snapshot script (Linux only)
     zfs-snapshot = createPackage system pkgs "zfs-snapshot" (pkgs.writeShellScript "zfs-snapshot" ''
       export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-      exec ${pkgs.nushell}/bin/nu ${pkgs.lib.cleanSource ./}/scripts/platforms/linux/zfs-snapshot.nu "$@"
+      exec ${pkgs.nushell}/bin/nu ${./scripts/platforms/linux/zfs-snapshot.nu} "$@"
     '');
 
     # NixOS flake update script (Linux only)
     nixos-flake-update = createPackage system pkgs "nixos-flake-update" (pkgs.writeShellScript "nixos-flake-update" ''
       export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-      exec ${pkgs.nushell}/bin/nu ${pkgs.lib.cleanSource ./}/scripts/platforms/linux/nixos-flake-update.nu "$@"
+      exec ${pkgs.nushell}/bin/nu ${./scripts/platforms/linux/nixos-flake-update.nu} "$@"
     '');
   };
 
@@ -103,25 +103,25 @@ let
     # Homebrew setup script (macOS only)
     homebrew-setup = createPackage system pkgs "homebrew-setup" (pkgs.writeShellScript "homebrew-setup" ''
       export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-      exec ${pkgs.nushell}/bin/nu ${pkgs.lib.cleanSource ./}/scripts/platforms/macos/homebrew-setup.nu "$@"
+      exec ${pkgs.nushell}/bin/nu ${./scripts/platforms/macos/homebrew-setup.nu} "$@"
     '');
 
     # macOS maintenance script (macOS only)
     macos-maintenance = createPackage system pkgs "macos-maintenance" (pkgs.writeShellScript "macos-maintenance" ''
       export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-      exec ${pkgs.nushell}/bin/nu ${pkgs.lib.cleanSource ./}/scripts/platforms/macos/macos-maintenance.nu "$@"
+      exec ${pkgs.nushell}/bin/nu ${./scripts/platforms/macos/macos-maintenance.nu} "$@"
     '');
 
     # Xcode setup script (macOS only)
     xcode-setup = createPackage system pkgs "xcode-setup" (pkgs.writeShellScript "xcode-setup" ''
       export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-      exec ${pkgs.nushell}/bin/nu ${pkgs.lib.cleanSource ./}/scripts/platforms/macos/xcode-setup.nu "$@"
+      exec ${pkgs.nushell}/bin/nu ${./scripts/platforms/macos/xcode-setup.nu} "$@"
     '');
 
     # Security audit script (macOS only)
     security-audit = createPackage system pkgs "security-audit" (pkgs.writeShellScript "security-audit" ''
       export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-      exec ${pkgs.nushell}/bin/nu ${pkgs.lib.cleanSource ./}/scripts/platforms/macos/security-audit.nu "$@"
+      exec ${pkgs.nushell}/bin/nu ${./scripts/platforms/macos/security-audit.nu} "$@"
     '');
   };
 
@@ -145,7 +145,7 @@ let
       type = "app";
       program = toString (pkgs.writeShellScript "test" ''
         export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-        exec ${pkgs.nushell}/bin/nu ${pkgs.lib.cleanSource ./}/scripts/testing/run-tests.nu "$@"
+        exec ${pkgs.nushell}/bin/nu ${./scripts/testing/run-tests.nu} "$@"
       '');
       meta = {
         description = "Run test suite";
@@ -211,7 +211,7 @@ let
       type = "app";
       program = toString (pkgs.writeShellScript "storage-guard" ''
         export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-        exec ${pkgs.nushell}/bin/nu ${pkgs.lib.cleanSource ./}/scripts/storage/storage-guard.nu
+        exec ${pkgs.nushell}/bin/nu ${./scripts/storage/storage-guard.nu}
       '');
       meta = {
         description = "Run defensive storage checks against the live system before reboot";
@@ -224,7 +224,7 @@ let
       type = "app";
       program = toString (pkgs.writeShellScript "fix-storage" ''
         export PATH="${pkgs.nix}/bin:${pkgs.util-linux}/bin:${pkgs.coreutils}/bin:$PATH"
-        exec ${pkgs.nushell}/bin/nu ${pkgs.lib.cleanSource ./}/scripts/storage/fix-storage-config.nu
+        exec ${pkgs.nushell}/bin/nu ${./scripts/storage/fix-storage-config.nu}
       '');
       meta = {
         description = "Automatically detect and fix storage configuration issues";
