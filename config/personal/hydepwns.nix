@@ -26,7 +26,6 @@ in
     description = "Hydepwns User";
     extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" "qemu-libvirtd" ];
     shell = pkgs.zsh;
-    initialPassword = "nixos";
   };
 
   # System configuration

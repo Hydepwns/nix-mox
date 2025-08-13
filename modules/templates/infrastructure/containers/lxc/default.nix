@@ -42,7 +42,6 @@ in
 
   # Enhanced user setup
   users.users.root = {
-    initialPassword = if isCI then "nixos" else "!";
     openssh.authorizedKeys.keys = [
       # Add your SSH keys here
     ];

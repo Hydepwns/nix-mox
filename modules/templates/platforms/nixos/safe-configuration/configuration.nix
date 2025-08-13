@@ -20,7 +20,6 @@
   users.users.default = {
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" ];
-    initialPassword = "changeme";
   };
 
   # Enable SSH
