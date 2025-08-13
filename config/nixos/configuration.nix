@@ -88,6 +88,12 @@
     };
   };
 
+  # Default to modesetting; enable NVIDIA on RTX hosts
+  services.xserver.videoDrivers = lib.mkDefault [ "modesetting" ];
+
+  # When NVIDIA is enabled, avoid nouveau conflicts
+  boot.blacklistedKernelModules = lib.mkIf (lib.elem "nvidia" config.services.xserver.videoDrivers) [ "nouveau" ];
+
   # Audio configuration for gaming
   security.rtkit.enable = true;
   services.pipewire = {
@@ -101,20 +107,11 @@
   # Performance optimizations
   boot.kernelParams = [
     "nvidia-drm.modeset=1"
-    "amdgpu.si_support=1"
-    "amdgpu.cik_support=1"
   ];
 
   # Gaming environment variables
   environment.variables = {
-    # Vulkan
-    VK_ICD_FILENAMES = "/run/opengl-driver/share/vulkan/icd.d/intel_icd.x86_64.json:/run/opengl-driver/share/vulkan/icd.d/radeon_icd.x86_64.json";
-
     # Wine
     WINEDEBUG = "-all";
-
-    # Performance
-    __GL_SYNC_TO_VBLANK = "0";
-    __GL_THREADED_OPTIMIZATIONS = "1";
   };
 }

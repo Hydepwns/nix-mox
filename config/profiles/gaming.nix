@@ -87,44 +87,36 @@
     enable32Bit = true;
   };
 
-  # NVIDIA drivers (uncomment if you have NVIDIA GPU)
-  # services.xserver.videoDrivers = [ "nvidia" ];
+  # Default display driver; switch to NVIDIA in hosts with RTX
+  services.xserver.videoDrivers = lib.mkDefault [ "modesetting" ];
+
+  # NVIDIA (enable on RTX systems)
+  # services.xserver.videoDrivers = [ "nvidia" "modesetting" ];
   # hardware.nvidia = {
   #   modesetting.enable = true;
-  #   powerManagement.enable = true;
   #   open = false;
   #   nvidiaSettings = true;
   #   package = config.boot.kernelPackages.nvidiaPackages.stable;
+  #   prime = {
+  #     intelBusId = "PCI:0:2:0";   # 0000:00:02.0 (Intel UHD 770)
+  #     nvidiaBusId = "PCI:1:0:0";  # 0000:01:00.0 (RTX 4070)
+  #     sync.enable = true;          # or offload.enable = true;
+  #   };
   # };
 
-  # AMD drivers (uncomment if you have AMD GPU)
-  # services.xserver.videoDrivers = [ "amdgpu" ];
+  # When NVIDIA is enabled, prevent conflicts
+  boot.blacklistedKernelModules = lib.mkIf (lib.elem "nvidia" config.services.xserver.videoDrivers) [ "nouveau" ];
 
   # Performance optimizations
   boot.kernelParams = [
     "nvidia-drm.modeset=1"
-    "amdgpu.si_support=1"
-    "amdgpu.cik_support=1"
-    "radeon.si_support=0"
-    "radeon.cik_support=0"
-    "i915.enable_rc6=1"
-    "i915.enable_fbc=1"
-    "i915.lvds_downclock=1"
   ];
 
   # Gaming environment variables
   environment.variables = {
-    # Vulkan
-    VK_ICD_FILENAMES = "/run/opengl-driver/share/vulkan/icd.d/intel_icd.x86_64.json:/run/opengl-driver/share/vulkan/icd.d/radeon_icd.x86_64.json";
-
     # Wine
     WINEDEBUG = "-all";
     WINEPREFIX = "$HOME/.wine";
-
-    # Performance
-    __GL_SYNC_TO_VBLANK = "0";
-    __GL_THREADED_OPTIMIZATIONS = "1";
-    __GL_YIELD = "NOTHING";
 
     # Steam
     STEAM_RUNTIME = "1";

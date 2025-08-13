@@ -25,25 +25,74 @@ nix-shell -p git nushell
 # 4. MANDATORY: Run safety validation before any changes
 nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu --verbose"
 
-# 5. Unified setup (recommended - all features)
-nix-shell -p nushell --run "nu scripts/setup/unified-setup.nu"
-
-# 6. Manual setup alternative
-cp env.example .env
-nano .env
-
-# 7. Validate configuration before rebuilding
-nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu"
-
-# 8. NEVER use direct nixos-rebuild - use safe wrapper instead:
-nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu --backup --test-first"
-
-# 9. If you MUST use direct nixos-rebuild, always test first:
-# sudo nixos-rebuild dry-activate --flake .#nixos  # Test first  
-# sudo nixos-rebuild switch --flake .#nixos        # Apply if dry-run succeeds
+# 5. Choose your setup method:
 ```
 
-## Choose Your Template
+## 🎯 **Setup Options - Choose Your Favorite Parts**
+
+### **Option 1: Quick Favorites (Recommended)**
+Fast setup with popular preset configurations:
+
+```bash
+# Browse available presets
+nix-shell -p nushell --run "nu scripts/setup/quick-favorites.nu"
+
+# Apply a specific preset
+nix-shell -p nushell --run "nu scripts/setup/quick-favorites.nu dev-gaming"
+nix-shell -p nushell --run "nu scripts/setup/quick-favorites.nu productivity"
+nix-shell -p nushell --run "nu scripts/setup/quick-favorites.nu gaming-only"
+```
+
+**Available Presets:**
+- `dev-gaming` - Developer Gaming Rig (development + gaming)
+- `productivity` - Productivity Workstation (office + communication)
+- `gaming-only` - Pure Gaming Machine (all gaming platforms)
+- `dev-server` - Development Server (server + development)
+- `minimal-dev` - Minimal Development (lightweight dev tools)
+- `media-center` - Media Center (entertainment + media)
+
+### **Option 2: Enhanced Setup (Granular Control)**
+Choose specific components you want:
+
+```bash
+# Interactive component selection
+nix-shell -p nushell --run "nu scripts/setup/enhanced-setup.nu"
+```
+
+**Component Categories:**
+- **Development Tools**: IDEs, compilers, debuggers
+- **Gaming & Entertainment**: Gaming platforms, performance tools, media
+- **Productivity & Communication**: Office apps, messaging, utilities
+- **System & Security**: Monitoring, security, networking
+
+### **Option 3: Component Browser (Explore First)**
+Browse and preview available components:
+
+```bash
+# Browse all components
+nix-shell -p nushell --run "nu scripts/setup/component-browser.nu"
+
+# Explore specific categories
+nix-shell -p nushell --run "nu scripts/setup/component-browser.nu --category development"
+nix-shell -p nushell --run "nu scripts/setup/component-browser.nu --category gaming"
+
+# Get detailed component information
+nix-shell -p nushell --run "nu scripts/setup/component-browser.nu --category gaming --component platforms"
+```
+
+### **Option 4: Traditional Setup (Legacy)**
+Original template-based setup:
+
+```bash
+# Unified setup (recommended - all features)
+nix-shell -p nushell --run "nu scripts/setup/unified-setup.nu"
+
+# Manual setup alternative
+cp env.example .env
+nano .env
+```
+
+## Choose Your Template (Traditional Method)
 
 ```bash
 # Development environment
@@ -62,135 +111,97 @@ cp config/templates/server.nix config/nixos/configuration.nix
 cp config/templates/minimal.nix config/nixos/configuration.nix
 ```
 
+## 🚀 **Build and Apply Configuration**
+
+```bash
+# 6. Validate configuration before rebuilding
+nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu"
+
+# 7. NEVER use direct nixos-rebuild - use safe wrapper instead:
+nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu --backup --test-first"
+
+# 8. If you MUST use direct nixos-rebuild, always test first:
+# sudo nixos-rebuild dry-activate --flake .#nixos  # Test first  
+# sudo nixos-rebuild switch --flake .#nixos        # Apply if dry-run succeeds
+```
+
+## 🎮 **Access Your Favorite Parts**
+
+After setup, access your selected components:
+
+### **Development Tools**
+```bash
+# Enter development environment
+nix develop .#development
+
+# Launch IDEs
+vscode
+cursor
+vim
+
+# Use programming languages
+rustc --version
+python3 --version
+node --version
+```
+
+### **Gaming Platforms**
+```bash
+# Enter gaming environment
+nix develop .#gaming
+
+# Launch gaming platforms
+steam
+lutris
+heroic
+
+# Performance monitoring
+gamemode
+mangohud
+```
+
+### **Productivity Tools**
+```bash
+# Office applications
+libreoffice
+obsidian
+joplin
+
+# Communication
+discord
+signal-desktop
+telegram-desktop
+thunderbird
+```
+
+### **System Tools**
+```bash
+# Monitoring
+htop
+btop
+neofetch
+
+# Security
+ufw
+gpg
+
+# Networking
+tailscale
+```
+
+## 📚 **Next Steps**
+
 See [Templates](TEMPLATES.md) for detailed information about each template.
 
-## Build and Deploy
+For advanced configuration options, see the [Configuration Guide](CONFIGURATION.md).
 
-> **Note:** systemd-boot is now the default boot loader for UEFI systems. If you use legacy BIOS, adjust your hardware config accordingly.
-> The default desktop environment is KDE Plasma 6. Gaming support (Steam, Lutris, Heroic, MangoHud, GameMode, etc.) is integrated by default.
+## 🆘 **Troubleshooting**
 
-```bash
-# Build and switch
-sudo nixos-rebuild switch --flake .#nixos
+If you encounter issues:
 
-# Or dry-run first
-sudo nixos-rebuild dry-activate --flake .#nixos
-```
+1. **Check the logs**: `journalctl -xe`
+2. **Validate configuration**: `nix flake check`
+3. **Test configuration**: `sudo nixos-rebuild dry-activate --flake .#nixos`
+4. **Rollback if needed**: `sudo nixos-rebuild switch --rollback`
 
-## Development
-
-### Quick Commands
-
-```bash
-# Format all code
-nix run .#fmt
-
-# Run tests
-nix run .#test
-
-# Update flake inputs
-nix run .#update
-
-# Enter development shell
-nix develop
-```
-
-### Development Shells
-
-```bash
-# Enter development shell
-nix develop
-
-# Or specific shells
-nix develop .#development
-nix develop .#gaming
-nix develop .#testing
-nix develop .#services         # Service tools (Linux)
-nix develop .#monitoring       # Monitoring tools (Linux)
-```
-
-## Testing
-
-```bash
-# Run all tests
-nix run .#test
-
-# Or run specific test suites
-nix build .#checks.x86_64-linux.unit
-nix build .#checks.x86_64-linux.integration
-nix build .#checks.x86_64-linux.test-suite
-
-# Run tests with make (legacy)
-make test
-make unit
-make integration
-```
-
-## Next Steps
-
-1. **Customize personal settings** - Edit `config/personal/user.nix`
-2. **Configure hardware** - Edit `config/personal/hardware.nix`
-3. **Add modules** - Use `nu scripts/maintenance/integrate-modules.nu`
-4. **Explore templates** - See [Templates](TEMPLATES.md) for details
-5. **Platform-specific setup** - See [Platform Setup](PLATFORM.md)
-
-## Multi-Host Management
-
-nix-mox supports managing multiple NixOS hosts from a single flake:
-
-```bash
-# Build specific host configurations
-nix build .#nixosConfigurations.host1.config.system.build.toplevel
-nix build .#nixosConfigurations.host2.config.system.build.toplevel
-
-# Deploy to hosts
-nixos-rebuild switch --flake .#host1
-nixos-rebuild switch --flake .#host2
-
-# See available hosts and outputs
-nix run .#dev
-```
-
-For detailed multi-host configuration, see [Multi-Host Guide](archive/MULTI_HOST.md).
-
-1. **Customize personal settings** - Edit `config/personal/user.nix`
-2. **Configure hardware** - Edit `config/personal/hardware.nix`
-3. **Add modules** - Use `nu scripts/maintenance/integrate-modules.nu`
-4. **Explore templates** - Check `config/templates/`
-5. **Read documentation** - See `docs/` for detailed guides
-
-## Troubleshooting
-
-See [Troubleshooting](TROUBLESHOOTING.md) for common issues and solutions.
-
-```bash
-# Check configuration
-nixos-rebuild dry-activate --flake .#nixos
-
-# Regenerate personal config
-nu scripts/setup/unified-setup.nu
-
-# Switch to minimal template
-cp config/templates/minimal.nix config/nixos/configuration.nix
-
-# Run cleanup script
-nu scripts/maintenance/cleanup.nu
-```
-
-## Status
-
-- **CI Pipeline**: Fully functional with 97% test pass rate
-- **Cross-platform**: Supports Linux, macOS, and Windows
-- **Production Ready**: Comprehensive testing and validation
-- **Documentation**: Complete guides and examples
-
-## Reproducibility
-
-- Flake inputs are pinned for reproducibility. To update, run:
-
-  ```bash
-  nix flake update
-  nix flake check
-  ```
-
-- Always test your configuration after updating inputs.
+For more help, see the [Troubleshooting Guide](TROUBLESHOOTING.md).
