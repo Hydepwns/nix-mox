@@ -6,6 +6,7 @@
     ../profiles/base.nix
     ../profiles/security.nix
     ../profiles/gaming.nix
+    ./gaming/default.nix
   ];
 
   # Enable flakes CLI globally
