@@ -437,32 +437,6 @@
               modules = [
                 ./config/nixos/configuration.nix
                 ./config/hardware/hardware-configuration.nix
-                # Import personal configuration (includes projects)
-                ./config/personal/combined.nix
-                # Import gaming configuration
-                ./config/nixos/gaming/default.nix
-                ./config/nixos/gaming-tools.nix
-                inputs.home-manager.nixosModules.home-manager
-                {
-                  home-manager.useGlobalPkgs = true;
-                  home-manager.useUserPackages = true;
-                  # The hydepwns.nix file already configures home-manager.users.hydepwns
-                }
-                # Enable gaming services
-                {
-                  services.gaming = {
-                    enable = true;
-                    gpu.type = "auto";
-                    performance.enable = true;
-                    performance.gamemode = true;
-                    performance.mangohud = true;
-                    audio.enable = true;
-                    audio.pipewire = true;
-                    platforms.steam = true;
-                    platforms.lutris = true;
-                    platforms.heroic = true;
-                  };
-                }
               ];
             };
 

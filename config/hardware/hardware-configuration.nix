@@ -6,13 +6,21 @@
 { config, lib, pkgs, modulesPath, ... }:
 
 let
-  # Import the actual hardware configuration
-  # This should be generated for your specific hardware
+  # Prefer host system hardware config if present to avoid mismatched disk IDs
+  hostHardwarePath = /etc/nixos/hardware-configuration.nix;
+  useHostHardware = builtins.pathExists hostHardwarePath;
+  # Import the actual hardware configuration from repo
   actualHardware = import ./hardware-configuration-actual.nix { inherit config lib pkgs modulesPath; };
-in
+  hasRepoActual = builtins.pathExists ./hardware-configuration-actual.nix;
+ in
 
-# Use the actual hardware configuration if it exists, otherwise use a basic template
-if builtins.pathExists ./hardware-configuration-actual.nix then
+# Resolution order:
+# 1) Host /etc/nixos/hardware-configuration.nix if it exists
+# 2) Repo actual hardware config if provided
+# 3) Basic template
+if useHostHardware then
+  import hostHardwarePath { inherit config lib pkgs modulesPath; }
+else if hasRepoActual then
   actualHardware
 else {
   imports = [

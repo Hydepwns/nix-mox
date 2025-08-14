@@ -1,107 +1,40 @@
-# Gaming Template Configuration
-# Gaming-focused configuration with performance optimizations
 { config, pkgs, lib, ... }:
 {
-  imports = [
-    ../profiles/base.nix
-    ../profiles/security.nix
-    ../profiles/gaming.nix
-    ./gaming/default.nix
-  ];
+  # Keep your existing users/passwords
+  system.stateVersion = "24.05";
+  users.mutableUsers = true;
 
-  # Enable flakes CLI globally
+  # Enable flakes and unfree for NVIDIA/Steam
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nixpkgs.config.allowUnfree = true;
 
-  # Locale configuration
-  i18n.defaultLocale = "en_US.UTF-8";
-  i18n.supportedLocales = [
-    "en_US.UTF-8/UTF-8"
-    "es_ES.UTF-8/UTF-8"
-  ];
-  i18n.extraLocaleSettings = {
-    LC_TIME = lib.mkForce "es_ES.UTF-8";
-    LC_NUMERIC = lib.mkForce "es_ES.UTF-8";
-    LC_MONETARY = lib.mkForce "es_ES.UTF-8";
-    LC_ADDRESS = lib.mkForce "es_ES.UTF-8";
-    LC_IDENTIFICATION = lib.mkForce "es_ES.UTF-8";
-    LC_MEASUREMENT = lib.mkForce "es_ES.UTF-8";
-    LC_PAPER = lib.mkForce "es_ES.UTF-8";
-    LC_TELEPHONE = lib.mkForce "es_ES.UTF-8";
-    LC_NAME = lib.mkForce "es_ES.UTF-8";
+  # Basic networking
+  networking.networkmanager.enable = true;
+
+  # Graphics and 32-bit support for Steam/Proton
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
   };
 
-  # Gaming-specific configuration
-  environment.systemPackages = with pkgs; [
-    # Gaming platforms
-    steam
-    lutris
-    heroic
-
-    # Gaming tools
-    gamemode
-    mangohud
-    goverlay
-
-    # Performance monitoring
-    htop
-    btop
-    # nvtop  # GPU monitoring - not available in current nixpkgs
-    radeontop
-
-    # Media players
-    vlc
-    mpv
-
-    # Voice chat
-    discord
-    teamspeak_client
-
-    # Terminal emulator
-    kitty
-  ];
-
-  # Gaming programs
-  programs = {
-    zsh.enable = true;
-    git.enable = true;
-
-    # Steam configuration
-    steam = {
-      enable = true;
-      remotePlay.openFirewall = true;
-      dedicatedServer.openFirewall = true;
-    };
+  # Start a desktop session
+  services.xserver = {
+    enable = true;
+    displayManager.sddm.enable = true;
+    desktopManager.plasma6.enable = true;
+    videoDrivers = [ "nvidia" ];
   };
 
-  # Gaming services
-  services = {
-    # Gaming support
-    gaming = {
-      enable = true;
-      gpu.type = "auto";
-      performance.enable = true;
-      audio.enable = true;
-      audio.pipewire = true;
-      platforms.steam = true;
-      platforms.lutris = true;
-      platforms.heroic = true;
-    };
-  };
-
-  # Default to modesetting; enable NVIDIA on RTX hosts
-  services.xserver.videoDrivers = [ "nvidia" ];
-
+  # NVIDIA driver; avoid nouveau conflicts
   hardware.nvidia = {
     modesetting.enable = true;
     open = false;
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
+  boot.blacklistedKernelModules = [ "nouveau" ];
 
-  # When NVIDIA is enabled, avoid nouveau conflicts
-  boot.blacklistedKernelModules = lib.mkIf (lib.elem "nvidia" config.services.xserver.videoDrivers) [ "nouveau" ];
-
-  # Audio configuration for gaming
+  # Audio via PipeWire
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -111,14 +44,22 @@
     jack.enable = lib.mkDefault true;
   };
 
-  # Performance optimizations
-  boot.kernelParams = [
-    "nvidia-drm.modeset=1"
-  ];
+  # Recommended for NVIDIA modesetting
+  boot.kernelParams = [ "nvidia-drm.modeset=1" ];
 
-  # Gaming environment variables
-  environment.variables = {
-    # Wine
-    WINEDEBUG = "-all";
+  # Optional gaming programs/tools (safe to trim further)
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;
+    dedicatedServer.openFirewall = true;
   };
+
+  environment.systemPackages = with pkgs; [
+    steam
+    lutris
+    gamemode
+    mangohud
+    vulkan-tools
+    pciutils
+  ];
 }
