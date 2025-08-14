@@ -19,6 +19,7 @@ in
     isNormalUser = true;
     extraGroups = [ "wheel" ];
     shell = pkgs.zsh;
+    initialPassword = "changeme";
   };
 
   users.users.${personal.username} = {
@@ -27,6 +28,16 @@ in
     extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" "qemu-libvirtd" ];
     shell = pkgs.zsh;
     openssh.authorizedKeys.keyFiles = [ ./keys/hydepwns.pub ];
+    initialPassword = "changeme";
+  };
+
+  # Temporary recovery account to avoid lockout when migrating users
+  users.users.nixos = {
+    isNormalUser = true;
+    description = "Temporary recovery user";
+    extraGroups = [ "wheel" "networkmanager" ];
+    shell = pkgs.zsh;
+    initialPassword = "changeme";
   };
 
   # System configuration
