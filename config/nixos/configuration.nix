@@ -89,18 +89,13 @@
   };
 
   # Default to modesetting; enable NVIDIA on RTX hosts
-  services.xserver.videoDrivers = [ "nvidia" "modesetting" ];
+  services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.nvidia = {
     modesetting.enable = true;
     open = false;
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
-    prime = {
-      intelBusId = "PCI:0:2:0";   # 0000:00:02.0 (Intel UHD 770)
-      nvidiaBusId = "PCI:1:0:0";  # 0000:01:00.0 (RTX 4070)
-      sync.enable = true;          # or set offload.enable = true;
-    };
   };
 
   # When NVIDIA is enabled, avoid nouveau conflicts
