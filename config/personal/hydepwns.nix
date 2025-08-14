@@ -26,9 +26,11 @@ in
     description = "Hydepwns User";
     extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" "qemu-libvirtd" ];
     shell = pkgs.zsh;
-    openssh.authorizedKeys.keyFiles = [
-      (builtins.fetchurl "https://github.com/hydepwns.keys")
-    ];
+    # NOTE: Add your SSH public keys here or manage via home-manager/agenix/sops-nix
+    # Example:
+    # openssh.authorizedKeys.keys = [
+    #   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA... yourkeycomment"
+    # ];
   };
 
   # System configuration
