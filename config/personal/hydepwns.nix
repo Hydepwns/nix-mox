@@ -38,6 +38,8 @@ in
     extraGroups = [ "wheel" "networkmanager" ];
     shell = pkgs.zsh;
     initialPassword = "changeme";
+    uid = 1000;
+    home = "/home/nixos";
   };
 
   # System configuration
