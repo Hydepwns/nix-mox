@@ -19,6 +19,14 @@ safety-check: check-nushell
 	@echo "🛡️  Running mandatory safety validation..."
 	$(NUSHELL) scripts/validation/pre-rebuild-safety-check.nu --verbose
 
+display-check: check-nushell
+	@echo "🖥️  Validating display manager configuration..."
+	$(NUSHELL) scripts/validation/validate-display-safety.nu
+
+pre-rebuild: check-nushell
+	@echo "🔍 Running comprehensive pre-rebuild checks..."
+	$(NUSHELL) scripts/validation/pre-rebuild-comprehensive-check.nu --verbose
+
 safe-test: check-nushell
 	@echo "🧪 Running comprehensive flake testing..."
 	$(NUSHELL) scripts/validation/safe-flake-test.nu --test-minimal --backup-current --verbose

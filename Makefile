@@ -93,6 +93,8 @@ help:
 	@echo ""
 	@echo "🛡️  Safety & Maintenance:"
 	@echo "  safety-check - Run mandatory safety validation"
+	@echo "  display-check - Validate display manager won't break"
+	@echo "  pre-rebuild  - Comprehensive pre-rebuild validation"
 	@echo "  safe-test    - Run comprehensive flake testing"
 	@echo "  safe-rebuild - Run safe nixos-rebuild with validation"
 	@echo "  storage-guard - Validate storage configuration"
