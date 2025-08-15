@@ -33,9 +33,7 @@ let
     uid = 1000;
     home = "/home/nixos";
     openssh.authorizedKeys.keyFiles = [ ./keys/hydepwns.pub ];
-    # IMPORTANT: Set initial password to prevent lockout
-    # This will be the password you set with 'sudo passwd nixos'
-    initialPassword = "nixos";  # Change this to your actual password
+    # Password is set manually with 'sudo passwd nixos' to prevent lockout
   };
 
   # System configuration
