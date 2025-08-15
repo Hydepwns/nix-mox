@@ -50,6 +50,10 @@ devenv.local.nix
 config/personal/secrets.nix
 config/personal/local.nix
 
+# Claude AI configuration files (local only)
+.claude
+CLAUDE.md
+
 # Node modules and package files
 node_modules/
 package-lock.json
