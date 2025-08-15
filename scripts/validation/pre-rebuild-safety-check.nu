@@ -4,7 +4,7 @@
 # Validates critical system components before nixos-rebuild
 
 def main [
-    --flake: string = ".#nixos"  # Flake to test
+    --flake: string = ".#nixosConfigurations.nixos"  # Flake to test
     --dry-run                    # Only show what would be tested
     --verbose (-v)               # Verbose output
 ] {
@@ -78,11 +78,11 @@ def check_display_config [flake_path: string, verbose: bool] {
     if $verbose { print "🖥️  Checking display configuration..." }
     
     try {
-        # Check if display manager is configured
-        let display_check = (nix eval $"($flake_path).config.services.xserver.displayManager" --json | from json)
+        # Check if display manager is configured (more targeted approach)
+        let sddm_enabled = (nix eval $"($flake_path).config.services.xserver.displayManager.sddm.enable" --json | from json)
         
-        # Check desktop environment
-        let desktop_check = (nix eval $"($flake_path).config.services.xserver.desktopManager" --json | from json)
+        # Check desktop environment (more targeted approach)
+        let plasma_enabled = (nix eval $"($flake_path).config.services.xserver.desktopManager.plasma6.enable" --json | from json)
         
         # Verify current display setup won't be broken
         let current_display = (echo $env.DISPLAY? | default "")
@@ -96,8 +96,8 @@ def check_display_config [flake_path: string, verbose: bool] {
             status: "PASS",
             message: "Display configuration validated",
             details: {
-                display_manager: $display_check,
-                desktop_manager: $desktop_check,
+                sddm_enabled: $sddm_enabled,
+                plasma_enabled: $plasma_enabled,
                 current_session: $current_session
             }
         }
@@ -168,14 +168,13 @@ def check_boot_config [flake_path: string, verbose: bool] {
     if $verbose { print "🔧 Checking boot configuration..." }
     
     try {
-        # Check boot loader configuration
-        let boot_config = (nix eval $"($flake_path).config.boot" --json | from json)
+        # Check boot loader configuration (more targeted approach)
+        let systemd_boot_enabled = (nix eval $"($flake_path).config.boot.loader.systemd-boot.enable" --json | from json)
         
         # Verify boot loader type matches system
         let current_boot_mode = if (ls /sys/firmware/efi | length) > 0 { "uefi" } else { "bios" }
         
-        let systemd_boot_enabled = ($boot_config.loader.systemd-boot.enable? | default false)
-        let grub_enabled = ($boot_config.loader.grub.enable? | default false)
+        let grub_enabled = (nix eval $"($flake_path).config.boot.loader.grub.enable" --json | from json)
         
         if $current_boot_mode == "uefi" and (not $systemd_boot_enabled) and (not $grub_enabled) {
             return {
@@ -207,11 +206,11 @@ def check_network_config [flake_path: string, verbose: bool] {
     if $verbose { print "🌐 Checking network configuration..." }
     
     try {
-        let network_config = (nix eval $"($flake_path).config.networking" --json | from json)
+        # Check if NetworkManager is enabled (more targeted approach)
+        let nm_enabled = (nix eval $"($flake_path).config.networking.networkmanager.enable" --json | from json)
         
-        # Check if NetworkManager is enabled if currently using it
+        # Check if NetworkManager is currently active
         let nm_active = (systemctl is-active NetworkManager | str trim) == "active"
-        let nm_enabled = ($network_config.networkmanager.enable? | default false)
         
         if $nm_active and (not $nm_enabled) {
             return {
@@ -242,13 +241,14 @@ def check_critical_services [flake_path: string, verbose: bool] {
     if $verbose { print "🔧 Checking critical services..." }
     
     try {
-        # Check if critical services are configured
-        let services_config = (nix eval $"($flake_path).config.services" --json | from json)
+        # Check if critical services are configured (more targeted approach)
+        let openssh_enabled = (nix eval $"($flake_path).config.services.openssh.enable" --json | from json)
+        let dbus_enabled = (nix eval $"($flake_path).config.services.dbus.enable" --json | from json)
         
         # List of services that should typically be enabled
         let expected_services = {
-            "openssh": ($services_config.openssh.enable? | default false),
-            "dbus": ($services_config.dbus.enable? | default true)
+            "openssh": $openssh_enabled,
+            "dbus": $dbus_enabled
         }
         
         return {
