@@ -137,14 +137,11 @@ def list-module-details [] {
     print "================="
 
     let modules = [
-        {name: "services/infisical", file: "modules/services/infisical.nix"},
-        {name: "services/tailscale", file: "modules/services/tailscale.nix"},
-        {name: "gaming", file: "modules/gaming/index.nix"},
-        {name: "monitoring", file: "modules/monitoring/index.nix"},
-        {name: "storage", file: "modules/storage/index.nix"},
-        {name: "packages/development", file: "modules/packages/development/index.nix"},
-        {name: "packages/gaming", file: "modules/packages/gaming/index.nix"},
-        {name: "security", file: "modules/security/index.nix"}
+        {name: "hardware/auto-detect", file: "modules/hardware/auto-detect.nix"},
+        {name: "security/secrets", file: "modules/security/secrets.nix"},
+        {name: "backup/restic", file: "modules/backup/restic.nix"},
+        {name: "recovery/auto-rollback", file: "modules/recovery/auto-rollback.nix"},
+        {name: "gaming/subflake", file: "flakes/gaming/module.nix"}
     ]
 
     for module in $modules {

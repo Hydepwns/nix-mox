@@ -110,7 +110,7 @@ def benchmark_process_creation [] {
         let duration = (($end_time - $start_time) | into float) / 1000000000
         
         {
-            success: ($processes | length) == $iterations,
+            success: (($processes | length) == $iterations),
             duration: $duration,
             processes_created: ($processes | length),
             expected: $iterations

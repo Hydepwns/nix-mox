@@ -55,7 +55,7 @@ def benchmark_nix_evaluation [] {
         let duration = (($end_time - $start_time) | into float) / 1000000000
         
         {
-            success: ($results | length) == $iterations,
+            success: (($results | length) == $iterations),
             duration: $duration,
             evaluations: ($results | length),
             expected: $iterations
@@ -77,7 +77,7 @@ def benchmark_flake_check [] {
     let flake_test = (try {
         # Run flake check (dry run)
         let result = (try {
-            nix flake check --no-build 2>&1 | str trim
+            ^nix flake check --no-build | complete | get stdout | str trim
             true
         } catch {
             false
@@ -107,7 +107,7 @@ def benchmark_config_build [] {
     let config_test = (try {
         # Try to build a simple configuration
         let result = (try {
-            nix build --no-link .#default 2>&1 | str trim
+            ^nix build --no-link .#default | complete | get stdout | str trim
             true
         } catch {
             false

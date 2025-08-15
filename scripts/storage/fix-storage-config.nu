@@ -4,7 +4,7 @@
 # - Updates configuration with correct identifiers
 # - Provides option to use UUID (more stable) or partuuid
 
-let config_file = "config/hardware/hardware-configuration-actual.nix"
+let config_file = "/etc/nixos/hardware-configuration.nix"
 
 # Helper to get current device identifiers
 def get_current_identifiers [] {

@@ -49,7 +49,7 @@ def test_config_performance [] {
     let config_test = (try {
         # Test configuration parsing
         let result = (try {
-            nix eval --impure --expr 'import ./config/nixos/configuration.nix {}' 2>&1 | str trim
+            ^nix eval --impure --expr 'import ./config/nixos/configuration.nix {}' | complete | get stdout | str trim
             true
         } catch {
             false
@@ -97,7 +97,7 @@ def test_disk_performance [] {
         let duration = (($end_time - $start_time) | into float) / 1000000000
         
         {
-            success: $read_data == 10000,
+            success: ($read_data == 10000),
             duration: $duration,
             lines_written: 10000,
             lines_read: $read_data
@@ -126,7 +126,7 @@ def test_memory_performance [] {
         let duration = (($end_time - $start_time) | into float) / 1000000000
         
         {
-            success: $array_sum > 0,
+            success: ($array_sum > 0),
             duration: $duration,
             array_size: ($large_array | length),
             sum: $array_sum
@@ -149,7 +149,7 @@ def test_network_performance [] {
     let network_test = (try {
         # Test localhost connectivity
         let result = (try {
-            curl -s --connect-timeout 5 http://localhost:8080 2>&1 | str trim
+            ^curl -s --connect-timeout 5 http://localhost:8080 | complete | get stdout | str trim
             true
         } catch {
             # Expected to fail if no local server, but that's OK for this test
@@ -177,12 +177,16 @@ def generate_performance_report [results: record] {
     print "\n(ansi blue)📊 Performance Test Report(ansi reset)"
     print "(ansi blue)========================(ansi reset)\n"
     
-    $results | each { |test_name, test_result|
+    $results | transpose key value | each { |row|
+        let test_name = $row.key
+        let test_result = $row.value
         let status = (if $test_result.success { "(ansi green)✅" } else { "(ansi red)❌" })
         print $"($status) ($test_name): ($test_result.duration | into string -d 3)s"
         
         if ($test_result | get -i results | is-not-empty) {
-            $test_result.results | each { |subtest_name, subtest_result|
+            $test_result.results | transpose key value | each { |subrow|
+                let subtest_name = $subrow.key
+                let subtest_result = $subrow.value
                 let sub_status = (if $subtest_result.success { "(ansi green)  ✓" } else { "(ansi red)  ✗" })
                 print $"($sub_status) ($subtest_name): ($subtest_result.duration | into string -d 3)s"
             }
