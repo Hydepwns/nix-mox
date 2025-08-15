@@ -9,9 +9,8 @@ let
   # Prefer host system hardware config if present to avoid mismatched disk IDs
   hostHardwarePath = /etc/nixos/hardware-configuration.nix;
   useHostHardware = builtins.pathExists hostHardwarePath;
-  # Import the actual hardware configuration from repo
-  actualHardware = import ./hardware-configuration-actual.nix { inherit config lib pkgs modulesPath; };
-  hasRepoActual = builtins.pathExists ./hardware-configuration-actual.nix;
+  # Check if there's a repo-specific hardware config (optional)
+  hasRepoActual = false; # Removed hardware-configuration-actual.nix - use system's /etc/nixos/hardware-configuration.nix
  in
 
 # Resolution order:
@@ -20,8 +19,6 @@ let
 # 3) Basic template
 if useHostHardware then
   import hostHardwarePath { inherit config lib pkgs modulesPath; }
-else if hasRepoActual then
-  actualHardware
 else {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
