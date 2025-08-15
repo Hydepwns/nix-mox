@@ -319,19 +319,19 @@ in
     (mkIf cfg.networking.optimize {
       boot.kernel.sysctl = {
         # TCP optimizations
-        "net.ipv4.tcp_congestion_control" = cfg.networking.tcpCongestion;
-        "net.ipv4.tcp_fastopen" = 3;
-        "net.ipv4.tcp_mtu_probing" = 1;
+        "net.ipv4.tcp_congestion_control" = mkDefault cfg.networking.tcpCongestion;
+        "net.ipv4.tcp_fastopen" = mkDefault 3;
+        "net.ipv4.tcp_mtu_probing" = mkDefault 1;
         
         # Buffer sizes
-        "net.core.rmem_max" = 134217728;
-        "net.core.wmem_max" = 134217728;
-        "net.ipv4.tcp_rmem" = "4096 87380 134217728";
-        "net.ipv4.tcp_wmem" = "4096 65536 134217728";
+        "net.core.rmem_max" = mkDefault 134217728;
+        "net.core.wmem_max" = mkDefault 134217728;
+        "net.ipv4.tcp_rmem" = mkDefault "4096 87380 134217728";
+        "net.ipv4.tcp_wmem" = mkDefault "4096 65536 134217728";
         
         # Reduce latency
-        "net.ipv4.tcp_low_latency" = 1;
-        "net.ipv4.tcp_timestamps" = 0;
+        "net.ipv4.tcp_low_latency" = mkDefault 1;
+        "net.ipv4.tcp_timestamps" = mkDefault 0;
       };
     })
     

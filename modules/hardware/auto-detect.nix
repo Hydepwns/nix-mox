@@ -233,21 +233,21 @@ in
       
       # Configure vm settings based on memory
       boot.kernel.sysctl = {
-        "vm.swappiness" = if totalMemoryGB >= 32 then 10 
+        "vm.swappiness" = mkDefault (if totalMemoryGB >= 32 then 10 
                           else if totalMemoryGB >= 16 then 20 
-                          else 30;
-        "vm.vfs_cache_pressure" = if totalMemoryGB >= 32 then 50 else 100;
-        "vm.dirty_background_ratio" = if totalMemoryGB >= 32 then 1 else 5;
-        "vm.dirty_ratio" = if totalMemoryGB >= 32 then 2 else 10;
+                          else 30);
+        "vm.vfs_cache_pressure" = mkDefault (if totalMemoryGB >= 32 then 50 else 100);
+        "vm.dirty_background_ratio" = mkDefault (if totalMemoryGB >= 32 then 1 else 5);
+        "vm.dirty_ratio" = mkDefault (if totalMemoryGB >= 32 then 2 else 10);
       };
       
       # Configure earlyoom based on memory
       services.earlyoom = {
         enable = true;
-        freeMemThreshold = if totalMemoryGB >= 32 then 5 
+        freeMemThreshold = mkDefault (if totalMemoryGB >= 32 then 5 
                           else if totalMemoryGB >= 16 then 10 
-                          else 15;
-        freeSwapThreshold = 10;
+                          else 15);
+        freeSwapThreshold = mkDefault 10;
       };
       
       # Huge pages for systems with enough memory
@@ -275,12 +275,12 @@ in
       };
       
       # Configure filesystem options based on storage type
+      # Note: /home is part of root filesystem, so we only configure root
       fileSystems = let
         ssdOptions = [ "noatime" "nodiratime" "discard=async" ];
         hddOptions = [ "noatime" ];
       in mkIf (hasNvme || hasSsd) {
         "/".options = mkDefault ssdOptions;
-        "/home".options = mkDefault ssdOptions;
       };
       
       # Kernel parameters for storage
@@ -302,10 +302,10 @@ in
       
       # Network optimizations based on memory
       boot.kernel.sysctl = mkIf (totalMemoryGB >= 16) {
-        "net.core.rmem_max" = 134217728;
-        "net.core.wmem_max" = 134217728;
-        "net.ipv4.tcp_rmem" = "4096 87380 134217728";
-        "net.ipv4.tcp_wmem" = "4096 65536 134217728";
+        "net.core.rmem_max" = mkDefault 134217728;
+        "net.core.wmem_max" = mkDefault 134217728;
+        "net.ipv4.tcp_rmem" = mkDefault "4096 87380 134217728";
+        "net.ipv4.tcp_wmem" = mkDefault "4096 65536 134217728";
       };
     }
   ]);

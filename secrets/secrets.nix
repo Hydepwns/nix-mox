@@ -2,7 +2,7 @@
 let
   # Hydepwns keys (from config/personal/keys/hydepwns.pub)
   hydepwns-key1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJLBxcR9VSq3yeN3D8LI66ul/aOB7wpk+qyYQifpwiO5";
-  hydepwns-key2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBNSCpvPKO9IeEFifTgS0IFle7iMWKtvDr5bngKcDu8b";  # Main macOS key
+  hydepwns-key2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBNSCpvPKO9IeEFifTgS0IFle7iMWKtvDr5bngKcDu8b";
   hydepwns-key3 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEMQM/yvM8EAHY/bR10dbS2hhMFFc2OscWe8t1V8QZUb";
   hydepwns-key4 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBTTJ3T+lOaKg/xN83IwR8gcHLYGj0Aj6uW5OaXyPCB2";
   
@@ -13,7 +13,7 @@ let
   allKeys = [ hydepwns-key1 hydepwns-key2 hydepwns-key3 hydepwns-key4 nixos-system ];
   
   # Keys for development (macOS)
-  devKeys = [ hydepwns-key2 ];  # Main macOS key
+  devKeys = [ hydepwns-key2 ];
   
   # Keys for production NixOS system
   prodKeys = [ hydepwns-key1 hydepwns-key3 hydepwns-key4 nixos-system ];
@@ -34,11 +34,11 @@ in
   
   # API tokens and keys
   "github-token.age".publicKeys = allKeys;
-  "openai-key.age".publicKeys = devKeys;  # Dev only
-  "anthropic-key.age".publicKeys = devKeys;  # Dev only
+  "openai-key.age".publicKeys = devKeys;
+  "anthropic-key.age".publicKeys = devKeys;
   
   # Service passwords
-  "database-password.age".publicKeys = prodKeys;  # Production only
+  "database-password.age".publicKeys = prodKeys;
   "nextcloud-admin.age".publicKeys = prodKeys;
   "grafana-admin.age".publicKeys = prodKeys;
   
