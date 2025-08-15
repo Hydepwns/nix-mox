@@ -77,8 +77,8 @@
     freeSwapThreshold = 10;
     extraArgs = [
       "-g" # Kill entire process group
-      "--avoid '^(X|plasma|sddm|pipewire|wireplumber)$'" # Don't kill display/audio
-      "--prefer '^(chrome|firefox|electron)'" # Prefer killing browsers first
+      "--avoid" "^(X|plasma|sddm|pipewire|wireplumber)$" # Don't kill display/audio
+      "--prefer" "^(chrome|firefox|electron)$" # Prefer killing browsers first
     ];
   };
   
@@ -437,9 +437,6 @@
         </edit>
         <edit name="rgba" mode="assign">
           <const>rgb</const>
-        </edit>
-        <edit name="lcdfilter" mode="assign">
-          <const>default</const>
         </edit>
       </match>
     '';

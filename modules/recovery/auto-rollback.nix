@@ -8,7 +8,7 @@ let
   
   # Rollback detection script
   rollbackScript = pkgs.writeScript "auto-rollback" ''
-    #!/usr/bin/env bash
+    #!${pkgs.bash}/bin/bash
     
     BOOT_COUNT_FILE="/var/lib/boot-count"
     MAX_ATTEMPTS=${toString cfg.maxAttempts}
@@ -52,7 +52,7 @@ let
   
   # Success marker script
   successScript = pkgs.writeScript "mark-boot-success" ''
-    #!/usr/bin/env bash
+    #!${pkgs.bash}/bin/bash
     
     BOOT_COUNT_FILE="/var/lib/boot-count"
     
@@ -133,7 +133,7 @@ in
       serviceConfig = {
         Type = "idle";
         ExecStart = pkgs.writeScriptBin "emergency-recovery" ''
-          #!/usr/bin/env bash
+          #!${pkgs.bash}/bin/bash
           echo "🚨 EMERGENCY RECOVERY MODE"
           echo ""
           echo "System has been rolled back due to boot failures."
@@ -170,7 +170,7 @@ in
     # Helper commands
     environment.systemPackages = with pkgs; [
       (writeScriptBin "rollback-status" ''
-        #!/usr/bin/env bash
+        #!${pkgs.bash}/bin/bash
         BOOT_COUNT_FILE="/var/lib/boot-count"
         
         if [ -f "$BOOT_COUNT_FILE" ]; then
@@ -188,13 +188,13 @@ in
       '')
       
       (writeScriptBin "rollback-reset" ''
-        #!/usr/bin/env bash
+        #!${pkgs.bash}/bin/bash
         echo "0" > /var/lib/boot-count
         echo "✅ Boot counter reset"
       '')
       
       (writeScriptBin "rollback-test" ''
-        #!/usr/bin/env bash
+        #!${pkgs.bash}/bin/bash
         echo "🧪 Testing rollback mechanism..."
         echo "${toString cfg.maxAttempts}" > /var/lib/boot-count
         echo "⚠️  Next boot will trigger rollback!"
