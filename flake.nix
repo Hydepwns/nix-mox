@@ -74,7 +74,7 @@
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 
-                users.hydepwns = { ... }: {
+                users.nixos = { ... }: {
                   imports = [
                     ./config/home/hydepwns.nix
                     ./flakes/gaming/home-manager/gaming.nix

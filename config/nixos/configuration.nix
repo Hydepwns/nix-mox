@@ -360,8 +360,6 @@
     # Core system utilities
     git
     neovim
-    htop
-    btop
     pciutils
     
     # Terminal emulators
@@ -412,7 +410,6 @@
     
     # Additional coding fonts
     jetbrains-mono
-    fira-code
   ];
   
   # Font configuration for better rendering

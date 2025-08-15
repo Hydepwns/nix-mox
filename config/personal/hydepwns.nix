@@ -14,24 +14,25 @@ let
   };
  in
 {
-  # System user configuration for hydepwns
-  users.users.${personal.username} = {
-    isNormalUser = true;
-    description = "Hydepwns User";
-    extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" "qemu-libvirtd" ];
-    shell = pkgs.zsh;
-    openssh.authorizedKeys.keyFiles = [ ./keys/hydepwns.pub ];
-    # No password set here; use existing accounts or set hashedPassword via secrets.
-  };
+  # System user configuration for hydepwns (commented out to avoid conflicts)
+  # users.users.${personal.username} = {
+  #   isNormalUser = true;
+  #   description = "Hydepwns User";
+  #   extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" "qemu-libvirtd" ];
+  #   shell = pkgs.zsh;
+  #   openssh.authorizedKeys.keyFiles = [ ./keys/hydepwns.pub ];
+  #   # No password set here; use existing accounts or set hashedPassword via secrets.
+  # };
 
-  # Temporary recovery account to avoid lockout when migrating users (disabled by default)
-  users.users.nixos = lib.mkIf (builtins.getEnv "NIXMOX_ENABLE_TEMP_USER" == "1") {
+  # Preserve the current nixos user to avoid lockout
+  users.users.nixos = {
     isNormalUser = true;
-    description = "Temporary recovery user";
-    extraGroups = [ "wheel" "networkmanager" ];
+    description = "NixOS User";
+    extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" "qemu-libvirtd" ];
     shell = pkgs.zsh;
     uid = 1000;
     home = "/home/nixos";
+    openssh.authorizedKeys.keyFiles = [ ./keys/hydepwns.pub ];
   };
 
   # System configuration
@@ -53,6 +54,6 @@ let
 
   # Additional system packages
   environment.systemPackages = with pkgs; [
-    
+    # Add any packages you want to install here
   ];
 }
