@@ -25,6 +25,7 @@ let
   # };
 
   # Preserve the current nixos user to avoid lockout
+  # IMPORTANT: This prevents password changes on rebuild
   users.users.nixos = {
     isNormalUser = true;
     description = "NixOS User";
@@ -33,6 +34,8 @@ let
     uid = 1000;
     home = "/home/nixos";
     openssh.authorizedKeys.keyFiles = [ ./keys/hydepwns.pub ];
+    # CRITICAL: Don't set password here - let the existing password persist
+    # This prevents NixOS from generating a new random password
   };
 
   # System configuration

@@ -174,7 +174,11 @@
     open = false;  # Use closed source drivers
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
-    forceFullCompositionPipeline = true;
+    forceFullCompositionPipeline = false;  # Disable this to prevent black screen
+    # Add more conservative settings
+    prime = {
+      offload.enable = false;  # Disable prime offload for now
+    };
   };
   
   hardware = {
@@ -200,7 +204,7 @@
   services.xserver = {
     enable = true;
     
-    # Video drivers
+    # Video drivers - be more conservative
     videoDrivers = [ "nvidia" ];
     
     # Keyboard and mouse
@@ -211,28 +215,39 @@
     
     # High DPI settings
     dpi = 96;
-  };
-
-  # Display manager
-  services.displayManager = {
-    sddm = {
-      enable = true;
-      wayland.enable = true;
-      theme = "breeze";
+    
+    # Add display configuration to prevent black screen
+    displayManager = {
+      sddm = {
+        enable = true;
+        wayland.enable = false;  # Disable Wayland for now to prevent conflicts
+        theme = "breeze";
+        # Add auto-login as fallback
+        autoLogin = {
+          enable = true;
+          user = "nixos";
+        };
+      };
+      
+      # Session settings
+      defaultSession = "plasma";
     };
     
-    # Session settings
-    defaultSession = "plasma";
+    # Desktop environment
+    desktopManager.plasma6.enable = true;
     
-    # Auto-login (optional - comment out for security)
-    # autoLogin = {
-    #   enable = true;
-    #   user = "yourusername";
-    # };
+    # Add screen configuration to prevent black screen
+    screenSection = ''
+      Option "RegistryDwords" "EnableBrightnessControl=1"
+    '';
+    
+    # Add device configuration
+    deviceSection = ''
+      Option "TripleBuffer" "true"
+      Option "AllowIndirectGLXProtocol" "off"
+      Option "TripleBuffer" "true"
+    '';
   };
-  
-  # Desktop environment
-  services.desktopManager.plasma6.enable = true;
 
   # ============================================================================
   # AUDIO
