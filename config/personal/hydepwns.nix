@@ -6,21 +6,15 @@ let
   # Personal settings for hydepwns
   personal = {
     username = "hydepwns";
-    email = "andrewtehsailor@gmail.com";
+    email = "drew@axol.io";
     timezone = "Europe/Madrid";
     hostname = "nixos";
     gitUsername = "hydepwns";
-    gitEmail = "andrewtehsailor@gmail.com";
+    gitEmail = "drew@axol.io";
   };
  in
 {
-  # System user configuration - keep droo user but add hydepwns
-  users.users.droo = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" ];
-    shell = pkgs.zsh;
-  };
-
+  # System user configuration for hydepwns
   users.users.${personal.username} = {
     isNormalUser = true;
     description = "Hydepwns User";
