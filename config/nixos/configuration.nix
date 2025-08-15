@@ -216,26 +216,6 @@
     # High DPI settings
     dpi = 96;
     
-    # Add display configuration to prevent black screen
-    displayManager = {
-      sddm = {
-        enable = true;
-        wayland.enable = false;  # Disable Wayland for now to prevent conflicts
-        theme = "breeze";
-        # Add auto-login as fallback
-        autoLogin = {
-          enable = true;
-          user = "nixos";
-        };
-      };
-      
-      # Session settings
-      defaultSession = "plasma";
-    };
-    
-    # Desktop environment
-    desktopManager.plasma6.enable = true;
-    
     # Add screen configuration to prevent black screen
     screenSection = ''
       Option "RegistryDwords" "EnableBrightnessControl=1"
@@ -248,6 +228,27 @@
       Option "TripleBuffer" "true"
     '';
   };
+
+  # Display manager configuration (updated for newer NixOS)
+  services.displayManager = {
+    sddm = {
+      enable = true;
+      wayland.enable = false;  # Disable Wayland for now to prevent conflicts
+      theme = "breeze";
+    };
+    
+    # Session settings
+    defaultSession = "plasma";
+    
+    # Auto-login configuration - DISABLED for security
+    autoLogin = {
+      enable = false;
+      user = "nixos";
+    };
+  };
+  
+  # Desktop environment
+  services.desktopManager.plasma6.enable = true;
 
   # ============================================================================
   # AUDIO

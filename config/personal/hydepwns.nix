@@ -24,18 +24,17 @@ let
   #   # No password set here; use existing accounts or set hashedPassword via secrets.
   # };
 
-  # Preserve the current nixos user to avoid lockout
-  # IMPORTANT: This prevents password changes on rebuild
+  # Configure the nixos user properly
   users.users.nixos = {
     isNormalUser = true;
-    description = "NixOS User";
+    description = "Hydepwns (NixOS User)";
     extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" "qemu-libvirtd" ];
     shell = pkgs.zsh;
     uid = 1000;
     home = "/home/nixos";
     openssh.authorizedKeys.keyFiles = [ ./keys/hydepwns.pub ];
-    # CRITICAL: Don't set password here - let the existing password persist
-    # This prevents NixOS from generating a new random password
+    # Set a hashed password - you can generate this with: mkpasswd -m sha-512
+    # For now, we'll let the existing password persist
   };
 
   # System configuration

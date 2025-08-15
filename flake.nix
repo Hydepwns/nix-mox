@@ -74,6 +74,9 @@
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 
+                # Add backup configuration to prevent file conflicts
+                backupFileExtension = "backup";
+                
                 users.nixos = { ... }: {
                   imports = [
                     ./config/home/hydepwns.nix
