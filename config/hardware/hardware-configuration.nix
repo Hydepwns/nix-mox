@@ -35,7 +35,24 @@
   # networking.interfaces.enp4s0.useDHCP = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+  
+  # Intel CPU optimizations for i7-13700K
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  
+  # Intel specific hardware configuration
+  hardware = {
+    # Enable Intel GPU support (if using iGPU alongside NVIDIA)
+    graphics = {
+      enable = true;
+      enable32Bit = true;
+      extraPackages = with pkgs; [
+        intel-media-driver
+        vaapiIntel
+        vaapiVdpau
+        libvdpau-va-gl
+      ];
+    };
+  };
   
   # Boot loader configuration for UEFI system
   boot.loader.systemd-boot.enable = true;

@@ -97,20 +97,28 @@
   };
 
   # ============================================================================
-  # BOOT & KERNEL
+  # BOOT & KERNEL - OPTIMIZED FOR INTEL i7-13700K
   # ============================================================================
   
   boot = {
     # Use latest kernel for best gaming performance
     kernelPackages = pkgs.linuxPackages_zen;
     
-    # Kernel parameters optimized for gaming
+    # Kernel parameters optimized for Intel i7-13700K gaming
     kernelParams = [
       # NVIDIA settings
       "nvidia-drm.modeset=1"
       
-      # Performance
-      "mitigations=off"           # Disable CPU mitigations for performance
+      # Intel CPU optimizations
+      "intel_idle.max_cstate=1"    # Limit Intel CPU C-states for performance
+      "intel_pstate=performance"   # Force Intel P-state to performance mode
+      "intel_iommu=on"             # Enable Intel IOMMU for better virtualization
+      "i915.enable_guc=3"          # Enable Intel GPU firmware (if using iGPU)
+      "i915.enable_fbc=1"          # Enable frame buffer compression
+      "i915.fastboot=1"            # Fast boot for Intel graphics
+      
+      # Performance optimizations
+      "mitigations=off"            # Disable CPU mitigations for performance
       "nowatchdog"                 # Disable watchdog
       "quiet"                      # Reduce boot messages
       "splash"                     # Enable splash screen
@@ -119,10 +127,13 @@
       "transparent_hugepage=always"
       "vm.swappiness=10"
       
-      # Power management
+      # Power management for Intel
       "processor.max_cstate=1"     # Limit CPU C-states
-      "intel_idle.max_cstate=1"    # Intel specific
       "idle=poll"                  # Polling idle for minimal latency
+      
+      # Intel specific performance
+      "tsc=reliable"               # Trust TSC for Intel CPUs
+      "clocksource=tsc"            # Use TSC as clocksource
     ];
     
     # Blacklist conflicting drivers
@@ -131,7 +142,7 @@
     # Kernel modules to load
     kernelModules = [ "kvm-intel" "kvm-amd" "v4l2loopback" ];
     
-    # Sysctl settings for performance
+    # Sysctl settings optimized for Intel i7-13700K
     kernel.sysctl = {
       # Network optimizations
       "net.core.rmem_max" = 134217728;
@@ -141,15 +152,21 @@
       "net.ipv4.tcp_congestion_control" = "bbr";
       "net.ipv4.tcp_fastopen" = 3;
       
-      # Memory management
+      # Memory management optimized for Intel
       "vm.swappiness" = 10;
       "vm.vfs_cache_pressure" = 50;
       "vm.dirty_background_ratio" = 1;
       "vm.dirty_ratio" = 3;
+      "vm.nr_hugepages" = 1024;  # Enable huge pages for Intel
       
       # File handles
       "fs.file-max" = 2097152;
       "fs.inotify.max_user_watches" = 524288;
+      
+      # Intel CPU specific optimizations
+      "dev.cpu.dma_latency" = 0;  # Reduce DMA latency
+      "kernel.sched_rt_runtime_us" = -1;  # Allow real-time scheduling
+      "kernel.sched_rt_period_us" = 1000000;
     };
   };
 
@@ -459,18 +476,46 @@
   };
 
   # ============================================================================
-  # POWER MANAGEMENT
+  # POWER MANAGEMENT - OPTIMIZED FOR INTEL i7-13700K
   # ============================================================================
   
   powerManagement = {
     enable = true;
-    cpuFreqGovernor = "performance";  # Always maximum performance
+    cpuFreqGovernor = "performance";  # Always maximum performance for Intel
+    scsiLinkPolicy = "max_performance";  # Maximum SCSI performance
   };
   
-  # Disable power saving services that interfere with gaming
+  # Intel CPU specific power management
+  services.thermald = {
+    enable = true;  # Enable Intel thermal daemon for proper thermal management
+    configFile = pkgs.writeText "thermal-conf.xml" ''
+      <?xml version="1.0"?>
+      <ThermalConfiguration>
+        <Platform>
+          <Name>Intel i7-13700K</Name>
+          <ProductName>*</ProductName>
+          <Preference>QUIET</Preference>
+          <ThermalZones>
+            <ThermalZone>
+              <Type>cpu</Type>
+              <TripPoints>
+                <TripPoint>
+                  <SensorType>x86_pkg_temp</SensorType>
+                  <Temperature>85000</Temperature>
+                  <type>passive</type>
+                  <ControlType>SEQUENTIAL</ControlType>
+                </TripPoint>
+              </TripPoints>
+            </ThermalZone>
+          </ThermalZones>
+        </Platform>
+      </ThermalConfiguration>
+    '';
+  };
+  
+  # Disable conflicting power management services
   services.tlp.enable = false;
   services.auto-cpufreq.enable = false;
-  services.thermald.enable = false;
 
   # ============================================================================
   # SECURITY
@@ -552,7 +597,7 @@
   };
   
   # ============================================================================
-  # ENVIRONMENT VARIABLES
+  # ENVIRONMENT VARIABLES - OPTIMIZED FOR INTEL i7-13700K
   # ============================================================================
   
   environment.variables = {
@@ -567,11 +612,20 @@
     __NV_PRIME_RENDER_OFFLOAD = "1";
     __VK_LAYER_NV_optimus = "NVIDIA_only";
     
-    # Gaming
+    # Intel CPU optimizations
+    INTEL_DEVICE_PLUGIN_XE = "1";  # Enable Intel Xe graphics support
+    INTEL_OPENCL_ICD = "1";        # Enable Intel OpenCL
+    INTEL_VAAPI_DRIVER = "i965";   # Intel VAAPI driver
+    
+    # Gaming optimizations for Intel
     MANGOHUD = "1";
     ENABLE_VKBASALT = "1";
+    GAMEMODE = "1";                # Enable Feral GameMode
     
     # SDL
     SDL_VIDEODRIVER = "wayland,x11";
+    
+    # Intel specific performance
+    INTEL_PREFER_SSE4_1 = "1";     # Prefer SSE4.1 for Intel
   };
 }
