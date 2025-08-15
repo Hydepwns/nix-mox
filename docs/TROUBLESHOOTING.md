@@ -30,7 +30,7 @@ xrandr --listmonitors
 nixos-rebuild dry-activate --flake .#nixos
 
 # Verify hardware config
-cat config/hardware/hardware-configuration-actual.nix
+cat /etc/nixos/hardware-configuration.nix
 ```
 
 **Solutions:**

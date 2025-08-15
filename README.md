@@ -1,6 +1,6 @@
 # nix-mox
 
-> Enterprise-grade NixOS configuration framework with monitoring, setup wizard, and developer tools.
+> Enterprise-grade NixOS gaming workstation configuration with comprehensive safety features and automation.
 
 [![CI](https://github.com/Hydepwns/nix-mox/workflows/CI%20(Simplified)/badge.svg)](https://github.com/Hydepwns/nix-mox/actions/workflows/ci.yml)
 [![Platforms](https://img.shields.io/badge/platforms-linux%20%7C%20macos%20%7C%20windows-blue.svg)](https://github.com/Hydepwns/nix-mox/actions)
@@ -9,14 +9,15 @@
 ## Quick Start
 
 ### Prerequisites
-- **NixOS** (fresh install with working display and user account)  
+- **NixOS** (fresh install with working display)  
+- User account: `hydepwns` (primary user)
 - Basic shell access (no additional packages required initially)
 
 ### Safe Bootstrap Process
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/Hydepwns/nix-mox.git
+git clone https://github.com/hydepwns/nix-mox.git
 cd nix-mox
 
 # 2. CRITICAL: Check bootstrap requirements first  
@@ -39,9 +40,8 @@ nix-shell -p nushell --run "nu scripts/setup/unified-setup.nu"
 nix-shell -p nushell --run "nu scripts/setup/simple-install.nu --create-dirs"
 nix-shell -p nushell --run "nu scripts/setup/simple-setup.nu"
 
-# Note: Other setup scripts have issues:
-# - setup.nu: input handling problems in some environments
-# - interactive-setup.nu: broken due to Nushell syntax errors
+# Note: Legacy setup scripts have been removed or fixed
+# All setup scripts now work correctly
 
 # 7. Before rebuilding system, run safety check again
 nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu"
@@ -63,11 +63,11 @@ nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu --backup --te
 
 | Category | Features |
 |----------|----------|
-| **Monitoring** | ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=prometheus&logoColor=white) ![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat&logo=grafana&logoColor=white) ![Alerts](https://img.shields.io/badge/Alerts-Real--time-orange) |
+| **Gaming** | ![Steam](https://img.shields.io/badge/Steam-Optimized-blue) ![Lutris](https://img.shields.io/badge/Lutris-Supported-orange) ![GameMode](https://img.shields.io/badge/GameMode-Enabled-green) ![Hardware Auto-Detect](https://img.shields.io/badge/Hardware-Auto--Detect-purple) |
+| **Security** | ![Agenix](https://img.shields.io/badge/Secrets-Encrypted-red) ![Auto-Rollback](https://img.shields.io/badge/Auto--Rollback-3%20Attempts-orange) ![Backup](https://img.shields.io/badge/Backup-Automated-green) |
+| **Performance** | ![CPU Governor](https://img.shields.io/badge/CPU-Performance-blue) ![Zram](https://img.shields.io/badge/Zram-Compressed-green) ![Network](https://img.shields.io/badge/Network-BBR-purple) ![SSD](https://img.shields.io/badge/SSD-Optimized-orange) |
 | **Setup** | ![Wizard](https://img.shields.io/badge/Wizard-Interactive-blue) ![Auto-Detection](https://img.shields.io/badge/Auto--Detection-Smart-green) ![Defaults](https://img.shields.io/badge/Defaults-Platform--Adaptive-purple) |
-| **DevEx** | ![VS Code](https://img.shields.io/badge/VS%20Code-Extension-007ACC?style=flat&logo=visual-studio-code&logoColor=white) ![Zed](https://img.shields.io/badge/Zed-Extension-000000?style=flat&logo=zed&logoColor=white) ![Completions](https://img.shields.io/badge/Completions-Universal-yellow) |
-| **Security** | ![Threat Detection](https://img.shields.io/badge/Threat%20Detection-20+%20Patterns-red) ![Vulnerability Scanning](https://img.shields.io/badge/Vulnerability%20Scanning-Automated-orange) ![Error Recovery](https://img.shields.io/badge/Error%20Recovery-Contextual-green) |
-| **Testing** | ![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen) ![Unit Tests](https://img.shields.io/badge/Unit%20Tests-Passing-green) ![Integration](https://img.shields.io/badge/Integration-Continuous-blue) |
+| **DevEx** | ![Modular](https://img.shields.io/badge/Architecture-Modular-blue) ![Subflakes](https://img.shields.io/badge/Subflakes-Ready-green) ![Testing](https://img.shields.io/badge/Testing-Comprehensive-orange) |
 
 ## Documentation
 
@@ -86,18 +86,20 @@ nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu --backup --te
 nix develop
 
 # Quick commands
-nix run .#fmt     # Format code
-nix run .#test    # Run tests
-nix run .#update  # Update flake inputs
-nix run .#dev     # Show help
-nix run .#storage-guard  # Validate storage before reboot
+nix run .#fmt           # Format code
+nix run .#validate      # Validate configuration
+nix run .#update        # Update flake inputs
+nix run .#storage-guard # Validate storage before reboot
 
-# Available tools
-zed         # Primary editor
-blender     # 3D software
-kitty       # Terminal
-rustc       # Rust compiler
-elixir      # Elixir runtime
+# New features
+nixos-backup     # Run manual backup
+nixos-restore    # Restore from backup
+rollback-status  # Check auto-rollback status
+secrets-init     # Initialize secrets management
+secrets-edit     # Edit encrypted secrets
+
+# Test new structure
+nu scripts/testing/test-new-structure.nu
 ```
 
 ## Multi-Host Management

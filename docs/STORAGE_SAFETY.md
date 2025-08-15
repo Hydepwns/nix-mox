@@ -150,7 +150,7 @@ ls -la /dev/disk/by-partuuid/
 nix run .#storage-guard
 
 # Check hardware configuration
-cat config/hardware/hardware-configuration-actual.nix
+cat /etc/nixos/hardware-configuration.nix
 ```
 
 ### Recovery Steps

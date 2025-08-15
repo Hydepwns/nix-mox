@@ -8,9 +8,8 @@
 # Choose your template
 cp config/templates/development.nix config/nixos/configuration.nix
 cp config/templates/gaming.nix config/nixos/configuration.nix
-# Note: For modular gaming configuration, use:
-# cp -r config/nixos/gaming/ config/nixos/
-# And import ./gaming/default.nix in your configuration.nix
+# Note: Gaming is now handled via the gaming subflake in flake.nix
+# The gaming module is automatically included when enabled
 cp config/templates/minimal.nix config/nixos/configuration.nix
 cp config/templates/server.nix config/nixos/configuration.nix
 ```
