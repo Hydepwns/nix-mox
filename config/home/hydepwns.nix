@@ -37,6 +37,15 @@
     };
   };
   
+  # Font configuration - set Monaspace as default
+  fonts.fontconfig.enable = true;
+  
+  # Set Monaspace as the default font family
+  home.sessionVariables = {
+    GTK_FONT = "Monaspace Neon 10";
+    QT_FONT = "Monaspace Neon";
+  };
+  
   # Enable direnv for development
   programs.direnv = {
     enable = true;

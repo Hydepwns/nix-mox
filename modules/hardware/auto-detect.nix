@@ -6,12 +6,10 @@ with lib;
 let
   cfg = config.hardware.autoDetect;
   
-  # Detect GPU vendor
-  hasNvidia = builtins.elem "nvidia" config.services.xserver.videoDrivers;
-  hasAmd = builtins.elem "amdgpu" config.services.xserver.videoDrivers || 
-           builtins.elem "radeon" config.services.xserver.videoDrivers;
-  hasIntel = builtins.elem "intel" config.services.xserver.videoDrivers || 
-             builtins.elem "modesetting" config.services.xserver.videoDrivers;
+  # Detect GPU vendor (use forceVendor or defaults)
+  hasNvidia = cfg.gpu.forceVendor == "nvidia";
+  hasAmd = cfg.gpu.forceVendor == "amd";
+  hasIntel = cfg.gpu.forceVendor == "intel";
   
   # CPU detection (simplified - can't read /proc at eval time)
   hasIntelCpu = cfg.cpu.forceVendor == "intel";
@@ -294,12 +292,13 @@ in
     # General auto-detected optimizations
     {
       # Use optimal kernel based on system
-      boot.kernelPackages = 
+      boot.kernelPackages = mkDefault (
         if totalMemoryGB >= 32 && (hasNvidia || hasAmd) 
         then pkgs.linuxPackages_zen
         else if totalMemoryGB >= 16 
         then pkgs.linuxPackages_latest
-        else pkgs.linuxPackages;
+        else pkgs.linuxPackages
+      );
       
       # Network optimizations based on memory
       boot.kernel.sysctl = mkIf (totalMemoryGB >= 16) {

@@ -305,7 +305,7 @@ in
     
     # Audio optimizations
     (mkIf cfg.audio.lowLatency {
-      services.pipewire.config.pipewire = {
+      services.pipewire.extraConfig.pipewire = {
         "context.properties" = {
           "default.clock.rate" = cfg.audio.sampleRate;
           "default.clock.quantum" = cfg.audio.quantum;

@@ -9,8 +9,8 @@
     # Hardware auto-detection
     ../../modules/hardware/auto-detect.nix
     
-    # Secrets management
-    ../../modules/security/secrets.nix
+    # Secrets management (disabled for initial setup)
+    # ../../modules/security/secrets.nix
     
     # Backup and recovery
     ../../modules/backup/restic.nix
@@ -166,6 +166,17 @@
     storage.autoConfig = true;
   };
   
+  # NVIDIA configuration
+  hardware.nvidia = {
+    modesetting.enable = true;
+    powerManagement.enable = false;
+    powerManagement.finegrained = false;
+    open = false;  # Use closed source drivers
+    nvidiaSettings = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    forceFullCompositionPipeline = true;
+  };
+  
   hardware = {
     # Enable all firmware
     enableAllFirmware = true;
@@ -189,27 +200,6 @@
   services.xserver = {
     enable = true;
     
-    # Display manager
-    displayManager = {
-      sddm = {
-        enable = true;
-        wayland.enable = true;
-        theme = "breeze";
-      };
-      
-      # Session settings
-      defaultSession = "plasma";
-      
-      # Auto-login (optional - comment out for security)
-      # autoLogin = {
-      #   enable = true;
-      #   user = "yourusername";
-      # };
-    };
-    
-    # Desktop environment
-    desktopManager.plasma6.enable = true;
-    
     # Video drivers
     videoDrivers = [ "nvidia" ];
     
@@ -223,12 +213,33 @@
     dpi = 96;
   };
 
+  # Display manager
+  services.displayManager = {
+    sddm = {
+      enable = true;
+      wayland.enable = true;
+      theme = "breeze";
+    };
+    
+    # Session settings
+    defaultSession = "plasma";
+    
+    # Auto-login (optional - comment out for security)
+    # autoLogin = {
+    #   enable = true;
+    #   user = "yourusername";
+    # };
+  };
+  
+  # Desktop environment
+  services.desktopManager.plasma6.enable = true;
+
   # ============================================================================
   # AUDIO
   # ============================================================================
   
   # Enable sound
-  hardware.pulseaudio.enable = false;  # We use PipeWire instead
+  services.pulseaudio.enable = false;  # We use PipeWire instead
   
   # PipeWire for low-latency audio
   security.rtkit.enable = true;
@@ -242,7 +253,7 @@
     jack.enable = true;
     
     # Low-latency configuration
-    config.pipewire = {
+    extraConfig.pipewire = {
       "context.properties" = {
         "default.clock.rate" = 48000;
         "default.clock.quantum" = 512;
@@ -337,6 +348,9 @@
   # ============================================================================
   
   # Users are configured via ../personal/hydepwns.nix import above
+  
+  # Enable Zsh for the hydepwns user
+  programs.zsh.enable = true;
 
   # ============================================================================
   # PACKAGES
@@ -358,8 +372,8 @@
     firefox
     
     # File management
-    dolphin
-    ark
+    pkgs.kdePackages.dolphin
+    pkgs.kdePackages.ark
     
     # Media players
     vlc
@@ -382,21 +396,57 @@
     glxinfo
     
     # Performance monitoring
-    nvtop
-    corectrl
+    htop
+    btop
   ];
   
-  # Font packages for better game compatibility
+  # Font packages - Monaspace collection for modern development and gaming
   fonts.packages = with pkgs; [
+    # Monaspace font collection (GitHub's modern coding font)
+    monaspace
+    
+    # Fallback fonts for compatibility
     liberation_ttf
     corefonts
-    vistafonts
-    noto-fonts
-    noto-fonts-cjk
     noto-fonts-emoji
+    
+    # Additional coding fonts
     jetbrains-mono
     fira-code
   ];
+  
+  # Font configuration for better rendering
+  fonts.fontconfig = {
+    enable = true;
+    defaultFonts = {
+      monospace = [ "Monaspace Neon" "Monaspace Argon" "Monaspace Xenon" "JetBrains Mono" ];
+      sansSerif = [ "Monaspace Neon" "Monaspace Argon" "Monaspace Xenon" "Liberation Sans" ];
+      serif = [ "Liberation Serif" ];
+    };
+    localConf = ''
+      <!-- Monaspace font configuration -->
+      <match target="font">
+        <test name="family" compare="contains">
+          <string>Monaspace</string>
+        </test>
+        <edit name="hinting" mode="assign">
+          <bool>true</bool>
+        </edit>
+        <edit name="hintstyle" mode="assign">
+          <const>hintslight</const>
+        </edit>
+        <edit name="antialias" mode="assign">
+          <bool>true</bool>
+        </edit>
+        <edit name="rgba" mode="assign">
+          <const>rgb</const>
+        </edit>
+        <edit name="lcdfilter" mode="assign">
+          <const>default</const>
+        </edit>
+      </match>
+    '';
+  };
 
   # ============================================================================
   # POWER MANAGEMENT
@@ -416,16 +466,7 @@
   # SECURITY
   # ============================================================================
   
-  # Enable secrets management
-  security.secrets = {
-    enable = true;
-    wifi.enable = true;
-    ssh.enable = true;
-    services = {
-      enable = false;  # Enable when needed
-      passwords = [];
-    };
-  };
+  # Secrets management disabled for initial setup
   
   security = {
     # Allow real-time priority for games

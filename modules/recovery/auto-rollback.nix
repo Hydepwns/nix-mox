@@ -132,22 +132,21 @@ in
       
       serviceConfig = {
         Type = "idle";
-        ExecStart = ''
-          ${pkgs.bash}/bin/bash -c "
-            echo '🚨 EMERGENCY RECOVERY MODE'
-            echo ''
-            echo 'System has been rolled back due to boot failures.'
-            echo 'You are now in recovery mode.'
-            echo ''
-            echo 'Available commands:'
-            echo '  nixos-rebuild list-generations  - List all generations'
-            echo '  nixos-rebuild switch --rollback - Rollback to previous'
-            echo '  nixos-rebuild boot              - Rebuild boot config'
-            echo ''
-            echo 'Press Enter to continue to recovery shell...'
-            read
-            exec ${pkgs.bash}/bin/bash
-          "
+        ExecStart = pkgs.writeScriptBin "emergency-recovery" ''
+          #!/usr/bin/env bash
+          echo "🚨 EMERGENCY RECOVERY MODE"
+          echo ""
+          echo "System has been rolled back due to boot failures."
+          echo "You are now in recovery mode."
+          echo ""
+          echo "Available commands:"
+          echo "  nixos-rebuild list-generations  - List all generations"
+          echo "  nixos-rebuild switch --rollback - Rollback to previous"
+          echo "  nixos-rebuild boot              - Rebuild boot config"
+          echo ""
+          echo "Press Enter to continue to recovery shell..."
+          read
+          exec ${pkgs.bash}/bin/bash
         '';
         StandardInput = "tty";
         StandardOutput = "tty";
