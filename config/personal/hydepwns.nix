@@ -33,8 +33,9 @@ let
     uid = 1000;
     home = "/home/nixos";
     openssh.authorizedKeys.keyFiles = [ ./keys/hydepwns.pub ];
-    # Set a hashed password - you can generate this with: mkpasswd -m sha-512
-    # For now, we'll let the existing password persist
+    # IMPORTANT: Set initial password to prevent lockout
+    # This will be the password you set with 'sudo passwd nixos'
+    initialPassword = "nixos";  # Change this to your actual password
   };
 
   # System configuration

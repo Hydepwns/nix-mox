@@ -247,8 +247,8 @@
     };
   };
   
-  # Desktop environment
-  services.desktopManager.plasma6.enable = true;
+  # Desktop environment - use Plasma5 for better stability
+  services.desktopManager.plasma5.enable = true;
 
   # ============================================================================
   # AUDIO
