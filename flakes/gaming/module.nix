@@ -132,6 +132,10 @@ in
         # Utilities
         gamemode
         gamescope
+        
+        # Additional libraries for anticheat support
+        glibc
+        gcc.cc.lib
       ];
       
       # Enable gamemode group
@@ -171,6 +175,9 @@ in
         remotePlay.openFirewall = true;
         dedicatedServer.openFirewall = true;
         gamescopeSession.enable = cfg.graphics.gamescope;
+        
+        # Note: Proton GE will be installed via protonup tool
+        # extraCompatPackages would go here if we had packaged versions
       };
       
       # Steam-specific packages
@@ -179,7 +186,14 @@ in
         steamcmd
         protontricks
         protonup-qt
+        protonup  # CLI tool for managing Proton GE versions
       ];
+      
+      # Environment variables for Steam and Proton
+      environment.sessionVariables = {
+        # Path for custom Proton versions
+        STEAM_EXTRA_COMPAT_TOOLS_PATHS = "\${HOME}/.steam/root/compatibilitytools.d";
+      };
     })
     
     # Lutris configuration
