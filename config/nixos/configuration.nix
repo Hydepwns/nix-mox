@@ -9,6 +9,9 @@
     # Hardware auto-detection
     ../../modules/hardware/auto-detect.nix
     
+    # Storage module not needed - single SSD setup
+    # ../../modules/storage/gaming-drives.nix
+    
     # Secrets management (disabled for initial setup)
     # ../../modules/security/secrets.nix
     
@@ -375,6 +378,14 @@
       openPorts = true;
     };
   };
+  
+  # ============================================================================
+  # NOTE: Storage configuration not needed for single SSD setup
+  # ============================================================================
+  # The exec mount option issue only affects secondary drives.
+  # Your root filesystem (/) already has exec enabled by default,
+  # so Steam games installed in your home directory will work fine
+  # with EasyAntiCheat and other anticheats.
 
   # ============================================================================
   # USERS
@@ -605,17 +616,32 @@
     WINEDEBUG = "-all";
     WINEESYNC = "1";
     WINEFSYNC = "1";
+    WINE_LARGE_ADDRESS_AWARE = "1";
+    
+    # Proton GE and Anticheat Support
+    PROTON_ENABLE_NVAPI = "1";
+    PROTON_HIDE_NVIDIA_GPU = "0";
+    PROTON_NO_ESYNC = "0";
+    PROTON_NO_FSYNC = "0";
+    PROTON_EAC_RUNTIME = "1";      # Enable EasyAntiCheat runtime
+    PROTON_BATTLEYE_RUNTIME = "1";  # Enable BattlEye runtime
+    PROTON_FORCE_LARGE_ADDRESS_AWARE = "1";
+    DXVK_HUD = "compiler";
+    VKD3D_DEBUG = "none";
+    VKD3D_CONFIG = "dxr,dxr11";
     
     # NVIDIA
     __GL_THREADED_OPTIMIZATIONS = "1";
     __GL_SHADER_DISK_CACHE_SKIP_CLEANUP = "1";
     __NV_PRIME_RENDER_OFFLOAD = "1";
     __VK_LAYER_NV_optimus = "NVIDIA_only";
+    VK_ICD_FILENAMES = "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.x86_64.json";
     
     # Intel CPU optimizations
     INTEL_DEVICE_PLUGIN_XE = "1";  # Enable Intel Xe graphics support
     INTEL_OPENCL_ICD = "1";        # Enable Intel OpenCL
     INTEL_VAAPI_DRIVER = "i965";   # Intel VAAPI driver
+    LIBVA_DRIVER_NAME = "iHD";     # Intel media driver
     
     # Gaming optimizations for Intel
     MANGOHUD = "1";
