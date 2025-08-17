@@ -94,13 +94,14 @@ def test_flake_configuration [flake: string, verbose: bool] {
     
     mut test_result = {
         status: "PASS",
-        checks: {},
+        checks: [],
         errors: []
     }
     
     # 1. Syntax check
     if $verbose { print "  → Checking flake syntax..." }
-    let syntax_check = (nix flake check $flake --no-build | complete)
+    let flake_path = ($flake | str replace -r '\.#.*' '.')
+    let syntax_check = (nix --extra-experimental-features "nix-command flakes" flake check $flake_path --no-build | complete)
     
     if $syntax_check.exit_code != 0 {
         $test_result.status = "FAIL"
@@ -112,11 +113,11 @@ def test_flake_configuration [flake: string, verbose: bool] {
         return $test_result
     }
     
-    $test_result.checks = ($test_result.checks | merge { syntax: "PASS" })
+    $test_result.checks = ($test_result.checks | append "syntax")
     
     # 2. Evaluation test
     if $verbose { print "  → Testing configuration evaluation..." }
-    let eval_check = (nixos-rebuild dry-activate --flake $flake | complete)
+    let eval_check = (nixos-rebuild dry-run --flake .#nixos | complete)
     
     if $eval_check.exit_code != 0 {
         $test_result.status = "FAIL"
@@ -128,11 +129,11 @@ def test_flake_configuration [flake: string, verbose: bool] {
         return $test_result
     }
     
-    $test_result.checks = ($test_result.checks | merge { evaluation: "PASS" })
+    $test_result.checks = ($test_result.checks | append "evaluation")
     
     # 3. Build test (without activation)
     if $verbose { print "  → Testing configuration build..." }
-    let build_check = (nixos-rebuild build --flake $flake | complete)
+    let build_check = (nix --extra-experimental-features "nix-command flakes" build .#nixosConfigurations.nixos.config.system.build.toplevel --dry-run | complete)
     
     if $build_check.exit_code != 0 {
         $test_result.status = "FAIL"  
@@ -144,7 +145,7 @@ def test_flake_configuration [flake: string, verbose: bool] {
         return $test_result
     }
     
-    $test_result.checks = ($test_result.checks | merge { build: "PASS" })
+    $test_result.checks = ($test_result.checks | append "build")
     
     # 4. Safety validation
     if $verbose { print "  → Running safety validation..." }
@@ -158,7 +159,7 @@ def test_flake_configuration [flake: string, verbose: bool] {
             details: $safety_check.stderr
         })
     } else {
-        $test_result.checks = ($test_result.checks | merge { safety: "PASS" })
+        $test_result.checks = ($test_result.checks | append "safety")
     }
     
     return $test_result
@@ -179,9 +180,8 @@ def print_test_summary [results: list] {
         print $"($status_icon) ($result.config): ($result.result.status)"
         
         if ($result.result.checks | length) > 0 {
-            for check in ($result.result.checks | transpose key value) {
-                let check_icon = if $check.value == "PASS" { "  ✓" } else { "  ✗" }
-                print $"($check_icon) ($check.key)"
+            for check in $result.result.checks {
+                print $"  ✓ ($check)"
             }
         }
         

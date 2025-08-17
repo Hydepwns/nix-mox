@@ -8,7 +8,7 @@ let
   
   # Backup script
   backupScript = pkgs.writeScriptBin "nixos-backup" ''
-    #!/usr/bin/env bash
+    #!/bin/sh
     set -e
     
     echo "🔵 Starting NixOS backup..."
@@ -63,7 +63,7 @@ let
   
   # Restore script
   restoreScript = pkgs.writeScriptBin "nixos-restore" ''
-    #!/usr/bin/env bash
+    #!/bin/sh
     set -e
     
     SNAPSHOT="$1"

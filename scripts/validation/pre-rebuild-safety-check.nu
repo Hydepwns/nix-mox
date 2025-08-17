@@ -79,10 +79,10 @@ def check_display_config [flake_path: string, verbose: bool] {
     
     try {
         # Check if display manager is configured (more targeted approach)
-        let sddm_enabled = (nix eval $"($flake_path).config.services.xserver.displayManager.sddm.enable" --json | from json)
+        let sddm_enabled = (nix --extra-experimental-features "nix-command flakes" eval $"($flake_path).config.services.xserver.displayManager.sddm.enable" --json | from json)
         
         # Check desktop environment (more targeted approach)
-        let plasma_enabled = (nix eval $"($flake_path).config.services.xserver.desktopManager.plasma6.enable" --json | from json)
+        let plasma_enabled = (nix --extra-experimental-features "nix-command flakes" eval $"($flake_path).config.services.xserver.desktopManager.plasma6.enable" --json | from json)
         
         # Verify current display setup won't be broken
         let current_display = (echo $env.DISPLAY? | default "")
@@ -118,7 +118,7 @@ def check_user_groups [flake_path: string, verbose: bool] {
         let current_user = (whoami)
         
         # Check if user exists in configuration
-        let users_config = (nix eval $"($flake_path).config.users.users" --json | from json)
+        let users_config = (nix --extra-experimental-features "nix-command flakes" eval $"($flake_path).config.users.users" --json | from json)
         
         if not ($current_user in ($users_config | columns)) {
             return {
@@ -169,12 +169,12 @@ def check_boot_config [flake_path: string, verbose: bool] {
     
     try {
         # Check boot loader configuration (more targeted approach)
-        let systemd_boot_enabled = (nix eval $"($flake_path).config.boot.loader.systemd-boot.enable" --json | from json)
+        let systemd_boot_enabled = (nix --extra-experimental-features "nix-command flakes" eval $"($flake_path).config.boot.loader.systemd-boot.enable" --json | from json)
         
         # Verify boot loader type matches system
         let current_boot_mode = if (ls /sys/firmware/efi | length) > 0 { "uefi" } else { "bios" }
         
-        let grub_enabled = (nix eval $"($flake_path).config.boot.loader.grub.enable" --json | from json)
+        let grub_enabled = (nix --extra-experimental-features "nix-command flakes" eval $"($flake_path).config.boot.loader.grub.enable" --json | from json)
         
         if $current_boot_mode == "uefi" and (not $systemd_boot_enabled) and (not $grub_enabled) {
             return {
@@ -207,7 +207,7 @@ def check_network_config [flake_path: string, verbose: bool] {
     
     try {
         # Check if NetworkManager is enabled (more targeted approach)
-        let nm_enabled = (nix eval $"($flake_path).config.networking.networkmanager.enable" --json | from json)
+        let nm_enabled = (nix --extra-experimental-features "nix-command flakes" eval $"($flake_path).config.networking.networkmanager.enable" --json | from json)
         
         # Check if NetworkManager is currently active
         let nm_active = (systemctl is-active NetworkManager | str trim) == "active"
@@ -242,8 +242,8 @@ def check_critical_services [flake_path: string, verbose: bool] {
     
     try {
         # Check if critical services are configured (more targeted approach)
-        let openssh_enabled = (nix eval $"($flake_path).config.services.openssh.enable" --json | from json)
-        let dbus_enabled = (nix eval $"($flake_path).config.services.dbus.enable" --json | from json)
+        let openssh_enabled = (nix --extra-experimental-features "nix-command flakes" eval $"($flake_path).config.services.openssh.enable" --json | from json)
+        let dbus_enabled = (nix --extra-experimental-features "nix-command flakes" eval $"($flake_path).config.services.dbus.enable" --json | from json)
         
         # List of services that should typically be enabled
         let expected_services = {

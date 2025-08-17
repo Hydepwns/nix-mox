@@ -571,9 +571,9 @@
   # BACKUP & RECOVERY
   # ============================================================================
   
-  # Automated backup configuration
+  # Automated backup configuration (disabled for now)
   services.backup = {
-    enable = true;
+    enable = false;  # Disabled until backup password is configured
     repository = "/var/backup/restic";
     passwordFile = "/etc/nixos/secrets/backup-password";
     

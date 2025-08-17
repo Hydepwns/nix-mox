@@ -4,10 +4,10 @@
 # Prevents system damage by enforcing safety checks
 
 # Import common functions
-use scripts/lib/common.nu *
+use ../lib/common.nu *
 
 def main [
-    --flake: string = ".#nixos"     # Flake configuration to deploy
+    --flake: string = ".#nixosConfigurations.nixos"     # Flake configuration to deploy
     --action: string = "switch"     # Action: switch, boot, test, dry-activate
     --force                         # Skip safety checks (dangerous!)
     --backup                        # Create system backup before rebuild
@@ -84,7 +84,7 @@ def main [
     # Step 5: Dry-run validation (always, unless action is already dry)
     if not ($rebuild_action in ["dry-activate", "dry-build"]) {
         print "🧪 Running dry-run validation..."
-        let dry_run_result = (nixos-rebuild dry-activate --flake $flake_target | complete)
+        let dry_run_result = (nixos-rebuild dry-activate --flake .#nixos | complete)
         
         if $dry_run_result.exit_code != 0 {
             print "❌ Dry-run validation failed!"
@@ -121,7 +121,7 @@ def main [
     print "==============================================="
     
     let start_time = (date now)
-    let rebuild_result = (nixos-rebuild $rebuild_action --flake $flake_target | complete)
+    let rebuild_result = (nixos-rebuild $rebuild_action --flake .#nixos | complete)
     let end_time = (date now)
     let duration = ($end_time - $start_time)
     

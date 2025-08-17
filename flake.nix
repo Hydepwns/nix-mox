@@ -174,7 +174,7 @@
         
         # System backup script
         backup-system = pkgs.writeShellScriptBin "backup-system" ''
-          #!/usr/bin/env bash
+          #!/bin/sh
           set -e
           
           BACKUP_DIR="/var/backup/nixos"

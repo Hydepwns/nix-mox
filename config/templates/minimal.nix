@@ -3,8 +3,7 @@
 { config, pkgs, ... }:
 {
   imports = [
-    ../profiles/base.nix
-    ../profiles/security.nix
+    # Profiles removed - they don't exist
   ];
 
   # Minimal system configuration
@@ -19,6 +18,7 @@
     git
     htop
     curl
+    neovim
 
     # Terminal emulator
     kitty
