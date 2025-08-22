@@ -3,8 +3,8 @@
 
 {
   # Basic home-manager configuration
-  home.username = "nixos";
-  home.homeDirectory = "/home/nixos";
+  home.username = "hydepwns";
+  home.homeDirectory = "/home/hydepwns";
   
   # User packages (in addition to system packages)
   home.packages = with pkgs; [

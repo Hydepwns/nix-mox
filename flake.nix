@@ -34,15 +34,12 @@
     let
       system = "x86_64-linux";
       
-      # Import gaming module directly for now
-      gamingModule = import ./flakes/gaming/module.nix;
+      # Gaming module (commented out for now)
+      # gamingModule = import ./flakes/gaming/module.nix;
       
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = [
-          # Gaming overlay will be added when subflake is ready
-        ];
       };
     in
     {
@@ -61,8 +58,8 @@
             # Core configuration
             ./config/nixos/configuration.nix
             
-            # Gaming module imported directly
-            gamingModule
+            # Gaming module (optional - provides advanced gaming features)
+            # gamingModule
             
             # Secrets management
             agenix.nixosModules.default
@@ -77,10 +74,45 @@
                 # Add backup configuration to prevent file conflicts
                 backupFileExtension = "backup";
                 
-                users.nixos = { ... }: {
+                users.hydepwns = { ... }: {
                   imports = [
                     ./config/home/hydepwns.nix
-                    ./flakes/gaming/home-manager/gaming.nix
+                    # ./flakes/gaming/home-manager/gaming.nix  # Gaming home-manager config
+                  ];
+                  
+                  home.stateVersion = "24.05";
+                };
+              };
+            }
+          ];
+        };
+        
+        # Simple configuration for testing (without gaming module)
+        nixos-simple = nixpkgs.lib.nixosSystem {
+          inherit system;
+          
+          specialArgs = { inherit inputs; };
+          
+          modules = [
+            # Hardware configuration
+            ./config/hardware/hardware-configuration.nix
+            
+            # Core configuration (without gaming module)
+            ./config/nixos/configuration.nix
+            
+            # Secrets management
+            agenix.nixosModules.default
+            
+            # Home-manager
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                
+                users.hydepwns = { ... }: {
+                  imports = [
+                    ./config/home/hydepwns.nix
                   ];
                   
                   home.stateVersion = "24.05";

@@ -7,7 +7,7 @@ let
   cfg = config.hardware.autoDetect;
   
   # Detect GPU vendor (use forceVendor or defaults)
-  hasNvidia = cfg.gpu.forceVendor == "nvidia";
+  hasNvidia = cfg.gpu.forceVendor == "nvidia" || cfg.gpu.forceVendor == null;
   hasAmd = cfg.gpu.forceVendor == "amd";
   hasIntel = cfg.gpu.forceVendor == "intel";
   
@@ -87,7 +87,7 @@ in
 
   config = mkIf cfg.enable (mkMerge [
     # GPU auto-configuration
-    (mkIf (cfg.gpu.autoConfig && (cfg.gpu.forceVendor == "nvidia" || hasNvidia)) {
+    (mkIf (cfg.gpu.autoConfig && hasNvidia) {
       # NVIDIA configuration
       hardware.nvidia = {
         modesetting.enable = true;

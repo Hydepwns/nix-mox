@@ -10,7 +10,7 @@
 
   boot.initrd.availableKernelModules = [ "vmd" "xhci_pci" "ahci" "nvme" "usb_storage" "usbhid" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-intel" ];
+  boot.kernelModules = [ "kvm-intel" "nvidia" "nvidia-drm" "nvidia-uvm" ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
@@ -39,20 +39,7 @@
   # Intel CPU optimizations for i7-13700K
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   
-  # Intel specific hardware configuration
-  hardware = {
-    # Enable Intel GPU support (if using iGPU alongside NVIDIA)
-    graphics = {
-      enable = true;
-      enable32Bit = true;
-      extraPackages = with pkgs; [
-        intel-media-driver
-        vaapiIntel
-        vaapiVdpau
-        libvdpau-va-gl
-      ];
-    };
-  };
+  # Hardware configuration - graphics handled by main config
   
   # Boot loader configuration for UEFI system
   boot.loader.systemd-boot.enable = true;

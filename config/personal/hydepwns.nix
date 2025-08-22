@@ -24,16 +24,16 @@ let
   #   # No password set here; use existing accounts or set hashedPassword via secrets.
   # };
 
-  # Configure the nixos user properly
-  users.users.nixos = {
+  # Configure the hydepwns user properly
+  users.users.hydepwns = {
     isNormalUser = true;
-    description = "Hydepwns (NixOS User)";
+    description = "Hydepwns User";
     extraGroups = [ "wheel" "networkmanager" "video" "audio" "docker" "libvirtd" "kvm" "vboxusers" "lxd" "qemu-libvirtd" ];
     shell = pkgs.zsh;
     uid = 1000;
-    home = "/home/nixos";
+    home = "/home/hydepwns";
     openssh.authorizedKeys.keyFiles = [ ./keys/hydepwns.pub ];
-    # Password is set manually with 'sudo passwd nixos' to prevent lockout
+    # Password is set manually with 'sudo passwd hydepwns' to prevent lockout
   };
 
   # System configuration
