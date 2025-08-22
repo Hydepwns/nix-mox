@@ -44,7 +44,26 @@ def main [
     print "📋 Pre-flight system checks..."
     run_preflight_checks
 
-    # Step 2: Safety validation (unless forced)
+    # Step 2: Auto-update storage configuration
+    if not $force {
+        print "🔄 Auto-updating storage configuration..."
+        let storage_update_result = (nu scripts/storage/auto-update-storage.nu --verbose | complete)
+        
+        if $storage_update_result.exit_code != 0 {
+            print "⚠️  Storage auto-update encountered issues:"
+            print $storage_update_result.stderr
+            print ""
+            let confirm = (input "Continue anyway? (yes/no): ")
+            if $confirm != "yes" {
+                print "❌ Rebuild cancelled due to storage configuration issues"
+                exit 1
+            }
+        } else {
+            print "✅ Storage configuration updated/verified"
+        }
+    }
+
+    # Step 3: Safety validation (unless forced)
     if not $force {
         print "🔍 Running mandatory safety validation..."
         let safety_result = (nu scripts/validation/pre-rebuild-safety-check.nu --flake $flake_target | complete)
@@ -61,7 +80,7 @@ def main [
         print "✅ Safety validation passed"
     }
 
-    # Step 3: Comprehensive testing (if requested)
+    # Step 4: Comprehensive testing (if requested)
     if $test_first {
         print "🧪 Running comprehensive flake tests..."
         let test_result = (nu scripts/validation/safe-flake-test.nu --target-flake $flake_target | complete)
@@ -75,13 +94,13 @@ def main [
         print "✅ All comprehensive tests passed"
     }
 
-    # Step 4: System backup (if requested)
+    # Step 5: System backup (if requested)
     if $backup {
         print "💾 Creating system backup..."
         backup_current_system
     }
 
-    # Step 5: Dry-run validation (always, unless action is already dry)
+    # Step 6: Dry-run validation (always, unless action is already dry)
     if not ($rebuild_action in ["dry-activate", "dry-build"]) {
         print "🧪 Running dry-run validation..."
         let dry_run_result = (nixos-rebuild dry-activate --flake .#nixos | complete)
@@ -97,7 +116,7 @@ def main [
         print "✅ Dry-run validation passed"
     }
 
-    # Step 6: Final confirmation for destructive actions
+    # Step 7: Final confirmation for destructive actions
     if $rebuild_action in ["switch", "boot"] {
         print ""
         print "⚠️  FINAL CONFIRMATION"
@@ -116,7 +135,7 @@ def main [
         }
     }
 
-    # Step 7: Execute rebuild with monitoring
+    # Step 8: Execute rebuild with monitoring
     print $"🚀 Executing nixos-rebuild ($rebuild_action)..."
     print "==============================================="
     

@@ -114,29 +114,30 @@
     enable = true;
     videoDrivers = [ "nvidia" ];
     
-    # Display manager - SDDM
-    displayManager = {
-      sddm = {
-        enable = true;
-        wayland.enable = false;
-      };
-      
-      # Session settings
-      defaultSession = "plasma";
-      
-      # Auto-login configuration - DISABLED for security
-      autoLogin = {
-        enable = false;
-        user = "hydepwns";
-      };
-    };
-    
-    # Desktop environment - Plasma for gaming
-    desktopManager.plasma5.enable = true;
+    # Desktop environment - Plasma 6 for gaming
+    desktopManager.plasma6.enable = true;
     
     # X11 configuration
-    layout = "us";
-    xkbVariant = "";
+    xkb = {
+      layout = "us";
+      variant = "";
+    };
+  };
+  
+  # Display manager configuration
+  services.displayManager = {
+    sddm = {
+      enable = true;
+      wayland.enable = false;  # Use X11 for NVIDIA compatibility
+    };
+    
+    defaultSession = "plasma";
+    
+    # Auto-login configuration - DISABLED for security
+    autoLogin = {
+      enable = false;
+      user = "hydepwns";
+    };
   };
   
   # Enable XDG portal
@@ -327,6 +328,16 @@
     FZF_DEFAULT_COMMAND = "fd --type f";
     FZF_CTRL_T_COMMAND = "fd --type f";
     FZF_ALT_C_COMMAND = "fd --type d";
+  };
+
+  # ============================================================================
+  # STORAGE SAFETY - Prevent UUID boot failures
+  # ============================================================================
+  
+  services.storageAutoUpdate = {
+    enable = true;
+    autoUpdate = true;  # Automatically fix UUID mismatches
+    hardwareConfigPath = "/etc/nixos/hardware-configuration.nix";
   };
 
   # ============================================================================

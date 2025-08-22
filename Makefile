@@ -9,7 +9,7 @@ NUSHELL = nu
 NIX = nix
 
 # Available packages (from flake.nix)
-PACKAGES = proxmox-update vzdump-backup zfs-snapshot nixos-flake-update install uninstall
+PACKAGES = backup-system
 
 # Include modular Makefile components
 include Makefile.d/testing.mk

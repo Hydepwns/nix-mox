@@ -58,6 +58,9 @@
             # Core configuration
             ./config/nixos/configuration.nix
             
+            # Storage safety module
+            ./modules/storage/auto-update.nix
+            
             # Gaming module (optional - provides advanced gaming features)
             # gamingModule
             
@@ -196,6 +199,46 @@
             echo "📦 Updating flake inputs..."
             nix flake update
             echo "✅ Updated all inputs"
+          '');
+        };
+        
+        # Storage guard - validate storage before reboot
+        storage-guard = {
+          type = "app";
+          program = toString (pkgs.writeShellScript "storage-guard" ''
+            if [ -f scripts/validation/storage-validator.nu ]; then
+              ${pkgs.nushell}/bin/nu scripts/validation/storage-validator.nu
+            else
+              echo "❌ Storage validator script not found"
+              exit 1
+            fi
+          '');
+        };
+        
+        # Fix storage - auto-fix UUID mismatches
+        fix-storage = {
+          type = "app";
+          program = toString (pkgs.writeShellScript "fix-storage" ''
+            if [ -f scripts/storage/auto-update-storage.nu ]; then
+              ${pkgs.nushell}/bin/nu scripts/storage/auto-update-storage.nu
+            else
+              echo "❌ Storage auto-update script not found"
+              exit 1
+            fi
+          '');
+        };
+        
+        # Run tests
+        test = {
+          type = "app";
+          program = toString (pkgs.writeShellScript "test" ''
+            echo "🧪 Running tests..."
+            if [ -f scripts/testing/run-tests.nu ]; then
+              ${pkgs.nushell}/bin/nu scripts/testing/run-tests.nu
+            else
+              echo "⚠️  Test runner not found, using make"
+              make test
+            fi
           '');
         };
       };
