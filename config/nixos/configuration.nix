@@ -114,8 +114,8 @@
     enable = true;
     videoDrivers = [ "nvidia" ];
     
-    # Desktop environment - Plasma 6 for gaming
-    desktopManager.plasma6.enable = true;
+    # Desktop environment - Keep under xserver for compatibility
+    desktopManager.plasma5.enable = true;  # Will migrate to plasma6 later
     
     # X11 configuration
     xkb = {
@@ -330,15 +330,6 @@
     FZF_ALT_C_COMMAND = "fd --type d";
   };
 
-  # ============================================================================
-  # STORAGE SAFETY - Prevent UUID boot failures
-  # ============================================================================
-  
-  services.storageAutoUpdate = {
-    enable = true;
-    autoUpdate = true;  # Automatically fix UUID mismatches
-    hardwareConfigPath = "/etc/nixos/hardware-configuration.nix";
-  };
 
   # ============================================================================
   # LOCALE CONFIGURATION

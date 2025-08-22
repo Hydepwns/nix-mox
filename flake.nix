@@ -61,6 +61,15 @@
             # Storage safety module
             ./modules/storage/auto-update.nix
             
+            # Configure storage auto-update
+            {
+              services.storageAutoUpdate = {
+                enable = true;
+                autoUpdate = true;
+                hardwareConfigPath = "/etc/nixos/hardware-configuration.nix";
+              };
+            }
+            
             # Gaming module (optional - provides advanced gaming features)
             # gamingModule
             
