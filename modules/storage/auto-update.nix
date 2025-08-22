@@ -34,7 +34,7 @@ let
     fi
     
     # Extract configured UUID from hardware-configuration.nix
-    CONFIGURED_UUID=$(grep -oP 'by-uuid/\K[a-f0-9-]+' "$HARDWARE_CONFIG" | head -1 || true)
+    CONFIGURED_UUID=$(grep -oP 'by-uuid/\K[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}|[A-F0-9]{4}-[A-F0-9]{4}' "$HARDWARE_CONFIG" | head -1 || true)
     
     if [ -z "$CONFIGURED_UUID" ]; then
       echo "⚠️  No UUID found in hardware configuration, checking for other identifiers..."
@@ -77,7 +77,7 @@ let
           SWAP_UUID=$(blkid -s UUID -o value "$SWAP" 2>/dev/null || true)
           if [ -n "$SWAP_UUID" ]; then
             echo "🔄 Updating swap UUID: $SWAP_UUID"
-            sed -i "s|by-uuid/[a-f0-9-]\{8\}-[a-f0-9-]\{4\}-[a-f0-9-]\{4\}-[a-f0-9-]\{4\}-[a-f0-9-]\{12\}|by-uuid/$SWAP_UUID|g" "$HARDWARE_CONFIG"
+            sed -i "s|by-uuid/[a-f0-9]\{8\}-[a-f0-9]\{4\}-[a-f0-9]\{4\}-[a-f0-9]\{4\}-[a-f0-9]\{12\}|by-uuid/$SWAP_UUID|g" "$HARDWARE_CONFIG"
           fi
         done
       fi
@@ -100,7 +100,7 @@ let
     ERRORS=0
     
     # Check all UUID references
-    UUIDS=$(grep -oP 'by-uuid/\K[a-f0-9-]+' "$HARDWARE_CONFIG" 2>/dev/null || true)
+    UUIDS=$(grep -oP 'by-uuid/\K[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}|[A-F0-9]{4}-[A-F0-9]{4}' "$HARDWARE_CONFIG" 2>/dev/null || true)
     
     for UUID in $UUIDS; do
       if ! blkid -U "$UUID" >/dev/null 2>&1; then
@@ -203,6 +203,8 @@ in {
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${validateStorageScript}/bin/validate-storage-config";
+        # Ensure required tools are available
+        Environment = "PATH=${pkgs.util-linux}/bin:${pkgs.gnugrep}/bin:${pkgs.coreutils}/bin";
       };
     };
     
