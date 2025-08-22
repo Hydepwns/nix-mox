@@ -23,6 +23,8 @@
     ../personal/hydepwns.nix
     
     # Gaming is now handled by the subflake in flake.nix
+    
+
   ];
 
   # ============================================================================
@@ -186,7 +188,8 @@
     storage.autoConfig = true;
   };
   
-  # NVIDIA configuration
+  # NVIDIA configuration - will be overridden by auto-detect module
+  # but keeping for reference and fallback
   hardware.nvidia = {
     modesetting.enable = true;
     powerManagement.enable = false;
@@ -221,44 +224,41 @@
   # DISPLAY & DESKTOP
   # ============================================================================
   
-  services.xserver = {
+  # Wayland configuration for Niri
+  # Note: X11 services are disabled since we're using Wayland
+  
+  # Enable Wayland support
+  xdg.portal = {
     enable = true;
-    
-    # Video drivers - be more conservative
-    videoDrivers = [ "nvidia" ];
-    
-    # Keyboard and mouse
-    xkb = {
-      layout = "us";
-      variant = "";
-    };
-    
-    # High DPI settings
-    dpi = 96;
-    
-    # Add screen configuration to prevent black screen
-    screenSection = ''
-      Option "RegistryDwords" "EnableBrightnessControl=1"
-    '';
-    
-    # Add device configuration
-    deviceSection = ''
-      Option "TripleBuffer" "true"
-      Option "AllowIndirectGLXProtocol" "off"
-      Option "TripleBuffer" "true"
-    '';
+    wlr.enable = true;
+    # gtkUsePortal has been removed - no longer needed
   };
 
-  # Display manager configuration (updated for newer NixOS)
+  # Wayland compositor - Niri
+  programs.niri = {
+    enable = true;
+    package = pkgs.niri;
+  };
+  
+  # Display manager for Niri
   services.displayManager = {
-    sddm = {
+    # Try GDM first, fallback to lightdm if issues persist
+    gdm = {
       enable = true;
-      wayland.enable = false;  # Disable Wayland for now to prevent conflicts
-      theme = "breeze";
+      wayland = true;
+      # Fix for authentication issues
+      autoSuspend = false;
+      debug = true;
     };
     
+    # Alternative: lightdm (uncomment if GDM has issues)
+    # lightdm = {
+    #   enable = true;
+    #   greeters.gtk.enable = true;
+    # };
+    
     # Session settings
-    defaultSession = "plasma";
+    defaultSession = "niri";
     
     # Auto-login configuration - DISABLED for security
     autoLogin = {
@@ -267,8 +267,30 @@
     };
   };
   
-  # Desktop environment - use Plasma6 (latest stable)
-  services.desktopManager.plasma6.enable = true;
+  # PAM configuration for better authentication
+  security.pam.services.gdm = {
+    enableGnomeKeyring = true;
+    gnupg.enable = true;
+  };
+  
+  # Enable PAM for better authentication
+  # Note: enableSudoTouchIdAuth is macOS-specific, not available on Linux
+  
+  # Additional security settings for Wayland
+  security.pam.services = {
+    login.enableGnomeKeyring = true;
+    sudo.enableGnomeKeyring = true;
+  };
+  
+  # Enable dbus for authentication services
+  services.dbus.enable = true;
+  
+  # Additional Wayland services
+  services.gnome.gnome-keyring.enable = true;
+  services.gvfs.enable = true;  # Virtual filesystem support
+  
+  # Disable X11 services since we're using Wayland
+  services.xserver.enable = false;
 
   # ============================================================================
   # AUDIO
@@ -309,7 +331,7 @@
   # ============================================================================
   
   networking = {
-    hostName = "nixos-gaming";
+    # hostName is set by personal config to "nixos"
     networkmanager.enable = true;
     
     # Firewall with gaming ports
@@ -323,7 +345,7 @@
       ];
       allowedUDPPorts = [
         27015  # Source games
-        25565  # Minecraft
+        # 25565  # Minecraft
         7777   # Terraria
         5353   # mDNS
       ];
@@ -395,6 +417,12 @@
   
   # Enable Zsh for the hydepwns user
   programs.zsh.enable = true;
+  
+  # Additional shell improvements
+  programs.bash.completion.enable = true;
+  programs.zsh.enableCompletion = true;
+  programs.zsh.autosuggestions.enable = true;
+  programs.zsh.syntaxHighlighting.enable = true;
 
   # ============================================================================
   # PACKAGES
@@ -414,8 +442,23 @@
     firefox
     
     # File management
-    pkgs.kdePackages.dolphin
-    pkgs.kdePackages.ark
+    xfce.thunar  # Lightweight but powerful file manager
+    xfce.thunar-volman  # Volume management for Thunar
+    xfce.thunar-archive-plugin  # Archive support for Thunar
+    pcmanfm  # Lightweight GTK file manager
+    pcmanfm-qt  # Qt-based file manager
+    
+    # Archive tools
+    atool  # Universal archive handler
+    unzip  # ZIP extraction
+    unrar  # RAR extraction
+    p7zip  # 7-Zip support
+    zip  # ZIP creation
+    # tar is built into the system, no need to install
+    gzip  # Gzip compression
+    xz  # XZ compression
+    lrzip  # High compression ratio
+    zstd  # Fast compression
     
     # Media players
     vlc
@@ -432,14 +475,52 @@
     easyeffects
     
     # Gaming packages are now provided by the gaming module
+    # Note: Some gaming tools may be duplicated between this and the gaming module
     
     # Graphics tools
-    vulkan-tools
-    glxinfo
+    vulkan-tools  # Vulkan utilities
+    # glxinfo  # X11 tool - not needed for Wayland
     
     # Performance monitoring
-    htop
     btop
+    
+    # Development tools
+    nodejs_20
+    nodePackages.pnpm  # Primary package manager (faster than npm/yarn)
+    
+    # Elixir/Erlang ecosystem
+    elixir
+    erlang
+    rebar3
+    hex
+    mix2nix
+    
+    # Enhanced Git tools
+    gitAndTools.gitFull
+    gitAndTools.gitflow
+    gitAndTools.delta  # Better git diff
+    gitAndTools.lazygit  # Terminal UI for git
+    
+    # Additional development tools
+    ripgrep  # Fast grep alternative
+    fd  # Fast find alternative
+    bat  # Better cat with syntax highlighting
+    eza  # Modern ls alternative (replaces exa)
+    fzf  # Fuzzy finder
+    jq  # JSON processor
+    tree  # Directory tree viewer
+    
+    # Wayland tools
+    wl-clipboard  # Clipboard for Wayland
+    wtype  # Type text in Wayland
+    wf-recorder  # Screen recording for Wayland
+    grim  # Screenshot tool for Wayland
+    slurp  # Select area for screenshots
+    wlroots  # Wayland compositor library
+    waybar  # Status bar for Wayland
+    rofi-wayland  # Application launcher for Wayland
+    swaybg  # Background image for Wayland
+    swaylock  # Screen locker for Wayland
   ];
   
   # Font packages - Monaspace collection for modern development and gaming
@@ -453,14 +534,14 @@
     noto-fonts-emoji
     
     # Additional coding fonts
-    jetbrains-mono
+    # jetbrains-mono
   ];
   
   # Font configuration for better rendering
   fonts.fontconfig = {
     enable = true;
     defaultFonts = {
-      monospace = [ "Monaspace Neon" "Monaspace Argon" "Monaspace Xenon" "JetBrains Mono" ];
+      monospace = [ "Monaspace Neon" "Monaspace Argon" "Monaspace Xenon" "Liberation Mono" ];
       sansSerif = [ "Monaspace Neon" "Monaspace Argon" "Monaspace Xenon" "Liberation Sans" ];
       serif = [ "Liberation Serif" ];
     };
@@ -630,12 +711,20 @@
     VKD3D_DEBUG = "none";
     VKD3D_CONFIG = "dxr,dxr11";
     
-    # NVIDIA
+    # EasyAntiCheat Configuration
+    EAC_RUNTIME = "1";
+    EAC_RUNTIME_PATH = "/home/nixos/.steam/steam/steamapps/common/Proton EasyAntiCheat Runtime/v2";
+    EAC_CLIENT_PATH = "/home/nixos/.steam/steam/steamapps/common/Proton EasyAntiCheat Runtime/v2";
+    EAC_CLIENT_LIBRARY_PATH = "/home/nixos/.steam/steam/steamapps/common/Proton EasyAntiCheat Runtime/v2/lib64";
+    EAC_FORCE_LOAD = "1";
+    PROTON_FORCE_EAC = "1";
+    
+    # NVIDIA (Wayland compatible)
     __GL_THREADED_OPTIMIZATIONS = "1";
     __GL_SHADER_DISK_CACHE_SKIP_CLEANUP = "1";
     __NV_PRIME_RENDER_OFFLOAD = "1";
     __VK_LAYER_NV_optimus = "NVIDIA_only";
-    VK_ICD_FILENAMES = "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.x86_64.json";
+    # VK_ICD_FILENAMES will be set automatically by NixOS
     
     # Intel CPU optimizations
     INTEL_DEVICE_PLUGIN_XE = "1";  # Enable Intel Xe graphics support
@@ -653,5 +742,48 @@
     
     # Intel specific performance
     INTEL_PREFER_SSE4_1 = "1";     # Prefer SSE4.1 for Intel
+    
+    # Elixir/Erlang development
+    ERL_AFLAGS = "-kernel shell_history enabled";
+    ERL_LIBS = "/home/nixos/.nix-profile/lib/erlang/lib";
+    HEX_HOME = "/home/nixos/.hex";
+    MIX_HOME = "/home/nixos/.mix";
+    MIX_ARCHIVES = "/home/nixos/.mix/archives";
+    
+    # Git configuration
+    GIT_EDITOR = "nvim";
+    GIT_PAGER = "delta";
+    GIT_DELTA_PAGER = "less -R";
+    
+    # Development tool aliases
+    FZF_DEFAULT_COMMAND = "fd --type f";
+    FZF_CTRL_T_COMMAND = "fd --type f";
+    FZF_ALT_C_COMMAND = "fd --type d";
   };
+  
+  # ============================================================================
+  # LOCALE CONFIGURATION
+  # ============================================================================
+  
+  # Set up proper locale support
+  i18n = {
+    defaultLocale = "en_US.UTF-8";
+    supportedLocales = [
+      "en_US.UTF-8/UTF-8"
+      "es_ES.UTF-8/UTF-8"
+      "C.UTF-8/UTF-8"
+    ];
+    extraLocaleSettings = {
+      LC_ADDRESS = "es_ES.UTF-8";
+      LC_IDENTIFICATION = "es_ES.UTF-8";
+      LC_MEASUREMENT = "es_ES.UTF-8";
+      LC_MONETARY = "es_ES.UTF-8";
+      LC_NAME = "es_ES.UTF-8";
+      LC_NUMERIC = "es_ES.UTF-8";
+      LC_PAPER = "es_ES.UTF-8";
+      LC_TELEPHONE = "es_ES.UTF-8";
+      LC_TIME = "es_ES.UTF-8";
+    };
+  };
+
 }
