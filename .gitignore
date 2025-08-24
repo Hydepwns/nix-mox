@@ -50,6 +50,9 @@ devenv.local.nix
 config/personal/secrets.nix
 config/personal/local.nix
 
+# Secrets directory (contains sensitive configuration)
+secrets/
+
 # Claude AI configuration files (local only)
 .claude
 CLAUDE.md
