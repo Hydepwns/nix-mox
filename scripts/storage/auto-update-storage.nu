@@ -1,9 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use ../lib/unified-checks.nu
+use ../lib/unified-logging.nu *
+use ../lib/unified-error-handling.nu *
 
 
 # Auto-update storage configuration to prevent boot failures

@@ -2,7 +2,7 @@
 
 # Import unified libraries
 use ../lib/unified-checks.nu
-use ../lib/enhanced-error-handling.nu
+use ../lib/unified-error-handling.nu
 
 
 # nix-mox Size Analysis Dashboard
@@ -28,58 +28,23 @@ def log_error [message: string] {
 def analyze_package_sizes [] {
     log_info "Analyzing package sizes and dependencies..."
 
-    let packages = ["proxmox-update", "vzdump-backup", "zfs-snapshot", "nixos-flake-update", "install", "uninstall"]
+    # Define available packages
+    let packages = ["backup-system"]
 
-    let analysis = ($packages | each { |pkg|
-        try {
-            # Get package path
-            let package_path = (nix flake show .#"($pkg)" --json | from json | get packages | get 0 | get outputs | get out | get path)
-
-            # Get closure information
-            let closure_info = (nix path-info --closure-size $package_path --json | from json)
-            let closure_size = ($closure_info | get size | math sum)
-
-            # Get individual package size
-            let package_info = (nix path-info --size $package_path --json | from json)
-            let package_size = ($package_info | get size | math sum)
-
-            # Calculate dependency size
-            let deps_size = ($closure_size - $package_size)
-
-            # Get dependency count
-            let deps_count = ($closure_info | length)
-
-            # Get build time estimate
-            let build_time = (if $pkg in ["vzdump-backup", "zfs-snapshot"] { "heavy" } else { "light" })
-
-            {
-                name: $pkg
-                package_size: $package_size
-                deps_size: $deps_size
-                total_size: $closure_size
-                deps_count: $deps_count
-                build_time: $build_time
-                size_formatted: ($closure_size | into filesize)
-                package_size_formatted: ($package_size | into filesize)
-                deps_size_formatted: ($deps_size | into filesize)
-            }
-        } catch {
-            log_error $"Could not analyze package ($pkg)"
-            {
-                name: $pkg
-                package_size: 0
-                deps_size: 0
-                total_size: 0
-                deps_count: 0
-                build_time: "unknown"
-                size_formatted: "0 B"
-                package_size_formatted: "0 B"
-                deps_size_formatted: "0 B"
-            }
+    # Get package information
+    let package_info = ($packages | each { |pkg|
+        let build_time = "light"
+        let category = "system"
+        
+        {
+            name: $pkg
+            category: $category
+            build_time: $build_time
+            description: "System backup utility"
         }
     })
 
-    $analysis
+    $package_info
 }
 
 # Generate HTML dashboard

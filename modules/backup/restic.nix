@@ -5,7 +5,7 @@ with lib;
 
 let
   cfg = config.services.backup;
-  
+
   # Backup script
   backupScript = pkgs.writeScriptBin "nixos-backup" ''
     #!/bin/sh
@@ -60,7 +60,7 @@ let
     
     echo "✅ Backup completed successfully!"
   '';
-  
+
   # Restore script
   restoreScript = pkgs.writeScriptBin "nixos-restore" ''
     #!/bin/sh
@@ -91,19 +91,19 @@ in
 {
   options.services.backup = {
     enable = mkEnableOption "automated backup with restic";
-    
+
     repository = mkOption {
       type = types.str;
       default = "/var/backup/restic";
       description = "Path to the restic repository";
     };
-    
+
     passwordFile = mkOption {
       type = types.path;
       default = "/etc/nixos/secrets/backup-password";
       description = "Path to file containing the repository password";
     };
-    
+
     paths = mkOption {
       type = types.listOf types.path;
       default = [
@@ -114,7 +114,7 @@ in
       ];
       description = "Paths to backup";
     };
-    
+
     exclude = mkOption {
       type = types.listOf types.str;
       default = [
@@ -138,72 +138,72 @@ in
       ];
       description = "Patterns to exclude from backup";
     };
-    
+
     schedule = mkOption {
       type = types.str;
       default = "daily";
       description = "Backup schedule (systemd timer format)";
     };
-    
+
     prune = {
       enable = mkEnableOption "automatic pruning of old backups";
-      
+
       keepDaily = mkOption {
         type = types.int;
         default = 7;
         description = "Number of daily backups to keep";
       };
-      
+
       keepWeekly = mkOption {
         type = types.int;
         default = 4;
         description = "Number of weekly backups to keep";
       };
-      
+
       keepMonthly = mkOption {
         type = types.int;
         default = 6;
         description = "Number of monthly backups to keep";
       };
-      
+
       keepYearly = mkOption {
         type = types.int;
         default = 2;
         description = "Number of yearly backups to keep";
       };
     };
-    
+
     check = {
       enable = mkEnableOption "backup integrity checking";
-      
+
       readData = mkOption {
         type = types.bool;
         default = false;
         description = "Also read and check data blob integrity (slow)";
       };
-      
+
       schedule = mkOption {
         type = types.str;
         default = "weekly";
         description = "Check schedule (systemd timer format)";
       };
     };
-    
+
     remoteBackup = {
       enable = mkEnableOption "remote backup to cloud storage";
-      
+
       type = mkOption {
         type = types.enum [ "s3" "b2" "azure" "gcs" "sftp" "rest" ];
         default = "s3";
         description = "Remote backup type";
       };
-      
+
       repository = mkOption {
         type = types.str;
         default = "";
         description = "Remote repository URL";
       };
-      
+
       environmentFile = mkOption {
         type = types.nullOr types.path;
         default = null;
@@ -219,53 +219,53 @@ in
       backupScript
       restoreScript
     ];
-    
+
     # Backup service
     systemd.services.nixos-backup = {
       description = "NixOS system backup";
-      
+
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${backupScript}/bin/nixos-backup";
         StandardOutput = "journal";
         StandardError = "journal";
-        
+
         # Security hardening
         PrivateTmp = true;
         ProtectSystem = "strict";
         ProtectHome = "read-only";
         ReadWritePaths = [ cfg.repository "/var/log" ];
         NoNewPrivileges = true;
-        
+
         # Performance
         Nice = 19;
         IOSchedulingClass = "idle";
         CPUSchedulingPolicy = "idle";
       };
-      
+
       environment = mkIf cfg.remoteBackup.enable {
         RESTIC_REPOSITORY = cfg.remoteBackup.repository;
       };
-      
+
       path = [ pkgs.openssh pkgs.rclone ];
     };
-    
+
     # Backup timer
     systemd.timers.nixos-backup = {
       description = "NixOS backup timer";
       wantedBy = [ "timers.target" ];
-      
+
       timerConfig = {
         OnCalendar = cfg.schedule;
         Persistent = true;
         RandomizedDelaySec = "1h";
       };
     };
-    
+
     # Check service
     systemd.services.nixos-backup-check = mkIf cfg.check.enable {
       description = "Check NixOS backup integrity";
-      
+
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${pkgs.restic}/bin/restic check --repo ${cfg.repository} --password-file ${cfg.passwordFile} ${optionalString cfg.check.readData "--read-data"}";
@@ -274,19 +274,19 @@ in
         Nice = 19;
       };
     };
-    
+
     # Check timer
     systemd.timers.nixos-backup-check = mkIf cfg.check.enable {
       description = "NixOS backup check timer";
       wantedBy = [ "timers.target" ];
-      
+
       timerConfig = {
         OnCalendar = cfg.check.schedule;
         Persistent = true;
         RandomizedDelaySec = "2h";
       };
     };
-    
+
     # Helper commands
     environment.shellAliases = {
       backup-status = "restic snapshots --repo ${cfg.repository} --password-file ${cfg.passwordFile}";
@@ -294,12 +294,12 @@ in
       backup-mount = "restic mount --repo ${cfg.repository} --password-file ${cfg.passwordFile}";
       backup-stats = "restic stats --repo ${cfg.repository} --password-file ${cfg.passwordFile}";
     };
-    
+
     # Create backup directory
     systemd.tmpfiles.rules = [
       "d ${cfg.repository} 0700 root root -"
     ];
-    
+
     # Documentation
     environment.etc."backup-readme.md".text = ''
       # NixOS Backup System

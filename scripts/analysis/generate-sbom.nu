@@ -13,8 +13,13 @@ use ../lib/unified-error-handling.nu *
 # List of supported systems
 let supported_systems = ["x86_64-linux", "aarch64-linux"]
 
-# List of packages
-let available_packages = ["install", "uninstall", "nixos-flake-update", "proxmox-update", "vzdump-backup", "zfs-snapshot"]
+# Define available packages
+let available_packages = ["backup-system"]
+
+# Package descriptions
+let package_descriptions = {
+    backup-system: "System backup utility"
+}
 
 def get_package_info [system: string, package_name: string] {
     try {
@@ -53,14 +58,10 @@ def get_package_info [system: string, package_name: string] {
         })
 
         # Generate description based on package name
-        let description = (match $package_name {
-            "install" => "nix-mox installation script"
-            "uninstall" => "nix-mox uninstallation script"
-            "nixos-flake-update" => "NixOS flake update utility"
-            "proxmox-update" => "Proxmox update management script"
-            "vzdump-backup" => "Proxmox vzdump backup utility"
-            "zfs-snapshot" => "ZFS snapshot management script"
-            _ => $"nix-mox ($package_name) package"
+        let description = (if $package_name == "backup-system" {
+            "System backup utility"
+        } else {
+            $"nix-mox ($package_name) package"
         })
 
         {

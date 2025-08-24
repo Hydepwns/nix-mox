@@ -5,7 +5,7 @@ with lib;
 
 let
   cfg = config.boot.autoRollback;
-  
+
   # Rollback detection script
   rollbackScript = pkgs.writeScript "auto-rollback" ''
     #!${pkgs.bash}/bin/bash
@@ -49,7 +49,7 @@ let
       fi
     fi
   '';
-  
+
   # Success marker script
   successScript = pkgs.writeScript "mark-boot-success" ''
     #!${pkgs.bash}/bin/bash
@@ -64,26 +64,26 @@ in
 {
   options.boot.autoRollback = {
     enable = mkEnableOption "automatic rollback on boot failure";
-    
+
     maxAttempts = mkOption {
       type = types.int;
       default = 3;
       description = "Maximum boot attempts before rollback";
     };
-    
+
     timeout = mkOption {
       type = types.int;
-      default = 300;  # 5 minutes
+      default = 300; # 5 minutes
       description = "Seconds to wait before marking boot as successful";
     };
-    
+
     displayManagerCheck = mkEnableOption "check if display manager started successfully";
-    
+
     networkCheck = mkEnableOption "check if network is available";
-    
+
     customChecks = mkOption {
       type = types.listOf types.str;
-      default = [];
+      default = [ ];
       description = "Custom systemd units that must be active for successful boot";
     };
   };
@@ -93,7 +93,7 @@ in
     boot.initrd.postMountCommands = ''
       ${rollbackScript}
     '';
-    
+
     # Service to detect successful boot
     systemd.services.boot-success-marker = {
       description = "Mark boot as successful";
@@ -101,35 +101,35 @@ in
         ++ optional cfg.displayManagerCheck "display-manager.service"
         ++ optional cfg.networkCheck "network-online.target"
         ++ cfg.customChecks;
-      
+
       wants = [ "multi-user.target" ]
         ++ optional cfg.displayManagerCheck "display-manager.service"
         ++ optional cfg.networkCheck "network-online.target";
-      
+
       wantedBy = [ "multi-user.target" ];
-      
+
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
         ExecStart = successScript;
       };
     };
-    
+
     # Timer to mark boot successful after timeout
     systemd.timers.boot-success-timer = {
       description = "Timer to mark boot as successful";
       wantedBy = [ "timers.target" ];
-      
+
       timerConfig = {
         OnBootSec = "${toString cfg.timeout}s";
         Unit = "boot-success-marker.service";
       };
     };
-    
+
     # Emergency recovery shell
     systemd.services.emergency-recovery = {
       description = "Emergency recovery shell";
-      
+
       serviceConfig = {
         Type = "idle";
         ExecStart = pkgs.writeScriptBin "emergency-recovery" ''
@@ -154,19 +154,19 @@ in
         TTYReset = true;
         TTYVHangup = true;
       };
-      
+
       # Only start if rollback occurred
       unitConfig = {
         ConditionPathExists = "/var/lib/boot-rollback-occurred";
       };
     };
-    
+
     # Create state directory
     systemd.tmpfiles.rules = [
       "d /var/lib 0755 root root -"
       "f /var/lib/boot-count 0644 root root -"
     ];
-    
+
     # Helper commands
     environment.systemPackages = with pkgs; [
       (writeScriptBin "rollback-status" ''
@@ -186,13 +186,13 @@ in
           echo "✅ Auto-rollback not active"
         fi
       '')
-      
+
       (writeScriptBin "rollback-reset" ''
         #!${pkgs.bash}/bin/bash
         echo "0" > /var/lib/boot-count
         echo "✅ Boot counter reset"
       '')
-      
+
       (writeScriptBin "rollback-test" ''
         #!${pkgs.bash}/bin/bash
         echo "🧪 Testing rollback mechanism..."
@@ -201,7 +201,7 @@ in
         echo "Run 'rollback-reset' to cancel"
       '')
     ];
-    
+
     # Boot counting in kernel parameters
     boot.kernelParams = [ "systemd.setenv=BOOT_COUNT_ENABLED=1" ];
   };

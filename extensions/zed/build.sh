@@ -9,16 +9,16 @@ echo "🔧 Building nix-mox Zed extension..."
 
 # Check if Rust is installed
 if ! command -v cargo &> /dev/null; then
-    echo "❌ Rust/Cargo not found. Please install Rust first."
-    echo "   Visit: https://rustup.rs/"
-    exit 1
+  echo "❌ Rust/Cargo not found. Please install Rust first."
+  echo "   Visit: https://rustup.rs/"
+  exit 1
 fi
 
 # Check if Zed is installed
 if ! command -v zed &> /dev/null; then
-    echo "❌ Zed not found. Please install Zed first."
-    echo "   Visit: https://zed.dev/"
-    exit 1
+  echo "❌ Zed not found. Please install Zed first."
+  echo "   Visit: https://zed.dev/"
+  exit 1
 fi
 
 # Build the extension
@@ -48,20 +48,20 @@ echo "📁 Package location: $PACKAGE_DIR"
 
 # Optional: Install extension
 if [[ "$1" == "--install" ]]; then
-    echo "📦 Installing extension..."
+  echo "📦 Installing extension..."
 
-    # Get Zed extensions directory
-    ZED_EXTENSIONS_DIR="$HOME/.config/zed/extensions"
+  # Get Zed extensions directory
+  ZED_EXTENSIONS_DIR="$HOME/.config/zed/extensions"
 
-    if [[ ! -d "$ZED_EXTENSIONS_DIR" ]]; then
-        mkdir -p "$ZED_EXTENSIONS_DIR"
-    fi
+  if [[ ! -d "$ZED_EXTENSIONS_DIR" ]]; then
+    mkdir -p "$ZED_EXTENSIONS_DIR"
+  fi
 
-    # Copy extension to Zed extensions directory
-    cp -r "$PACKAGE_DIR" "$ZED_EXTENSIONS_DIR/"
+  # Copy extension to Zed extensions directory
+  cp -r "$PACKAGE_DIR" "$ZED_EXTENSIONS_DIR/"
 
-    echo "✅ Extension installed successfully!"
-    echo "🔄 Please restart Zed to load the extension."
+  echo "✅ Extension installed successfully!"
+  echo "🔄 Please restart Zed to load the extension."
 fi
 
 echo ""

@@ -1,7 +1,7 @@
 # Execution module for nix-mox
 # This replaces the bash exec.sh with a more robust Nushell implementation
 
-use logging.nu *
+use unified-logging.nu *
 
 # Export the environment variables
 export-env {

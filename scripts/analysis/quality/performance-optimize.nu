@@ -3,12 +3,11 @@
 # Import unified libraries
 use ../../lib/unified-checks.nu
 use ../../lib/unified-error-handling.nu
-
+use ../../lib/unified-logging.nu *
 
 # nix-mox Performance Optimization Script
-# Analyzes and optimizes various aspects of the codebase
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+# Analyze and optimize various aspects of the codebase
+
 
 # Configuration constants
 const PERFORMANCE_THRESHOLDS = {

@@ -5,19 +5,19 @@ with lib;
 
 let
   cfg = config.hardware.autoDetect;
-  
+
   # Detect GPU vendor (use forceVendor or defaults)
   hasNvidia = cfg.gpu.forceVendor == "nvidia" || cfg.gpu.forceVendor == null;
   hasAmd = cfg.gpu.forceVendor == "amd";
   hasIntel = cfg.gpu.forceVendor == "intel";
-  
+
   # CPU detection (simplified - can't read /proc at eval time)
   hasIntelCpu = cfg.cpu.forceVendor == "intel";
   hasAmdCpu = cfg.cpu.forceVendor == "amd";
-  
+
   # Memory detection (use reasonable defaults)
   totalMemoryGB = cfg.memory.systemMemoryGB;
-  
+
   # Storage detection (simplified)
   hasNvme = cfg.storage.hasNvme;
   hasSsd = cfg.storage.hasSsd;
@@ -25,58 +25,58 @@ in
 {
   options.hardware.autoDetect = {
     enable = mkEnableOption "automatic hardware detection and optimization";
-    
+
     gpu = {
       autoConfig = mkEnableOption "automatic GPU configuration";
-      
+
       forceVendor = mkOption {
         type = types.nullOr (types.enum [ "nvidia" "amd" "intel" ]);
         default = null;
         description = "Force specific GPU vendor configuration";
       };
     };
-    
+
     cpu = {
       autoConfig = mkEnableOption "automatic CPU optimization";
-      
+
       forceVendor = mkOption {
         type = types.nullOr (types.enum [ "intel" "amd" ]);
         default = null;
         description = "Force specific CPU vendor configuration";
       };
     };
-    
+
     memory = {
       autoConfig = mkEnableOption "automatic memory configuration";
-      
+
       systemMemoryGB = mkOption {
         type = types.int;
         default = 16;
         description = "System memory in GB (used for auto-configuration)";
       };
-      
+
       zramPercent = mkOption {
         type = types.int;
         default = 50;
         description = "Percentage of RAM to use for zram";
       };
     };
-    
+
     storage = {
       autoConfig = mkEnableOption "automatic storage optimization";
-      
+
       hasNvme = mkOption {
         type = types.bool;
         default = true;
         description = "System has NVMe storage";
       };
-      
+
       hasSsd = mkOption {
         type = types.bool;
         default = true;
         description = "System has SSD storage";
       };
-      
+
       scheduler = mkOption {
         type = types.str;
         default = "none";
@@ -98,37 +98,37 @@ in
         package = config.boot.kernelPackages.nvidiaPackages.stable;
         forceFullCompositionPipeline = true;
       };
-      
+
       services.xserver.videoDrivers = [ "nvidia" ];
-      
+
       boot.blacklistedKernelModules = [ "nouveau" ];
       boot.kernelParams = [ "nvidia-drm.modeset=1" ];
-      
+
       environment.variables = {
         __GL_THREADED_OPTIMIZATIONS = "1";
         __GL_SHADER_DISK_CACHE_SKIP_CLEANUP = "1";
         __NV_PRIME_RENDER_OFFLOAD = "1";
         __VK_LAYER_NV_optimus = "NVIDIA_only";
       };
-      
+
       # NVIDIA-specific packages
       environment.systemPackages = with pkgs; [
         nvtop
         nvidia-vaapi-driver
       ];
     })
-    
+
     (mkIf (cfg.gpu.autoConfig && (cfg.gpu.forceVendor == "amd" || hasAmd)) {
       # AMD configuration
       services.xserver.videoDrivers = [ "amdgpu" ];
-      
-      boot.kernelParams = [ 
+
+      boot.kernelParams = [
         "radeon.si_support=0"
         "amdgpu.si_support=1"
         "radeon.cik_support=0"
         "amdgpu.cik_support=1"
       ];
-      
+
       hardware.graphics = {
         extraPackages = with pkgs; [
           rocm-opencl-icd
@@ -139,24 +139,24 @@ in
           amdvlk
         ];
       };
-      
+
       environment.variables = {
         AMD_VULKAN_ICD = "RADV";
       };
-      
+
       # AMD-specific packages
       environment.systemPackages = with pkgs; [
         radeontop
         corectrl
       ];
     })
-    
+
     (mkIf (cfg.gpu.autoConfig && (cfg.gpu.forceVendor == "intel" || hasIntel)) {
       # Intel configuration
       services.xserver.videoDrivers = [ "modesetting" ];
-      
+
       boot.kernelParams = [ "i915.enable_guc=2" ];
-      
+
       hardware.graphics = {
         extraPackages = with pkgs; [
           intel-media-driver
@@ -166,29 +166,29 @@ in
           intel-compute-runtime
         ];
       };
-      
+
       environment.variables = {
         VDPAU_DRIVER = "va_gl";
       };
-      
+
       # Intel-specific packages
       environment.systemPackages = with pkgs; [
         intel-gpu-tools
       ];
     })
-    
+
     # CPU auto-configuration
     (mkIf (cfg.cpu.autoConfig && (cfg.cpu.forceVendor == "intel" || hasIntelCpu)) {
       # Intel CPU optimizations
       hardware.cpu.intel.updateMicrocode = true;
-      
+
       boot.kernelParams = [
         "intel_pstate=active"
         "intel_idle.max_cstate=1"
       ];
-      
+
       boot.kernelModules = [ "kvm-intel" ];
-      
+
       # Intel-specific performance settings
       powerManagement = {
         cpuFreqGovernor = "performance";
@@ -198,29 +198,29 @@ in
         '';
       };
     })
-    
+
     (mkIf (cfg.cpu.autoConfig && (cfg.cpu.forceVendor == "amd" || hasAmdCpu)) {
       # AMD CPU optimizations
       hardware.cpu.amd.updateMicrocode = true;
-      
+
       boot.kernelParams = [
         "amd_pstate=active"
         "processor.max_cstate=1"
       ];
-      
+
       boot.kernelModules = [ "kvm-amd" ];
-      
+
       # AMD-specific performance settings
       powerManagement = {
-        cpuFreqGovernor = "schedutil";  # Better for AMD Zen
+        cpuFreqGovernor = "schedutil"; # Better for AMD Zen
       };
-      
+
       # Enable AMD P-State driver (Zen 2+)
       boot.extraModprobeConfig = ''
         options amd_pstate shared_mem=1
       '';
     })
-    
+
     # Memory auto-configuration
     (mkIf cfg.memory.autoConfig {
       # Configure zram based on available memory
@@ -230,30 +230,30 @@ in
         memoryPercent = cfg.memory.zramPercent;
         priority = 100;
       };
-      
+
       # Configure vm settings based on memory
       boot.kernel.sysctl = {
-        "vm.swappiness" = mkDefault (if totalMemoryGB >= 32 then 10 
-                          else if totalMemoryGB >= 16 then 20 
-                          else 30);
+        "vm.swappiness" = mkDefault (if totalMemoryGB >= 32 then 10
+        else if totalMemoryGB >= 16 then 20
+        else 30);
         "vm.vfs_cache_pressure" = mkDefault (if totalMemoryGB >= 32 then 50 else 100);
         "vm.dirty_background_ratio" = mkDefault (if totalMemoryGB >= 32 then 1 else 5);
         "vm.dirty_ratio" = mkDefault (if totalMemoryGB >= 32 then 2 else 10);
       };
-      
+
       # Configure earlyoom based on memory
       services.earlyoom = {
         enable = true;
-        freeMemThreshold = mkDefault (if totalMemoryGB >= 32 then 5 
-                          else if totalMemoryGB >= 16 then 10 
-                          else 15);
+        freeMemThreshold = mkDefault (if totalMemoryGB >= 32 then 5
+        else if totalMemoryGB >= 16 then 10
+        else 15);
         freeSwapThreshold = mkDefault 10;
       };
-      
+
       # Huge pages for systems with enough memory
       boot.kernelParams = optional (totalMemoryGB >= 16) "transparent_hugepage=always";
     })
-    
+
     # Storage auto-configuration
     (mkIf cfg.storage.autoConfig {
       # Configure I/O scheduler
@@ -267,39 +267,41 @@ in
         # HDDs (use bfq for better responsiveness)
         ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
       '';
-      
+
       # Enable fstrim for SSDs
       services.fstrim = {
         enable = hasNvme || hasSsd;
         interval = "weekly";
       };
-      
+
       # Configure filesystem options based on storage type
       # Note: /home is part of root filesystem, so we only configure root
-      fileSystems = let
-        ssdOptions = [ "noatime" "nodiratime" "discard=async" ];
-        hddOptions = [ "noatime" ];
-      in mkIf (hasNvme || hasSsd) {
-        "/".options = mkDefault ssdOptions;
-      };
-      
+      fileSystems =
+        let
+          ssdOptions = [ "noatime" "nodiratime" "discard=async" ];
+          hddOptions = [ "noatime" ];
+        in
+        mkIf (hasNvme || hasSsd) {
+          "/".options = mkDefault ssdOptions;
+        };
+
       # Kernel parameters for storage
-      boot.kernelParams = []
+      boot.kernelParams = [ ]
         ++ optional hasNvme "nvme_core.io_timeout=255"
         ++ optional (hasNvme || hasSsd) "scsi_mod.use_blk_mq=1";
     })
-    
+
     # General auto-detected optimizations
     {
       # Use optimal kernel based on system
       boot.kernelPackages = mkDefault (
-        if totalMemoryGB >= 32 && (hasNvidia || hasAmd) 
+        if totalMemoryGB >= 32 && (hasNvidia || hasAmd)
         then pkgs.linuxPackages_zen
-        else if totalMemoryGB >= 16 
+        else if totalMemoryGB >= 16
         then pkgs.linuxPackages_latest
         else pkgs.linuxPackages
       );
-      
+
       # Network optimizations based on memory
       boot.kernel.sysctl = mkIf (totalMemoryGB >= 16) {
         "net.core.rmem_max" = mkDefault 134217728;

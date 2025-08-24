@@ -359,7 +359,7 @@ show_help() {
   echo ""
   echo "Examples:"
   echo "  ./scripts/analysis/analyze-sizes.sh     # Run analysis"
-echo "  ./scripts/analysis/analyze-sizes.sh -h  # Show help"
+  echo "  ./scripts/analysis/analyze-sizes.sh -h  # Show help"
 }
 
 # Main function

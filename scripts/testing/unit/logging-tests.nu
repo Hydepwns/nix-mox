@@ -7,7 +7,6 @@ use ../../lib/unified-error-handling.nu *
 
 
 use ../lib/test-utils.nu *
-use ../../lib/logging.nu *
 
 def main [] {
     print "Running logging module unit tests..."

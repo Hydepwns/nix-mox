@@ -188,6 +188,5 @@ def main [] {
     print "Comprehensive unit tests completed successfully"
 }
 
-if ($env | get -i NU_TEST | default "false") == "true" {
-    main
-}
+# Always run main when sourced
+main

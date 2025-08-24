@@ -11,6 +11,7 @@ use ../../lib/unified-error-handling.nu *
 export-env {
     use ../lib/test-utils.nu *
     use ../lib/test-common.nu *
+    use ../lib/coverage-core.nu *
 }
 
 # Import modular components
@@ -42,7 +43,23 @@ export def main [] {
 
     # Set up test environment
     let config = setup_display_test_config
-    setup_test_env
+    # Set up environment variables for colors and error handling
+    $env.GREEN = (ansi green)
+    $env.RED = (ansi red)
+    $env.YELLOW = (ansi yellow)
+    $env.BLUE = (ansi blue)
+    $env.CYAN = (ansi cyan)
+    $env.NC = (ansi reset)
+    $env.LAST_ERROR = ""
+    
+    # Ensure TEST_TEMP_DIR is set
+    if not ($env | get -i TEST_TEMP_DIR | is-not-empty) {
+        $env.TEST_TEMP_DIR = "coverage-tmp/nix-mox-tests"
+    }
+
+    if not ($env.TEST_TEMP_DIR | path exists) {
+        mkdir $env.TEST_TEMP_DIR
+    }
 
     # Run hardware detection
     print "(ansi blue)🔍 Hardware Detection Phase(ansi reset)"
@@ -69,13 +86,19 @@ export def main [] {
     # Display results
     display_results $final_report
 
-    # Return appropriate exit code
+    # Track display test results
+    track_test "display_hardware_detection" "display" (if $gpu_info.detected { "passed" } else { "failed" }) 0.1
+    track_test "display_config_analysis" "display" (if $config_report.summary.valid { "passed" } else { "failed" }) 0.1
+    track_test "display_safety_assessment" "display" (if $risk_assessment.safe_to_proceed { "passed" } else { "failed" }) 0.1
+    track_test "display_overall" "display" (if $risk_assessment.safe_to_proceed { "passed" } else { "failed" }) 0.1
+
+    # Return appropriate success status
     if $risk_assessment.safe_to_proceed {
         print "(ansi green)✅ Display tests completed - safe to proceed(ansi reset)"
-        exit 0
+        true
     } else {
         print "(ansi red)❌ Display tests completed - manual intervention required(ansi reset)"
-        exit 1
+        false
     }
 }
 
@@ -120,7 +143,7 @@ def display_results [report: record] {
     print $"Warnings Found: ($report.configuration.summary.warnings_found)"
 
     # Safety summary
-    print $"\nRisk Level: (ansi_yellow)($report.safety.risk_assessment.overall_risk)(ansi reset)"
+    print $"\nRisk Level: (ansi yellow)($report.safety.risk_assessment.overall_risk)(ansi reset)"
     print $"Safe to Proceed: (if $report.safety.risk_assessment.safe_to_proceed { '(ansi green)Yes' } else { '(ansi red)No' })(ansi reset)"
 
     # Display issues if any
@@ -205,6 +228,5 @@ export def run_tests [] {
     }
 }
 
-if ($env | get -i NU_TEST | default "false") == "true" {
-    run_tests
-}
+# Always run tests when sourced
+run_tests

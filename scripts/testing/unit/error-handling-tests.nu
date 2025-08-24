@@ -8,8 +8,6 @@ use ../../lib/unified-error-handling.nu *
 
 # Error handling module tests
 # Tests for scripts/lib/error-handling.nu
-
-use ../../lib/error-handling.nu *
 use ../lib/test-utils.nu *
 
 def main [] {

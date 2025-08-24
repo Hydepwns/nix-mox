@@ -8,7 +8,7 @@ use ../lib/performance.nu *
 use ../lib/unified-error-handling.nu *
 
 # Global metrics state
-mut $METRICS_STATE = {
+mut METRICS_STATE = {
     enabled: false,
     port: 9200,
     endpoint: "/metrics",
@@ -54,7 +54,7 @@ export def create_histogram [name: string, help: string, buckets: list = [0.1, 0
 
 # Core nix-mox metrics
 export def init_core_metrics [] {
-    let metrics = [
+    let collectors = [
         (create_counter "nix_mox_script_executions_total" "Total number of script executions" {script: "unknown"}),
         (create_counter "nix_mox_script_failures_total" "Total number of script failures" {script: "unknown", error_type: "unknown"}),
         (create_histogram "nix_mox_script_duration_seconds" "Script execution duration in seconds"),
@@ -69,15 +69,14 @@ export def init_core_metrics [] {
         (create_counter "nix_mox_config_validation_failures_total" "Configuration validation failures"),
         (create_counter "nix_mox_platform_errors_total" "Platform-specific errors" {platform: "unknown"})
     ]
-    
-    $METRICS_STATE.collectors = $metrics
     log "INFO" "Initialized nix-mox core metrics"
 }
 
 # Increment counter
 export def increment_counter [name: string, labels: record = {}, value: int = 1] {
-    let metric_index = ($METRICS_STATE.collectors | enumerate | where {|m| $m.item.name == $name and $m.item.labels == $labels} | get 0?.index)
-    
+    let collectors = $METRICS_STATE.collectors
+    let metric_index = ($collectors | enumerate | where {|m| $m.item.name == $name and $m.item.labels == $labels} | get 0?.index)
+
     if $metric_index != null {
         $METRICS_STATE.collectors = ($METRICS_STATE.collectors | update $metric_index {|m| $m | update value ($m.value + $value)})
     } else {
@@ -253,7 +252,7 @@ export def start_metrics_collection [] {
     while $METRICS_STATE.enabled {
         collect_system_metrics
         export_metrics_to_file
-        sleep ($METRICS_STATE.update_interval)sec
+        sleep $METRICS_STATE.update_interval
     }
 }
 

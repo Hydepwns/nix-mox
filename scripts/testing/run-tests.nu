@@ -41,7 +41,7 @@ def setup_test_config [] {
 def ensure_test_env [] {
     # Set default TEST_TEMP_DIR if not already set
     if not ($env | get -i TEST_TEMP_DIR | is-not-empty) {
-        $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
+        $env.TEST_TEMP_DIR = "coverage-tmp/nix-mox-tests"
     }
 
     # Ensure the test directory exists
@@ -58,9 +58,9 @@ def setup_test_env [] {
     # Ensure TEST_TEMP_DIR is set correctly for CI
     let ci_val = ($env | get -i CI | default "");
     if $ci_val == "true" {
-        $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
+        $env.TEST_TEMP_DIR = "coverage-tmp/nix-mox-tests"
     } else if not ($env | get -i TEST_TEMP_DIR | is-not-empty) {
-        $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
+        $env.TEST_TEMP_DIR = "coverage-tmp/nix-mox-tests"
     }
 
     print $"($env.GREEN)Setting up test environment...($env.NC)"
@@ -106,37 +106,112 @@ def run_test_suite [suite_name: string, test_func: closure, config: record] {
 
 def run_unit_tests [] {
     print "Running unit tests..."
+    # Set up environment variables for colors and error handling
+    $env.GREEN = (ansi green)
+    $env.RED = (ansi red)
+    $env.YELLOW = (ansi yellow)
+    $env.BLUE = (ansi blue)
+    $env.CYAN = (ansi cyan)
+    $env.NC = (ansi reset)
+    $env.LAST_ERROR = ""
+    
     # Run unit tests in the same process to ensure test result files are available
-    source "unit/unit-tests.nu"
-    true
+    try {
+        source "unit/unit-tests.nu"
+        true
+    } catch { |err|
+        $env.LAST_ERROR = $err
+        print $"($env.RED)Unit tests failed: ($err)($env.NC)"
+        false
+    }
 }
 
 def run_integration_tests [] {
     print "Running integration tests..."
+    # Set up environment variables for colors and error handling
+    $env.GREEN = (ansi green)
+    $env.RED = (ansi red)
+    $env.YELLOW = (ansi yellow)
+    $env.BLUE = (ansi blue)
+    $env.CYAN = (ansi cyan)
+    $env.NC = (ansi reset)
+    $env.LAST_ERROR = ""
+    
     # Run integration tests in the same process to ensure test result files are available
-    source "integration/integration-tests.nu"
-    true
+    try {
+        source "integration/integration-tests.nu"
+        true
+    } catch { |err|
+        $env.LAST_ERROR = $err
+        print $"($env.RED)Integration tests failed: ($err)($env.NC)"
+        false
+    }
 }
 
 def run_storage_tests [] {
     print "Running storage tests..."
+    # Set up environment variables for colors and error handling
+    $env.GREEN = (ansi green)
+    $env.RED = (ansi red)
+    $env.YELLOW = (ansi yellow)
+    $env.BLUE = (ansi blue)
+    $env.CYAN = (ansi cyan)
+    $env.NC = (ansi reset)
+    $env.LAST_ERROR = ""
+    
     # Run storage tests in the same process to ensure test result files are available
-    source "storage/storage-tests.nu"
-    true
+    try {
+        source "storage/storage-tests.nu"
+        true
+    } catch { |err|
+        $env.LAST_ERROR = $err
+        print $"($env.RED)Storage tests failed: ($err)($env.NC)"
+        false
+    }
 }
 
 def run_performance_tests [] {
     print "Running performance tests..."
+    # Set up environment variables for colors and error handling
+    $env.GREEN = (ansi green)
+    $env.RED = (ansi red)
+    $env.YELLOW = (ansi yellow)
+    $env.BLUE = (ansi blue)
+    $env.CYAN = (ansi cyan)
+    $env.NC = (ansi reset)
+    $env.LAST_ERROR = ""
+    
     # Run performance tests in the same process to ensure test result files are available
-    source "performance/performance-tests.nu"
-    true
+    try {
+        source "performance/performance-tests.nu"
+        true
+    } catch { |err|
+        $env.LAST_ERROR = $err
+        print $"($env.RED)Performance tests failed: ($err)($env.NC)"
+        false
+    }
 }
 
 def run_display_tests [] {
     print "Running display tests..."
+    # Set up environment variables for colors and error handling
+    $env.GREEN = (ansi green)
+    $env.RED = (ansi red)
+    $env.YELLOW = (ansi yellow)
+    $env.BLUE = (ansi blue)
+    $env.CYAN = (ansi cyan)
+    $env.NC = (ansi reset)
+    $env.LAST_ERROR = ""
+    
     # Run display tests in the same process to ensure test result files are available
-    source "display/display-tests.nu"
-    true
+    try {
+        source "display/display-tests.nu"
+        true
+    } catch { |err|
+        $env.LAST_ERROR = $err
+        print $"($env.RED)Display tests failed: ($err)($env.NC)"
+        false
+    }
 }
 
 def run_all_test_suites [config: record] {
@@ -187,7 +262,7 @@ def run_all_test_suites [config: record] {
             let report = do { export_coverage_report $config.export_format }
             print $"DEBUG: Coverage data length: ($report | str length)"
 
-            let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "/tmp/nix-mox-tests");
+            let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "coverage-tmp/nix-mox-tests");
             let coverage_path = $"($test_temp_dir)/coverage.($config.export_format)"
             $report | save --force $coverage_path
             print $"($env.GREEN)Coverage report saved as ($coverage_path)($env.NC)"
@@ -211,7 +286,11 @@ def run_all_test_suites [config: record] {
     if not $config.generate_coverage {
         cleanup_test_env
     } else {
-        let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "<unknown>");
+        let test_temp_dir = if ($env | get -i TEST_TEMP_DIR | is-not-empty) {
+            $env.TEST_TEMP_DIR
+        } else {
+            "coverage-tmp/nix-mox-tests"
+        }
         print $"($env.YELLOW)Test environment preserved for coverage analysis at: ($test_temp_dir)($env.NC)"
     }
 

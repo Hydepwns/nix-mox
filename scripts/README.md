@@ -86,7 +86,7 @@ scripts/
 - **Location**: `scripts/lib/`
 - **Key Libraries**: 
   - `unified-checks.nu` - Validation and system checks
-  - `enhanced-error-handling.nu` - Error handling and logging
+  - `unified-error-handling.nu` - Error handling and logging
 - **Usage**: Imported by all other scripts
 
 ### Storage Safety (Critical)
@@ -141,7 +141,7 @@ All scripts follow a consistent template:
 
 # Import unified libraries
 use ../lib/unified-checks.nu
-use ../lib/enhanced-error-handling.nu
+use ../lib/unified-error-handling.nu
 
 def main [] {
     # Script logic here

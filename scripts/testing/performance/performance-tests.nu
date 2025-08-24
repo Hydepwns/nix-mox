@@ -20,7 +20,7 @@ def main [] {
 
     # Ensure TEST_TEMP_DIR is set
     if not ($env | get -i TEST_TEMP_DIR | is-not-empty) {
-        $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
+        $env.TEST_TEMP_DIR = "coverage-tmp/nix-mox-tests"
     }
 
     # Run all performance test suites
@@ -32,6 +32,13 @@ def main [] {
         memory_performance: (test_memory_performance)
         network_performance: (test_network_performance)
     }
+    
+    # Track individual performance test results
+    $results | transpose key value | each { |row|
+        let test_name = $row.key
+        let test_result = $row.value
+        track_test $"performance_($test_name)" "performance" (if $test_result.success { "passed" } else { "failed" }) $test_result.duration
+    }
 
     # Generate performance report
     generate_performance_report $results
@@ -40,11 +47,12 @@ def main [] {
     let all_passed = ($results | values | all {|r| $r.success})
     if $all_passed {
         print "(ansi green)✅ All performance tests passed!(ansi reset)"
-        exit 0
     } else {
         print "(ansi red)❌ Some performance tests failed!(ansi reset)"
-        exit 1
     }
+    
+    # Return success status without exiting
+    $all_passed
 }
 
 def test_config_performance [] {
@@ -55,7 +63,7 @@ def test_config_performance [] {
     let config_test = (try {
         # Test configuration parsing
         let result = (try {
-            ^nix eval --impure --expr 'import ./config/nixos/configuration.nix {}' | complete | get stdout | str trim
+            ^nix eval --extra-experimental-features nix-command --impure --expr 'import ./config/nixos/configuration.nix {}' | complete | get stdout | str trim
             true
         } catch {
             false
@@ -194,12 +202,16 @@ def generate_performance_report [results: record] {
                 let subtest_name = $subrow.key
                 let subtest_result = $subrow.value
                 let sub_status = (if $subtest_result.success { "(ansi green)  ✓" } else { "(ansi red)  ✗" })
-                print $"($sub_status) ($subtest_name): ($subtest_result.duration | into string -d 3)s"
+                let duration_str = if ($subtest_result | get -i duration | is-not-empty) {
+                    $"($subtest_result.duration | into string -d 3)s"
+                } else {
+                    "N/A"
+                }
+                print $"($sub_status) ($subtest_name): ($duration_str)"
             }
         }
     }
 }
 
-if ($env | get -i NU_TEST | default "false") == "true" {
-    main
-}
+# Always run main when sourced
+main

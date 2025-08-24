@@ -51,7 +51,7 @@ def benchmark_nix_evaluation [] {
         let iterations = 10
         let results = (seq 1 $iterations | each {|i|
             try {
-                nix eval --impure --expr 'builtins.currentTime' | str trim
+                nix eval --extra-experimental-features nix-command --impure --expr 'builtins.currentTime' | str trim
             } catch {
                 null
             }
@@ -83,7 +83,7 @@ def benchmark_flake_check [] {
     let flake_test = (try {
         # Run flake check (dry run)
         let result = (try {
-            ^nix flake check --no-build | complete | get stdout | str trim
+            ^nix flake check --extra-experimental-features nix-command --no-build | complete | get stdout | str trim
             true
         } catch {
             false
@@ -113,7 +113,7 @@ def benchmark_config_build [] {
     let config_test = (try {
         # Try to build a simple configuration
         let result = (try {
-            ^nix build --no-link .#default | complete | get stdout | str trim
+            ^nix build --extra-experimental-features nix-command --no-link .#default | complete | get stdout | str trim
             true
         } catch {
             false

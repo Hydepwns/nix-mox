@@ -57,8 +57,8 @@ jobs:
           print "🚀 Running performance benchmarks..."
 
           # Test nix-mox script
-          time ./scripts/common/nix-mox --script install --platform auto --dry-run
-          time ./scripts/common/nix-mox --script install --platform auto --debug
+          time ./scripts/common/nix-mox.nu --script install --platform auto --dry-run
+          time ./scripts/common/nix-mox.nu --script install --platform auto --debug
 
           # Run unit tests
           time nu -c "source scripts/testing/run-tests.nu; run ['--unit']"
@@ -71,7 +71,7 @@ jobs:
           print "🌐 Testing cross-platform compatibility..."
 
           # Test nix-mox script
-          ./scripts/common/nix-mox --script install --debug
+          ./scripts/common/nix-mox.nu --script install --debug
 
           # Run tests
           nu -c "source scripts/testing/run-tests.nu; run ['--unit', '--integration']"

@@ -12,11 +12,13 @@ use ../../lib/unified-error-handling.nu *
 # --- Environment Setup ---
 export def setup_test_env [] {
     # Set up test environment variables
-    $env.TEST_TEMP_DIR = ($env | get -i TEMP | default "/tmp") + "/nix-mox-tests"
+    $env.TEST_TEMP_DIR = ($env | get -i TEMP | default "coverage-tmp") + "/nix-mox-tests"
     $env.TEST_LOG_FILE = $env.TEST_TEMP_DIR + "/test.log"
 
-    # Create test directories
-    mkdir $env.TEST_TEMP_DIR
+    # Ensure test directory exists
+    if not ($env.TEST_TEMP_DIR | path exists) {
+        mkdir $env.TEST_TEMP_DIR
+    }
 
     # Set up color codes for output
     $env.GREEN = (ansi green)
@@ -153,7 +155,7 @@ export def track_test [name: string, category: string, status: string, duration:
     }
 
     # Create the test temp directory if it doesn't exist
-    let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "/tmp/nix-mox-tests");
+    let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "coverage-tmp/nix-mox-tests");
     if not ($test_temp_dir | path exists) {
         mkdir $test_temp_dir
     }

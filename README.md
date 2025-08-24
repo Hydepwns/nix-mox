@@ -51,7 +51,7 @@ nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu --backup --te
 ### Unified Libraries
 All scripts use unified libraries for consistent behavior:
 - **`scripts/lib/unified-checks.nu`** - Common validation functions
-- **`scripts/lib/enhanced-error-handling.nu`** - Standardized error handling and logging
+- **`scripts/lib/unified-error-handling.nu`** - Standardized error handling and logging
 
 ### Chezmoi Integration
 User configurations are managed through Chezmoi for cross-platform compatibility:
@@ -173,7 +173,7 @@ Gaming-specific configurations are in `flakes/gaming/`:
 - **Location**: `scripts/lib/`
 - **Key Libraries**: 
   - `unified-checks.nu` - Validation and system checks
-  - `enhanced-error-handling.nu` - Error handling and logging
+  - `unified-error-handling.nu` - Error handling and logging
 - **Usage**: Imported by all other scripts
 
 ### Script Categories

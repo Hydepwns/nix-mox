@@ -1,18 +1,13 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../../../../../lib/unified-checks.nu
-use ../../../../../../../lib/enhanced-error-handling.nu
+use ../lib/unified-checks.nu
+use ../lib/unified-logging.nu *
+use ../lib/unified-error-handling.nu *
 
 
 # nix-mox Interactive Dashboard
 # Real-time system status and monitoring dashboard
-
-use ../lib/platform.nu *
-use ../lib/logging.nu *
-use ../lib/error-handling.nu *
-use ../lib/performance.nu *
-use ../lib/common.nu *
 
 # Import modular components
 use ./modules/system.nu *
@@ -137,10 +132,10 @@ def run_dashboard [] {
     loop {
         try {
             update_dashboard
-            sleep $REFRESH_INTERVAL
+            sleep ($REFRESH_INTERVAL | into float)
         } catch { |err|
             print $"(ansi red)Error updating dashboard: ($err)(ansi reset)"
-            sleep 2
+            sleep (2 | into float)
         }
     }
 }

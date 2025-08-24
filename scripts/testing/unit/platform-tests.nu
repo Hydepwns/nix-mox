@@ -91,15 +91,15 @@ def test_script_exists_for_platform [] {
 
     track_test "script_exists_linux_proxmox" "unit" "passed" 0.1
     let linux_proxmox_exists = ("scripts/platforms/linux/proxmox-update.nu" | path exists)
-    assert_true $linux_proxmox_exists "Linux proxmox script exists"
+    assert_true $linux_proxmox_exists "Linux proxmox script exists (script only, not package)"
 
     track_test "script_exists_linux_zfs" "unit" "passed" 0.1
     let linux_zfs_exists = ("scripts/platforms/linux/zfs-snapshot.nu" | path exists)
-    assert_true $linux_zfs_exists "Linux zfs script exists"
+    assert_true $linux_zfs_exists "Linux zfs script exists (script only, not package)"
 
     track_test "script_exists_linux_vzdump" "unit" "passed" 0.1
     let linux_vzdump_exists = ("scripts/platforms/linux/vzdump-backup.nu" | path exists)
-    assert_true $linux_vzdump_exists "Linux vzdump script exists"
+    assert_true $linux_vzdump_exists "Linux vzdump script exists (script only, not package)"
 }
 
 def test_get_platform_info [] {
@@ -180,6 +180,22 @@ let content = (open scripts/platforms/linux/proxmox-update.nu)
         let has_shebang = ($content | str starts-with "#!/usr/bin/env")
         assert_true $has_shebang "Linux proxmox script has shebang"
     }
+}
+
+# Test package availability
+def test_package_availability [] {
+    print "Testing package availability..."
+    
+    # Test backup-system package
+    let backup_system_exists = (try {
+        nix eval .#packages.x86_64-linux.backup-system --raw | complete | get exit_code == 0
+    } catch {
+        false
+    })
+    
+    assert_true $backup_system_exists "backup-system package should be available"
+    
+    print "✅ Package availability tests passed"
 }
 
 def main [] {

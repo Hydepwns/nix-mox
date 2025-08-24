@@ -3,12 +3,12 @@
 # Import unified libraries
 use ../lib/unified-checks.nu
 use ../lib/unified-error-handling.nu
-
+use ../lib/unified-logging.nu *
+use ../lib/unified-error-handling.nu *
 
 # nix-mox Advanced Caching Strategy
 # Implements sophisticated build caching with multiple layers and optimization
-use ../lib/unified-logging.nu *
-use ../lib/unified-error-handling.nu *
+
 
 # Cache configuration
 def get_cache_config [] {

@@ -324,8 +324,12 @@ def print_summary [results: record] {
 
     if $results.failed > 0 {
         print "Some storage tests failed. Check the output above for details."
-        exit 1
+        false
     } else {
         print "All storage tests passed successfully!"
+        true
     }
 }
+
+# Always run main when sourced
+main

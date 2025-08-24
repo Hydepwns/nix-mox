@@ -19,7 +19,7 @@ export def track_test [name: string, category: string, status: string, duration:
     }
 
     # Ensure TEST_TEMP_DIR exists before saving
-    let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "/tmp/nix-mox-tests")
+    let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "coverage-tmp/nix-mox-tests")
     if not ($test_temp_dir | path exists) {
         mkdir $test_temp_dir
     }
@@ -29,7 +29,7 @@ export def track_test [name: string, category: string, status: string, duration:
 }
 
 export def aggregate_coverage [] {
-    let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "/tmp/nix-mox-tests")
+    let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "coverage-tmp/nix-mox-tests")
     let result_files = (ls $test_temp_dir | where { |it| ($it.name | path basename) | str starts-with 'test_result_' } | get name)
 
     mut test_results = []

@@ -10,10 +10,6 @@ use ../../lib/unified-error-handling.nu *
 # Tests for various edge cases across all modules
 
 use ../lib/test-utils.nu *
-use ../../lib/platform.nu *
-use ../../lib/config.nu *
-use ../../lib/logging.nu *
-use ../../lib/argparse.nu *
 
 def main [] {
     print "Running edge case and boundary condition tests..."

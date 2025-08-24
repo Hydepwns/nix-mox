@@ -97,7 +97,7 @@ build_packages() {
   if [[ $current_system == "Linux" ]]; then
     # Linux-specific packages
     log_info "Building Linux-specific packages..."
-    if nix build .#proxmox-update .#vzdump-backup .#zfs-snapshot .#nixos-flake-update --system "$nix_system" --accept-flake-config; then
+    if nix build .#backup-system --system "$nix_system" --accept-flake-config; then
       log_success "Successfully built Linux packages with Nix $nix_version"
     else
       log_error "Failed to build Linux packages with Nix $nix_version"
@@ -106,7 +106,7 @@ build_packages() {
   elif [[ $current_system == "Darwin" ]]; then
     # macOS-specific packages
     log_info "Building macOS-specific packages..."
-    if nix build .#homebrew-setup .#macos-maintenance .#xcode-setup .#security-audit --system "$nix_system" --accept-flake-config; then
+    if nix build .#backup-system --system "$nix_system" --accept-flake-config; then
       log_success "Successfully built macOS packages with Nix $nix_version"
     else
       log_error "Failed to build macOS packages with Nix $nix_version"
@@ -116,7 +116,7 @@ build_packages() {
 
   # Build common packages (available on all platforms)
   log_info "Building common packages..."
-  if nix build .#install .#uninstall --system "$nix_system" --accept-flake-config; then
+  if nix build .#backup-system --system "$nix_system" --accept-flake-config; then
     log_success "Successfully built common packages with Nix $nix_version"
   else
     log_error "Failed to build common packages with Nix $nix_version"
@@ -140,7 +140,7 @@ run_tests() {
 
   # Run additional tests using Makefile targets
   log_info "Running unit tests..."
-  if make unit; then
+  if make test-unit; then
     log_success "Unit tests passed"
   else
     log_error "Unit tests failed"
@@ -148,7 +148,7 @@ run_tests() {
   fi
 
   log_info "Running integration tests..."
-  if make integration; then
+  if make test-integration; then
     log_success "Integration tests passed"
   else
     log_error "Integration tests failed"

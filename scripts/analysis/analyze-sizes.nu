@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../../../../../lib/unified-checks.nu
-use ../../../../../../../lib/enhanced-error-handling.nu
+use ../lib/unified-checks.nu
+use ../lib/unified-error-handling.nu
 
 
 # nix-mox Size Analysis Script
@@ -17,55 +17,74 @@ def main [] {
 
     # Check if we're in the right directory
     if (ls | where name == "flake.nix" | is-empty) {
-        error make {msg: "Must be run from nix-mox root directory"}
+        error "Must be run from nix-mox root directory"
     }
 
     # Get system architecture
-    let system = (^uname -m | str trim)
+    let system = (sys | get host.arch | str trim)
     print $"📊 Analyzing for system: ($system)"
     print ""
 
-    # Analyze packages
-    let packages = (analyze_packages $system)
+    # Get available packages from flake.nix
+    let available_packages = ["backup-system"]
+
+    # Analyze package sizes
+    let package_sizes = ($available_packages | each { |pkg|
+        try {
+            let size = (nix path-info --closure-size .#$pkg 2>/dev/null | str trim | into int)
+            {
+                package: $pkg
+                size: $size
+                size_mb: (($size | into float) / 1024 / 1024)
+            }
+        } catch {
+            {
+                package: $pkg
+                size: 0
+                size_mb: 0.0
+            }
+        }
+    })
+
     print "📦 Package Analysis"
     print "------------------"
-    display_package_analysis $packages
+    display-package-analysis $package_sizes
     print ""
 
     # Analyze devshells
     let devshells = (analyze_devshells $system)
     print "💻 Development Shell Analysis"
     print "----------------------------"
-    display_devshell_analysis $devshells
+    display-devshell-analysis $devshells
     print ""
 
     # Analyze templates
     let templates = (analyze_templates $system)
     print "🏗️ Template Analysis"
     print "-------------------"
-    display_template_analysis $templates
+    display-template-analysis $templates
     print ""
 
     # Generate summary report
-    let summary = (generate_summary $packages $devshells $templates)
+    let summary = (generate-summary $package_sizes $devshells $templates)
     print "📈 Summary Report"
     print "----------------"
-    display_summary $summary
+    display-summary $summary
     print ""
 
     # Save detailed report
     let report_file = $"nix-mox-size-analysis-{$system}-{(date now | format date '%Y%m%d-%H%M%S')}.json"
-    $summary | to json | save $report_file
+    $summary | to json | save --force $report_file
     print $"💾 Detailed report saved to: ($report_file)"
     print ""
 
     # Performance recommendations
     print "💡 Performance Recommendations"
     print "----------------------------"
-    display_recommendations $summary
+    display-recommendations $summary
 }
 
-def analyze_packages [system: string] {
+def analyze-packages [system: string] {
     let package_names = ["proxmox-update", "vzdump-backup", "zfs-snapshot", "nixos-flake-update", "install", "uninstall"]
     mut results = []
 
@@ -112,15 +131,14 @@ def analyze_packages [system: string] {
             }
         }
 
-        $results = ($results | append {
-            type: "package"
+        $results = ($results | append (|it| it | merge {
             name: $package
             system: $system
             closure_size: $closure_size
             package_size: $package_size
             build_duration: $build_duration
             dependencies: ($closure_size - $package_size)
-        })
+        }))
     }
 
     $results
@@ -163,23 +181,23 @@ def analyze_devshells [system: string] {
                 }
             }
 
-            $results = ($results | append {
+            $results = ($results | append ({|it| it | merge {
                 type: "devshell"
                 name: $shell
                 system: $system
                 closure_size: $closure_size
                 build_duration: $build_duration
                 available: true
-            })
+            }}))
         } else {
-            $results = ($results | append {
+            $results = ($results | append ({|it| it | merge {
                 type: "devshell"
                 name: $shell
                 system: $system
                 closure_size: 0
                 build_duration: "0ms"
                 available: false
-            })
+            }}))
         }
     }
 
@@ -224,39 +242,37 @@ def analyze_templates [system: string] {
                 }
             }
 
-            $results = ($results | append {
+            $results = ($results | append ({|it| it | merge {
                 type: "template"
                 name: $template
                 system: $system
                 closure_size: $closure_size
                 build_duration: $build_duration
-            })
+            }}))
         }
     }
 
     $results
 }
 
-def display_package_analysis [packages: list] {
-    let sorted_packages = ($packages | sort-by closure_size -r)
+def display-package-analysis [packages: list] {
+    let sorted_packages = ($packages | sort-by size -r)
     print "Package Sizes (closure size):"
     print ""
 
     for package in $sorted_packages {
-        let size_mb = (($package.closure_size | into float) / 1024 / 1024 | into string | str substring 0..6)
-        let deps_mb = (($package.dependencies | into float) / 1024 / 1024 | into string | str substring 0..6)
-        let pkg_mb = (($package.package_size | into float) / 1024 / 1024 | into string | str substring 0..6)
-        let name_padded = ($package.name + "                    " | str substring 0..20)
-        print $"  ($name_padded) | ($size_mb) MB total | ($pkg_mb) MB package | ($deps_mb) MB deps | ($package.build_duration)"
+        let size_mb = (($package.size | into float) / 1024 / 1024 | into string | str substring 0..6)
+        let name_padded = ($package.package + "                    " | str substring 0..20)
+        print $"  ($name_padded) | ($size_mb) MB"
     }
 
     print ""
-    let total_size = ($packages | get closure_size | math sum)
+    let total_size = ($packages | get size | math sum)
     let total_mb = (($total_size | into float) / 1024 / 1024 | into string | str substring 0..6)
     print $"Total package size: ($total_mb) MB"
 }
 
-def display_devshell_analysis [devshells: list] {
+def display-devshell-analysis [devshells: list] {
     let available_shells = ($devshells | where available == true | sort-by closure_size -r)
     print "Development Shell Sizes (closure size):"
     print ""
@@ -286,7 +302,7 @@ def display_devshell_analysis [devshells: list] {
     print $"Total devshell size: ($total_mb) MB"
 }
 
-def display_template_analysis [templates: list] {
+def display-template-analysis [templates: list] {
     if ($templates | length) == 0 {
         print "No NixOS configurations found for this system."
         return
@@ -308,9 +324,9 @@ def display_template_analysis [templates: list] {
     print $"Total template size: ($total_mb) MB"
 }
 
-def generate_summary [packages: list, devshells: list, templates: list] {
+def generate-summary [packages: list, devshells: list, templates: list] {
     let total_package_size = if ($packages | length) > 0 {
-        ($packages | get closure_size | math sum)
+        ($packages | get size | math sum)
     } else {
         0
     }
@@ -330,7 +346,7 @@ def generate_summary [packages: list, devshells: list, templates: list] {
     let grand_total = ($total_package_size + $total_devshell_size + $total_template_size)
 
     let largest_package = if ($packages | length) > 0 {
-        ($packages | sort-by closure_size -r | get 0)
+        ($packages | sort-by size -r | get 0)
     } else {
         null
     }
@@ -369,7 +385,7 @@ def generate_summary [packages: list, devshells: list, templates: list] {
     }
 }
 
-def display_summary [summary: record] {
+def display-summary [summary: record] {
     let total_mb = (($summary.totals.grand_total | into float) / 1024 / 1024 | into string | str substring 0..6)
     let packages_mb = (($summary.totals.packages | into float) / 1024 / 1024 | into string | str substring 0..6)
     let devshells_mb = (($summary.totals.devshells | into float) / 1024 / 1024 | into string | str substring 0..6)
@@ -382,7 +398,7 @@ def display_summary [summary: record] {
     print ""
 
     let largest_pkg_mb = if $summary.largest.package != null {
-        (($summary.largest.package.closure_size | into float) / 1024 / 1024 | into string | str substring 0..6)
+        (($summary.largest.package.size | into float) / 1024 / 1024 | into string | str substring 0..6)
     } else {
         "0"
     }
@@ -402,7 +418,7 @@ def display_summary [summary: record] {
     print "🏆 Largest Components:"
 
     if $summary.largest.package != null {
-        let pkg_name = $summary.largest.package.name
+        let pkg_name = $summary.largest.package.package
         let pkg_size_str = $"($largest_pkg_mb) MB"
         print $"   📦 Package: ($pkg_name) ($pkg_size_str)"
     }
@@ -420,18 +436,18 @@ def display_summary [summary: record] {
     }
 }
 
-def display_recommendations [summary: record] {
+def display-recommendations [summary: record] {
     let total_mb = (($summary.totals.grand_total | into float) / 1024 / 1024)
     print "Based on the size analysis:"
     print ""
 
     if $total_mb > 5000 {
-        print "⚠️  Large repository size detected (>5GB)"
+        print $"⚠️  Large repository size detected (>5GB)"
         print "   - Consider using smaller templates for development"
         print "   - Use specific devshells instead of the full development shell"
         print "   - Clean up unused packages with 'nix store gc'"
     } else if $total_mb > 2000 {
-        print "📈 Moderate repository size (2-5GB)"
+        print $"📈 Moderate repository size (2-5GB)"
         print "   - Good balance between features and size"
         print "   - Consider the gaming shell only if needed (largest devshell)"
     } else {
@@ -443,7 +459,7 @@ def display_recommendations [summary: record] {
     print ""
     print "💡 Optimization Tips:"
     print "   - Use 'nix develop .#specific-shell' instead of the default shell"
-    print "   - Build only needed packages: 'nix build .#package-name'"
+    print $"   - Build only needed packages: 'nix build .#($summary.largest.package.package)'"
     print "   - Use 'nix store gc' regularly to clean up unused derivations"
     print "   - Consider using smaller templates for testing and development"
 }

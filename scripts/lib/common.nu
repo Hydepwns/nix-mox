@@ -1,4 +1,4 @@
-# _common.nu - Common utility functions for nix-mox scripts
+# Common utility functions for nix-mox scripts
 
 # Export constants for use in other scripts
 export const RED = ansi red

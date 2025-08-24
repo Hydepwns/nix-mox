@@ -9,45 +9,45 @@ in
 {
   options.security.secrets = {
     enable = mkEnableOption "secrets management with agenix";
-    
+
     keyFile = mkOption {
       type = types.path;
       default = "/etc/ssh/ssh_host_ed25519_key";
       description = "Path to the age identity file";
     };
-    
+
     secretsDir = mkOption {
       type = types.path;
       default = "/run/agenix";
       description = "Directory where decrypted secrets are stored";
     };
-    
+
     wifi = {
       enable = mkEnableOption "WiFi password management";
-      
+
       networks = mkOption {
         type = types.listOf types.str;
         default = [ "home" "work" ];
         description = "WiFi networks to configure";
       };
     };
-    
+
     ssh = {
       enable = mkEnableOption "SSH key management";
-      
+
       keys = mkOption {
         type = types.listOf types.str;
         default = [ "github" "gitlab" ];
         description = "SSH keys to manage";
       };
     };
-    
+
     services = {
       enable = mkEnableOption "service password management";
-      
+
       passwords = mkOption {
         type = types.listOf types.str;
-        default = [];
+        default = [ ];
         description = "Service passwords to manage";
       };
     };
@@ -57,35 +57,39 @@ in
     # Configure agenix
     age = {
       identityPaths = [ cfg.keyFile ];
-      
+
       secrets = mkMerge [
         # WiFi passwords
         (mkIf cfg.wifi.enable (
-          listToAttrs (map (network: {
-            name = "wifi-${network}";
-            value = {
-              file = ../../secrets/wifi-${network}.age;
-              mode = "0400";
-              owner = "root";
-              group = "root";
-            };
-          }) cfg.wifi.networks)
+          listToAttrs (map
+            (network: {
+              name = "wifi-${network}";
+              value = {
+                file = ../../secrets/wifi-${network}.age;
+                mode = "0400";
+                owner = "root";
+                group = "root";
+              };
+            })
+            cfg.wifi.networks)
         ))
-        
+
         # SSH keys
         (mkIf cfg.ssh.enable (
-          listToAttrs (map (key: {
-            name = "ssh-${key}";
-            value = {
-              file = ../../secrets/ssh-${key}.age;
-              mode = "0600";
-              owner = "gamer";
-              group = "users";
-              path = "/home/gamer/.ssh/id_${key}";
-            };
-          }) cfg.ssh.keys)
+          listToAttrs (map
+            (key: {
+              name = "ssh-${key}";
+              value = {
+                file = ../../secrets/ssh-${key}.age;
+                mode = "0600";
+                owner = "gamer";
+                group = "users";
+                path = "/home/gamer/.ssh/id_${key}";
+              };
+            })
+            cfg.ssh.keys)
         ))
-        
+
         # User password
         {
           "gamer-password" = {
@@ -95,26 +99,28 @@ in
             group = "root";
           };
         }
-        
+
         # Service passwords
         (mkIf cfg.services.enable (
-          listToAttrs (map (service: {
-            name = "${service}-password";
-            value = {
-              file = ../../secrets/${service}-password.age;
-              mode = "0400";
-              owner = "root";
-              group = "root";
-            };
-          }) cfg.services.passwords)
+          listToAttrs (map
+            (service: {
+              name = "${service}-password";
+              value = {
+                file = ../../secrets/${service}-password.age;
+                mode = "0400";
+                owner = "root";
+                group = "root";
+              };
+            })
+            cfg.services.passwords)
         ))
       ];
     };
-    
+
     # Configure NetworkManager to use WiFi secrets
     networking.networkmanager = mkIf cfg.wifi.enable {
       enable = true;
-      
+
       # WiFi configurations will be added after secrets are decrypted
       dispatcherScripts = [{
         type = "pre-up";
@@ -128,17 +134,17 @@ in
         '';
       }];
     };
-    
+
     # Configure user password from secret
     users.users.gamer = mkIf (builtins.pathExists "${cfg.secretsDir}/gamer-password") {
       hashedPasswordFile = "${cfg.secretsDir}/gamer-password";
     };
-    
+
     # Ensure SSH directory exists for managed keys
     systemd.tmpfiles.rules = mkIf cfg.ssh.enable [
       "d /home/gamer/.ssh 0700 gamer users -"
     ];
-    
+
     # Helper script to initialize secrets
     environment.systemPackages = with pkgs; [
       agenix
@@ -170,7 +176,7 @@ in
         echo "🔄 To rekey all secrets:"
         echo "   agenix -r"
       '')
-      
+
       (writeScriptBin "secrets-edit" ''
         #!/usr/bin/env bash
         SECRET="$1"
@@ -185,7 +191,7 @@ in
         
         agenix -e "${../../secrets}/$SECRET.age"
       '')
-      
+
       (writeScriptBin "secrets-show" ''
         #!/usr/bin/env bash
         SECRET="$1"
@@ -206,7 +212,7 @@ in
         fi
       '')
     ];
-    
+
     # Documentation
     environment.etc."secrets-readme.md".text = ''
       # Secrets Management with Agenix

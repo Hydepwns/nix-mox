@@ -2,7 +2,7 @@
 
 # Import unified libraries
 use ../../../../../../../../../lib/unified-checks.nu
-use ../../../../../../../../../lib/enhanced-error-handling.nu
+use ../../../../../../../../../lib/unified-error-handling.nu
 
 # Display Configuration Validator for nix-mox
 # User-friendly script to validate display configurations before applying changes

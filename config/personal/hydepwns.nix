@@ -12,7 +12,7 @@ let
     gitUsername = "hydepwns";
     gitEmail = "drew@axol.io";
   };
- in
+in
 {
   # System user configuration for hydepwns (commented out to avoid conflicts)
   # users.users.${personal.username} = {

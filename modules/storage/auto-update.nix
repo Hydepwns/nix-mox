@@ -4,7 +4,7 @@ with lib;
 
 let
   cfg = config.services.storageAutoUpdate;
-  
+
   updateStorageScript = pkgs.writeShellScriptBin "update-storage-config" ''
     set -euo pipefail
     
@@ -147,35 +147,36 @@ let
     fi
   '';
 
-in {
+in
+{
   options.services.storageAutoUpdate = {
     enable = mkEnableOption "automatic storage configuration updates";
-    
+
     hardwareConfigPath = mkOption {
       type = types.path;
       default = "/etc/nixos/hardware-configuration.nix";
       description = "Path to the hardware configuration file";
     };
-    
+
     autoUpdate = mkOption {
       type = types.bool;
       default = true;
       description = "Automatically update UUIDs before rebuild";
     };
-    
+
     validateOnly = mkOption {
       type = types.bool;
       default = false;
       description = "Only validate, don't auto-update";
     };
   };
-  
+
   config = mkIf cfg.enable {
     environment.systemPackages = [
       updateStorageScript
       validateStorageScript
     ];
-    
+
     # Create a pre-rebuild activation script
     system.activationScripts.storageCheck = mkIf cfg.autoUpdate ''
       echo "🔍 Checking storage configuration before activation..."
@@ -196,7 +197,7 @@ in {
         echo "⚠️  Skipping storage check (NIXOS_SKIP_STORAGE_CHECK is set)"
       fi
     '';
-    
+
     # Add systemd service for periodic checks
     systemd.services.storage-config-check = {
       description = "Check and update storage configuration";
@@ -207,7 +208,7 @@ in {
         Environment = "PATH=${pkgs.util-linux}/bin:${pkgs.gnugrep}/bin:${pkgs.coreutils}/bin";
       };
     };
-    
+
     systemd.timers.storage-config-check = mkIf cfg.autoUpdate {
       description = "Periodic storage configuration check";
       wantedBy = [ "timers.target" ];

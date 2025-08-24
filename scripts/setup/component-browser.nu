@@ -2,7 +2,7 @@
 
 # Import unified libraries
 use ../lib/unified-checks.nu
-use ../lib/enhanced-error-handling.nu
+use ../lib/unified-error-handling.nu
 
 # Component Browser for nix-mox
 # Browse and preview available configuration components

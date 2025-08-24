@@ -95,7 +95,5 @@ def main [] {
     print "Comprehensive integration tests completed successfully"
 }
 
-let nu_test_val = ($env | get -i NU_TEST | default "");
-if $nu_test_val == "true" {
-    main
-}
+# Always run main when sourced
+main

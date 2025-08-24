@@ -26,7 +26,7 @@ make chezmoi-apply
 All scripts use unified libraries for consistent behavior:
 
 - **`scripts/lib/unified-checks.nu`** - Common validation functions
-- **`scripts/lib/enhanced-error-handling.nu`** - Standardized error handling and logging
+- **`scripts/lib/unified-error-handling.nu`** - Standardized error handling and logging
 
 ### Chezmoi Integration
 User configurations are managed through Chezmoi for cross-platform compatibility:
@@ -118,7 +118,7 @@ When creating new scripts, follow this template:
 
 # Import unified libraries
 use ../lib/unified-checks.nu
-use ../lib/enhanced-error-handling.nu
+use ../lib/unified-error-handling.nu
 
 def main [] {
     # Your script logic here
