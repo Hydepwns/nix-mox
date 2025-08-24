@@ -1,8 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../../../../lib/unified-checks.nu
-use ../../../../../../lib/enhanced-error-handling.nu
+use ../../lib/unified-checks.nu
+use ../../lib/unified-logging.nu *
+use ../../lib/unified-error-handling.nu *
 
 # Defensive pre-reboot storage guard for NixOS
 # - Verifies configured root/boot devices resolve on the current system

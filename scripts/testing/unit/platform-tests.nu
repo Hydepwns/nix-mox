@@ -1,11 +1,10 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../../../../../../../../../lib/unified-checks.nu
-use ../../../../../../../../../../../lib/enhanced-error-handling.nu
+use ../../lib/unified-checks.nu
+use ../../lib/unified-logging.nu *
+use ../../lib/unified-error-handling.nu *
 
-
-use ../../lib/platform.nu *
 use ../lib/test-utils.nu *
 use ../lib/test-coverage.nu *
 use ../lib/coverage-core.nu *

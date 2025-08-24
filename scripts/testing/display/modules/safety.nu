@@ -1,8 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../../../../../../../../../../../../../../../../../../../../lib/unified-checks.nu
-use ../../../../../../../../../../../../../../../../../../../../../../lib/enhanced-error-handling.nu
+use ../../../lib/unified-checks.nu
+use ../../../lib/unified-logging.nu *
+use ../../../lib/unified-error-handling.nu *
 
 
 # Safety and backup module for display tests
@@ -24,7 +25,7 @@ export def setup_safety_backups [backup_dir: string] {
 
     try {
         # Create backup directory
-        mkdir -p $backup_dir
+        mkdir $backup_dir
         
         # Backup critical configuration files
         let critical_files = [

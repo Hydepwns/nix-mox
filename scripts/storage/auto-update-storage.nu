@@ -1,8 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../../../../lib/unified-checks.nu
-use ../../../../../../lib/enhanced-error-handling.nu
+use ../../lib/unified-checks.nu
+use ../../lib/unified-logging.nu *
+use ../../lib/unified-error-handling.nu *
 
 
 # Auto-update storage configuration to prevent boot failures
@@ -287,7 +288,7 @@ def update-hardware-config [config_path: path, mismatches: list, verbose: bool] 
 }
 
 # Validate storage configuration
-def validate-storage-config [config_path: path] -> bool {
+def validate-storage-config [config_path: path] {
     let configured = parse-hardware-config $config_path false
     mut all_valid = true
     

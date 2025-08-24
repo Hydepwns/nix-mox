@@ -1,8 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../../../../../../../../../lib/unified-checks.nu
-use ../../../../../../../../../../../lib/enhanced-error-handling.nu
+use ../../lib/unified-checks.nu
+use ../../lib/unified-logging.nu *
+use ../../lib/unified-error-handling.nu *
 
 
 use ../lib/test-utils.nu *
@@ -122,7 +123,7 @@ def test_run_with_retry_logic [] {
 def test_handle_error_logic [] {
     print "Testing handle_error logic..."
     # This will exit, so we just check that the function exists and can be called with dummy args
-    let did_error = (do { handle_error 1 "Test error" "Details" } | default "error")
+    let did_error = (do { handle_error { code: 1, message: "Test error", details: "Details" } "test" } | default "error")
     track_test "handle_error_exit" "unit" (if $did_error == "error" { "passed" } else { "failed" }) 0.1
     assert_true ($did_error == "error") "handle_error returns error (exits)"
 }
