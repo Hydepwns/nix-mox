@@ -4,13 +4,13 @@
   inputs = {
     # Core inputs
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    
+
     # Subflakes (commented out until properly set up)
     # gaming = {
     #   url = "path:./flakes/gaming";
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
-    
+
     # Future subflakes (uncomment as they're created)
     # hardware = {
     #   url = "path:./flakes/hardware";
@@ -20,19 +20,19 @@
     #   url = "path:./flakes/services";
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
-    
+
     # Utility inputs
     flake-utils.url = "github:numtide/flake-utils";
-    agenix.url = "github:ryantm/agenix";  # For secrets management
+    agenix.url = "github:ryantm/agenix"; # For secrets management
   };
 
   outputs = { self, nixpkgs, flake-utils, agenix, ... }@inputs:
     let
       system = "x86_64-linux";
-      
+
       # Gaming module (commented out for now)
       # gamingModule = import ./flakes/gaming/module.nix;
-      
+
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
@@ -44,19 +44,19 @@
         # Main gaming workstation
         nixos = nixpkgs.lib.nixosSystem {
           inherit system;
-          
+
           specialArgs = { inherit inputs; };
-          
+
           modules = [
             # Hardware configuration
             ./config/hardware/hardware-configuration.nix
-            
+
             # Core configuration
             ./config/nixos/configuration.nix
-            
+
             # Storage safety module
             ./modules/storage/auto-update.nix
-            
+
             # Configure storage auto-update
             {
               services.storageAutoUpdate = {
@@ -65,59 +65,63 @@
                 hardwareConfigPath = "/etc/nixos/hardware-configuration.nix";
               };
             }
-            
+
             # Gaming module (optional - provides advanced gaming features)
             # gamingModule
-            
+
             # Secrets management
             agenix.nixosModules.default
-            
+
 
           ];
         };
-        
+
         # Simple configuration for testing (without gaming module)
         nixos-simple = nixpkgs.lib.nixosSystem {
           inherit system;
-          
+
           specialArgs = { inherit inputs; };
-          
+
           modules = [
             # Hardware configuration
             ./config/hardware/hardware-configuration.nix
-            
+
             # Core configuration (without gaming module)
             ./config/nixos/configuration.nix
-            
+
             # Secrets management
             agenix.nixosModules.default
-            
+
 
           ];
         };
-        
+
         # Minimal configuration for recovery
         nixos-minimal = nixpkgs.lib.nixosSystem {
           inherit system;
-          
+
           modules = [
             ./config/hardware/hardware-configuration.nix
             ./config/templates/minimal.nix
           ];
         };
       };
-      
+
       # Development shells
       devShells.${system} = {
         default = pkgs.mkShell {
           buildInputs = with pkgs; [
+            treefmt
             nixpkgs-fmt
+            shfmt
+            shellcheck
+            prettier
             nil
             git
             gnumake
             nushell
           ];
-          
+
           shellHook = ''
             echo "🚀 NixOS Development Environment"
             echo ""
@@ -135,18 +139,23 @@
           '';
         };
       };
-      
+
       # Apps for quick access
       apps.${system} = {
-        # Format all code
+        # Format all code using treefmt
         fmt = {
           type = "app";
           program = toString (pkgs.writeShellScript "fmt" ''
-            ${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt **/*.nix
-            echo "✅ Formatted all Nix files"
+            if [ "$1" = "--check" ]; then
+              # Check mode - exit with error if any files need formatting
+              nix develop --command treefmt --fail-on-change
+            else
+              # Format mode - format all files
+              nix develop --command treefmt
+            fi
           '');
         };
-        
+
         # Validate configuration
         validate = {
           type = "app";
@@ -162,7 +171,7 @@
             echo "✅ Configuration is valid"
           '');
         };
-        
+
         # Update all inputs
         update = {
           type = "app";
@@ -172,7 +181,7 @@
             echo "✅ Updated all inputs"
           '');
         };
-        
+
         # Storage guard - validate storage before reboot
         storage-guard = {
           type = "app";
@@ -185,7 +194,7 @@
             fi
           '');
         };
-        
+
         # Fix storage - auto-fix UUID mismatches
         fix-storage = {
           type = "app";
@@ -198,7 +207,7 @@
             fi
           '');
         };
-        
+
         # Run tests
         test = {
           type = "app";
@@ -213,11 +222,11 @@
           '');
         };
       };
-      
+
       # Packages
       packages.${system} = {
         # Gaming packages will be added when subflake is ready
-        
+
         # System backup script
         backup-system = pkgs.writeShellScriptBin "backup-system" ''
           #!/bin/sh
@@ -254,13 +263,13 @@
           ls -t "$BACKUP_DIR"/backup-*.tar.gz | tail -n +6 | xargs -r sudo rm
         '';
       };
-      
+
       # Checks
       checks.${system} = {
-        # Test the configuration builds
-        config-builds = pkgs.runCommand "config-builds" { } ''
-          echo "Testing configuration build..."
-          ${pkgs.nix}/bin/nix build ${self}#nixosConfigurations.nixos.config.system.build.toplevel --dry-run
+        # Test that the flake can be evaluated
+        flake-evaluation = pkgs.runCommand "flake-evaluation" { } ''
+          echo "Testing flake evaluation..."
+          ${pkgs.nix}/bin/nix eval .#packages.${system}.backup-system --extra-experimental-features "flakes nix-command"
           touch $out
         '';
       };

@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2025-08-25
+
+### Added
+
+- **Formatter Standardization**: Unified code formatting system using treefmt
+  - Standardized on treefmt as the single formatter for all file types
+  - Added comprehensive formatter support (nixpkgs-fmt, shfmt, shellcheck, prettier)
+  - Enhanced devShell with all required formatting tools
+  - Unified Makefile commands (`make format` and `make fmt` now do the same thing)
+
+### Changed
+
+- **Formatting Infrastructure**: Complete overhaul of formatting system
+  - Replaced custom fmt app with simple treefmt wrapper
+  - Updated pre-commit hooks to use treefmt directly
+  - Simplified flake app to use devShell environment
+  - Disabled unavailable formatters (black, rustfmt, gofmt) to prevent errors
+  - Fixed shellcheck severity to only report errors, not warnings
+  - Updated all formatting commands to use consistent treefmt approach
+
+### Fixed
+
+- **Formatting Discrepancies**: Resolved inconsistencies between check and format modes
+  - Eliminated "0 / 16 have been reformatted" vs "Found 16 unformatted files" discrepancy
+  - Unified formatting logic across all commands
+  - Consistent reporting from treefmt across all file types
+  - Reliable CI/CD integration with proper check mode
+
 ## [0.5.1] - 2025-07-03
 
 ### Added

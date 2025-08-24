@@ -138,36 +138,36 @@
       includes = [ "*.html" "*.htm" ];
     };
 
-    # Python formatting
-    python = {
-      command = "black";
-      options = [
-        "--line-length"
-        "88"
-        "--target-version"
-        "py39"
-      ];
-      includes = [ "*.py" ];
-    };
+    # Python formatting (commented out - black not available in devShell)
+    # python = {
+    #   command = "black";
+    #   options = [
+    #     "--line-length"
+    #     "88"
+    #     "--target-version"
+    #     "py39"
+    #   ];
+    #   includes = [ "*.py" ];
+    # };
 
-    # Rust formatting
-    rust = {
-      command = "rustfmt";
-      options = [
-        "--edition"
-        "2021"
-      ];
-      includes = [ "*.rs" ];
-    };
+    # Rust formatting (commented out - rustfmt not available in devShell)
+    # rust = {
+    #   command = "rustfmt";
+    #   options = [
+    #     "--edition"
+    #     "2021"
+    #   ];
+    #   includes = [ "*.rs" ];
+    # };
 
-    # Go formatting
-    go = {
-      command = "gofmt";
-      options = [
-        "-w"
-        "-s"
-      ];
-      includes = [ "*.go" ];
-    };
+    # Go formatting (commented out - gofmt not available in devShell)
+    # go = {
+    #   command = "gofmt";
+    #   options = [
+    #     "-w"
+    #     "-s"
+    #   ];
+    #   includes = [ "*.go" ];
+    # };
   };
 }

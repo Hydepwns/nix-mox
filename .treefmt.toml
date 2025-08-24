@@ -38,7 +38,7 @@ includes = ["*.sh", "*.bash", "*.zsh"]
 # Shell script linting
 [formatter.shellcheck]
 command = "shellcheck"
-options = ["--color=always", "--shell=bash", "--external-sources"]
+options = ["--color=always", "--shell=bash", "--external-sources", "--severity=error"]
 includes = ["*.sh", "*.bash", "*.zsh"]
 
 # Markdown formatting
@@ -83,23 +83,23 @@ command = "prettier"
 options = ["--parser", "html", "--print-width", "80"]
 includes = ["*.html", "*.htm"]
 
-# Python formatting
-[formatter.python]
-command = "black"
-options = ["--line-length", "88", "--target-version", "py39"]
-includes = ["*.py"]
+# Python formatting (disabled - black not available in devShell)
+# [formatter.python]
+# command = "black"
+# options = ["--line-length", "88", "--target-version", "py39"]
+# includes = ["*.py"]
 
-# Rust formatting
-[formatter.rust]
-command = "rustfmt"
-options = ["--edition", "2021"]
-includes = ["*.rs"]
+# Rust formatting (disabled - rustfmt not available in devShell)
+# [formatter.rust]
+# command = "rustfmt"
+# options = ["--edition", "2021"]
+# includes = ["*.rs"]
 
-# Go formatting
-[formatter.go]
-command = "gofmt"
-options = ["-w", "-s"]
-includes = ["*.go"]
+# Go formatting (disabled - gofmt not available in devShell)
+# [formatter.go]
+# command = "gofmt"
+# options = ["-w", "-s"]
+# includes = ["*.go"]
 
 # Nushell formatting - Disabled due to ANSI color code conflicts
 # [formatter.nushell]

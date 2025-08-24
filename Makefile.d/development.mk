@@ -48,12 +48,12 @@ build-packages: check-nushell
 
 # Format and check targets
 format: check-nushell
-	@echo "🎨 Formatting Nix files..."
-	nixpkgs-fmt **/*.nix
+	@echo "🎨 Formatting all code..."
+	nix develop --command treefmt
 
 fmt: check-nushell
 	@echo "🎨 Formatting all code..."
-	treefmt
+	nix develop --command treefmt
 
 check: check-nushell
 	@echo "🔍 Running nix flake check..."
