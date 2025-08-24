@@ -39,11 +39,12 @@ nix run .#storage-guard
 nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu --backup --test-first"
 ```
 
-**CRITICAL**: 
-- ALWAYS run `./bootstrap-check.sh` first on fresh systems
-- NEVER run `nixos-rebuild` directly - use the safe wrapper 
-- ALWAYS run `nix run .#storage-guard` before rebooting
-- This prevents boot failures and display issues
+> **CRITICAL**: 
+>
+> - ALWAYS run `./bootstrap-check.sh` first on fresh systems
+> - NEVER run `nixos-rebuild` directly - use the safe wrapper 
+> - ALWAYS run `nix run .#storage-guard` before rebooting
+> - This prevents boot failures and display issues
 
 ## Architecture
 
