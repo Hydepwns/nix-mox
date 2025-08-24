@@ -108,33 +108,18 @@ export def check_performance_issues [metrics: record] {
 
     # Check for slow operations
     if $metrics.duration_seconds > $thresholds.slow_operation {
-        log_warn "Slow operation detected" {
-            operation: $metrics.operation
-            duration: $metrics.duration
-            threshold: $"($thresholds.slow_operation)s"
-            monitor_id: $metrics.id
-        }
+        warn $"Slow operation detected: ($metrics.operation) took ($metrics.duration)" "performance"
     }
 
     # Check for high memory usage
     let memory_percent = ($metrics.memory_end / (sys | get mem.total) * 100)
     if $memory_percent > $thresholds.high_memory {
-        log_warn "High memory usage detected" {
-            operation: $metrics.operation
-            memory_percent: $memory_percent
-            threshold: $"($thresholds.high_memory)%"
-            monitor_id: $metrics.id
-        }
+        warn $"High memory usage detected: ($metrics.operation) used ($memory_percent)%" "performance"
     }
 
     # Check for high CPU usage
     if $metrics.cpu_average > $thresholds.high_cpu {
-        log_warn "High CPU usage detected" {
-            operation: $metrics.operation
-            cpu_average: $metrics.cpu_average
-            threshold: $"($thresholds.high_cpu)%"
-            monitor_id: $metrics.id
-        }
+        warn $"High CPU usage detected: ($metrics.operation) used ($metrics.cpu_average)%" "performance"
     }
 }
 
@@ -152,10 +137,7 @@ export def store_performance_metrics [metrics: record] {
     try {
         $metrics | to json | save --append $metrics_file
     } catch { |err|
-        log_error "Failed to store performance metrics" {
-            error: $err
-            metrics_file: $metrics_file
-        }
+        error $"Failed to store performance metrics: ($err)" "performance"
     }
 }
 
@@ -201,10 +183,7 @@ export def get_performance_stats [metrics_file: string = "logs/performance.json"
             cpu_usage: { average: $cpu_average, peak: $cpu_peak }
         }
     } catch { |err|
-        log_error "Failed to get performance stats" {
-            error: $err
-            metrics_file: $metrics_file
-        }
+        error $"Failed to get performance stats: ($err)" "performance"
         {
             total_operations: 0
             average_duration: 0
@@ -245,11 +224,7 @@ export def get_operation_performance [operation: string, metrics_file: string = 
             recent_runs: ($operation_metrics | last 5)
         }
     } catch { |err|
-        log_error "Failed to get operation performance" {
-            error: $err
-            operation: $operation
-            metrics_file: $metrics_file
-        }
+        error $"Failed to get operation performance: ($err)" "performance"
         null
     }
 }
@@ -272,16 +247,9 @@ export def clean_performance_metrics [days: int = 30, metrics_file: string = "lo
         $recent_metrics | each { |metric| $metric | to json } | save $metrics_file
 
         let removed_count = ($metrics | length) - ($recent_metrics | length)
-        log_info "Cleaned performance metrics" {
-            removed_count: $removed_count
-            days: $days
-            remaining_count: ($recent_metrics | length)
-        }
+        info $"Cleaned performance metrics: ($removed_count) metrics removed" "performance"
     } catch { |err|
-        log_error "Failed to clean performance metrics" {
-            error: $err
-            metrics_file: $metrics_file
-        }
+        error $"Failed to clean performance metrics: ($err)" "performance"
     }
 }
 
@@ -343,10 +311,10 @@ export def generate_performance_report [output_file: string = "logs/performance-
 
     try {
         $report | to json | save $output_file
-        log_info "Performance report generated" { output_file: $output_file }
+        info $"Performance report generated: ($output_file)" "performance"
         $report
     } catch { |err|
-        log_error "Failed to generate performance report" { error: $err }
+        error $"Failed to generate performance report: ($err)" "performance"
         null
     }
 }

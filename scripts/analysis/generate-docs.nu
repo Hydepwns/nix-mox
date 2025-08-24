@@ -1,14 +1,15 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../../../../../lib/unified-checks.nu
-use ../../../../../../../lib/enhanced-error-handling.nu
+use ../lib/unified-checks.nu
+use ../lib/unified-error-handling.nu
 
 
 # Documentation generation tool for nix-mox scripts
 # Automatically generates comprehensive documentation using enhanced modules
-use ../lib/common.nu *
-use ../lib/logging.nu *
+use ../lib/unified-logging.nu *
+use ../lib/unified-error-handling.nu *
+use ../lib/unified-logging.nu *
 use ../lib/discovery.nu *
 
 # Script metadata
@@ -33,12 +34,8 @@ export def main [args: list] {
         exit 0
     }
 
-    info "Starting documentation generation"
-    info "Configuration" {
-        output_dir: $parsed_args.output_dir
-        format: $parsed_args.format
-        include_examples: $parsed_args.include_examples
-    }
+    info $"Starting documentation generation" "generate-docs"
+    info $"Configuration" "generate-docs"
 
     # Discover all scripts
     let all_scripts = (discover_scripts)
@@ -47,19 +44,14 @@ export def main [args: list] {
     # Generate documentation
     try {
         let result = (generate_documentation $all_scripts $parsed_args)
-        info "Documentation generation completed"
-        info "Results" {
-            output_dir: $result.output_dir
-            files_generated: $result.files_generated
-            total_scripts: $result.total_scripts
-        }
+        info $"Documentation generation completed" "generate-docs"
+        info $"Results" "generate-docs"
 
         # Show summary
         show_generation_summary $result
         exit 0
     } catch { |err|
-        error "Documentation generation failed"
-        error "Error details" { error: $err }
+        error $"Documentation generation failed: ($err)" "generate-docs"
         exit 1
     }
 }
@@ -304,7 +296,7 @@ $markdown = ($markdown | append "")
 $markdown = ($markdown | append "For more options:")
 $markdown = ($markdown | append "")
 $markdown = ($markdown | append "```bash")
-$markdown = ($markdown | append "./scripts/analysis/generate-docs.nu --help"
+$markdown = ($markdown | append "./scripts/analysis/generate-docs.nu --help")
     $markdown = ($markdown | append "```")
 
     $markdown | str join "\n"

@@ -22,7 +22,7 @@ export const SCRIPT_METADATA = {
 
 # Main installation function
 export def main [args: list] {
-    info "Starting nix-mox installation" {version: "1.0.0", platform: (detect_platform), user: (whoami)}
+    info $"Starting nix-mox installation" "install"
 
     # Parse arguments
     let parsed_args = (parse_install_args $args)
@@ -36,20 +36,20 @@ export def main [args: list] {
     # Validate installation prerequisites
     let prereq_check = (check_prerequisites)
     if not $prereq_check.valid {
-        error "Prerequisites not met" {missing: $prereq_check.missing, errors: $prereq_check.errors}
+        error "Prerequisites not met" "install"
         exit 1
     }
 
     # Perform installation
     try {
         let install_result = (perform_installation $parsed_args)
-        info "Installation completed successfully" {installed_components: $install_result.components, duration: $install_result.duration}
+        info $"Installation completed successfully" "install"
 
         # Show post-installation instructions
         show_post_install_instructions $install_result
         exit 0
     } catch { |err|
-        error $"Installation failed: ($err)" {error: $err, args: $parsed_args}
+        error $"Installation failed: ($err)" "install"
         exit 1
     }
 }
@@ -125,7 +125,7 @@ export def perform_installation [args: record] {
     let start_time = (date now)
     mut installed_components = []
 
-    info "Starting installation process" {components: $args.components, dry_run: $args.dry_run}
+    info $"Starting installation process" "install"
 
     # Install each selected component
     for component in $args.components {
@@ -140,10 +140,10 @@ export def perform_installation [args: record] {
                     $installed_components = ($installed_components | append $component)
                     info $"Successfully installed ($component)"
                 } else {
-                    error $"Failed to install ($component)" {error: $result.error}
+                    error $"Failed to install ($component)" "install"
                 }
             } catch { |err|
-                error $"Error installing ($component)" {error: $err}
+                error $"Error installing ($component)" "install"
             }
         }
     }
@@ -168,7 +168,7 @@ export def install_component [component: string] {
         "gaming" => { install_gaming_component }
         "monitoring" => { install_monitoring_component }
         "security" => { install_security_component }
-        _ => { error $"Unknown component: ($component)" {success: false, error: $"Unknown component: ($component)"} }
+        _ => { error $"Unknown component: ($component)" "install" }
     }
 }
 
@@ -258,7 +258,7 @@ export def create_configuration_files [] {
         $default_config | to json | save "~/.config/nix-mox/config.json"
         info "Configuration file created"
     } catch { |err|
-        error "Failed to create configuration file" {error: $err}
+        error "Failed to create configuration file" "install"
     }
 }
 

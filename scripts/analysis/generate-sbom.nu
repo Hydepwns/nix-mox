@@ -1,13 +1,14 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../../../../../lib/unified-checks.nu
-use ../../../../../../../lib/enhanced-error-handling.nu
+use ../lib/unified-checks.nu
+use ../lib/unified-error-handling.nu
 
 
 # nix-mox SBOM Generator
 # Generates Software Bill of Materials for compliance and security auditing
-use ../lib/common.nu *
+use ../lib/unified-logging.nu *
+use ../lib/unified-error-handling.nu *
 
 # List of supported systems
 let supported_systems = ["x86_64-linux", "aarch64-linux"]
