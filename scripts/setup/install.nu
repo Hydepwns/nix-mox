@@ -1,5 +1,11 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../lib/unified-checks.nu
+use ../lib/unified-logging.nu *
+use ../lib/unified-error-handling.nu *
+
+
 # Simplified install script for nix-mox
 # This is a test version without complex dependencies
 
@@ -12,27 +18,7 @@ export const SCRIPT_METADATA = {
     category: "core"
 }
 
-# Simple logging functions
-def info [message: string, data: any = {}] {
-    print $"(ansi green)INFO: (ansi reset)  ($message)"
-    if ($data != {} and $data != []) {
-        print $"  Data: ($data | to json)"
-    }
-}
-
-def warn [message: string, data: any = {}] {
-    print $"(ansi yellow)WARN: (ansi reset)  ($message)"
-    if ($data != {} and $data != []) {
-        print $"  Data: ($data | to json)"
-    }
-}
-
-def error [message: string, data: any = {}] {
-    print $"(ansi red)ERROR: (ansi reset)  ($message)"
-    if ($data != {} and $data != []) {
-        print $"  Data: ($data | to json)"
-    }
-}
+# Use unified logging functions instead of custom ones
 
 # Main installation function
 export def main [args: list] {
@@ -114,12 +100,9 @@ export def check_prerequisites [] {
     mut missing = []
     mut errors = []
 
-    # Check for required commands
-    let required_commands = ["curl", "wget", "git"]
-    for cmd in $required_commands {
-        if (which $cmd | length) == 0 {
-            $missing = ($missing | append $cmd)
-        }
+    # Check for Nix installation
+    if (which nix | is-empty) {
+        $errors = ($errors | append "Nix is not installed")
     }
 
     # Check for required directories

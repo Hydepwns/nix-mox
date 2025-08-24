@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../../../lib/unified-checks.nu
+use ../../../../../../../lib/enhanced-error-handling.nu
+
+
 # nix-mox Size Analysis Script
 # ============================
 # Analyzes the size of all packages, devshells, and templates

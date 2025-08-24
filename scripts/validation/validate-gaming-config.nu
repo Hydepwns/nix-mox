@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../../../../../lib/unified-checks.nu
+use ../../../../../../../../../lib/enhanced-error-handling.nu
+
+
 # Gaming Configuration Validator for nix-mox
 # Validates gaming setup and provides recommendations
 

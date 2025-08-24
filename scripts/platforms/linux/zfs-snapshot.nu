@@ -1,4 +1,9 @@
 #!/usr/bin/env nu
+
+# Import unified libraries
+use ../../lib/unified-checks.nu
+use ../../lib/unified-error-handling.nu
+
 # zfs-snapshot.nu - ZFS Snapshot & Prune Script
 # Usage: sudo nu zfs-snapshot.nu [--dry-run] [--retention DAYS] [--pool NAME] [--help]
 #
@@ -6,7 +11,8 @@
 # - Prunes old snapshots based on retention policy
 # - Maintains a backup log
 # - Is idempotent and safe to re-run
-use ../lib/common.nu
+use ../../lib/unified-logging.nu *
+use ../../lib/unified-error-handling.nu *
 
 # --- Global Variables ---
 const SNAP_NAME_PREFIX = "auto-"

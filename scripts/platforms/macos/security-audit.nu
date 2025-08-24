@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../lib/unified-checks.nu
+use ../../lib/enhanced-error-handling.nu
+
+
 # nix-mox macOS Security Audit Script
 # This script performs a basic security audit of macOS settings
 

@@ -1,4 +1,9 @@
 #!/usr/bin/env nu
+
+# Import unified libraries
+use ../../lib/unified-checks.nu
+use ../../lib/unified-error-handling.nu
+
 # vzdump-backup.nu - Backup Proxmox VMs using vzdump
 # Usage: sudo nu vzdump-backup.nu [--dry-run] [--storage <storage>] [--help]
 #
@@ -6,7 +11,8 @@
 # - Compresses backups using zstd
 # - Maintains a backup log
 # - Is idempotent and safe to re-run
-use ../lib/common.nu
+use ../../lib/unified-logging.nu *
+use ../../lib/unified-error-handling.nu *
 
 # --- Global Variables ---
 const LOGFILE = "/var/log/vzdump-backup.log"

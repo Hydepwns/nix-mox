@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../../../../../lib/unified-checks.nu
+use ../../../../../../../../../lib/enhanced-error-handling.nu
+
+
 # Comprehensive Pre-Rebuild Safety Check
 # Run this BEFORE any nixos-rebuild to prevent system breakage
 # Covers: boot, display, storage, and configuration validation

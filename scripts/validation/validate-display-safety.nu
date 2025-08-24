@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../../../../../lib/unified-checks.nu
+use ../../../../../../../../../lib/enhanced-error-handling.nu
+
+
 # Display Manager Safety Validation
 # Comprehensive tests to ensure rebuild won't break display/greeter
 # Run this BEFORE nixos-rebuild switch to prevent display breakage

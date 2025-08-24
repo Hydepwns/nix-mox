@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../../lib/unified-checks.nu
+use ../../../../../../lib/enhanced-error-handling.nu
+
+
 # Unified Coverage Report Generator
 # Replaces: generate-codecov.nu, generate-lcov.nu, generate-lcov-fallback.nu
 # Usage: nu scripts/testing/generate-coverage.nu [--format json|yaml|toml|lcov|codecov] [--output path] [--verbose]

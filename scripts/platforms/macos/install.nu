@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../lib/unified-checks.nu
+use ../../lib/enhanced-error-handling.nu
+
+
 # nix-mox macOS Installation Script
 # This script handles the installation of nix-mox on macOS systems
 

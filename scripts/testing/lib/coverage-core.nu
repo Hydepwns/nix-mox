@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../../../../../../lib/unified-checks.nu
+use ../../../../../../../../../../lib/enhanced-error-handling.nu
+
+
 # Core coverage tracking functions for nix-mox
 # Provides basic test result tracking and aggregation
 

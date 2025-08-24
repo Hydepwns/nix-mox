@@ -1,4 +1,9 @@
 #!/usr/bin/env nu
+
+# Import unified libraries
+use ../../../../../../lib/unified-checks.nu
+use ../../../../../../lib/enhanced-error-handling.nu
+
 # Main test runner for nix-mox
 # This script coordinates all test execution and reporting
 

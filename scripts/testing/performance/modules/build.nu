@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../../../../../../../../../../../../../../../../../../../../../../lib/unified-checks.nu
+use ../../../../../../../../../../../../../../../../../../../../../../../../../../lib/enhanced-error-handling.nu
+
+
 # Build performance testing module
 # Handles Nix evaluation, flake check, and configuration build benchmarks
 

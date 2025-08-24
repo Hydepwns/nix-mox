@@ -1,11 +1,17 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../lib/unified-checks.nu
+use ../../lib/enhanced-error-handling.nu
+
+
 # nix-mox Code Quality Analysis Script
 # Analyzes code quality and suggests improvements
-use ../lib/common.nu
+use ../../lib/unified-logging.nu *
+use ../../lib/unified-error-handling.nu *
 
 def check_nix_syntax [] {
-    common log_info "Checking Nix syntax..."
+    info "Checking Nix syntax..." "code-quality"
     let nix_files = (ls **/*.nix | get name)
     mut results = []
     for file in $nix_files {
@@ -21,7 +27,7 @@ def check_nix_syntax [] {
 }
 
 def check_nushell_syntax [] {
-    common log_info "Checking Nushell syntax..."
+    info "Checking Nushell syntax..." "code-quality"
     let nu_files = (ls **/*.nu | get name)
     mut results = []
     for file in $nu_files {
@@ -37,7 +43,7 @@ def check_nushell_syntax [] {
 }
 
 def check_file_consistency [] {
-    common log_info "Checking file consistency..."
+    info "Checking file consistency..." "code-quality"
     mut issues = []
 
     # Check for consistent line endings (simplified check)

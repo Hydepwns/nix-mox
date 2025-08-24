@@ -1,4 +1,9 @@
 #!/usr/bin/env nu
+
+# Import unified libraries
+use ../../lib/unified-checks.nu
+use ../../lib/enhanced-error-handling.nu
+
 # install-steam-rust.nu
 # Usage: nu install-steam-rust.nu [--dry-run] [--help]
 #

@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../../../../../lib/unified-checks.nu
+use ../../../../../../../../../lib/enhanced-error-handling.nu
+
+
 # Pre-rebuild safety validation script
 # Validates critical system components before nixos-rebuild
 
@@ -265,8 +270,7 @@ def check_critical_services [flake_path: string, verbose: bool] {
     }
 }
 
-def check_flake_syntax [flake_path: string, verbose: bool] {
-    if $verbose { print "📋 Checking flake syntax..." }
+
     
     try {
         # Test flake evaluation

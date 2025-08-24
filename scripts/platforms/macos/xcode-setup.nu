@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../lib/unified-checks.nu
+use ../../lib/enhanced-error-handling.nu
+
+
 # nix-mox Xcode Setup Script
 # This script helps set up Xcode command line tools on macOS
 

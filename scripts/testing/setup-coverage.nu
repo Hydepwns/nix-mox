@@ -1,4 +1,9 @@
 #!/usr/bin/env nu
+
+# Import unified libraries
+use ../../../../../../lib/unified-checks.nu
+use ../../../../../../lib/enhanced-error-handling.nu
+
 # Comprehensive coverage setup for nix-mox
 # Supports multiple coverage approaches for Nushell and Nix projects
 export-env {

@@ -1,11 +1,17 @@
 #!/usr/bin/env nu
+
+# Import unified libraries
+use ../../lib/unified-checks.nu
+use ../../lib/unified-error-handling.nu
+
 # proxmox-update.nu - Update Proxmox VE
 # Usage: sudo nu proxmox-update.nu [--dry-run] [--help]
 #
 # - Updates Proxmox VE packages
 # - Maintains an update log
 # - Is idempotent and safe to re-run
-use ../lib/common.nu
+use ../../lib/unified-logging.nu *
+use ../../lib/unified-error-handling.nu *
 
 # --- Common Functions ---
 const LOGFILE = "/var/log/proxmox-update.log"

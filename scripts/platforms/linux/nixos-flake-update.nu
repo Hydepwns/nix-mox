@@ -6,7 +6,8 @@
 #   --dry-run         Show what would be done, but make no changes
 #   --flake-path PATH Set flake path (default: /etc/nixos or $FLAKE_PATH)
 #   --help            Show this help message
-use ../lib/common.nu
+use ../../lib/unified-logging.nu *
+use ../../lib/unified-error-handling.nu *
 
 # Script-specific variables
 $env.FLAKE_PATH = ($env.FLAKE_PATH | default "/etc/nixos")

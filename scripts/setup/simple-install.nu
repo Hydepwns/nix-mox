@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../lib/unified-checks.nu
+use ../lib/enhanced-error-handling.nu
+
+
 # Simple working install script for nix-mox
 # Fixed version that actually works
 
@@ -62,12 +67,7 @@ def check_prerequisites [create_dirs: bool] {
     mut issues = []
     mut success = true
 
-    # Check if we're in nix-mox directory
-    if not ("flake.nix" | path exists) {
-        $issues = ($issues | append "Not in nix-mox directory (flake.nix not found)")
-        $success = false
-    }
-
+    # Check for config directory
     if not ("config" | path exists) {
         $issues = ($issues | append "config/ directory not found")  
         $success = false

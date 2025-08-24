@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../lib/unified-checks.nu
+use ../lib/enhanced-error-handling.nu
+
+
 # NixOS Configuration Validation Script
 # Validates configuration before rebuilding
 
@@ -7,14 +12,15 @@ def main [] {
     print "🔍 Validating NixOS configuration..."
     
     # Check if we're in the right directory
-    if not (ls | where name =~ "flake.nix" | length > 0) {
+    let flake_exists = (ls | where name =~ "flake.nix" | length)
+    if $flake_exists == 0 {
         error make {msg: "Not in nix-mox directory. Please run from the project root."}
     }
     
     # Check for syntax errors
     print "📝 Checking Nix syntax..."
-    let syntax_check = (nix eval --file config/nixos/configuration.nix --raw 2>&1)
-    if $syntax_check =~ "error:" {
+    let syntax_check = (try { nix eval --file config/nixos/configuration.nix --raw } catch { |err| $err.msg })
+    if ($syntax_check | str contains "error:") {
         error make {msg: $"Syntax error found: ($syntax_check)"}
     } else {
         print "✅ Nix syntax is valid"
@@ -22,8 +28,8 @@ def main [] {
     
     # Check for evaluation errors
     print "🔧 Checking configuration evaluation..."
-    let eval_check = (nixos-rebuild dry-activate --flake .#nixos 2>&1)
-    if $eval_check =~ "error:" {
+    let eval_check = (try { nixos-rebuild dry-activate --flake .#nixos } catch { |err| $err.msg })
+    if ($eval_check | str contains "error:") {
         error make {msg: $"Configuration evaluation error: ($eval_check)"}
     } else {
         print "✅ Configuration evaluates successfully"

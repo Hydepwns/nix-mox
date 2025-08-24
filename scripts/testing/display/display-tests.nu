@@ -1,4 +1,9 @@
 #!/usr/bin/env nu
+
+# Import unified libraries
+use ../../../../../../../../../../../../../../lib/unified-checks.nu
+use ../../../../../../../../../../../../../../lib/enhanced-error-handling.nu
+
 # Display Testing Module for nix-mox
 # This module provides comprehensive display configuration testing and validation
 

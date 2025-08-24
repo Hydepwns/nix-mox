@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../lib/unified-checks.nu
+use ../../../../../lib/enhanced-error-handling.nu
+
+
 # Main script for nix-mox
 use ../lib/common.nu *
 
@@ -70,29 +75,16 @@ def handle_error [error_msg: string, exit_code: int = 1] {
     exit $exit_code
 }
 
-def check_command [cmd: string] {
-    if (which $cmd | is-empty) {
-        $"Required command not found: ($cmd)"
-    }
+
 }
 
-def check_file [file: string, error_msg: string] {
-    if not ($file | path exists) {
-        $"($error_msg): ($file)"
-    }
+
 }
 
-def check_directory [dir: string, error_msg: string] {
-    if not ($dir | path exists) {
-        $"($error_msg): ($dir)"
-    }
+
 }
 
-def check_permissions [path: string, required: string] {
-    let perms = (ls -l $path | get mode)
-    if not ($perms | str contains $required) {
-        $"Insufficient permissions on ($path). Required: ($required), Got: ($perms)"
-    }
+
 }
 
 # --- Script Execution ---

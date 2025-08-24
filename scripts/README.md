@@ -2,9 +2,9 @@
 
 This directory contains all platform-specific and automation scripts for the nix-mox toolkit, organized by functionality for better maintainability and discoverability.
 
-## 📁 Directory Structure
+## Directory Structure
 
-```
+```bash
 scripts/
 ├── storage/           # Storage safety and configuration tools
 │   ├── storage-guard.nu          # Pre-reboot storage validation
@@ -79,7 +79,15 @@ scripts/
 └── handlers/         # Event handlers and automation
 ```
 
-## 🎯 Script Categories
+## Script Categories
+
+### Unified Libraries (Core)
+- **Purpose**: Common functions used across all scripts
+- **Location**: `scripts/lib/`
+- **Key Libraries**: 
+  - `unified-checks.nu` - Validation and system checks
+  - `enhanced-error-handling.nu` - Error handling and logging
+- **Usage**: Imported by all other scripts
 
 ### Storage Safety (Critical)
 - **Purpose**: Prevent boot failures due to storage configuration issues
@@ -114,144 +122,155 @@ scripts/
 ### Validation
 - **Purpose**: System validation and safety checks
 - **Location**: `scripts/validation/`
-- **Key Tools**: `pre-rebuild-safety-check.nu`, `safe-flake-test.nu`
-- **Usage**: Before system changes
+- **Key Tools**: `validate-config.nu`, `pre-rebuild-safety-check.nu`
+- **Usage**: Before system changes and rebuilds
 
-## 🚀 Quick Reference
+### Platforms
+- **Purpose**: Platform-specific tools and configurations
+- **Location**: `scripts/platforms/`
+- **Key Tools**: Platform-specific installation and maintenance
+- **Usage**: Platform-specific operations
 
-### Critical Commands (Run Before Reboot)
-```bash
-# Storage safety (CRITICAL)
-nix run .#storage-guard
-nix run .#fix-storage
+## Usage Guidelines
 
-# System validation
-nix-shell -p nushell --run "nu scripts/validation/pre-rebuild-safety-check.nu"
+### Script Template
+All scripts follow a consistent template:
+
+```nushell
+#!/usr/bin/env nu
+
+# Import unified libraries
+use ../lib/unified-checks.nu
+use ../lib/enhanced-error-handling.nu
+
+def main [] {
+    # Script logic here
+    log_info "Starting execution"
+    
+    # Use unified functions
+    let platform = (check_platform)
+    
+    log_success "Completed successfully"
+}
+
+# Run the main function
+main
 ```
-
-### Setup Commands
-```bash
-# Unified setup (recommended)
-nix-shell -p nushell --run "nu scripts/setup/unified-setup.nu"
-
-# Basic setup
-nix-shell -p nushell --run "nu scripts/setup/simple-setup.nu"
-```
-
-### Maintenance Commands
-```bash
-# Health check
-nix-shell -p nushell --run "nu scripts/maintenance/health-check.nu"
-
-# Cleanup
-nix-shell -p nushell --run "nu scripts/maintenance/cleanup.nu"
-
-# Safe rebuild
-nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu"
-```
-
-### Analysis Commands
-```bash
-# Size analysis
-nix-shell -p nushell --run "nu scripts/analysis/analyze-sizes.nu"
-
-# Dashboard
-nix-shell -p nushell --run "nu scripts/analysis/dashboard.nu"
-```
-
-### Testing Commands
-```bash
-# Run all tests
-nix-shell -p nushell --run "nu scripts/testing/run-tests.nu"
-
-# Setup coverage
-nix-shell -p nushell --run "nu scripts/testing/setup-coverage.nu"
-```
-
-## 🔧 Enhanced Features
 
 ### Error Handling
-- Structured error types with recovery strategies
-- Unique error IDs for tracking
-- Context-aware error reporting
-- Automatic error logging and statistics
+Use the enhanced error handling library for consistent error reporting:
 
-### Configuration Management
-- Multi-source configuration loading
-- Configuration validation and schema checking
-- Environment variable overrides
-- Hierarchical configuration merging
+```nushell
+# Safe command execution
+let result = (safe_exec "command" "context")
+if not $result.success {
+    log_error $"Command failed: ($result.error)" "context"
+    exit 1
+}
 
-### Logging
-- Multiple output formats (text, JSON, structured)
-- Automatic log rotation
-- Context-aware logging
-- Performance and security event logging
-
-### Security Validation
-- Dangerous pattern detection
-- File permission validation
-- Dependency security checking
-- Network access monitoring
-
-### Performance Monitoring
-- Execution time tracking
-- Resource usage monitoring
-- Performance threshold alerts
-- Performance reporting and recommendations
-
-## 📋 Best Practices
-
-### 1. Always Use Storage Safety
-```bash
-# Before any reboot
-nix run .#storage-guard
+# Require dependencies
+require_command "nix" "script-name"
+require_file "config/nixos/configuration.nix" "script-name"
 ```
 
-### 2. Use Safe Rebuild Wrapper
-```bash
-# Instead of direct nixos-rebuild
-nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu"
+### Validation Functions
+Use unified validation functions for common checks:
+
+```nushell
+# Check if command exists
+if (check_command "nix") {
+    log_success "Nix is available"
+}
+
+# Check file existence
+if (check_file "flake.nix") {
+    log_success "flake.nix found"
+}
+
+# Check system health
+let health = (check_system_services)
+if $health.healthy {
+    log_success "System services healthy"
+}
 ```
 
-### 3. Run Health Checks Regularly
+## Key Scripts
+
+### Critical Scripts
+- **Storage Guard**: `scripts/storage/storage-guard.nu` - Pre-reboot validation
+- **Health Check**: `scripts/maintenance/health-check.nu` - System health
+- **Safe Rebuild**: `scripts/maintenance/safe-rebuild.nu` - Safe system rebuild
+- **Validate Config**: `scripts/validation/validate-config.nu` - Configuration validation
+
+### Setup Scripts
+- **Unified Setup**: `scripts/setup/unified-setup.nu` - Complete setup
+- **Simple Install**: `scripts/setup/simple-install.nu` - Basic installation
+- **Setup Cachix**: `scripts/setup/setup-cachix.nu` - Cachix configuration
+
+### Analysis Scripts
+- **Dashboard**: `scripts/analysis/dashboard.nu` - System dashboard
+- **Analyze Sizes**: `scripts/analysis/analyze-sizes.nu` - Package analysis
+- **Generate Docs**: `scripts/analysis/generate-docs.nu` - Documentation
+
+### Testing Scripts
+- **Run Tests**: `scripts/testing/run-tests.nu` - Test runner
+- **Setup Coverage**: `scripts/testing/setup-coverage.nu` - Coverage setup
+- **Unit Tests**: `scripts/testing/unit/` - Unit test suite
+
+## Development
+
+### Adding New Scripts
+1. Follow the script template
+2. Import unified libraries
+3. Use consistent error handling
+4. Add proper documentation
+5. Test on multiple platforms
+
+### Testing Scripts
 ```bash
-# Regular maintenance
-nix-shell -p nushell --run "nu scripts/maintenance/health-check.nu"
+# Run all tests
+nu scripts/testing/run-tests.nu
+
+# Run specific test categories
+nu scripts/testing/unit/unit-tests.nu
+nu scripts/testing/integration/integration-tests.nu
+
+# Test individual scripts
+nu -c "source scripts/your-script.nu"
 ```
 
-### 4. Use Appropriate Script Categories
-- **Storage**: For storage-related operations
-- **Maintenance**: For system maintenance
-- **Analysis**: For performance and reporting
-- **Setup**: For installation and configuration
-- **Testing**: For validation and testing
-- **Validation**: For safety checks
+### Debugging
+Enable verbose logging for debugging:
+```bash
+# Most scripts support --verbose flag
+nu scripts/maintenance/health-check.nu --verbose
 
-## 🔍 Finding Scripts
+# Check script syntax
+nu -c "source scripts/your-script.nu"
+```
 
-### By Function
-- **Storage issues**: `scripts/storage/`
-- **System health**: `scripts/maintenance/`
-- **Performance**: `scripts/analysis/`
-- **Installation**: `scripts/setup/`
-- **Testing**: `scripts/testing/`
-- **Validation**: `scripts/validation/`
+## Best Practices
 
-### By Platform
-- **Linux**: `scripts/platforms/linux/`
-- **macOS**: `scripts/platforms/macos/`
-- **Windows**: `scripts/platforms/windows/`
+### Code Style
+- Use unified libraries for consistency
+- Follow the script template
+- Include proper error handling
+- Add documentation for complex functions
 
-### By Type
-- **Nushell scripts**: `.nu` extension
-- **Shell scripts**: `.sh` extension
-- **Libraries**: `scripts/lib/`
-- **Common utilities**: `scripts/common/`
+### Performance
+- Use efficient validation functions
+- Minimize external command calls
+- Cache results when appropriate
+- Use appropriate data structures
 
-## 📚 Related Documentation
+### Security
+- Validate all inputs
+- Use safe execution functions
+- Handle sensitive data properly
+- Follow principle of least privilege
 
-- [CLAUDE.md](../CLAUDE.md) - Development guidance
-- [Storage Safety Guide](../docs/STORAGE_SAFETY.md) - Storage safety best practices
-- [Quick Start Guide](../docs/QUICK_START.md) - Getting started
-- [Troubleshooting](../docs/TROUBLESHOOTING.md) - Common issues
+### Maintainability
+- Keep scripts focused and single-purpose
+- Use descriptive variable names
+- Add comments for complex logic
+- Follow consistent naming conventions

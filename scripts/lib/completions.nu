@@ -3,11 +3,11 @@
 # Shell completion system for nix-mox
 # Provides intelligent completions for all nix-mox commands and functions
 
-use discovery.nu *
-use platform.nu *
+# Temporarily disable discovery module due to missing dependencies
+# use ../lib/discovery.nu
 
 # Global completion state
-mut $COMPLETION_STATE = {
+let $COMPLETION_STATE = {
     scripts: [],
     functions: [],
     configs: [],
@@ -17,22 +17,30 @@ mut $COMPLETION_STATE = {
 
 # Initialize completion system
 export def init_completions [] {
-    if $COMPLETION_STATE.initialized {
+    if ($env.COMPLETION_STATE? | default {} | get initialized? | default false) {
         return
     }
     
     print "🔄 Initializing nix-mox completions..."
     
-    # Discover all scripts
-    $COMPLETION_STATE.scripts = discover_scripts "scripts"
+    # Discover all scripts (simplified without discovery module)
+    let scripts = []
     
     # Extract all exported functions
-    $COMPLETION_STATE.functions = extract_all_functions
+    let functions = extract_all_functions
     
     # Load configuration keys
-    $COMPLETION_STATE.configs = extract_config_keys
+    let configs = extract_config_keys
     
-    $COMPLETION_STATE.initialized = true
+    # Update global state
+    $env.COMPLETION_STATE = {
+        scripts: $scripts,
+        functions: $functions,
+        configs: $configs,
+        platforms: ["linux", "darwin", "windows", "auto"],
+        initialized: true
+    }
+    
     print "✅ Completions initialized"
 }
 
@@ -158,7 +166,7 @@ export def complete_files [context: string, extension: string = ""] {
         let relative_path = ($file | str replace $current_dir "." | str replace "//" "/")
         {
             value: $relative_path,
-            description: if ($file | path type) == "dir" { "Directory" } else { "File" }
+            description: (if ($file | path type) == "dir" { "Directory" } else { "File" })
         }
     })
     
@@ -167,99 +175,100 @@ export def complete_files [context: string, extension: string = ""] {
 
 # Generate bash completion script
 export def generate_bash_completions [] {
-    let bash_script = $"#!/bin/bash
-
-# nix-mox bash completion script
-# Source this file or add to ~/.bashrc
-
-_nix_mox_completions() {
-    local cur prev opts
-    COMPREPLY=()
-    cur=\"\\$\\{COMP_WORDS[COMP_CWORD]\\}\"
-    prev=\"\\$\\{COMP_WORDS[COMP_CWORD-1]\\}\"
-    
-    case \\$prev in
-        --platform)
-            COMPREPLY=(\\$(compgen -W \"linux darwin windows auto\" -- \\$cur))
-            return 0
-            ;;
-        --config)
-            COMPREPLY=(\\$(compgen -f -- \\$cur))
-            return 0
-            ;;
-        --script)
-            local scripts=(\\$(nu -c 'use scripts/lib/completions.nu; complete_script_names | get value | str join \" \"' 2>/dev/null))
-            COMPREPLY=(\\$(compgen -W \"\\$scripts\" -- \\$cur))
-            return 0
-            ;;
-        --log-level)
-            COMPREPLY=(\\$(compgen -W \"DEBUG INFO WARN ERROR\" -- \\$cur))
-            return 0
-            ;;
-    esac
-    
-    opts=\"setup install update test validate monitor cleanup docs security performance --platform --config --script --verbose --dry-run --help\"
-    COMPREPLY=(\\$(compgen -W \"\\$opts\" -- \\$cur))
-}
-
-complete -F _nix_mox_completions nix-mox
-complete -F _nix_mox_completions nu scripts/common/nix-mox.nu
-"
-
-    $bash_script | save "completions/nix-mox-completion.bash"
+    mkdir completions
+    let bash_content = [
+        "#!/bin/bash"
+        ""
+        "# nix-mox bash completion script"
+        "# Source this file or add to ~/.bashrc"
+        ""
+        "_nix_mox_completions() {"
+        "    local cur prev opts"
+        "    COMPREPLY=()"
+        "    cur=\"\\${COMP_WORDS[COMP_CWORD]}\""
+        "    prev=\"\\${COMP_WORDS[COMP_CWORD-1]}\""
+        "    "
+        "    case \\$prev in"
+        "        --platform)"
+        "            COMPREPLY=(\\$(compgen -W \"linux darwin windows auto\" -- \\$cur))"
+        "            return 0"
+        "            ;;"
+        "        --config)"
+        "            COMPREPLY=(\\$(compgen -f -- \\$cur))"
+        "            return 0"
+        "            ;;"
+        "        --script)"
+        "            local scripts=(\\$(nu -c 'use scripts/lib/completions.nu; complete_script_names | get value | str join \" \"' 2>/dev/null))"
+        "            COMPREPLY=(\\$(compgen -W \"\\$scripts\" -- \\$cur))"
+        "            return 0"
+        "            ;;"
+        "        --log-level)"
+        "            COMPREPLY=(\\$(compgen -W \"DEBUG INFO WARN ERROR\" -- \\$cur))"
+        "            return 0"
+        "            ;;"
+        "    esac"
+        "    "
+        "    opts=\"setup install update test validate monitor cleanup docs security performance --platform --config --script --verbose --dry-run --help\""
+        "    COMPREPLY=(\\$(compgen -W \"\\$opts\" -- \\$cur))"
+        "}"
+        ""
+        "complete -F _nix_mox_completions nix-mox"
+        "complete -F _nix_mox_completions nu scripts/common/nix-mox.nu"
+    ]
+    $bash_content | str join "\n" | save "completions/nix-mox-completion.bash"
     print "✅ Bash completions generated: completions/nix-mox-completion.bash"
 }
 
 # Generate zsh completion script
 export def generate_zsh_completions [] {
-    let zsh_script = $"#compdef nix-mox
-
-# nix-mox zsh completion script
-
-_nix_mox() {
-    local context state line
-    typeset -A opt_args
-
-    _arguments \\
-        '--platform[Specify target platform]:platform:(linux darwin windows auto)' \\
-        '--config[Use custom config file]:config file:_files' \\
-        '--script[Run specific script]:script name:_nix_mox_scripts' \\
-        '--log-level[Set log level]:level:(DEBUG INFO WARN ERROR)' \\
-        '--verbose[Enable verbose output]' \\
-        '--dry-run[Show what would be done]' \\
-        '--help[Show help information]' \\
-        '1:command:_nix_mox_commands'
-}
-
-_nix_mox_commands() {
-    local commands
-    commands=(
-        'setup:Run interactive setup wizard'
-        'install:Install nix-mox configuration' 
-        'update:Update system configuration'
-        'test:Run test suite'
-        'validate:Validate configuration'
-        'monitor:Show monitoring dashboard' 
-        'cleanup:Clean up temporary files'
-        'docs:Generate documentation'
-        'security:Run security scan'
-        'performance:Show performance metrics'
-    )
-    _describe 'nix-mox commands' commands
-}
-
-_nix_mox_scripts() {
-    local scripts
-    if command -v nu >/dev/null; then
-        scripts=(\\$(nu -c 'use scripts/lib/completions.nu; complete_script_names | each {|s| \\$\"\\$s.value:\\$s.description\"} | str join \" \"' 2>/dev/null))
-        _describe 'nix-mox scripts' scripts
-    fi
-}
-
-_nix_mox
-"
-
-    $zsh_script | save "completions/_nix-mox"
+    let zsh_content = [
+        "#compdef nix-mox"
+        ""
+        "# nix-mox zsh completion script"
+        ""
+        "_nix_mox() {"
+        "    local context state line"
+        "    typeset -A opt_args"
+        ""
+        "    _arguments \\"
+        "        '--platform[Specify target platform]:platform:(linux darwin windows auto)' \\"
+        "        '--config[Use custom config file]:config file:_files' \\"
+        "        '--script[Run specific script]:script name:_nix_mox_scripts' \\"
+        "        '--log-level[Set log level]:level:(DEBUG INFO WARN ERROR)' \\"
+        "        '--verbose[Enable verbose output]' \\"
+        "        '--dry-run[Show what would be done]' \\"
+        "        '--help[Show help information]' \\"
+        "        '1:command:_nix_mox_commands'"
+        "}"
+        ""
+        "_nix_mox_commands() {"
+        "    local commands"
+        "    commands=("
+        "        'setup:Run interactive setup wizard'"
+        "        'install:Install nix-mox configuration'"
+        "        'update:Update system configuration'"
+        "        'test:Run test suite'"
+        "        'validate:Validate configuration'"
+        "        'monitor:Show monitoring dashboard'"
+        "        'cleanup:Clean up temporary files'"
+        "        'docs:Generate documentation'"
+        "        'security:Run security scan'"
+        "        'performance:Show performance metrics'"
+        "    )"
+        "    _describe 'nix-mox commands' commands"
+        "}"
+        ""
+        "_nix_mox_scripts() {"
+        "    local scripts"
+        "    if command -v nu >/dev/null; then"
+        "        scripts=($(nu -c 'use scripts/lib/completions.nu; complete_script_names | each {|s| $\"$s.value:$s.description\"} | str join \" \"' 2>/dev/null))"
+        "        _describe 'nix-mox scripts' scripts"
+        "    fi"
+        "}"
+        ""
+        "_nix_mox"
+    ]
+    $zsh_content | str join "\n" | save "completions/_nix-mox"
     print "✅ Zsh completions generated: completions/_nix-mox"
 }
 
@@ -283,7 +292,7 @@ complete -c nix-mox -n '__fish_use_subcommand' -a 'performance' -d 'Show perform
 # Options
 complete -c nix-mox -l platform -d 'Specify target platform' -xa 'linux darwin windows auto'
 complete -c nix-mox -l config -d 'Use custom config file' -r
-complete -c nix-mox -l script -d 'Run specific script' -xa '(nu -c \"use scripts/lib/completions.nu; complete_script_names | get value\" 2>/dev/null)'
+complete -c nix-mox -l script -d 'Run specific script' -xa '(nu -c 'use scripts/lib/completions.nu; complete_script_names | get value' 2>/dev/null)'
 complete -c nix-mox -l log-level -d 'Set log level' -xa 'DEBUG INFO WARN ERROR'
 complete -c nix-mox -l verbose -d 'Enable verbose output'
 complete -c nix-mox -l dry-run -d 'Show what would be done'

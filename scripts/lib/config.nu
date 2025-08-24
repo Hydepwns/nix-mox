@@ -1,7 +1,7 @@
 # Configuration management module for nix-mox scripts
 # Handles loading, validating, and managing configuration files
-use ./common.nu
-use ./error-handling.nu
+use ./unified-logging.nu *
+use ./unified-error-handling.nu *
 
 # Default configuration schema
 export const DEFAULT_CONFIG = {

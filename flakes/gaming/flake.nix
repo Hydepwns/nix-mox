@@ -33,14 +33,7 @@
         };
       };
 
-      # Home-manager modules for user gaming config
-      homeManagerModules = {
-        default = self.homeManagerModules.gaming;
-        
-        gaming = { config, lib, pkgs, ... }: {
-          imports = [ ./home-manager/gaming.nix ];
-        };
-      };
+
     } // flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};

@@ -1,8 +1,14 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../lib/unified-checks.nu
+use ../../lib/unified-error-handling.nu
+
+
 # nix-mox Performance Optimization Script
 # Analyzes and optimizes various aspects of the codebase
-use ../lib/common.nu
+use ../../lib/unified-logging.nu *
+use ../../lib/unified-error-handling.nu *
 
 # Configuration constants
 const PERFORMANCE_THRESHOLDS = {
@@ -42,7 +48,7 @@ def measure_duration [command: closure] {
 }
 
 def analyze_test_performance [] {
-    log_info "Analyzing test performance..."
+    info "Analyzing test performance..." "performance-optimize"
 
     # Check if test script exists
     if not ("scripts/testing/run-tests.nu" | path exists) {
@@ -67,7 +73,7 @@ def analyze_test_performance [] {
 }
 
 def analyze_build_performance [] {
-    log_info "Analyzing build performance..."
+    info "Analyzing build performance..." "performance-optimize"
 
     # Check if we're in a Nix flake
     if not ("flake.nix" | path exists) {
@@ -117,7 +123,7 @@ def analyze_flake_evaluation [] {
 }
 
 def analyze_system_resources [] {
-    log_info "Analyzing system resources..."
+    info "Analyzing system resources..." "performance-optimize"
 
     let cpu_count = ("nproc" | into int | default 0)
     let mem_gb = ("free -g | grep Mem | awk '{print $2}'" | into int | default 0)
@@ -249,7 +255,7 @@ def display_performance_report [report: record] {
 }
 
 def optimize_test_parallelization [system_resources: record] {
-    log_info "Optimizing test parallelization..."
+    info "Optimizing test parallelization..." "performance-optimize"
 
     let recommended_jobs = $system_resources.recommended_parallel_jobs
     print $"CPU cores: ($system_resources.cpu_cores)"
@@ -270,14 +276,13 @@ def optimize_test_parallelization [system_resources: record] {
 }
 
 def optimize_build_caching [] {
-    log_info "Optimizing build caching..."
+    info "Optimizing build caching..." "performance-optimize"
 
     # Use advanced cache optimization
     try {
-        source ../tools/advanced-cache.nu
-        let cache_config = (optimize_cache_config)
-        print "✅ Advanced cache optimization completed"
-        $cache_config
+        # Advanced cache optimization not available, using fallback
+        print "⚠️  Advanced cache optimization not available, using fallback"
+        {}
     } catch {
         # Fallback to basic cache configuration
         let cachix_status = (try {
@@ -311,7 +316,7 @@ def optimize_build_caching [] {
 }
 
 def optimize_nix_config [] {
-    log_info "Optimizing Nix configuration..."
+    info "Optimizing Nix configuration..." "performance-optimize"
 
     let nix_config = {
         experimental_features: ["nix-command" "flakes"]
@@ -327,7 +332,7 @@ def optimize_nix_config [] {
 }
 
 def main [] {
-    log_info "Starting nix-mox performance optimization..."
+    info "Starting nix-mox performance optimization..." "performance-optimize"
 
     # Analyze system resources first
     let system_resources = (analyze_system_resources)
@@ -358,8 +363,8 @@ def main [] {
     })
 
     $final_report | to json --indent 2 | save performance-report.json
-    log_success "Performance optimization completed!"
-    log_info "Report saved to performance-report.json"
+    success "Performance optimization completed!" "performance-optimize"
+    info "Report saved to performance-report.json" "performance-optimize"
     $final_report
 }
 
@@ -399,7 +404,7 @@ export def report [] {
 }
 
 export def quick_check [] {
-    log_info "Running quick performance check..."
+    info "Running quick performance check..." "performance-optimize"
 
     let system_resources = (analyze_system_resources)
     let eval_perf = (analyze_flake_evaluation)

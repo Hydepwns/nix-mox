@@ -1,7 +1,7 @@
 # Script discovery module for nix-mox scripts
 # Helps find and manage available scripts with metadata extraction
-use ./common.nu *
-use ./logging.nu *
+use ./unified-logging.nu *
+use ./unified-error-handling.nu *
 
 # Script metadata structure
 export const SCRIPT_METADATA = {
@@ -126,10 +126,7 @@ export def extract_script_metadata [script_path: string] {
             modified: (ls $script_path | get modified.0)
         }
     } catch { |err|
-        warn "Failed to extract metadata from script" {
-            script_path: $script_path
-            error: $err
-        }
+        print $"Warning: Failed to extract metadata from script ($script_path): ($err)"
         null
     }
 }

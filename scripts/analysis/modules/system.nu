@@ -3,9 +3,7 @@
 # System monitoring module for dashboard
 # Handles system overview, performance metrics, and status information
 
-use ../../lib/platform.nu *
-use ../../lib/performance.nu *
-use ../../lib/common.nu *
+
 
 export def get_system_overview [] {
     let platform_info = get_platform_info
@@ -98,7 +96,7 @@ export def get_system_health [] {
 
 export def get_process_info [] {
     try {
-        let processes = (ps aux | skip 1 | each { |line|
+        let processes = (ps | skip 1 | each { |line|
             let parts = ($line | split row " " | where $it != "")
             {
                 user: ($parts | get 0),
@@ -111,7 +109,7 @@ export def get_process_info [] {
         
         {
             top_processes: $processes,
-            total_processes: (ps aux | skip 1 | length)
+            total_processes: (ps | skip 1 | length)
         }
     } catch {
         {
@@ -156,4 +154,4 @@ export def get_service_status [] {
             total_count: 0
         }
     }
-} 
+}

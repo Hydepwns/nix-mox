@@ -32,11 +32,7 @@ export def validate_dependencies [dependencies: list<string>] {
     }
 }
 
-export def check_permissions [path: string] {
-    if not ($path | path exists) {
-        log "ERROR" $"Path does not exist: ($path)"
-        handle_error $env ERROR_CODES.FILE_NOT_FOUND "File not found" $"Path: ($path)"
-    }
+export def validate_file [path: string] {
     if not ($path | path type) == "file" {
         log "ERROR" $"Not a file: ($path)"
         handle_error $env ERROR_CODES.INVALID_ARGUMENT "Invalid file" $"Path: ($path)"

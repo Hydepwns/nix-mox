@@ -1,4 +1,9 @@
 #!/usr/bin/env nu
+
+# Import unified libraries
+use ../../../../../../../../../../../../../../../../../../lib/unified-checks.nu
+use ../../../../../../../../../../../../../../../../../../lib/enhanced-error-handling.nu
+
 # Integration tests for library modules working together
 use ../lib/test-utils.nu
 use ../lib/test-coverage.nu

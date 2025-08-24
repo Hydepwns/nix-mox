@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../lib/unified-checks.nu
+use ../../lib/enhanced-error-handling.nu
+
+
 # nix-mox Homebrew Setup Script
 # This script helps set up and manage Homebrew on macOS
 

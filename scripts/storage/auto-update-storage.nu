@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../../lib/unified-checks.nu
+use ../../../../../../lib/enhanced-error-handling.nu
+
+
 # Auto-update storage configuration to prevent boot failures
 # This script detects and fixes UUID mismatches before rebuilds
 

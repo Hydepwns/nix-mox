@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../lib/unified-checks.nu
+use ../lib/enhanced-error-handling.nu
+
+
 # nix-mox Unified Setup Script - Fixed Version
 # Combines best features from all setup scripts with reliable input handling
 

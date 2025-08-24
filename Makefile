@@ -152,3 +152,32 @@ sbom-cyclonedx: check-nushell
 sbom-csv: check-nushell
 	@echo "📋 Generating CSV SBOM..."
 	$(NUSHELL) scripts/analysis/generate-sbom.nu --csv
+
+# Chezmoi integration targets
+chezmoi-apply: ## Apply chezmoi configuration
+	@echo "🔄 Applying chezmoi configuration..."
+	@nu scripts/chezmoi-apply.nu
+
+chezmoi-diff: ## Show chezmoi differences
+	@echo "🔍 Checking chezmoi differences..."
+	@nu scripts/chezmoi-diff.nu
+
+chezmoi-sync: ## Sync chezmoi with remote repository
+	@echo "📡 Syncing chezmoi with remote repository..."
+	@nu scripts/chezmoi-sync.nu
+
+chezmoi-edit: ## Edit chezmoi configuration
+	@echo "✏️  Opening chezmoi configuration for editing..."
+	@chezmoi edit
+
+chezmoi-status: ## Show chezmoi status
+	@echo "📊 Showing chezmoi status..."
+	@nu scripts/chezmoi-status.nu
+
+chezmoi-verify: ## Verify chezmoi configuration
+	@echo "✅ Verifying chezmoi configuration..."
+	@chezmoi verify
+
+chezmoi-setup: ## Complete chezmoi setup and integration
+	@echo "🔗 Setting up chezmoi integration..."
+	@nu scripts/setup/chezmoi-integration.nu

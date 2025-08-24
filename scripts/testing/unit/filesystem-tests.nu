@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../../../../../../../lib/unified-checks.nu
+use ../../../../../../../../../../../lib/enhanced-error-handling.nu
+
+
 # Filesystem operation tests
 # Tests for file and directory operations across modules
 

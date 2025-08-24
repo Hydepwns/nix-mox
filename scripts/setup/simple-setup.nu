@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../lib/unified-checks.nu
+use ../lib/enhanced-error-handling.nu
+
+
 # Simple working setup script for nix-mox
 # Fixed version that actually works
 

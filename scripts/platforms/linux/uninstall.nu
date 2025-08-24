@@ -5,7 +5,8 @@
 # - Reads the install manifest at /etc/nix-mox/install_manifest.txt
 # - Removes all files and directories listed in the manifest.
 # - Is idempotent and safe to re-run.
-use ../lib/common.nu
+use ../../lib/unified-logging.nu *
+use ../../lib/unified-error-handling.nu *
 
 # --- Global Variables ---
 const MANIFEST_FILE = "/etc/nix-mox/install_manifest.txt"
@@ -19,24 +20,28 @@ def main [] {
             "--dry-run" => { $env.DRY_RUN = true }
             "--help" | "-h" => { usage }
             _ => {
-                log_error $"Unknown option: ($arg)"
+                error $"Unknown option: ($arg)" "uninstall"
                 usage
             }
         }
     }
 
-    check_root
+    # Check if running as root
+    if (whoami | str trim) != 'root' {
+        error "This script must be run as root." "uninstall"
+        exit 1
+    }
 
     if not ($MANIFEST_FILE | path exists) {
-        log_warning $"Install manifest not found at ($MANIFEST_FILE). Nothing to do."
+        warn $"Install manifest not found at ($MANIFEST_FILE). Nothing to do." "uninstall"
         exit 0
     }
 
     if $env.DRY_RUN {
-        log_dryrun "Dry-run mode enabled. No files will be changed."
+        dry_run "Dry-run mode enabled. No files will be changed." "uninstall"
     }
 
-    log_info "Starting uninstallation..."
+    info "Starting uninstallation..." "uninstall"
 
     # Read manifest into an array to process in reverse
     let items_to_remove = (open $MANIFEST_FILE | lines)
@@ -49,32 +54,32 @@ def main [] {
 
         if $env.DRY_RUN {
             if ($item | path exists) {
-                log_dryrun $"Would remove: ($item)"
+                dry_run $"Would remove: ($item)" "uninstall"
             }
             continue
         }
 
         if ($item | path exists) {
             if ($item | path type) == "file" {
-                log_info $"Removing file: ($item)"
+                info $"Removing file: ($item)" "uninstall"
                 rm $item
             } else if ($item | path type) == "dir" {
                 # Attempt to remove directory, will only succeed if empty
                 try {
                     rmdir $item
-                    log_info $"Removing empty directory: ($item)"
+                    info $"Removing empty directory: ($item)" "uninstall"
                 } catch {
-                    log_warning $"Directory not empty or does not exist, skipping: ($item)"
+                    warn $"Directory not empty or does not exist, skipping: ($item)" "uninstall"
                 }
             }
         } else {
-            log_warning $"Item not found, skipping: ($item)"
+            warn $"Item not found, skipping: ($item)" "uninstall"
         }
     }
 
     # Finally, remove the manifest file itself if not in dry run
     if not $env.DRY_RUN {
-        log_info $"Removing manifest file: ($MANIFEST_FILE)"
+        info $"Removing manifest file: ($MANIFEST_FILE)" "uninstall"
         rm $MANIFEST_FILE
         # Try to remove the parent dir, will fail if not empty (which is fine)
         try {
@@ -83,9 +88,9 @@ def main [] {
     }
 
     if $env.DRY_RUN {
-        log_dryrun "Dry run complete."
+        dry_run "Dry run complete." "uninstall"
     } else {
-        log_success "Uninstallation complete."
+        success "Uninstallation complete." "uninstall"
     }
 }
 

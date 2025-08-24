@@ -114,15 +114,15 @@
     enable = true;
     videoDrivers = [ "nvidia" ];
     
-    # Desktop environment - Keep under xserver for compatibility
-    desktopManager.plasma5.enable = true;  # Will migrate to plasma6 later
-    
     # X11 configuration
     xkb = {
       layout = "us";
       variant = "";
     };
   };
+  
+  # Desktop environment - Using Plasma 5 (available in NixOS 25.05)
+  services.xserver.desktopManager.plasma5.enable = true;
   
   # Display manager configuration
   services.displayManager = {

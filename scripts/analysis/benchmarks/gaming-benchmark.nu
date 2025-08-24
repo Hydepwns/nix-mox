@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../lib/unified-checks.nu
+use ../../lib/enhanced-error-handling.nu
+
+
 # Gaming Performance Benchmark for nix-mox
 # Tests graphics, audio, and system performance
 

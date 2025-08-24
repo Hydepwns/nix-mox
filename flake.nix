@@ -4,10 +4,6 @@
   inputs = {
     # Core inputs
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     
     # Subflakes (commented out until properly set up)
     # gaming = {
@@ -30,7 +26,7 @@
     agenix.url = "github:ryantm/agenix";  # For secrets management
   };
 
-  outputs = { self, nixpkgs, home-manager, flake-utils, agenix, ... }@inputs:
+  outputs = { self, nixpkgs, flake-utils, agenix, ... }@inputs:
     let
       system = "x86_64-linux";
       
@@ -76,26 +72,7 @@
             # Secrets management
             agenix.nixosModules.default
             
-            # Home-manager
-            home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                
-                # Add backup configuration to prevent file conflicts
-                backupFileExtension = "backup";
-                
-                users.hydepwns = { ... }: {
-                  imports = [
-                    ./config/home/hydepwns.nix
-                    # ./flakes/gaming/home-manager/gaming.nix  # Gaming home-manager config
-                  ];
-                  
-                  home.stateVersion = "24.05";
-                };
-              };
-            }
+
           ];
         };
         
@@ -115,22 +92,7 @@
             # Secrets management
             agenix.nixosModules.default
             
-            # Home-manager
-            home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                
-                users.hydepwns = { ... }: {
-                  imports = [
-                    ./config/home/hydepwns.nix
-                  ];
-                  
-                  home.stateVersion = "24.05";
-                };
-              };
-            }
+
           ];
         };
         

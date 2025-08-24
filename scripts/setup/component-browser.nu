@@ -1,10 +1,22 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../lib/unified-checks.nu
+use ../lib/enhanced-error-handling.nu
+
 # Component Browser for nix-mox
 # Browse and preview available configuration components
 # Usage: nu component-browser.nu [--category CATEGORY] [--component COMPONENT]
 
-use ../lib/common.nu
+use ../lib/unified-logging.nu *
+use ../lib/unified-error-handling.nu *
+
+# Color definitions
+const GREEN = "ansi green"
+const YELLOW = "ansi yellow"
+const CYAN = "ansi cyan"
+const RED = "ansi red"
+const NC = "ansi reset"
 
 # --- Component Database ---
 const COMPONENT_DB = {
@@ -549,7 +561,7 @@ def main [] {
     for arg in $args {
         match $arg {
             "--category" => {
-                let index = ($args | enumerate | where item == "--category | get index | first)
+                let index = ($args | enumerate | where item == "--category" | get index | first)
                 $category = ($args | skip ($index + 1) | first)
             }
             "--component" => {
@@ -603,7 +615,7 @@ def show_category_details [category: string] {
         let config = ($COMPONENT_DB | get $category)
         
         print $"\n($config.icon) ($YELLOW)($config.name)($NC)"
-        print $($config.description)
+        print $"($config.description)"
         print "=" * ($config.name | str length + 10)
         print ""
         
@@ -657,7 +669,7 @@ def show_component_details [category: string, component: string] {
             let comp_config = ($category_config.components | get $component)
             
             print $"\n($comp_config.icon) ($YELLOW)($comp_config.name)($NC)"
-            print $($comp_config.description)
+            print $"($comp_config.description)"
             print "=" * ($comp_config.name | str length + 10)
             print ""
             

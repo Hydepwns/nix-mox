@@ -1,10 +1,16 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../lib/unified-checks.nu
+use ../lib/enhanced-error-handling.nu
+
+
 # Quick Favorites Setup for nix-mox
 # Quick setup for common favorite configurations
 # Usage: nu quick-favorites.nu [PRESET] [--dry-run]
 
-use ../lib/common.nu
+use ../lib/unified-logging.nu *
+use ../lib/unified-error-handling.nu *
 
 # --- Quick Favorites Presets ---
 const QUICK_PRESETS = {
@@ -131,7 +137,7 @@ def main [
 }
 
 def show_preset_menu [] {
-    print $"\n($GREEN)⚡ Quick Favorites Setup($NC)"
+    print $"\n(ansi green)⚡ Quick Favorites Setup(ansi reset)"
     print "============================="
     print ""
     print "Choose a preset configuration:"
@@ -140,7 +146,7 @@ def show_preset_menu [] {
     for preset in ($QUICK_PRESETS | transpose name config | get name) {
         let config = ($QUICK_PRESETS | get $preset)
         
-        print $"($config.icon) ($YELLOW)($preset)($NC) - ($config.name)"
+        print $"($config.icon) (ansi yellow)($preset)(ansi reset) - ($config.name)"
         print $"   ($config.description)"
         print ""
         print "   Features:"
@@ -162,7 +168,7 @@ def show_preset_menu [] {
 
 def apply_preset [preset: string, dry_run: bool] {
     if ($QUICK_PRESETS | get $preset | is-empty) {
-        print $"\n($RED)❌ Preset '($preset)' not found.($NC)"
+        print $"\n(ansi red)❌ Preset '($preset)' not found.(ansi reset)"
         print ""
         print "Available presets:"
         for p in ($QUICK_PRESETS | transpose name config | get name) {
@@ -174,7 +180,7 @@ def apply_preset [preset: string, dry_run: bool] {
     
     let config = ($QUICK_PRESETS | get $preset)
     
-    print $"\n($GREEN)🚀 Setting up ($config.name)($NC)"
+    print $"\n(ansi green)🚀 Setting up ($config.name)(ansi reset)"
     print "=" * (($config.name | str length) + 20)
     print ""
             print $"($config.description)"
@@ -191,7 +197,7 @@ def apply_preset [preset: string, dry_run: bool] {
 }
 
 def collect_basic_info [] {
-    print $"\n($BLUE)👤 Basic Information($NC)"
+    print $"\n(ansi blue)👤 Basic Information(ansi reset)"
     print "====================="
     print "Please provide basic system information:"
     print ""
@@ -208,7 +214,7 @@ def collect_basic_info [] {
 }
 
 def apply_preset_config [preset: string, config: record, user_info: record, dry_run: bool] {
-    print $"\n($BLUE)📝 Applying Configuration($NC)"
+    print $"\n(ansi blue)📝 Applying Configuration(ansi reset)"
     print "============================="
     
     # Create directories
@@ -499,13 +505,13 @@ NIXMOX_PRESET_NAME=($QUICK_PRESETS | get $preset | get name)"
 }
 
 def show_next_steps [preset: string, config: record] {
-    print $"\n($GREEN)✅ Setup Complete!($NC)"
+    print $"\n(ansi green)✅ Setup Complete!(ansi reset)"
     print "=================="
     print ""
     print $"Your ($config.name) configuration has been created!"
     print ""
     
-    print $"\n($YELLOW)📋 Next Steps:($NC)"
+    print $"\n(ansi yellow)📋 Next Steps:(ansi reset)"
     print "1. Review your configuration files:"
     print "   • config/personal/user.nix"
     print "   • config/nixos/configuration.nix"
@@ -521,40 +527,40 @@ def show_next_steps [preset: string, config: record] {
     # Show preset-specific notes
     match $preset {
         "dev-gaming" => {
-            print $"\n($BLUE)🎮💻 Dev-Gaming Notes:($NC)"
+            print $"\n(ansi blue)🎮💻 Dev-Gaming Notes:(ansi reset)"
             print "• Enter development shell: nix develop .#development"
             print "• Enter gaming shell: nix develop .#gaming"
             print "• Launch Steam: steam"
             print "• Open IDE: vscode or cursor"
         }
         "productivity" => {
-            print $"\n($BLUE)📊💼 Productivity Notes:($NC)"
+            print $"\n(ansi blue)📊💼 Productivity Notes:(ansi reset)"
             print "• Open LibreOffice: libreoffice"
             print "• Launch communication apps from application menu"
             print "• Access notes: obsidian or joplin"
         }
         "gaming-only" => {
-            print $"\n($BLUE)🎮⚡ Gaming Notes:($NC)"
+            print $"\n(ansi blue)🎮⚡ Gaming Notes:(ansi reset)"
             print "• Launch Steam: steam"
             print "• Open Lutris: lutris"
             print "• Launch Heroic: heroic"
             print "• Join Discord: discord"
         }
         "dev-server" => {
-            print $"\n($BLUE)🖥️🔧 Server Notes:($NC)"
+            print $"\n(ansi blue)🖥️🔧 Server Notes:(ansi reset)"
             print "• SSH server is enabled"
             print "• Docker is ready to use"
             print "• Tailscale VPN is enabled"
             print "• Access remotely via SSH"
         }
         "minimal-dev" => {
-            print $"\n($BLUE)⚡💻 Minimal Dev Notes:($NC)"
+            print $"\n(ansi blue)⚡💻 Minimal Dev Notes:(ansi reset)"
             print "• Open VSCode: vscode"
             print "• Use Vim: vim"
             print "• Lightweight development environment"
         }
         "media-center" => {
-            print $"\n($BLUE)🎬🎵 Media Center Notes:($NC)"
+            print $"\n(ansi blue)🎬🎵 Media Center Notes:(ansi reset)"
             print "• Launch VLC: vlc"
             print "• Open Spotify: spotify"
             print "• Use mpv for video: mpv"
@@ -563,7 +569,7 @@ def show_next_steps [preset: string, config: record] {
         _ => {}
     }
     
-    print $"\n($GREEN)🎉 Enjoy your ($config.name)!($NC)"
+    print $"\n(ansi green)🎉 Enjoy your ($config.name)!(ansi reset)"
 }
 
 def usage [] {

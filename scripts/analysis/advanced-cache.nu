@@ -1,8 +1,14 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../lib/unified-checks.nu
+use ../lib/unified-error-handling.nu
+
+
 # nix-mox Advanced Caching Strategy
 # Implements sophisticated build caching with multiple layers and optimization
-use ../lib/common.nu
+use ../lib/unified-logging.nu *
+use ../lib/unified-error-handling.nu *
 
 # Cache configuration
 def get_cache_config [] {
@@ -76,7 +82,7 @@ def check_cache_health [cache_url: string] {
 
 # Optimize cache configuration based on health checks
 def optimize_cache_config [] {
-    common log_info "Analyzing cache health and performance..."
+    info "Analyzing cache health and performance..." "advanced-cache"
     let config = (get_cache_config)
     let all_caches = ($config.primary_caches | append $config.secondary_caches)
 

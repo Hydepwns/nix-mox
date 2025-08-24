@@ -1,10 +1,11 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../lib/unified-checks.nu
+use ../lib/enhanced-error-handling.nu
+
 # Gaming Setup Validation Script
 # Comprehensive validation for gaming workstation configuration
-
-use ../lib/logging.nu *
-use ../lib/platform.nu *
 
 def main [] {
     print_header "Gaming Setup Validation"
@@ -41,14 +42,13 @@ def validate_gpu_config [] {
     # Check for GPU detection
     let gpu_check = if (which lspci | is-not-empty) {
         let gpus = (^lspci | grep -i "vga\|3d\|display" | lines)
+        let gpu_count = ($gpus | length)
+        let has_gpu = ($gpu_count | into int) > 0
+        let gpu_message = if $has_gpu { $"Found ($gpu_count) GPU(s)" } else { "No GPU detected" }
         {
             name: "GPU Detection"
-            success: ($gpus | length) > 0
-            message: if ($gpus | length) > 0 { 
-                $"Found ($gpus | length) GPU(s)" 
-            } else { 
-                "No GPU detected" 
-            }
+            success: $has_gpu
+            message: $gpu_message
             gpus: $gpus
         }
     } else {
@@ -81,10 +81,12 @@ def validate_gpu_config [] {
     # Check for OpenGL support
     let opengl_check = if (which glxinfo | is-not-empty) {
         let renderer = (try { ^glxinfo | grep "OpenGL renderer" | str trim } catch { "" })
+        let has_renderer = ($renderer | str length) > 0
+        let opengl_message = if $has_renderer { $renderer } else { "OpenGL not detected" }
         {
             name: "OpenGL Support"
-            success: ($renderer | str length) > 0
-            message: if ($renderer | str length) > 0 { $renderer } else { "OpenGL not detected" }
+            success: $has_renderer
+            message: $opengl_message
         }
     } else {
         {
@@ -97,14 +99,12 @@ def validate_gpu_config [] {
     let checks = ($checks | append $opengl_check)
     
     # Check configuration file
+    let config_exists = ("config/nixos/gaming/hardware.nix" | path exists)
+    let config_message = if $config_exists { "Gaming hardware configuration found" } else { "Gaming hardware configuration missing" }
     let config_check = {
         name: "GPU Config in Nix"
-        success: ("config/nixos/gaming/hardware.nix" | path exists)
-        message: if ("config/nixos/gaming/hardware.nix" | path exists) {
-            "Gaming hardware configuration found"
-        } else {
-            "Gaming hardware configuration missing"
-        }
+        success: $config_exists
+        message: $config_message
     }
     
     let checks = ($checks | append $config_check)
@@ -125,15 +125,15 @@ def validate_kernel_config [] {
     let kernel_check = if (which uname | is-not-empty) {
         let kernel = (^uname -r | str trim)
         let is_zen = ($kernel | str contains "zen")
-        let is_latest = ($kernel | str contains "6.") # Assuming 6.x is latest
+        let is_latest = ($kernel | str contains "6.")
+        let is_good_kernel = ($is_zen or $is_latest)
+        let kernel_recommendation = if (not $is_good_kernel) { "Consider using linux-zen or latest kernel for gaming" } else { "" }
         
         {
             name: "Kernel Version"
-            success: ($is_zen or $is_latest)
+            success: $is_good_kernel
             message: $"Kernel: ($kernel)"
-            recommendation: if (not ($is_zen or $is_latest)) {
-                "Consider using linux-zen or latest kernel for gaming"
-            } else { "" }
+            recommendation: $kernel_recommendation
         }
     } else {
         {
@@ -151,10 +151,12 @@ def validate_kernel_config [] {
     for module in $modules_to_check {
         let module_check = if (which lsmod | is-not-empty) {
             let loaded = (try { ^lsmod | grep $module | lines | length } catch { 0 })
+            let is_loaded = ($loaded | into int) > 0
+            let module_message = if $is_loaded { "Loaded" } else { "Not loaded" }
             {
                 name: $"Module: ($module)"
                 success: true  # Not all modules need to be loaded
-                message: if $loaded > 0 { "Loaded" } else { "Not loaded" }
+                message: $module_message
             }
         } else {
             {
@@ -213,14 +215,12 @@ def validate_audio_config [] {
     let checks = ($checks | append $pulse_check)
     
     # Check audio configuration file
+    let audio_config_exists = ("config/nixos/gaming/audio.nix" | path exists)
+    let audio_config_message = if $audio_config_exists { "Gaming audio configuration found" } else { "Gaming audio configuration missing" }
     let config_check = {
         name: "Audio Config in Nix"
-        success: ("config/nixos/gaming/audio.nix" | path exists)
-        message: if ("config/nixos/gaming/audio.nix" | path exists) {
-            "Gaming audio configuration found"
-        } else {
-            "Gaming audio configuration missing"
-        }
+        success: $audio_config_exists
+        message: $audio_config_message
     }
     
     let checks = ($checks | append $config_check)
@@ -240,13 +240,14 @@ def validate_performance_config [] {
     # Check CPU governor
     let governor_check = if ("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor" | path exists) {
         let governor = (open /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor | str trim)
+        let is_performance = ($governor == "performance" or $governor == "schedutil")
+        let governor_recommendation = if (not $is_performance) { "Consider setting to 'performance' for gaming" } else { "" }
+        
         {
             name: "CPU Governor"
-            success: ($governor == "performance" or $governor == "schedutil")
+            success: $is_performance
             message: $"Current governor: ($governor)"
-            recommendation: if ($governor != "performance") {
-                "Consider setting to 'performance' for gaming"
-            } else { "" }
+            recommendation: $governor_recommendation
         }
     } else {
         {
@@ -295,13 +296,14 @@ def validate_performance_config [] {
     # Check swappiness
     let swappiness_check = if ("/proc/sys/vm/swappiness" | path exists) {
         let swappiness = (open /proc/sys/vm/swappiness | str trim | into int)
+        let is_low_swappiness = ($swappiness <= 10)
+        let swappiness_recommendation = if (not $is_low_swappiness) { "Consider setting to 10 or lower for gaming" } else { "" }
+        
         {
             name: "Swappiness"
-            success: ($swappiness <= 10)
+            success: $is_low_swappiness
             message: $"Current swappiness: ($swappiness)"
-            recommendation: if ($swappiness > 10) {
-                "Consider setting to 10 or lower for gaming"
-            } else { "" }
+            recommendation: $swappiness_recommendation
         }
     } else {
         {
@@ -313,8 +315,10 @@ def validate_performance_config [] {
     
     let checks = ($checks | append $swappiness_check)
     
+    let success_count = ($checks | where success | length)
+    let has_enough_checks = ($success_count >= 2)
     {
-        success: ($checks | where success == true | length) >= 2
+        success: $has_enough_checks
         checks: $checks
     }
 }
@@ -409,13 +413,14 @@ def validate_network_config [] {
     # Check TCP congestion control
     let tcp_check = if ("/proc/sys/net/ipv4/tcp_congestion_control" | path exists) {
         let congestion = (open /proc/sys/net/ipv4/tcp_congestion_control | str trim)
+        let is_good_congestion = ($congestion == "bbr" or $congestion == "cubic")
+        let tcp_recommendation = if (not $is_good_congestion) { "Consider using BBR for better gaming performance" } else { "" }
+        
         {
             name: "TCP Congestion Control"
-            success: ($congestion == "bbr" or $congestion == "cubic")
+            success: $is_good_congestion
             message: $"Current: ($congestion)"
-            recommendation: if ($congestion != "bbr") {
-                "Consider using BBR for better gaming performance"
-            } else { "" }
+            recommendation: $tcp_recommendation
         }
     } else {
         {
@@ -451,12 +456,20 @@ def validate_storage_performance [] {
     # Check for SSD
     let ssd_check = if (which lsblk | is-not-empty) {
         let disks = (try { ^lsblk -d -o NAME,ROTA | lines | skip 1 } catch { [] })
-        let has_ssd = ($disks | any {|d| ($d | split row " " | last) == "0"})
+        let has_ssd = ($disks | any {|d| 
+            let parts = ($d | split row " ")
+            if ($parts | length) >= 2 {
+                ($parts | last) == "0"
+            } else {
+                false
+            }
+        })
+        let ssd_message = if $has_ssd { "SSD detected" } else { "No SSD detected - games may load slowly" }
         
         {
             name: "SSD Detection"
             success: $has_ssd
-            message: if $has_ssd { "SSD detected" } else { "No SSD detected - games may load slowly" }
+            message: $ssd_message
         }
     } else {
         {
@@ -535,6 +548,6 @@ def print_warning [message: string] {
 }
 
 # Run main if called directly
-if $env.FILE_PWD == (which $env.CURRENT_FILE | get path | first) {
+if ($env | get -i CURRENT_FILE | is-not-empty) {
     main
 }

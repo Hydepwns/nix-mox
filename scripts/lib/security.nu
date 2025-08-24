@@ -1,7 +1,7 @@
 # Security module for nix-mox scripts
 # Validates scripts for dangerous patterns and provides security recommendations
-use ./common.nu *
-use ./logging.nu *
+use ./unified-logging.nu *
+use ./unified-error-handling.nu *
 
 # Security threat levels
 export const THREAT_LEVELS = {
@@ -318,10 +318,10 @@ export def generate_security_report [output_file: string = "logs/security-report
 
     try {
         $report | to json | save $output_file
-        info "Security report generated" { output_file: $output_file }
+        info $"Security report generated: ($output_file)" "security"
         $report
     } catch { |err|
-        error "Failed to generate security report" { error: $err }
+        error $"Failed to generate security report: ($err)" "security"
         null
     }
 }
@@ -355,8 +355,26 @@ export def generate_overall_recommendations [scan_results: list] {
 
 # Log security event
 export def log_security_event [event_type: string, script_path: string, details: record = {}] {
-    let security_context = ($details | upsert event_type $event_type | upsert script_path $script_path | upsert timestamp (date now))
-    log_event $event_type $"Security event in script ($script_path)" $security_context
+    let event_data = {
+        timestamp: (timestamp),
+        event_type: $event_type,
+        script_path: $script_path,
+        details: $details
+    }
+    
+    # Log to security log file
+    let security_log = "logs/security.log"
+    try {
+        $event_data | to json | save --append $security_log
+    } catch { |err|
+        error $"Failed to log security event: ($err)" "security"
+    }
+    
+    # Also log to console
+    warn $"Security event: ($event_type) in ($script_path)" "security"
+    if ($details | columns | length) > 0 {
+        debug $"Event details: ($details | to json)" "security"
+    }
 }
 
 # Check if script is safe to execute

@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../../../../../../lib/unified-checks.nu
+use ../../../../../../../../../../lib/enhanced-error-handling.nu
+
+
 # Safe NixOS rebuild wrapper with mandatory validation
 # Prevents system damage by enforcing safety checks
 

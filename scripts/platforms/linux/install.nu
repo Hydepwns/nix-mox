@@ -5,7 +5,9 @@
 # - Installs all .nu scripts to /usr/local/bin
 # - Creates an install manifest at /etc/nix-mox/install_manifest.txt
 # - Is idempotent and safe to re-run
-use ../lib/common.nu
+use ../../lib/unified-logging.nu *
+use ../../lib/unified-error-handling.nu *
+use ../../lib/unified-checks.nu *
 
 # --- Global Variables ---
 const INSTALL_DIR = "/usr/local/bin"
@@ -34,7 +36,7 @@ def main [] {
                 let idx = ($args | find $arg | get 0)
                 let new_dir = ($args | get ($idx + 1))
                 if not ($new_dir | str starts-with "/") {
-                    log_error "Windows path must be absolute."
+                    error "Windows path must be absolute." "install"
                     exit 1
                 }
                 $env.STATE = ($env.STATE | upsert windows_dir $new_dir)
@@ -43,16 +45,20 @@ def main [] {
                 usage
             }
             _ => {
-                log_error $"Unknown option: ($arg)"
+                error $"Unknown option: ($arg)" "install"
                 usage
             }
         }
     }
 
-    check_root
+    # Check if running as root
+    if (whoami | str trim) != 'root' {
+        error "This script must be run as root." "install"
+        exit 1
+    }
 
     if $env.STATE.dry_run {
-        log_dryrun "Dry-run mode enabled. No files will be changed."
+        dry_run "Dry-run mode enabled. No files will be changed." "install"
     } else {
         # Prepare manifest directory and file
         mkdir $MANIFEST_DIR
@@ -62,7 +68,7 @@ def main [] {
     }
 
     # 1. Install Linux scripts
-    log_info $"Installing Linux scripts to ($INSTALL_DIR)..."
+    info $"Installing Linux scripts to ($INSTALL_DIR)..." "install"
     for script in (ls *.nu) {
         if ($script.name == "_common.nu" or $script.name == "install.nu" or $script.name == "uninstall.nu") {
             continue
@@ -70,9 +76,9 @@ def main [] {
         let dest_path = $INSTALL_DIR + "/" + ($script.name | str replace ".nu" "")
 
         if $env.STATE.dry_run {
-            log_dryrun $"Would install '($script.name)' to '($dest_path)'"
+            dry_run $"Would install '($script.name)' to '($dest_path)'" "install"
         } else {
-            log_info $"Installing '($script.name)' to '($dest_path)'..."
+            info $"Installing '($script.name)' to '($dest_path)'..." "install"
             cp $script.name $dest_path
             chmod 755 $dest_path
             $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $dest_path))
@@ -81,18 +87,18 @@ def main [] {
 
     # 2. Copy Windows scripts if requested
     if $env.STATE.windows_dir != "" {
-        log_info $"Copying Windows scripts to ($env.STATE.windows_dir)..."
+        info $"Copying Windows scripts to ($env.STATE.windows_dir)..." "install"
         let win_scripts_src = "../windows"
 
         if $env.STATE.dry_run {
-            log_dryrun $"Would create directory '($env.STATE.windows_dir)' and copy files into it."
+            dry_run $"Would create directory '($env.STATE.windows_dir)' and copy files into it." "install"
         } else {
             mkdir $env.STATE.windows_dir
             $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $env.STATE.windows_dir))
 
             for f in (ls ($win_scripts_src + "/*")) {
                 let dest_file = $env.STATE.windows_dir + "/" + ($f.name | path basename)
-                log_info $"Copying '($f.name)' to '($dest_file)'..."
+                info $"Copying '($f.name)' to '($dest_file)'..." "install"
                 cp $f.name $dest_file
                 $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $dest_file))
             }
@@ -100,11 +106,11 @@ def main [] {
     }
 
     if $env.STATE.dry_run {
-        log_dryrun "Dry run complete."
+        dry_run "Dry run complete." "install"
     } else {
-        log_success "Installation complete."
-        log_info $"An install manifest has been created at: ($MANIFEST_FILE)"
-        log_info "Use uninstall.nu to remove all installed files."
+        success "Installation complete." "install"
+        info $"An install manifest has been created at: ($MANIFEST_FILE)" "install"
+        info "Use uninstall.nu to remove all installed files." "install"
     }
 
     return $env.STATE
@@ -116,27 +122,27 @@ def cleanup [created_files: list] {
         return
     }
 
-    log_warn "An error occurred. Rolling back changes made during this installation run..."
+    warn "An error occurred. Rolling back changes made during this installation run..." "install"
 
     # Iterate in reverse to remove files before directories
     for item in ($created_files | reverse) {
         if ($item | path exists) {
             if ($item | path type) == "file" {
-                log_warn $"Removing file: ($item)"
+                warn $"Removing file: ($item)" "install"
                 rm $item
             } else if ($item | path type) == "dir" {
                 # Only remove dir if it's empty
                 try {
                     rmdir $item
-                    log_warn $"Removing directory: ($item)"
+                    warn $"Removing directory: ($item)" "install"
                 } catch {
-                    log_warn $"Directory not empty, skipping removal: ($item)"
+                    warn $"Directory not empty, skipping removal: ($item)" "install"
                 }
             }
         }
     }
 
-    log_warn "Rollback complete."
+    warn "Rollback complete." "install"
 }
 
 def add_to_manifest [file_path: string, dry_run: bool] {

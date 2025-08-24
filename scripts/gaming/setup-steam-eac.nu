@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../lib/unified-checks.nu
+use ../../../../../lib/enhanced-error-handling.nu
+
+
 # Setup Steam EasyAntiCheat Configuration
 print "🔧 Setting up Steam EasyAntiCheat Configuration"
 print "================================================"

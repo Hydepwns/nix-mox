@@ -1,4 +1,9 @@
 #!/usr/bin/env nu
+
+# Import unified libraries
+use ../../lib/unified-checks.nu
+use ../../lib/enhanced-error-handling.nu
+
 # setup-interactive.nu - Interactive nix-mox Setup Script
 # Usage: nu setup-interactive.nu [--dry-run] [--help]
 #
@@ -6,7 +11,8 @@
 # - Guides users through personal, system, and environment configuration
 # - Creates configuration files and sets up the development environment
 # - Is idempotent and safe to re-run
-use ../lib/common.nu
+use ../../lib/unified-logging.nu *
+use ../../lib/unified-error-handling.nu *
 
 # --- Global Variables ---
 const CONFIG_DIR = "config"
@@ -83,7 +89,7 @@ def main [] {
 }
 
 def print_welcome [] {
-    print $"\n($GREEN)🚀 nix-mox Interactive Setup($NC)"
+    print $"\n(ansi green)🚀 nix-mox Interactive Setup(ansi reset)"
     print "================================"
     print ""
     print "Welcome to the nix-mox interactive setup wizard!"
@@ -99,7 +105,7 @@ def print_welcome [] {
 }
 
 def select_setup_type [] {
-    print $"\n($BLUE)📋 Choose Setup Type($NC)"
+    print $"\n(ansi blue)📋 Choose Setup Type(ansi reset)"
     print "=================="
     print "1. Personal configuration (recommended for new users)"
     print "2. Gaming workstation (includes gaming tools and optimizations)"
@@ -124,7 +130,7 @@ def select_setup_type [] {
 }
 
 def collect_personal_info [] {
-    print $"\n($BLUE)👤 Personal Information($NC)"
+    print $"\n(ansi blue)👤 Personal Information(ansi reset)"
     print "======================="
     print "Please provide your personal information:"
     print ""
@@ -145,7 +151,7 @@ def collect_personal_info [] {
 }
 
 def collect_system_info [] {
-    print $"\n($BLUE)🖥️  System Information($NC)"
+    print $"\n(ansi blue)🖥️  System Information(ansi reset)"
     print "====================="
     print "Please provide system configuration:"
     print ""
@@ -160,7 +166,7 @@ def collect_system_info [] {
 }
 
 def setup_environment [] {
-    print $"\n($BLUE)🔧 Environment Setup($NC)"
+    print $"\n(ansi blue)🔧 Environment Setup(ansi reset)"
     print "==================="
 
     # Check if .envrc exists and setup direnv
@@ -200,7 +206,7 @@ def setup_environment [] {
 }
 
 def select_template [setup_type: string] {
-    print $"\n($BLUE)📄 Template Selection($NC)"
+    print $"\n(ansi blue)📄 Template Selection(ansi reset)"
     print "====================="
 
     let template_map = {
@@ -240,7 +246,7 @@ def select_template [setup_type: string] {
 }
 
 def create_configuration_files [] {
-    print $"\n($BLUE)📝 Creating Configuration Files($NC)"
+    print $"\n(ansi blue)📝 Creating Configuration Files(ansi reset)"
     print "================================"
 
     # Create directories if they don't exist
@@ -298,47 +304,8 @@ in
   networking.hostName = personal.hostname;
   time.timeZone = personal.timezone;
 
-  # Home Manager configuration
-  home-manager.users.${{personal.username}} = {{
-    home.stateVersion = \"23.11\";
-    home.username = personal.username;
-    home.homeDirectory = \"/home/${{personal.username}}\";
-
-    # Shell configuration
-    programs.zsh = {{
-      enable = true;
-      enableCompletion = true;
-      autosuggestion.enable = true;
-      syntaxHighlighting.enable = true;
-
-      shellAliases = {{
-        ll = \"ls -l\";
-        la = \"ls -la\";
-        nrs = \"sudo nixos-rebuild switch --flake .#nixos\";
-        nfu = \"nix flake update\";
-        ngc = \"nix-collect-garbage -d\";
-      }};
-
-      initContent = \'\'
-        export EDITOR=vim
-      \'\';
-    }};
-
-    # Git configuration
-    programs.git = {{
-      enable = true;
-      userName = personal.gitUsername;
-      userEmail = personal.gitEmail;
-      extraConfig = {{
-        init.defaultBranch = \"main\";
-        push.autoSetupRemote = true;
-      }};
-    }};
-
-    # Common programs
-    programs.firefox.enable = true;
-    programs.vscode.enable = true;
-  }};
+  # User configuration managed by chezmoi
+  # See ~/.local/share/chezmoi for user-specific configurations
 }}"
 
     let config_path = $PERSONAL_DIR + "/user.nix"
@@ -399,12 +366,12 @@ def copy_template [] {
 }
 
 def print_final_steps [] {
-    print $"\n($GREEN)✅ Setup Complete!($NC)"
+    print $"\n(ansi green)✅ Setup Complete!(ansi reset)"
     print "=================="
     print ""
     print "Your nix-mox environment has been configured successfully!"
     print ""
-    print $"\n($YELLOW)📋 Next Steps:($NC)"
+    print $"\n(ansi yellow)📋 Next Steps:(ansi reset)"
     print "1. Review your configuration files:"
     print $"   • Personal config: ($PERSONAL_DIR)/user.nix"
     print $"   • System config: ($NIXOS_DIR)/configuration.nix"
@@ -421,18 +388,18 @@ def print_final_steps [] {
     print ""
 
     if $env.STATE.setup_type == "gaming" {
-        print $"\n($BLUE)🎮 Gaming Setup Notes:($NC)"
+        print $"\n(ansi blue)🎮 Gaming Setup Notes:(ansi reset)"
         print "• Enter gaming shell: nix develop .#gaming"
         print "• Launch gaming platforms: steam, lutris, heroic"
     }
 
     if $env.STATE.setup_type == "development" {
-        print $"\n($BLUE)💻 Development Setup Notes:($NC)"
+        print $"\n(ansi blue)💻 Development Setup Notes:(ansi reset)"
         print "• Enter development shell: nix develop .#development"
         print "• Open IDE: vscode or cursor"
     }
 
-    print $"\n($GREEN)🎉 Enjoy your new nix-mox environment!($NC)"
+    print $"\n(ansi green)🎉 Enjoy your new nix-mox environment!(ansi reset)"
 }
 
 def usage [] {

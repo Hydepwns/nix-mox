@@ -1,5 +1,10 @@
 #!/usr/bin/env nu
 
+# Import unified libraries
+use ../../../../../../../lib/unified-checks.nu
+use ../../../../../../../lib/enhanced-error-handling.nu
+
+
 # nix-mox SBOM Generator
 # Generates Software Bill of Materials for compliance and security auditing
 use ../lib/common.nu *
