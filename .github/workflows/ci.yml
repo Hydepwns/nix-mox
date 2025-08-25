@@ -144,9 +144,13 @@ jobs:
         run: |
           nix --extra-experimental-features "nix-command flakes" develop --command nu -c 'use scripts/lib/analysis.nu *; generate_system_report --include-benchmarks true --output system-report.json'
           
-      - name: Generate Dashboard Report
+      - name: Generate Analysis Report  
         run: |
-          nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/dashboard.nu analysis --output analysis-report.json
+          nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/dashboard.nu analysis --output analysis-report.json --format json
+          
+      - name: Generate Documentation Report
+        run: |
+          nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/dashboard.nu analysis --output documentation-report.txt --format terminal
           
       - name: Upload Reports
         uses: actions/upload-artifact@v4
@@ -155,3 +159,4 @@ jobs:
           path: |
             system-report.json
             analysis-report.json
+            documentation-report.txt

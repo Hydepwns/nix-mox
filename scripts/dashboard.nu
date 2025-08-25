@@ -214,7 +214,45 @@ def collect_gaming_data [] {
 }
 
 def collect_analysis_data [] {
-    collect_data "collect_package_analysis" "collect_size_analysis" "collect_dependency_analysis" "collect_performance_analysis"
+    # Use the comprehensive analysis functions from analysis.nu library
+    use lib/analysis.nu *
+    
+    info "Collecting comprehensive system analysis data" --context "analysis"
+    
+    let package_analysis = (analyze_package_sizes)
+    let code_quality = (analyze_code_quality)
+    let security_analysis = (analyze_security_posture)
+    let system_info = (collect_comprehensive_system_info)
+    
+    {
+        metadata: {
+            generated_at: (date now),
+            generator: "nix-mox dashboard analysis",
+            version: "2.0.0"
+        },
+        system: $system_info,
+        packages: $package_analysis,
+        code_quality: $code_quality,
+        security: $security_analysis
+    }
+}
+
+# Comprehensive system information collector for analysis
+def collect_comprehensive_system_info [] {
+    let platform = (get_platform)
+    let platform_report = (platform_report)
+    
+    {
+        platform: $platform,
+        detailed_info: $platform_report,
+        nix_info: {
+            version: (try { (nix --version | lines | get 0) } catch { "unknown" }),
+            store_health: (try { 
+                let check = (nix store ping | complete)
+                if $check.exit_code == 0 { "healthy" } else { "unhealthy" }
+            } catch { "error" })
+        }
+    }
 }
 
 # Individual data collectors
@@ -838,9 +876,10 @@ def display_gaming [data: record, format: string] {
 }
 
 def display_analysis [data: record, format: string] {
-    print "=== Analysis Dashboard ==="
-    print ""
-    print ($data | to yaml)
+    # Use the improved analysis report formatting from analysis.nu
+    use lib/analysis.nu render_analysis_dashboard
+    
+    render_analysis_dashboard $data $format
 }
 
 def save_dashboard_data [data: record, output_path: string] {

@@ -437,63 +437,290 @@ export def render_analysis_dashboard [data: record, format: string = "terminal"]
 }
 
 def format_terminal_dashboard [data: record] {
-    print "=== Nix-Mox Analysis Dashboard ==="
+    generate_analysis_report $data
+}
+
+# Generate comprehensive analysis report with actionable insights
+def generate_analysis_report [data: record] {
+    print "Nix-Mox System Analysis Report"
+    print "=============================="
     print ""
     
     if "metadata" in $data {
         let meta = ($data | get metadata)
-        print $"Generated: ($meta.generated_at)"
-        print $"Version: ($meta.version)"
+        print $"Report generated: ($meta.generated_at)"
+        print $"Analysis version: ($meta.version)"
         print ""
     }
     
+    # System overview with ASCII diagram
     if "system" in $data {
-        print "📊 System Information:"
+        print "SYSTEM OVERVIEW"
+        print "---------------"
         let sys = ($data | get system)
         if "platform" in $sys {
             let platform = ($sys | get platform)
-            print $"  Platform: ($platform.normalized) ($platform.arch)"
-            print $"  Hostname: ($platform.hostname)"
+            print $"Platform: ($platform.normalized) ($platform.arch)"
+            print $"Hostname: ($platform.hostname)"
         }
+        
+        # System architecture ASCII diagram
+        print ""
+        print "System Architecture:"
+        print "┌─────────────────┐    ┌─────────────────┐"
+        print "│   NixOS Host    │────│  Nix Store     │"
+        print "│                 │    │                 │"
+        if "nix_info" in ($sys | default {}) {
+            let nix = ($sys | get nix_info)
+            print $"│  Nix: ($nix | get -o version | default 'unknown' | str substring 0..10)     │    │  Status: ($nix | get -o store_health | default 'unknown')    │"
+        } else {
+            print "│  Nix: unknown   │    │  Status: unknown│"
+        }
+        print "└─────────────────┘    └─────────────────┘"
         print ""
     }
     
+    # Package analysis with actionable metrics
     if "packages" in $data {
-        print "📦 Package Analysis:"
+        print "PACKAGE ANALYSIS"
+        print "----------------"
         let packages = ($data | get packages)
+        
         if "nix_store" in $packages {
             let store = ($packages | get nix_store)
-            print $"  Store Size: ($store | get -o total_size | default 'unknown')"
-            print $"  Package Count: ($store | get -o package_count | default 'unknown')"
+            let store_size = ($store | get -o total_size | default 'unknown')
+            let package_count = ($store | get -o package_count | default 0)
+            
+            print $"Nix store size: ($store_size)"
+            print $"Package count: ($package_count)"
+            
+            # Store usage visualization
+            if $package_count > 0 {
+                let usage_bar = (generate_usage_bar $package_count 1000 20)
+                print $"Store usage: ($usage_bar) ($package_count)/1000 typical"
+            }
+        }
+        
+        if "generations" in $packages {
+            let generations = ($packages | get generations)
+            if "count" in $generations {
+                let gen_count = ($generations | get count)
+                print $"System generations: ($gen_count)"
+                if $gen_count > 10 {
+                    print "ACTION REQUIRED: Consider cleaning old generations with 'nix-collect-garbage -d'"
+                }
+            }
         }
         print ""
     }
     
+    # Code quality with specific recommendations
     if "code_quality" in $data {
-        print "🔍 Code Quality:"
+        print "CODE QUALITY ASSESSMENT"
+        print "------------------------"
         let quality = ($data | get code_quality)
+        
         if "file_metrics" in $quality {
             let metrics = ($quality | get file_metrics)
-            print $"  Total Files: ($metrics | get -o total_files | default 'unknown')"
-            print $"  Total Lines: ($metrics | get -o total_lines | default 'unknown')"
-            print $"  Avg Lines/File: ($metrics | get -o avg_lines_per_file | default 'unknown')"
+            let total_files = ($metrics | get -o total_files | default 0)
+            let total_lines = ($metrics | get -o total_lines | default 0)
+            let avg_lines = ($metrics | get -o avg_lines_per_file | default 0)
+            
+            print $"Total files: ($total_files)"
+            print $"Total lines: ($total_lines)"
+            print $"Average lines per file: ($avg_lines)"
+            
+            # Code complexity assessment
+            if $avg_lines > 200 {
+                print "RECOMMENDATION: Consider breaking down large files (>200 lines average)"
+            } else if $avg_lines < 50 {
+                print "STATUS: Good file size distribution maintained"
+            }
+        }
+        
+        if "complexity" in $quality {
+            let complexity = ($quality | get complexity)
+            if "functions" in $complexity {
+                let functions = ($complexity | get functions)
+                let total_funcs = ($functions | get -o total | default 0)
+                let exported_funcs = ($functions | get -o exported | default 0)
+                
+                print $"Functions: ($total_funcs) total, ($exported_funcs) exported"
+                
+                if $total_funcs > 0 {
+                    let export_ratio = ($exported_funcs * 100 / $total_funcs | math round)
+                    print $"API surface: ($export_ratio)% of functions are public"
+                    
+                    if $export_ratio > 50 {
+                        print "RECOMMENDATION: Consider reducing public API surface for better encapsulation"
+                    }
+                }
+            }
         }
         print ""
     }
     
+    # Security analysis with specific findings
     if "security" in $data {
-        print "🛡️  Security Analysis:"
+        print "SECURITY ASSESSMENT"
+        print "-------------------"
         let security = ($data | get security)
-        print "  Security posture analysis completed"
+        
+        if "dangerous_patterns" in $security {
+            let patterns = ($security | get dangerous_patterns)
+            if "total_issues" in $patterns {
+                let issues = ($patterns | get total_issues)
+                if $issues > 0 {
+                    print $"ALERT: ($issues) potentially dangerous patterns found"
+                    if "findings" in $patterns {
+                        for finding in ($patterns | get findings) {
+                            let pattern = ($finding | get pattern)
+                            let matches = ($finding | get matches)
+                            if $matches > 0 {
+                                print $"  - Pattern '($pattern)': ($matches) occurrences"
+                            }
+                        }
+                    }
+                } else {
+                    print "STATUS: No dangerous patterns detected"
+                }
+            }
+        }
+        
+        if "secret_exposure" in $security {
+            let secrets = ($security | get secret_exposure)
+            if "potential_secrets" in $secrets {
+                let secret_count = ($secrets | get potential_secrets)
+                if $secret_count > 0 {
+                    print $"WARNING: ($secret_count) potential secret exposures found"
+                    print "ACTION REQUIRED: Review and secure any exposed credentials"
+                } else {
+                    print "STATUS: No potential secret exposures detected"
+                }
+            }
+        }
+        
+        if "file_permissions" in $security {
+            let perms = ($security | get file_permissions)
+            if "executable_count" in $perms {
+                let exec_count = ($perms | get executable_count)
+                let total_count = ($perms | get -o total_files | default 0)
+                if $total_count > 0 {
+                    let exec_ratio = ($exec_count * 100 / $total_count | math round)
+                    print $"Executable files: ($exec_count)/($total_count) (($exec_ratio)%)"
+                }
+            }
+        }
         print ""
     }
     
+    # Performance analysis with benchmarks
     if "performance" in $data and ($data.performance | get -o note | default "") != "benchmarks not included" {
-        print "⚡ Performance Benchmarks:"
+        print "PERFORMANCE ANALYSIS"
+        print "--------------------"
         let perf = ($data | get performance)
-        print $"  Benchmark completed with ($perf | get -o iterations | default 'unknown') iterations"
+        let iterations = ($perf | get -o iterations | default 0)
+        print $"Benchmark iterations: ($iterations)"
+        
+        # CPU performance
+        if "cpu" in $perf {
+            let cpu = ($perf | get cpu)
+            if "avg_per_iteration" in $cpu {
+                let avg_time = ($cpu | get avg_per_iteration)
+                print $"CPU performance: ($avg_time) average per operation"
+            }
+        }
+        
+        # Memory performance  
+        if "memory" in $perf {
+            let memory = ($perf | get memory)
+            if "memory_delta" in $memory {
+                let delta = ($memory | get memory_delta)
+                print $"Memory usage delta: ($delta) bytes"
+            }
+        }
+        
+        # Nix operations performance
+        if "nix" in $perf {
+            let nix_perf = ($perf | get nix)
+            if "avg_per_operation" in $nix_perf {
+                let nix_avg = ($nix_perf | get avg_per_operation)
+                print $"Nix store ping average: ($nix_avg)"
+            }
+        }
         print ""
+    }
+    
+    # Action items summary
+    print "ACTION ITEMS SUMMARY"
+    print "--------------------"
+    let actions = (generate_action_items $data)
+    if ($actions | length) > 0 {
+        for action in $actions {
+            print $"- ($action)"
+        }
+    } else {
+        print "No immediate actions required"
     }
     
     $data
+}
+
+# Generate ASCII usage bar
+def generate_usage_bar [current: int, max: int, width: int] {
+    let ratio = ($current / $max)
+    let filled = ($ratio * $width | math floor)
+    let empty = ($width - $filled)
+    
+    let bar_filled = ("█" * $filled)
+    let bar_empty = ("░" * $empty)
+    let bar = ($bar_filled + $bar_empty)
+    $"[($bar)]"
+}
+
+# Generate actionable recommendations based on analysis data
+def generate_action_items [data: record] {
+    mut actions = []
+    
+    # Package management actions
+    if "packages" in $data {
+        let packages = ($data | get packages)
+        if "generations" in $packages {
+            let gen_count = ($packages | get generations | get -o count | default 0)
+            if $gen_count > 10 {
+                $actions = ($actions | append "Clean old system generations to free disk space")
+            }
+        }
+    }
+    
+    # Security actions
+    if "security" in $data {
+        let security = ($data | get security)
+        if "dangerous_patterns" in $security {
+            let issues = ($security | get dangerous_patterns | get -o total_issues | default 0)
+            if $issues > 0 {
+                $actions = ($actions | append "Review and remediate dangerous code patterns")
+            }
+        }
+        
+        if "secret_exposure" in $security {
+            let secrets = ($security | get secret_exposure | get -o potential_secrets | default 0)
+            if $secrets > 0 {
+                $actions = ($actions | append "Audit and secure potential credential exposures")
+            }
+        }
+    }
+    
+    # Code quality actions
+    if "code_quality" in $data {
+        let quality = ($data | get code_quality)
+        if "file_metrics" in $quality {
+            let avg_lines = ($quality | get file_metrics | get -o avg_lines_per_file | default 0)
+            if $avg_lines > 200 {
+                $actions = ($actions | append "Refactor large files to improve maintainability")
+            }
+        }
+    }
+    
+    $actions
 }
