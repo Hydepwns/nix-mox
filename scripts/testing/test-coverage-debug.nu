@@ -2,7 +2,6 @@
 
 # Import unified libraries
 use ../lib/validators.nu *
-use logging.nu *
 use ../lib/logging.nu *
 
 # Debug script to test coverage system

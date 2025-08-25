@@ -2,7 +2,6 @@
 
 # Import unified libraries
 use ../../lib/validators.nu
-use logging.nu *
 use ../../lib/logging.nu *
 
 # Integration tests for library modules working together

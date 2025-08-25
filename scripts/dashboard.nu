@@ -190,61 +190,31 @@ def analysis_dashboard [refresh: int, watch: bool, output: string, format: strin
 
 # Data collection functions using functional composition
 def collect_overview_data [] {
-    collect_data 
-        "collect_basic_system_info"
-        "collect_nix_status"
-        "collect_disk_usage"
-        "collect_memory_usage"
-        "collect_service_status"
-        "collect_recent_activity"
+    collect_data "collect_basic_system_info" "collect_nix_status" "collect_disk_usage" "collect_memory_usage" "collect_service_status" "collect_recent_activity"
 }
 
 def collect_system_data [] {
-    collect_data
-        "collect_basic_system_info"
-        "collect_detailed_hardware_info"
-        "collect_network_info"
-        "collect_process_info"
-        "collect_environment_info"
+    collect_data "collect_basic_system_info" "collect_detailed_hardware_info" "collect_network_info" "collect_process_info" "collect_environment_info"
 }
 
 def collect_performance_data [] {
-    collect_data
-        "collect_cpu_metrics"
-        "collect_memory_metrics"
-        "collect_disk_metrics"
-        "collect_network_metrics"
-        "collect_nix_performance"
+    collect_data "collect_cpu_metrics" "collect_memory_metrics" "collect_disk_metrics" "collect_network_metrics" "collect_nix_performance"
 }
 
 def collect_testing_data [] {
-    collect_data
-        "collect_test_results"
-        "collect_coverage_data"
-        "collect_quality_metrics"
+    collect_data "collect_test_results" "collect_coverage_data" "collect_quality_metrics"
 }
 
 def collect_security_data [] {
-    collect_data
-        "collect_security_status"
-        "collect_vulnerability_scan"
-        "collect_audit_logs"
+    collect_data "collect_security_status" "collect_vulnerability_scan" "collect_audit_logs"
 }
 
 def collect_gaming_data [] {
-    collect_data
-        "collect_gpu_info"
-        "collect_gaming_services"
-        "collect_audio_status"
-        "collect_controller_status"
+    collect_data "collect_gpu_info" "collect_gaming_services" "collect_audio_status" "collect_controller_status"
 }
 
 def collect_analysis_data [] {
-    collect_data
-        "collect_package_analysis"
-        "collect_size_analysis"
-        "collect_dependency_analysis"
-        "collect_performance_analysis"
+    collect_data "collect_package_analysis" "collect_size_analysis" "collect_dependency_analysis" "collect_performance_analysis"
 }
 
 # Individual data collectors
