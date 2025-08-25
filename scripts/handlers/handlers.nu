@@ -27,7 +27,7 @@ export def validate_dependencies [dependencies: list<string>] {
     for dep in $dependencies {
         if (which $dep | length) == 0 {
             log "ERROR" $"Required dependency not found: ($dep)"
-            handle_error $env ERROR_CODES.DEPENDENCY_MISSING "Missing dependency" $"Please install ($dep) and try again"
+            error $env ERROR_CODES.DEPENDENCY_MISSING "Missing dependency" $"Please install ($dep) and try again"
         }
     }
 }
@@ -35,14 +35,14 @@ export def validate_dependencies [dependencies: list<string>] {
 export def validate_file [path: string] {
     if not ($path | path type) == "file" {
         log "ERROR" $"Not a file: ($path)"
-        handle_error $env ERROR_CODES.INVALID_ARGUMENT "Invalid file" $"Path: ($path)"
+        error $env ERROR_CODES.INVALID_ARGUMENT "Invalid file" $"Path: ($path)"
     }
 }
 
 export def run_platform_script [platform: string, script: string, ...args: string] {
     let script_file = get_platform_script $platform $script
     if $script_file == null {
-        handle_error $env ERROR_CODES.HANDLER_NOT_FOUND "Script not found" $"Platform: ($platform), Script: ($script)"
+        error $env ERROR_CODES.HANDLER_NOT_FOUND "Script not found" $"Platform: ($platform), Script: ($script)"
     }
     if $env.DRY_RUN {
         log "INFO" $"Would execute: ($script_file)"

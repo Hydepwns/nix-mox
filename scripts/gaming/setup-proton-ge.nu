@@ -1,27 +1,28 @@
 #!/usr/bin/env nu
 
-# Import unified libraries
-use ../../../../../lib/unified-checks.nu
-use ../../../../../lib/unified-error-handling.nu
-
+# Import consolidated libraries
+use ../lib/logging.nu *
+use ../lib/validators.nu *
+use ../lib/command-wrapper.nu *
+use ../lib/script-template.nu *
 
 # Setup script for Proton GE and anticheat support on NixOS
 
 def main [] {
-    print "🎮 Setting up Proton GE and Anticheat Support for NixOS"
-    print ""
+    info "🎮 Setting up Proton GE and Anticheat Support for NixOS" --context "proton-ge"
     
-    # Check if Steam is installed
-    if not (which steam | is-not-empty) {
-        print "❌ Steam is not installed. Please enable it in your configuration.nix:"
-        print "   services.gaming.platforms.steam = true;"
+    # Check if Steam is installed using validator
+    let steam_validation = (validate_command "steam")
+    if not $steam_validation.success {
+        error "Steam is not installed. Please enable it in your configuration.nix:" --context "proton-ge"
+        info "   services.gaming.platforms.steam = true;" --context "proton-ge"
         exit 1
     }
     
     # Create compatibility tools directory
     let compat_dir = $"($env.HOME)/.steam/root/compatibilitytools.d"
     if not ($compat_dir | path exists) {
-        print $"📁 Creating compatibility tools directory: ($compat_dir)"
+        info $"📁 Creating compatibility tools directory: ($compat_dir)" --context "proton-ge"
         mkdir $compat_dir
     }
     

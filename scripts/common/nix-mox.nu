@@ -1,12 +1,12 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../../../lib/unified-checks.nu
-use ../../../../../lib/unified-error-handling.nu
+use ../../../../../lib/validators.nu
+use ../../../../../lib/logging.nu
 
 
 # Main script for nix-mox
-use ../lib/common.nu *
+use ../lib/logging.nu *
 
 # Fallback error if not defined
 if (not (scope commands | where name == 'error' | is-not-empty)) {
@@ -67,7 +67,7 @@ def show_help [] {
 }
 
 # --- Error Handling ---
-def handle_error [error_msg: string, exit_code: int = 1] {
+def error [error_msg: string, exit_code: int = 1] {
     error $error_msg
     if ($env.LOG_FILE | is-not-empty) {
         error "Check the log file for more details: ($env.LOG_FILE)"
@@ -107,8 +107,8 @@ def run_script [script: string, dry_run: bool] {
             } else {
                 info "Running interactive setup script..."
                 let setup_script = "scripts/platforms/linux/setup-interactive.nu"
-                check_file $setup_script "Setup script not found"
-                check_permissions $setup_script "x"
+                validate_file $setup_script "Setup script not found"
+                validate_permissions $setup_script "x"
                 try {
                     nu $setup_script
                     info "Interactive setup completed successfully"
@@ -132,8 +132,8 @@ def run_script [script: string, dry_run: bool] {
                 }
 
                 # Check if install script exists and is executable
-                check_file $install_script "Install script not found"
-                check_permissions $install_script "x"
+                validate_file $install_script "Install script not found"
+                validate_permissions $install_script "x"
 
                 # Run platform-specific install script
                 info $"Running platform-specific install script: ($install_script)"
@@ -155,8 +155,8 @@ def run_script [script: string, dry_run: bool] {
                 match $platform {
                     "linux" | "darwin" => {
                         # Check required commands
-                        check_command "nix-channel"
-                        check_command "nix-env"
+                        validate_command "nix-channel"
+                        validate_command "nix-env"
 
                         # For Linux/macOS, update Nix packages
                         info "Updating Nix packages..."
@@ -171,8 +171,8 @@ def run_script [script: string, dry_run: bool] {
                     "windows" => {
                         # For Windows, update Steam and Rust
                         let win_update_script = "modules/scripts/platforms/windows/install-steam-rust.nu"
-                        check_file $win_update_script "Update script not found"
-                        check_permissions $win_update_script "x"
+                        validate_file $win_update_script "Update script not found"
+                        validate_permissions $win_update_script "x"
                         try {
                             nu $win_update_script
                             info "Steam and Rust updated successfully"
@@ -191,18 +191,18 @@ def run_script [script: string, dry_run: bool] {
                 info "Running ZFS snapshot script..."
 
                 # Check if ZFS is available and user has permissions
-                check_command "zfs"
+                validate_command "zfs"
                 try {
                     zfs list > /dev/null
                 } catch {
-                    handle_error "ZFS command failed. Please check if you have sufficient permissions."
+                    error "ZFS command failed. Please check if you have sufficient permissions."
                 }
 
                 # Get list of ZFS pools
                 try {
                     let pools = (zfs list -H -o name | lines)
                     if ($pools | length) == 0 {
-                        handle_error "No ZFS pools found"
+                        error "No ZFS pools found"
                     }
 
                     # Create snapshots for each pool
@@ -226,10 +226,10 @@ def run_script [script: string, dry_run: bool] {
                         for snapshot in $failed_snapshots {
                             warn $"  - ($snapshot)"
                         }
-                        handle_error "Some snapshots failed to create" 0  # Exit with warning
+                        error "Some snapshots failed to create" 0  # Exit with warning
                     }
                 } catch { |err|
-                    handle_error $"Failed to list ZFS pools: ($err)"
+                    error $"Failed to list ZFS pools: ($err)"
                 }
             }
         }
@@ -254,7 +254,7 @@ def setup_file_logging [log_file: string] {
         if not ($log_dir | path exists) {
             mkdir $log_dir
         }
-        check_permissions $log_dir "w"
+        validate_permissions $log_dir "w"
 
         # Setup file logging
         try {
