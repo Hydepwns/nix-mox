@@ -99,11 +99,11 @@ jobs:
   platform-compatibility:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-15]
         include:
           - os: ubuntu-latest
             platform: linux
-          - os: macos-latest  
+          - os: macos-15  
             platform: macos
     runs-on: ${{ matrix.os }}
     name: Platform Compatibility (${{ matrix.platform }})
