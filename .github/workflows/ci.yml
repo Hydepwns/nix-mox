@@ -40,7 +40,7 @@ jobs:
           
       - name: Check Code Formatting
         run: |
-          nix --extra-experimental-features "nix-command flakes" run .#fmt --check
+          nix --extra-experimental-features "nix-command flakes" run .#fmt -- --check
 
   testing:
     runs-on: ubuntu-latest
