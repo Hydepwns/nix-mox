@@ -12,9 +12,7 @@ use command-wrapper.nu *
 export def analysis_pipeline [...analyzers: closure] {
     $analyzers | par-each { |analyzer|
         try {
-            with_logging "analysis step" --context "analysis" { 
-                do $analyzer
-            }
+            do $analyzer
         } catch { |err|
             warn $"Analysis step failed: ($err.msg)" --context "analysis"
             {}
@@ -24,10 +22,9 @@ export def analysis_pipeline [...analyzers: closure] {
 
 # Package size analysis
 export def analyze_package_sizes [--output: string = ""] {
-    with_logging "package size analysis" --context "analysis" {||
-        
-        let nix_store_analysis = try {
-            let store_size = (du -sh /nix/store 2>/dev/null | split column "\t" | get column1.0 | default "unknown")
+    info "Starting package size analysis" --context "analysis"
+    let nix_store_analysis = try {
+            let store_size = (^du -sh /nix/store 2>/dev/null | split column "\t" | get column1.0 | default "unknown")
             let package_count = try {
                 (ls /nix/store | length)
             } catch { 0 }
@@ -71,15 +68,14 @@ export def analyze_package_sizes [--output: string = ""] {
             info $"Package size analysis saved: ($output)" --context "analysis"
         }
         
+        success "Package size analysis completed" --context "analysis"
         $analysis
-    }
 }
 
 # Performance benchmarking
 export def benchmark_system_performance [--iterations: int = 5] {
-    with_logging "system performance benchmark" --context "benchmark" {||
-        
-        # CPU benchmark
+    info "Starting system performance benchmark" --context "benchmark"
+    # CPU benchmark
         let cpu_benchmark = benchmark_cpu_performance $iterations
         
         # Memory benchmark
@@ -91,6 +87,7 @@ export def benchmark_system_performance [--iterations: int = 5] {
         # Nix operations benchmark
         let nix_benchmark = benchmark_nix_operations $iterations
         
+        success "System performance benchmark completed" --context "benchmark"
         {
             timestamp: (date now),
             iterations: $iterations,
@@ -99,7 +96,6 @@ export def benchmark_system_performance [--iterations: int = 5] {
             disk: $disk_benchmark,
             nix: $nix_benchmark
         }
-    }
 }
 
 def benchmark_cpu_performance [iterations: int] {
@@ -202,12 +198,12 @@ def benchmark_nix_operations [iterations: int] {
 
 # Code quality analysis
 export def analyze_code_quality [--path: string = "scripts"] {
-    with_logging "code quality analysis" --context "analysis" {||
-        
-        let file_analysis = analyze_file_metrics $path
+    info "Starting code quality analysis" --context "analysis"
+    let file_analysis = analyze_file_metrics $path
         let complexity_analysis = analyze_code_complexity $path
         let duplication_analysis = analyze_code_duplication $path
         
+        success "Code quality analysis completed" --context "analysis"
         {
             timestamp: (date now),
             path: $path,
@@ -215,7 +211,6 @@ export def analyze_code_quality [--path: string = "scripts"] {
             complexity: $complexity_analysis,
             duplication: $duplication_analysis
         }
-    }
 }
 
 def analyze_file_metrics [path: string] {
@@ -280,12 +275,12 @@ def analyze_code_duplication [path: string] {
 
 # Security analysis
 export def analyze_security_posture [] {
-    with_logging "security posture analysis" --context "security" {||
-        
-        let file_permissions = analyze_file_permissions
+    info "Starting security posture analysis" --context "security"
+    let file_permissions = analyze_file_permissions
         let dangerous_patterns = scan_for_dangerous_patterns
         let secret_exposure = check_for_exposed_secrets
         
+        success "Security posture analysis completed" --context "security"
         {
             timestamp: (date now),
             file_permissions: $file_permissions,
@@ -293,7 +288,6 @@ export def analyze_security_posture [] {
             secret_exposure: $secret_exposure,
             overall_score: "analysis not implemented"
         }
-    }
 }
 
 def analyze_file_permissions [] {
