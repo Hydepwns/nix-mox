@@ -31,10 +31,7 @@ safe-test: check-nushell
 	@echo "🧪 Running comprehensive flake testing..."
 	$(NUSHELL) scripts/validation/safe-flake-test.nu --test-minimal --backup-current --verbose
 
-# Storage safety targets
-storage-guard: check-nushell
-	@echo "🔍 Validating storage configuration..."
-	nix run .#storage-guard
+# Storage safety targets (main storage-guard target is in development.mk)
 
 fix-storage: check-nushell
 	@echo "🔧 Auto-fixing storage configuration issues..."

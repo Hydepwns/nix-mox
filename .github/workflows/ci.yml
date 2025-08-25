@@ -7,21 +7,150 @@ on:
     branches: [ main ]
 
 jobs:
-  check:
+  validation:
     runs-on: ubuntu-latest
+    name: Validation & Testing
     steps:
       - uses: actions/checkout@v4
       
       - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
         
-      - name: Check flake
+      - name: Setup Nushell
+        run: |
+          nix-shell -p nushell --run "echo 'Nushell installed'"
+          
+      - name: Run Basic Validation
+        run: |
+          nix-shell -p nushell --run "nu scripts/validate.nu basic --verbose"
+          
+      - name: Run Configuration Validation  
+        run: |
+          nix-shell -p nushell --run "nu scripts/validate.nu config --verbose"
+          
+      - name: Check Flake Syntax
         run: |
           nix flake check --no-build
           
-      - name: Build configuration
+      - name: Test Configuration Build
         run: |
           nix build .#nixosConfigurations.nixos.config.system.build.toplevel --dry-run
           
-      - name: Check formatting
+      - name: Check Code Formatting
         run: |
-          nix run .#fmt
+          nix run .#fmt --check
+
+  testing:
+    runs-on: ubuntu-latest
+    name: Testing & Coverage
+    needs: validation
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            
+      - name: Setup Test Environment
+        run: |
+          nix-shell -p nushell --run "nu scripts/setup.nu automated --component testing --dry-run"
+          
+      - name: Run Unit Tests
+        run: |
+          nix-shell -p nushell --run "nu scripts/validate.nu basic"
+          
+      - name: Generate Coverage Report
+        run: |
+          nix-shell -p nushell --run "nu scripts/coverage.nu lcov --output coverage-tmp/lcov.info"
+          
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage-tmp/lcov.info
+          fail_ci_if_error: false
+          verbose: true
+
+  security:
+    runs-on: ubuntu-latest  
+    name: Security Analysis
+    needs: validation
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            
+      - name: Run Security Analysis
+        run: |
+          nix-shell -p nushell --run "nu scripts/dashboard.nu security --output security-report.json"
+          
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: security-report.json
+
+  platform-compatibility:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: macos-latest  
+            platform: macos
+    runs-on: ${{ matrix.os }}
+    name: Platform Compatibility (${{ matrix.platform }})
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            
+      - name: Test Platform Detection
+        run: |
+          nix-shell -p nushell --run "nu -c 'use scripts/lib/platform.nu *; get_platform | to json'"
+          
+      - name: Run Platform-Specific Validation
+        run: |
+          nix-shell -p nushell --run "nu scripts/validate.nu basic --verbose"
+          
+      - name: Test Platform Operations
+        run: |
+          nix-shell -p nushell --run "nu -c 'use scripts/lib/platform-operations.nu *; maintenance_pipeline'"
+
+  documentation:
+    runs-on: ubuntu-latest
+    name: Documentation & Analysis
+    needs: [validation, testing]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            
+      - name: Generate System Report
+        run: |
+          nix-shell -p nushell --run "nu -c 'use scripts/lib/analysis.nu *; generate_system_report --include-benchmarks true --output system-report.json'"
+          
+      - name: Generate Dashboard Report
+        run: |
+          nix-shell -p nushell --run "nu scripts/dashboard.nu analysis --output analysis-report.json"
+          
+      - name: Upload Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-reports
+          path: |
+            system-report.json
+            analysis-report.json

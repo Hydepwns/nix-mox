@@ -43,10 +43,7 @@ display-test-all: check-nushell
 	@echo "🧪 Comprehensive display testing..."
 	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; run ['--test', '--all', '--verbose']"
 
-# Coverage targets
-coverage: check-nushell
-	@echo "📊 Setting up coverage..."
-	$(NUSHELL) -c "source scripts/testing/generate-coverage.nu; run ['--approach', 'lcov', '--verbose']"
+# Coverage targets (main coverage target is in development.mk)
 
 coverage-grcov: check-nushell
 	@echo "📊 Setting up grcov coverage..."

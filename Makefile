@@ -52,6 +52,8 @@ help:
 	@echo "  build-all   - Build all packages"
 	@echo "  update      - Update flake inputs"
 	@echo "  lock        - Update flake.lock"
+	@echo "  build-zed-extension - Build Zed extension for nix-mox"
+	@echo "  install-synthwave84-zed - Install/update Synthwave84 theme for Zed"
 	@echo ""
 	@echo "💻 Development Shells:"
 	@echo "  dev         - Enter default development shell"
@@ -62,26 +64,22 @@ help:
 	@echo "  monitoring-shell - Enter monitoring shell"
 	@echo "  zfs-shell   - Enter ZFS/storage shell (Linux only)"
 	@echo ""
-	@echo "📊 Analysis & Optimization:"
+	@echo "📊 Analysis & Dashboards:"
+	@echo "  dashboard       - Interactive system dashboard (default: overview)"
+	@echo "  dashboard-system - Detailed system information dashboard"
+	@echo "  dashboard-performance - Performance metrics dashboard"
+	@echo "  dashboard-gaming - Gaming system dashboard"
 	@echo "  analyze-sizes - Analyze size of packages, devshells, and templates"
-	@echo "  size-dashboard - Generate and serve web-based size analysis dashboard"
 	@echo "  cache-optimize - Run advanced caching strategy with optimization"
 	@echo "  performance-analyze - Comprehensive performance analysis"
-	@echo "  performance-optimize - Apply performance optimizations"
-	@echo "  performance-report - Generate performance report"
-	@echo "  perf - Quick performance check"
 	@echo "  code-quality - Comprehensive code quality analysis"
-	@echo "  code-syntax - Check syntax of all files"
-	@echo "  code-security - Check for security issues"
 	@echo "  quality - Quick code quality check"
 	@echo ""
 	@echo "📊 Coverage & Testing:"
-	@echo "  coverage - Set up LCOV coverage (recommended for Codecov)"
-	@echo "  coverage-grcov - Set up grcov coverage (Rust-based)"
-	@echo "  coverage-tarpaulin - Set up tarpaulin coverage (Rust-based)"
-	@echo "  coverage-custom - Set up custom test-based coverage"
-	@echo "  coverage-ci - Set up coverage for CI environments"
-	@echo "  coverage-local - Set up coverage for local development"
+	@echo "  coverage - Generate LCOV coverage report"
+	@echo "  coverage-all - Generate all coverage formats (LCOV, HTML, JSON, XML)"
+	@echo "  coverage-html - Generate HTML coverage report"
+	@echo "  coverage-watch - Real-time coverage monitoring"
 	@echo ""
 	@echo "🔒 Compliance & Security:"
 	@echo "  security-check - Validate security module configuration"
@@ -91,14 +89,17 @@ help:
 	@echo "  ci-test     - Run quick CI test locally"
 	@echo "  ci-local    - Run local CI pipeline"
 	@echo ""
-	@echo "🛡️  Safety & Maintenance:"
+	@echo "🛡️  Safety & Validation:"
+	@echo "  validate        - Run validation suite (default: basic)"
+	@echo "  validate-config - Validate NixOS configuration"
+	@echo "  validate-gaming - Validate gaming setup"
+	@echo "  validate-storage - Validate storage safety"
+	@echo "  validate-pre-rebuild - Comprehensive pre-rebuild validation"
 	@echo "  safety-check - Run mandatory safety validation"
-	@echo "  display-check - Validate display manager won't break"
-	@echo "  pre-rebuild  - Comprehensive pre-rebuild validation"
-	@echo "  safe-test    - Run comprehensive flake testing"
 	@echo "  safe-rebuild - Run safe nixos-rebuild with validation"
 	@echo "  storage-guard - Validate storage configuration"
-	@echo "  fix-storage  - Auto-fix storage configuration issues"
+	@echo "  storage-fix - Fix storage configuration issues"
+	@echo "  storage-health - Comprehensive storage health check"
 	@echo ""
 	@echo "🧹 Cleanup:"
 	@echo "  clean       - Clean test artifacts"
@@ -121,7 +122,7 @@ check-nushell:
 # CI targets
 ci-test: check-nushell
 	@echo "🚀 Running quick CI test..."
-	$(NUSHELL) scripts/maintenance/ci/ci-test.sh
+	$(NUSHELL) scripts/maintenance/ci/ci-test.nu
 
 ci-local: check-nushell
 	@echo "🚀 Running local CI pipeline..."
@@ -130,11 +131,19 @@ ci-local: check-nushell
 # Setup targets
 setup: check-nushell
 	@echo "🔧 Running interactive setup..."
-	$(NUSHELL) scripts/setup/unified-setup.nu --interactive
+	$(NUSHELL) scripts/setup.nu interactive
 
 gaming-setup: check-nushell
 	@echo "🎮 Setting up gaming workstation..."
-	$(NUSHELL) scripts/setup/unified-setup.nu --gaming --interactive
+	$(NUSHELL) scripts/setup.nu gaming
+
+automated-setup: check-nushell
+	@echo "⚡ Running automated setup..."
+	$(NUSHELL) scripts/setup.nu automated
+
+minimal-setup: check-nushell
+	@echo "📦 Running minimal setup..."
+	$(NUSHELL) scripts/setup.nu minimal
 
 # SBOM targets
 sbom: check-nushell
@@ -156,27 +165,27 @@ sbom-csv: check-nushell
 # Chezmoi integration targets
 chezmoi-apply: ## Apply chezmoi configuration
 	@echo "🔄 Applying chezmoi configuration..."
-	@nu scripts/chezmoi-apply.nu
+	@nu scripts/chezmoi.nu apply
 
 chezmoi-diff: ## Show chezmoi differences
 	@echo "🔍 Checking chezmoi differences..."
-	@nu scripts/chezmoi-diff.nu
+	@nu scripts/chezmoi.nu diff
 
 chezmoi-sync: ## Sync chezmoi with remote repository
 	@echo "📡 Syncing chezmoi with remote repository..."
-	@nu scripts/chezmoi-sync.nu
+	@nu scripts/chezmoi.nu sync
 
 chezmoi-edit: ## Edit chezmoi configuration
 	@echo "✏️  Opening chezmoi configuration for editing..."
-	@chezmoi edit
+	@nu scripts/chezmoi.nu edit
 
 chezmoi-status: ## Show chezmoi status
 	@echo "📊 Showing chezmoi status..."
-	@nu scripts/chezmoi-status.nu
+	@nu scripts/chezmoi.nu status
 
 chezmoi-verify: ## Verify chezmoi configuration
 	@echo "✅ Verifying chezmoi configuration..."
-	@chezmoi verify
+	@nu scripts/chezmoi.nu verify
 
 chezmoi-setup: ## Complete chezmoi setup and integration
 	@echo "🔗 Setting up chezmoi integration..."

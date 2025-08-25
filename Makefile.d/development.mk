@@ -1,6 +1,93 @@
 # Development-related Makefile targets
 # Include this file in the main Makefile
 
+# Editor extension targets
+build-zed-extension:
+	@echo "🛠️  Building Zed extension..."
+	cd extensions/zed && cargo build --release
+
+build-vscode-extension:
+	@echo "🛠️  Building VSCode extension..."
+	cd extensions/vscode && npm install && npm run compile
+
+install-synthwave84-zed:
+	@echo "🌈 Installing Synthwave84 theme for Zed..."
+	@if [ ! -d ~/.config/zed/themes ]; then mkdir -p ~/.config/zed/themes; fi
+	@if [ ! -d ~/.config/zed/themes/synthwave84 ]; then \
+		git clone https://github.com/Hydepwns/synthwave84-zed ~/.config/zed/themes/synthwave84; \
+		echo "✅ Synthwave84 theme installed for Zed"; \
+	else \
+		echo "🔄 Updating Synthwave84 theme for Zed..."; \
+		cd ~/.config/zed/themes/synthwave84 && git pull; \
+	fi
+
+# Consolidated script targets
+dashboard: check-nushell
+	@echo "📊 Launching system dashboard..."
+	$(NUSHELL) scripts/dashboard.nu overview
+
+dashboard-system: check-nushell  
+	@echo "🖥️  Launching system dashboard..."
+	$(NUSHELL) scripts/dashboard.nu system
+
+dashboard-performance: check-nushell
+	@echo "⚡ Launching performance dashboard..."
+	$(NUSHELL) scripts/dashboard.nu performance
+
+dashboard-gaming: check-nushell
+	@echo "🎮 Launching gaming dashboard..."
+	$(NUSHELL) scripts/dashboard.nu gaming
+
+validate: check-nushell
+	@echo "✅ Running basic validation..."
+	$(NUSHELL) scripts/validate.nu basic
+
+validate-config: check-nushell
+	@echo "🔧 Running configuration validation..."
+	$(NUSHELL) scripts/validate.nu config
+
+validate-gaming: check-nushell
+	@echo "🎮 Running gaming validation..."
+	$(NUSHELL) scripts/validate.nu gaming
+
+validate-storage: check-nushell
+	@echo "💾 Running storage validation..."
+	$(NUSHELL) scripts/validate.nu storage
+
+validate-pre-rebuild: check-nushell
+	@echo "🛡️  Running pre-rebuild validation..."
+	$(NUSHELL) scripts/validate.nu pre-rebuild
+
+# Storage operations
+storage-guard: check-nushell
+	@echo "💾 Running storage safety guard..."
+	$(NUSHELL) scripts/storage.nu guard
+
+storage-fix: check-nushell
+	@echo "🔧 Fixing storage configuration..."
+	$(NUSHELL) scripts/storage.nu fix
+
+storage-health: check-nushell
+	@echo "🏥 Checking storage health..."
+	$(NUSHELL) scripts/storage.nu health-check
+
+# Coverage operations
+coverage: check-nushell
+	@echo "📊 Generating LCOV coverage report..."
+	$(NUSHELL) scripts/coverage.nu lcov
+
+coverage-all: check-nushell
+	@echo "📊 Generating all coverage formats..."
+	$(NUSHELL) scripts/coverage.nu all
+
+coverage-html: check-nushell
+	@echo "📊 Generating HTML coverage report..."
+	$(NUSHELL) scripts/coverage.nu html
+
+coverage-watch: check-nushell
+	@echo "👀 Starting coverage watch mode..."
+	$(NUSHELL) scripts/coverage.nu watch
+
 # Development targets
 dev: check-nushell
 	@echo "💻 Entering development shell..."
