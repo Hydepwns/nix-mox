@@ -1,16 +1,16 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../lib/unified-checks.nu
-use ../../../lib/unified-logging.nu *
-use ../../../lib/unified-error-handling.nu *
+use ../../../lib/validators.nu
+use logging.nu *
+use ../../../lib/logging.nu *
 
 
 # Safety and backup module for display tests
 # Handles backup creation, safety checks, and recovery procedures
 
 use ../../lib/test-utils.nu *
-use ../../lib/test-common.nu *
+use ../../lib/testing.nu *
 
 export def setup_safety_backups [backup_dir: string] {
     print $"($env.CYAN)💾 Setting up safety backups... ($env.NC)"

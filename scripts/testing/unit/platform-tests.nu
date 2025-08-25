@@ -1,9 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use ../../lib/validators.nu
+use logging.nu *
+use ../../lib/logging.nu *
 
 use ../lib/test-utils.nu *
 use ../lib/test-coverage.nu *
@@ -113,10 +113,10 @@ def test_get_platform_info [] {
     assert_true ($platform_info | get -i kernel_version | is-not-empty) "Platform info contains kernel_version"
 }
 
-def test_check_platform_requirements [] {
+def test_detect_platform_requirements [] {
     print "Testing platform requirements checking..."
 
-    track_test "check_platform_requirements_linux" "unit" "passed" 0.1
+    track_test "detect_platform_requirements_linux" "unit" "passed" 0.1
     let current_os = (sys host | get name)
 
     if $current_os == "Linux" {
@@ -125,7 +125,7 @@ def test_check_platform_requirements [] {
         print "Skipping Linux requirements test (not on Linux)"
     }
 
-    track_test "check_platform_requirements_windows" "unit" "passed" 0.1
+    track_test "detect_platform_requirements_windows" "unit" "passed" 0.1
 
     if $current_os == "Windows" {
         assert_true true "Windows platform requirements met"
@@ -133,7 +133,7 @@ def test_check_platform_requirements [] {
         print "Skipping Windows requirements test (not on Windows)"
     }
 
-    track_test "check_platform_requirements_darwin" "unit" "passed" 0.1
+    track_test "detect_platform_requirements_darwin" "unit" "passed" 0.1
 
     if $current_os == "Darwin" {
         assert_true true "macOS platform requirements met"

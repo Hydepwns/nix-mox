@@ -1,16 +1,16 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use ../../lib/validators.nu
+use logging.nu *
+use ../../lib/logging.nu *
 
 
 # Filesystem operation tests
 # Tests for file and directory operations across modules
 
 use ../lib/test-utils.nu *
-use ../../lib/common.nu *
+use ../../lib/logging.nu *
 use ../../lib/config.nu *
 
 def main [] {
@@ -251,7 +251,7 @@ def test_log_file_operations [] {
 
     # Test log file creation and writing
     try {
-        log_info "Test log message" $log_file
+        info "Test log message" $log_file
         assert_true ($log_file | path exists) "Log file should be created"
         track_test "filesystem_log_file_creation" "unit" "passed" 0.1
     } catch {
@@ -269,7 +269,7 @@ def test_log_file_operations [] {
 
     # Test log file appending
     try {
-        log_warn "Warning message" $log_file
+        warn "Warning message" $log_file
         let updated_content = (open $log_file)
         assert_true ($updated_content | str contains "Warning message") "Log should append new messages"
         track_test "filesystem_log_file_appending" "unit" "passed" 0.1

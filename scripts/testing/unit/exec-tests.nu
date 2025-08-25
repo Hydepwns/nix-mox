@@ -1,9 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use ../../lib/validators.nu
+use logging.nu *
+use ../../lib/logging.nu *
 
 
 use ../lib/test-utils.nu *
@@ -120,12 +120,12 @@ def test_run_with_retry_logic [] {
     assert_true ($result == 1) "run_with_retry returns 1 when all retries fail"
 }
 
-def test_handle_error_logic [] {
-    print "Testing handle_error logic..."
+def test_error_logic [] {
+    print "Testing error logic..."
     # This will exit, so we just check that the function exists and can be called with dummy args
-    let did_error = (do { handle_error { code: 1, message: "Test error", details: "Details" } "test" } | default "error")
-    track_test "handle_error_exit" "unit" (if $did_error == "error" { "passed" } else { "failed" }) 0.1
-    assert_true ($did_error == "error") "handle_error returns error (exits)"
+    let did_error = (do { error { code: 1, message: "Test error", details: "Details" } "test" } | default "error")
+    track_test "error_exit" "unit" (if $did_error == "error" { "passed" } else { "failed" }) 0.1
+    assert_true ($did_error == "error") "error returns error (exits)"
 }
 
 def test_main_function [] {
@@ -170,8 +170,8 @@ def main [] {
     test_run_with_retry_logic
     test_run_with_retry
     test_run_parallel
-    test_handle_error
-    test_handle_error_logic
+    test_error
+    test_error_logic
     test_main_function
     test_script_validation
     print "Exec module unit tests completed successfully"

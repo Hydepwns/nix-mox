@@ -1,9 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use ../../lib/validators.nu
+use logging.nu *
+use ../../lib/logging.nu *
 
 
 # Security module tests
@@ -78,7 +78,7 @@ def test_file_permissions [] {
     "test content" | save $test_file
 
     try {
-        let perm_result = check_file_permissions $test_file
+        let perm_result = validate_file_permissions $test_file
         assert_true ($perm_result.readable != null) "Should check readability"
         assert_true ($perm_result.writable != null) "Should check writability"
         assert_true ($perm_result.executable != null) "Should check executability"
@@ -140,19 +140,19 @@ def test_file_operation_checks [] {
 
     # Test system file modification
     let system_content = "echo 'evil' > /etc/passwd"
-    let system_issues = check_file_operations $system_content
+    let system_issues = validate_file_operations $system_content
     assert_true (($system_issues | length) > 0) "Should detect system file modification"
     track_test "file_operations_system_modification" "unit" "passed" 0.1
 
     # Test safe file operations
     let safe_content = "echo 'data' > /tmp/safe-file"
-    let safe_issues = check_file_operations $safe_content
+    let safe_issues = validate_file_operations $safe_content
     assert_equal ($safe_issues | length) 0 "Should allow safe file operations"
     track_test "file_operations_safe" "unit" "passed" 0.1
 
     # Test recursive deletion
     let delete_content = "rm -rf /important/data"
-    let delete_issues = check_file_operations $delete_content
+    let delete_issues = validate_file_operations $delete_content
     assert_true (($delete_issues | length) > 0) "Should detect dangerous deletions"
     track_test "file_operations_dangerous_deletion" "unit" "passed" 0.1
 }

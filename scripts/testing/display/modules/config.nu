@@ -1,16 +1,16 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../lib/unified-checks.nu
-use ../../../lib/unified-logging.nu *
-use ../../../lib/unified-error-handling.nu *
+use ../../../lib/validators.nu
+use logging.nu *
+use ../../../lib/logging.nu *
 
 
 # Configuration analysis module for display tests
 # Handles configuration parsing, validation, and risk assessment
 
 use ../../lib/test-utils.nu *
-use ../../lib/test-common.nu *
+use ../../lib/testing.nu *
 
 export def analyze_display_config [] {
     print $"($env.CYAN)⚙️  Analyzing display configuration... ($env.NC)"

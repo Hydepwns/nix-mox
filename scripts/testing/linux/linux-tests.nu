@@ -1,14 +1,14 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use ../../lib/validators.nu
+use logging.nu *
+use ../../lib/logging.nu *
 
 # Linux-specific tests entrypoint
 
 export-env {
-  use ../lib/test-common.nu *
+  use ../lib/testing.nu *
 }
 
 print "🔧 Running Linux storage guard..."

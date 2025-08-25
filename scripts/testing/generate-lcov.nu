@@ -1,9 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-logging.nu *
-use ../lib/unified-error-handling.nu *
+use ../lib/validators.nu *
+use logging.nu *
+use ../lib/logging.nu *
 
 # Generate LCOV format coverage report for nix-mox
 # This generates coverage based on test execution results

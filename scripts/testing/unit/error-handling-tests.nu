@@ -1,9 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use ../../lib/validators.nu
+use logging.nu *
+use ../../lib/logging.nu *
 
 
 # Error handling module tests
@@ -66,9 +66,9 @@ def test_error_logging [] {
     
     let error = create_error "Test log error" "LOG_TEST" {source: "test"}
     
-    # Test that log_error_structured doesn't crash
+    # Test that error_structured doesn't crash
     try {
-        log_error_structured $error
+        error_structured $error
         track_test "error_logging_structured" "unit" "passed" 0.1
     } catch {
         track_test "error_logging_structured" "unit" "failed" 0.1

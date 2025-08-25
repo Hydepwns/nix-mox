@@ -1,9 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use ../../lib/validators.nu
+use logging.nu *
+use ../../lib/logging.nu *
 
 
 use ../lib/test-utils.nu *
@@ -13,13 +13,13 @@ use ../lib/coverage-core.nu *
 def test_logging_functions [] {
     print "Testing logging functions..."
 
-    track_test "log_info_basic" "unit" "passed" 0.1
+    track_test "info_basic" "unit" "passed" 0.1
     assert_true true "Log info function"
 
-    track_test "log_error_basic" "unit" "passed" 0.1
+    track_test "error_basic" "unit" "passed" 0.1
     assert_true true "Log error function"
 
-    track_test "log_success_basic" "unit" "passed" 0.1
+    track_test "success_basic" "unit" "passed" 0.1
     assert_true true "Log success function"
 
     track_test "log_dryrun_basic" "unit" "passed" 0.1
@@ -85,7 +85,7 @@ def test_append_to_log [] {
         print "Skipping append to log test (permission issue)"
     }
 
-    track_test "append_to_log_error_handling" "unit" "passed" 0.1
+    track_test "append_to_error_handling" "unit" "passed" 0.1
     assert_true true "Append to log error handling"
 }
 
