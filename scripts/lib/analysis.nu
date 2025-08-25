@@ -440,69 +440,80 @@ def format_terminal_dashboard [data: record] {
     generate_analysis_report $data
 }
 
-# Generate concise analysis report
+# Generate polished analysis report
 def generate_analysis_report [data: record] {
-    print "nix-mox analysis"
-    print "================"
+    print "nix-mox system analysis"
+    print "========================"
     
     if "metadata" in $data {
         let meta = ($data | get metadata)
-        print $"generated: ($meta.generated_at | date format '%Y-%m-%d %H:%M')"
+        let timestamp = ($meta.generated_at | date format '%Y-%m-%d %H:%M UTC')
+        print $"generated  : ($timestamp)"
+        print ""
     }
-    print ""
     
-    # System overview
+    # System information
     if "system" in $data {
+        print "SYSTEM"
+        print "------"
         let sys = ($data | get system)
+        
         if "platform" in $sys {
             let platform = ($sys | get platform)
-            print $"system: ($platform.normalized)/($platform.arch) ($platform.hostname)"
+            print $"platform   : ($platform.normalized)/($platform.arch)"
+            print $"hostname   : ($platform.hostname)"
         }
         
         if "nix_info" in ($sys | default {}) {
             let nix = ($sys | get nix_info)
-            let version = ($nix | get -o version | default 'unknown' | str substring 0..10)
+            let version = ($nix | get -o version | default 'unknown' | str substring 0..15)
             let health = ($nix | get -o store_health | default 'unknown')
-            print $"nix: ($version) store=($health)"
+            print $"nix        : ($version)"
+            print $"store      : ($health)"
         }
         print ""
     }
     
     # Package analysis
     if "packages" in $data {
+        print "PACKAGES"
+        print "--------"
         let packages = ($data | get packages)
         
         if "nix_store" in $packages {
             let store = ($packages | get nix_store)
             let size = ($store | get -o total_size | default 'unknown')
             let count = ($store | get -o package_count | default 0)
-            print $"store: ($size) packages=($count)"
+            print $"store size : ($size)"
+            print $"packages   : ($count)"
         }
         
         if "generations" in $packages {
             let generations = ($packages | get generations)
             if "count" in $generations {
                 let gen_count = ($generations | get count)
-                print $"generations: ($gen_count)" + (if $gen_count > 10 { " (cleanup needed)" } else { "" })
+                let status = if $gen_count > 10 { " (cleanup recommended)" } else { "" }
+                print $"generations: ($gen_count)($status)"
             }
         }
         print ""
     }
     
-    # Code quality
+    # Code quality  
     if "code_quality" in $data {
+        print "CODE QUALITY"
+        print "------------"
         let quality = ($data | get code_quality)
         
         if "file_metrics" in $quality {
             let metrics = ($quality | get file_metrics)
             let files = ($metrics | get -o total_files | default 0)
-            let lines = ($metrics | get -o total_lines | default 0)
+            let lines = ($metrics | get -o total_lines | default 0)  
             let avg = ($metrics | get -o avg_lines_per_file | default 0)
-            print $"code: ($files) files, ($lines) lines, avg=($avg)"
             
-            if $avg > 200 {
-                print "  warn: large files detected"
-            }
+            print $"files      : ($files)"
+            print $"lines      : ($lines)"
+            print $"avg/file   : ($avg)" + (if $avg > 200 { " (large files detected)" } else { "" })
         }
         
         if "complexity" in $quality {
@@ -514,27 +525,27 @@ def generate_analysis_report [data: record] {
                 
                 if $total > 0 {
                     let ratio = ($exported * 100 / $total | math round)
-                    print $"functions: ($total) total, ($exported) public (($ratio)%)"
-                    
-                    if $ratio > 50 {
-                        print "  warn: high API surface"
-                    }
+                    let surface_note = if $ratio > 50 { " (high API surface)" } else { "" }
+                    print $"functions  : ($total) total, ($exported) public (($ratio)%)($surface_note)"
                 }
             }
         }
         print ""
     }
     
-    # Security summary
+    # Security assessment
     if "security" in $data {
+        print "SECURITY"
+        print "--------"
         let security = ($data | get security)
-        mut issues = []
+        mut has_issues = false
         
         if "dangerous_patterns" in $security {
             let patterns = ($security | get dangerous_patterns)
             let count = ($patterns | get -o total_issues | default 0)
             if $count > 0 {
-                $issues = ($issues | append $"dangerous patterns: ($count)")
+                print $"dangerous  : ($count) patterns found"
+                $has_issues = true
             }
         }
         
@@ -542,36 +553,51 @@ def generate_analysis_report [data: record] {
             let secrets = ($security | get secret_exposure)
             let count = ($secrets | get -o potential_secrets | default 0)
             if $count > 0 {
-                $issues = ($issues | append $"potential secrets: ($count)")
+                print $"secrets    : ($count) potential exposures"
+                $has_issues = true
             }
         }
         
-        if ($issues | length) > 0 {
-            print $"security: " + ($issues | str join ", ")
-        } else {
-            print "security: ok"
+        if "file_permissions" in $security {
+            let perms = ($security | get file_permissions)
+            if "executable_count" in $perms {
+                let exec_count = ($perms | get executable_count)
+                let total_count = ($perms | get -o total_files | default 0)
+                if $total_count > 0 {
+                    let ratio = ($exec_count * 100 / $total_count | math round)
+                    print $"executable : ($exec_count)/($total_count) files (($ratio)%)"
+                }
+            }
+        }
+        
+        if not $has_issues {
+            print "status     : no issues detected"
         }
         print ""
     }
     
-    # Performance summary
+    # Performance (if available)
     if "performance" in $data and ($data.performance | get -o note | default "") != "benchmarks not included" {
+        print "PERFORMANCE"
+        print "-----------"
         let perf = ($data | get performance)
         let iterations = ($perf | get -o iterations | default 0)
-        print $"performance: ($iterations) iterations"
+        print $"benchmark  : ($iterations) iterations completed"
         print ""
     }
     
     # Action items
     let actions = (generate_action_items $data)
     if ($actions | length) > 0 {
-        print "actions needed:"
+        print "ACTIONS REQUIRED"
+        print "----------------"
         for action in $actions {
-            print $"  - ($action)"
+            print $"• ($action)"
         }
     } else {
-        print "no actions needed"
+        print "STATUS: No actions required"
     }
+    print ""
     
     $data
 }
@@ -582,10 +608,10 @@ def generate_usage_bar [current: int, max: int, width: int] {
     let filled = ($ratio * $width | math floor)
     let empty = ($width - $filled)
     
-    let bar_filled = ("█" * $filled)
-    let bar_empty = ("░" * $empty)
-    let bar = ($bar_filled + $bar_empty)
-    $"[($bar)]"
+    # Build bar using string repetition
+    let filled_chars = (0..$filled | each { "█" } | str join "")
+    let empty_chars = (0..$empty | each { "░" } | str join "")
+    $"[($filled_chars)($empty_chars)]"
 }
 
 # Generate concise action items
