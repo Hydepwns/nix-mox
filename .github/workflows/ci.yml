@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Validation & Testing
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - uses: cachix/install-nix-action@v31
         with:
@@ -47,7 +47,7 @@ jobs:
     name: Testing & Coverage
     needs: validation
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - uses: cachix/install-nix-action@v31
         with:
@@ -79,7 +79,7 @@ jobs:
     name: Security Analysis
     needs: validation
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - uses: cachix/install-nix-action@v31
         with:
@@ -108,7 +108,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: Platform Compatibility (${{ matrix.platform }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - uses: cachix/install-nix-action@v31
         with:
@@ -133,7 +133,7 @@ jobs:
     needs: [validation, testing]
     if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - uses: cachix/install-nix-action@v31
         with:
