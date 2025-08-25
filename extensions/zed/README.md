@@ -60,7 +60,16 @@ cargo build
 ## Themes
 
 - **nix-mox Dark**: Dark theme optimized for Nushell development
-- **nix-mox Light**: Light theme with nix-mox branding
+- **Synthwave84**: For the full Synthwave84 experience, install the dedicated theme: https://github.com/Hydepwns/synthwave84-zed
+
+### Installing Synthwave84 Theme
+
+```bash
+# Clone the theme repository
+git clone https://github.com/Hydepwns/synthwave84-zed ~/.config/zed/themes/synthwave84
+
+# Or install via Zed's extension system (if published)
+```
 
 ## Development
 

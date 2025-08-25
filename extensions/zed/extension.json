@@ -43,10 +43,6 @@
     "nix-mox-dark": {
       "path": "themes/nix-mox-dark.json",
       "name": "nix-mox Dark"
-    },
-    "nix-mox-light": {
-      "path": "themes/nix-mox-light.json",
-      "name": "nix-mox Light"
     }
   },
   "snippets": {
