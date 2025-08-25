@@ -64,7 +64,8 @@ jobs:
           
       - name: Generate Coverage Report
         run: |
-          nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/coverage.nu lcov --output coverage-tmp/lcov.info
+          mkdir -p coverage-tmp
+          nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/testing/generate-coverage.nu --output coverage-tmp/lcov.info
           
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v4

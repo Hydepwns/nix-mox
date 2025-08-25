@@ -85,7 +85,7 @@ export def collect_data [...collectors: string] {
             warn $"Data collection failed for ($collector_name): ($err.msg)" --context "data-collector"
             {}
         }
-    } | reduce { |item, acc| $acc | merge $item }
+    } | reduce --fold {} { |item, acc| $acc | merge $item }
 }
 
 # Overview dashboard - high-level system status
