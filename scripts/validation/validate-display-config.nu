@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../../../../../../../lib/unified-checks.nu
-use ../../../../../../../../../lib/unified-error-handling.nu
+use ../lib/validators.nu
+use ../lib/logging.nu
 
 # Display Configuration Validator for nix-mox
 # User-friendly script to validate display configurations before applying changes
