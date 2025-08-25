@@ -6,8 +6,8 @@
 #   --dry-run         Show what would be done, but make no changes
 #   --flake-path PATH Set flake path (default: /etc/nixos or $FLAKE_PATH)
 #   --help            Show this help message
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use logging.nu *
+use ../../lib/logging.nu *
 
 # Script-specific variables
 $env.FLAKE_PATH = ($env.FLAKE_PATH | default "/etc/nixos")
@@ -30,7 +30,7 @@ def main [] {
                 usage
             }
             _ => {
-                log_error $"Unknown option: ($arg)"
+                error $"Unknown option: ($arg)"
                 usage
             }
         }
@@ -41,15 +41,15 @@ def main [] {
     # Check for required commands
     for cmd in ["nix", "git"] {
         if not ((which $cmd | length | into int) > 0) {
-            log_error $"Required command '($cmd)' not found."
+            error $"Required command '($cmd)' not found."
             exit 1
         }
     }
 
-    log_info $"Starting NixOS flake update process for ($env.FLAKE_PATH)..."
+    info $"Starting NixOS flake update process for ($env.FLAKE_PATH)..."
 
     if not ($env.FLAKE_PATH + "/.git" | path exists) {
-        log_warn $"Flake path '($env.FLAKE_PATH)' is not a git repository. Cannot check for changes."
+        warn $"Flake path '($env.FLAKE_PATH)' is not a git repository. Cannot check for changes."
     }
 
     # Get the state of the lock file before the update
@@ -69,7 +69,7 @@ def main [] {
     }
 
     # Run update and rebuild, redirecting all output to the log file
-    log_info "Updating flake inputs..."
+    info "Updating flake inputs..."
     try {
         nix flake update $env.FLAKE_PATH
 
@@ -84,18 +84,18 @@ def main [] {
         }
 
         if $env.pre_update_hash == $env.post_update_hash {
-            log_info "No changes to flake.lock detected. System is up to date."
+            info "No changes to flake.lock detected. System is up to date."
         } else {
-            log_info "flake.lock changed. Rebuilding system..."
+            info "flake.lock changed. Rebuilding system..."
             nixos-rebuild switch --flake $"($env.FLAKE_PATH)#($env.HOSTNAME)"
-            log_success "NixOS system rebuild complete."
+            success "NixOS system rebuild complete."
         }
     } catch {
-        log_error $"An unexpected error occurred: ($env.LAST_ERROR)"
+        error $"An unexpected error occurred: ($env.LAST_ERROR)"
         exit 1
     }
 
-    log_success "NixOS flake update process finished."
+    success "NixOS flake update process finished."
 }
 
 # --- Execution ---

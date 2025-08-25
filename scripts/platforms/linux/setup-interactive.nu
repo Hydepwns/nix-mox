@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-error-handling.nu
+use ../../lib/validators.nu
+use ../../lib/logging.nu
 
 # setup-interactive.nu - Interactive nix-mox Setup Script
 # Usage: nu setup-interactive.nu [--dry-run] [--help]
@@ -11,8 +11,8 @@ use ../../lib/unified-error-handling.nu
 # - Guides users through personal, system, and environment configuration
 # - Creates configuration files and sets up the development environment
 # - Is idempotent and safe to re-run
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use logging.nu *
+use ../../lib/logging.nu *
 
 # --- Global Variables ---
 const CONFIG_DIR = "config"
@@ -49,7 +49,7 @@ def main [] {
                 usage
             }
             _ => {
-                log_error $"Unknown option: ($arg)"
+                error $"Unknown option: ($arg)"
                 usage
             }
         }
@@ -123,7 +123,7 @@ def select_setup_type [] {
         "4" => { "server" }
         "5" => { "minimal" }
         _ => {
-            log_error "Invalid choice. Please enter a number between 1 and 5."
+            error "Invalid choice. Please enter a number between 1 and 5."
             select_setup_type
         }
     }
@@ -171,7 +171,7 @@ def setup_environment [] {
 
     # Check if .envrc exists and setup direnv
     if not (file_exists ".envrc") {
-        log_info "Setting up direnv configuration..."
+        info "Setting up direnv configuration..."
         if not $env.STATE.dry_run {
             "use flake" | save .envrc
             $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append ".envrc"))
@@ -182,7 +182,7 @@ def setup_environment [] {
 
     # Check if devenv is available
     if not (file_exists "devenv.nix") {
-        log_warn "devenv.nix not found. This may affect development environment setup."
+        warn "devenv.nix not found. This may affect development environment setup."
     }
 
     # Setup Hydepwns dotfiles if available
@@ -190,13 +190,13 @@ def setup_environment [] {
     if (file_exists $dotfiles_script) {
         let response = (input "Setup Hydepwns dotfiles integration? (y/N): " | str trim)
         if $response == "y" or $response == "Y" {
-            log_info "Setting up Hydepwns dotfiles..."
+            info "Setting up Hydepwns dotfiles..."
             if not $env.STATE.dry_run {
                 try {
                     bash $dotfiles_script
-                    log_success "Hydepwns dotfiles setup complete"
+                    success "Hydepwns dotfiles setup complete"
                 } catch {
-                    log_warn "Failed to setup Hydepwns dotfiles: ($env.LAST_ERROR)"
+                    warn "Failed to setup Hydepwns dotfiles: ($env.LAST_ERROR)"
                 }
             } else {
                 log_dryrun "Would run Hydepwns dotfiles setup script"
@@ -235,12 +235,12 @@ def select_template [setup_type: string] {
             if (file_exists ($TEMPLATES_DIR + "/" + $custom_template)) {
                 $custom_template
             } else {
-                log_error $"Template ($custom_template) not found. Using default."
+                error $"Template ($custom_template) not found. Using default."
                 $default_template
             }
         }
     } else {
-        log_warn $"Recommended template ($default_template) not found. Using development.nix"
+        warn $"Recommended template ($default_template) not found. Using development.nix"
         "development.nix"
     }
 }
@@ -270,7 +270,7 @@ def create_configuration_files [] {
     # Copy template to configuration
     copy_template
 
-    log_success "Configuration files created successfully!"
+    success "Configuration files created successfully!"
 }
 
 def create_personal_config [] {
@@ -312,7 +312,7 @@ in
     if not $env.STATE.dry_run {
         $user_config | save $config_path
         $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $config_path))
-        log_info $"Created personal configuration: ($config_path)"
+        info $"Created personal configuration: ($config_path)"
     } else {
         log_dryrun $"Would create personal configuration: ($config_path)"
     }
@@ -342,7 +342,7 @@ GIT_EMAIL=$env.STATE.git_email"
     if not $env.STATE.dry_run {
         $env_config | save .env
         $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append ".env"))
-        log_info "Created environment configuration: .env"
+        info "Created environment configuration: .env"
     } else {
         log_dryrun "Would create environment configuration: .env"
     }
@@ -356,12 +356,12 @@ def copy_template [] {
         if not $env.STATE.dry_run {
             cp $template_path $config_path
             $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $config_path))
-            log_info $"Copied template ($env.STATE.template) to ($config_path)"
+            info $"Copied template ($env.STATE.template) to ($config_path)"
         } else {
             log_dryrun $"Would copy template ($env.STATE.template) to ($config_path)"
         }
     } else {
-        log_error $"Template file ($template_path) not found!"
+        error $"Template file ($template_path) not found!"
     }
 }
 
@@ -424,6 +424,6 @@ def usage [] {
 try {
     main
 } catch {
-    log_error $"Setup failed: ($env.LAST_ERROR)"
+    error $"Setup failed: ($env.LAST_ERROR)"
     exit 1
 }

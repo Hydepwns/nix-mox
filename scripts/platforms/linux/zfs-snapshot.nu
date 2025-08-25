@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-error-handling.nu
+use ../../lib/validators.nu
+use ../../lib/logging.nu
 
 # zfs-snapshot.nu - ZFS Snapshot & Prune Script
 # Usage: sudo nu zfs-snapshot.nu [--dry-run] [--retention DAYS] [--pool NAME] [--help]
@@ -11,8 +11,8 @@ use ../../lib/unified-error-handling.nu
 # - Prunes old snapshots based on retention policy
 # - Maintains a backup log
 # - Is idempotent and safe to re-run
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use logging.nu *
+use ../../lib/logging.nu *
 
 # --- Global Variables ---
 const SNAP_NAME_PREFIX = "auto-"
@@ -43,7 +43,7 @@ def main [] {
                 let idx = ($args | find $arg | get 0)
                 let new_retention = ($args | get ($idx + 1))
                 if ($new_retention | is-empty) {
-                    log_error "Retention days must be provided after --retention"
+                    error "Retention days must be provided after --retention"
                     usage
                 }
                 $env.STATE = ($env.STATE | upsert retention_days ($new_retention | into int))
@@ -52,7 +52,7 @@ def main [] {
                 let idx = ($args | find $arg | get 0)
                 let new_pool = ($args | get ($idx + 1))
                 if ($new_pool | is-empty) {
-                    log_error "Pool name must be provided after --pool"
+                    error "Pool name must be provided after --pool"
                     usage
                 }
                 $env.STATE = ($env.STATE | upsert pool $new_pool)
@@ -61,7 +61,7 @@ def main [] {
                 usage
             }
             _ => {
-                log_error $"Unknown option: ($arg)"
+                error $"Unknown option: ($arg)"
                 usage
             }
         }
@@ -75,7 +75,7 @@ def main [] {
 
     # Check for required command
     if not ((which zfs | length | into int) > 0) {
-        log_error "Required command 'zfs' not found."
+        error "Required command 'zfs' not found."
         exit 1
     }
 
@@ -87,26 +87,26 @@ def main [] {
         }
         touch $LOGFILE
     } catch {
-        log_warn $"Could not create log file ($LOGFILE). Continuing without logging."
+        warn $"Could not create log file ($LOGFILE). Continuing without logging."
     }
 
     # --- Snapshot Creation ---
-    log_info $"Starting ZFS snapshot process for pool: ($env.STATE.pool)"
+    info $"Starting ZFS snapshot process for pool: ($env.STATE.pool)"
     create_snapshot
 
     # --- Snapshot Pruning ---
-    log_info $"Pruning snapshots in '($env.STATE.pool)' older than ($env.STATE.retention_days) days with prefix '($SNAP_NAME_PREFIX)'..."
+    info $"Pruning snapshots in '($env.STATE.pool)' older than ($env.STATE.retention_days) days with prefix '($SNAP_NAME_PREFIX)'..."
     prune_snapshots
 
     # --- Final Status ---
     if $env.STATE.prune_failed {
-        log_error $"ZFS snapshot/prune for pool '($env.STATE.pool)' completed with errors during pruning."
+        error $"ZFS snapshot/prune for pool '($env.STATE.pool)' completed with errors during pruning."
         exit 1
     } else {
         if $env.STATE.dry_run {
             log_dryrun "Dry run complete. No changes were made."
         } else {
-            log_success $"ZFS snapshot/prune for pool '($env.STATE.pool)' complete."
+            success $"ZFS snapshot/prune for pool '($env.STATE.pool)' complete."
         }
     }
 
@@ -120,19 +120,19 @@ def create_snapshot [] {
     # Check if snapshot already exists
     let existing_snapshots = (zfs list -t snapshot -H -o name | lines)
     if ($existing_snapshots | any { |snap| $snap == $full_snap_name }) {
-        log_warn $"Snapshot ($full_snap_name) already exists. Skipping creation."
+        warn $"Snapshot ($full_snap_name) already exists. Skipping creation."
         return
     }
 
     if $env.STATE.dry_run {
         log_dryrun $"Would create ZFS snapshot: ($full_snap_name)"
     } else {
-        log_info $"Creating ZFS snapshot: ($full_snap_name)..."
+        info $"Creating ZFS snapshot: ($full_snap_name)..."
         try {
             zfs snapshot -r $full_snap_name
-            log_success $"Successfully created snapshot ($full_snap_name)."
+            success $"Successfully created snapshot ($full_snap_name)."
         } catch {
-            log_error $"Failed to create snapshot ($full_snap_name): ($env.LAST_ERROR)"
+            error $"Failed to create snapshot ($full_snap_name): ($env.LAST_ERROR)"
         }
     }
 }
@@ -140,7 +140,7 @@ def create_snapshot [] {
 def prune_snapshots [] {
     # Validate retention period
     if not ($env.STATE.retention_days | into string | str contains "^[0-9]+$") {
-        log_error $"Invalid retention period: '($env.STATE.retention_days)' is not a number. Skipping prune."
+        error $"Invalid retention period: '($env.STATE.retention_days)' is not a number. Skipping prune."
         exit 1
     }
 
@@ -162,13 +162,13 @@ def prune_snapshots [] {
                 false
             } else {
                 let created_date = (date now | format date "%Y-%m-%d %H:%M:%S")
-                log_info $"Destroying old snapshot: ($snapshot.name) (created ($created_date))..."
+                info $"Destroying old snapshot: ($snapshot.name) (created ($created_date))..."
                 try {
                     zfs destroy $snapshot.name
-                    log_success $"Destroyed snapshot: ($snapshot.name)"
+                    success $"Destroyed snapshot: ($snapshot.name)"
                     false
                 } catch {
-                    log_error $"Failed to destroy snapshot: ($snapshot.name): ($env.LAST_ERROR)"
+                    error $"Failed to destroy snapshot: ($snapshot.name): ($env.LAST_ERROR)"
                     true
                 }
             }
@@ -211,6 +211,6 @@ def usage [] {
 try {
     main
 } catch {
-    log_error $"ZFS snapshot operation failed: ($env.LAST_ERROR)"
+    error $"ZFS snapshot operation failed: ($env.LAST_ERROR)"
     exit 1
 }

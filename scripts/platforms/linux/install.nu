@@ -5,9 +5,9 @@
 # - Installs all .nu scripts to /usr/local/bin
 # - Creates an install manifest at /etc/nix-mox/install_manifest.txt
 # - Is idempotent and safe to re-run
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
-use ../../lib/unified-checks.nu *
+use logging.nu *
+use ../../lib/logging.nu *
+use ../../lib/validators.nu *
 
 # --- Global Variables ---
 const INSTALL_DIR = "/usr/local/bin"

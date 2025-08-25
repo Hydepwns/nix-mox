@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-error-handling.nu
+use ../../lib/validators.nu
+use ../../lib/logging.nu
 
 # proxmox-update.nu - Update Proxmox VE
 # Usage: sudo nu proxmox-update.nu [--dry-run] [--help]
@@ -10,13 +10,13 @@ use ../../lib/unified-error-handling.nu
 # - Updates Proxmox VE packages
 # - Maintains an update log
 # - Is idempotent and safe to re-run
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use logging.nu *
+use ../../lib/logging.nu *
 
 # --- Common Functions ---
 const LOGFILE = "/var/log/proxmox-update.log"
 
-def log_error [message: string] {
+def error [message: string] {
     let timestamp = (date now | format date '%Y-%m-%d %H:%M:%S')
     let log_message = $"($timestamp) [ERROR] ($message)"
     print $log_message
@@ -27,7 +27,7 @@ def log_error [message: string] {
     }
 }
 
-def log_success [message: string] {
+def success [message: string] {
     let timestamp = (date now | format date '%Y-%m-%d %H:%M:%S')
     let log_message = $"($timestamp) [SUCCESS] ($message)"
     print $log_message
@@ -38,7 +38,7 @@ def log_success [message: string] {
     }
 }
 
-def log_info [message: string] {
+def info [message: string] {
     let timestamp = (date now | format date '%Y-%m-%d %H:%M:%S')
     let log_message = $"($timestamp) [INFO] ($message)"
     print $log_message
@@ -91,7 +91,7 @@ def main [args: list] {
                 usage
             }
             _ => {
-                log_error $"Unknown option: ($arg)"
+                error $"Unknown option: ($arg)"
                 usage
             }
         }
@@ -102,12 +102,12 @@ def main [args: list] {
     # Check for required commands
     for cmd in ["apt", "pveupdate", "pveupgrade"] {
         if not ((which $cmd | length | into int) > 0) {
-            log_error $"Required command '($cmd)' not found."
+            error $"Required command '($cmd)' not found."
             exit 1
         }
     }
 
-    log_info "Starting Proxmox update..."
+    info "Starting Proxmox update..."
 
     if $env.DRY_RUN {
         log_dryrun "Dry-run mode enabled. The following commands would be executed:"
@@ -115,29 +115,29 @@ def main [args: list] {
 
     # Run updates, redirecting stdout/stderr to the log file
     try {
-        log_info "Updating package lists..."
+        info "Updating package lists..."
         apt update
 
-        log_info "Performing distribution upgrade..."
+        info "Performing distribution upgrade..."
         apt $env.APT_OPTIONS dist-upgrade
 
-        log_info "Removing unused packages..."
+        info "Removing unused packages..."
         apt $env.APT_OPTIONS autoremove
 
-        log_info "Running pveupdate..."
+        info "Running pveupdate..."
         pveupdate $env.PVE_OPTIONS
 
-        log_info "Running pveupgrade..."
+        info "Running pveupgrade..."
         pveupgrade $env.PVE_OPTIONS
     } catch {
-        log_error "An error occurred during the update process."
+        error "An error occurred during the update process."
         exit 1
     }
 
     if $env.DRY_RUN {
         log_dryrun "Dry run complete. No changes were made."
     } else {
-        log_success "Proxmox update complete."
+        success "Proxmox update complete."
     }
 }
 

@@ -5,8 +5,8 @@
 # - Reads the install manifest at /etc/nix-mox/install_manifest.txt
 # - Removes all files and directories listed in the manifest.
 # - Is idempotent and safe to re-run.
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use logging.nu *
+use ../../lib/logging.nu *
 
 # --- Global Variables ---
 const MANIFEST_FILE = "/etc/nix-mox/install_manifest.txt"

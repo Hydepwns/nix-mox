@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-error-handling.nu
+use ../../lib/validators.nu
+use ../../lib/logging.nu
 
 # vzdump-backup.nu - Backup Proxmox VMs using vzdump
 # Usage: sudo nu vzdump-backup.nu [--dry-run] [--storage <storage>] [--help]
@@ -11,8 +11,8 @@ use ../../lib/unified-error-handling.nu
 # - Compresses backups using zstd
 # - Maintains a backup log
 # - Is idempotent and safe to re-run
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use logging.nu *
+use ../../lib/logging.nu *
 
 # --- Global Variables ---
 const LOGFILE = "/var/log/vzdump-backup.log"
@@ -40,7 +40,7 @@ def main [] {
                 let idx = ($args | find $arg | get 0)
                 let new_storage = ($args | get ($idx + 1))
                 if ($new_storage | is-empty) {
-                    log_error "Storage name must be provided after --storage"
+                    error "Storage name must be provided after --storage"
                     usage
                 }
                 $env.STATE = ($env.STATE | upsert storage $new_storage)
@@ -49,7 +49,7 @@ def main [] {
                 usage
             }
             _ => {
-                log_error $"Unknown option: ($arg)"
+                error $"Unknown option: ($arg)"
                 usage
             }
         }
@@ -64,7 +64,7 @@ def main [] {
     # Check for required commands
     for cmd in ["vzdump", "qm", "pct"] {
         if not ((which $cmd | length | into int) > 0) {
-            log_error $"Required command '($cmd)' not found."
+            error $"Required command '($cmd)' not found."
             exit 1
         }
     }
@@ -77,10 +77,10 @@ def main [] {
         }
         touch $LOGFILE
     } catch {
-        log_warn $"Could not create log file ($LOGFILE). Continuing without logging."
+        warn $"Could not create log file ($LOGFILE). Continuing without logging."
     }
 
-    log_info "Starting Proxmox backup process..."
+    info "Starting Proxmox backup process..."
 
     # Run backup process
     try {
@@ -92,19 +92,19 @@ def main [] {
         let ct_backup_failed = backup_items "pct list" "CT"
         $env.STATE = ($env.STATE | upsert backup_failed ($env.STATE.backup_failed or $ct_backup_failed))
     } catch {
-        log_error $"An unexpected error occurred: ($env.LAST_ERROR)"
+        error $"An unexpected error occurred: ($env.LAST_ERROR)"
         exit 1
     }
 
     # Final status reporting
     if $env.STATE.backup_failed {
-        log_error "vzdump backup completed with one or more errors."
+        error "vzdump backup completed with one or more errors."
         exit 1
     } else {
         if $env.STATE.dry_run {
             log_dryrun "Dry run complete. No backups were performed."
         } else {
-            log_success "vzdump backup completed successfully."
+            success "vzdump backup completed successfully."
         }
     }
 
@@ -116,13 +116,13 @@ def backup_items [list_cmd: string, item_type: string] {
     let ids = (do { nu -c $list_cmd } | complete | get stdout | lines | skip 1 | split column " " | get column1)
 
     if ($ids | length) == 0 {
-        log_info $"No ($item_type)s found to back up."
+        info $"No ($item_type)s found to back up."
         return false
     }
 
     # Process each item and collect results
     let results = ($ids | each { |id|
-        log_info $"Processing backup for ($item_type) ($id)..."
+        info $"Processing backup for ($item_type) ($id)..."
 
         if $env.STATE.dry_run {
             log_dryrun $"Would back up ($item_type) ($id) to storage '($env.STATE.storage)'"
@@ -130,10 +130,10 @@ def backup_items [list_cmd: string, item_type: string] {
         } else {
             try {
                 vzdump $id --storage $env.STATE.storage --mode snapshot --compress zstd
-                log_success $"Successfully backed up ($item_type) ($id)."
+                success $"Successfully backed up ($item_type) ($id)."
                 false
             } catch {
-                log_error $"Failed to back up ($item_type) ($id): ($env.LAST_ERROR)"
+                error $"Failed to back up ($item_type) ($id): ($env.LAST_ERROR)"
                 true
             }
         }
@@ -170,6 +170,6 @@ def usage [] {
 try {
     main
 } catch {
-    log_error $"Backup failed: ($env.LAST_ERROR)"
+    error $"Backup failed: ($env.LAST_ERROR)"
     exit 1
 }
