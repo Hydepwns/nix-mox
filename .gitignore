@@ -1,3 +1,5 @@
+.claude/
+
 # Build artifacts
 result/
 result-*/
@@ -52,10 +54,6 @@ config/personal/local.nix
 
 # Secrets directory (contains sensitive configuration)
 secrets/
-
-# Claude AI configuration files (local only)
-.claude
-CLAUDE.md
 
 # Node modules and package files
 node_modules/
