@@ -12,7 +12,7 @@ use command-wrapper.nu *
 export def analysis_pipeline [...analyzers: closure] {
     $analyzers | par-each { |analyzer|
         try {
-            with_logging "analysis step" {||
+            with_logging "analysis step" --context "analysis" { ||
                 do $analyzer
             }
         } catch { |err|
