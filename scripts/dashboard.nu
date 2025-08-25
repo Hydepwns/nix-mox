@@ -798,50 +798,57 @@ def count_nix_generations [] {
     }
 }
 
-# Display functions
+# Display functions with compact table format
 def display_overview [data: record, format: string] {
-    print "=== Nix-Mox System Overview ==="
+    print "nix-mox overview"
+    print "================"
     print ""
+    
+    # Collect all overview statistics
+    mut stats = []
     
     # System info
     if "system" in $data {
         let sys = ($data | get system)
-        print $"Platform: ($sys.platform) ($sys.architecture)"
-        print $"Hostname: ($sys.hostname)"
-        print $"Uptime: ($sys.uptime)"
-        print ""
+        $stats = ($stats | append {metric: "platform", value: $"($sys.platform) ($sys.architecture)"})
+        $stats = ($stats | append {metric: "hostname", value: $sys.hostname})
+        $stats = ($stats | append {metric: "uptime", value: $sys.uptime})
     }
     
     # Nix status
     if "nix" in $data {
         let nix = ($data | get nix)
-        print $"Nix: ($nix.version)"
-        print $"Flake Status: ($nix.flake_status)"
-        print $"Store Health: ($nix.store_health)"
-        print ""
+        $stats = ($stats | append {metric: "nix", value: $nix.version})
+        $stats = ($stats | append {metric: "flake", value: $nix.flake_status})
+        $stats = ($stats | append {metric: "store", value: $nix.store_health})
     }
     
     # Resource usage
     if "disk" in $data and "memory" in $data {
         let disk = ($data | get disk)
         let memory = ($data | get memory)
-        print $"Disk Usage: ($disk | get -o root_used | default 'unknown')"
-        print $"Memory Usage: ($memory | get -o usage_percent | default 'unknown')%"
-        print ""
+        $stats = ($stats | append {metric: "disk", value: ($disk | get -o root_used | default 'unknown')})
+        $stats = ($stats | append {metric: "memory", value: $"($memory | get -o usage_percent | default 'unknown')%"})
     }
     
     # Services
     if "services" in $data {
         let services = ($data | get services)
-        print $"System Services: ($services.status)"
-        print ""
+        $stats = ($stats | append {metric: "services", value: $services.status})
     }
     
     # Activity
     if "activity" in $data {
         let activity = ($data | get activity)
-        print $"Recent Activity: ($activity.recent_commits) recent commits"
-        print $"Last Commit: ($activity.last_commit)"
+        $stats = ($stats | append {metric: "commits", value: $"($activity.recent_commits) recent"})
+        $stats = ($stats | append {metric: "last-commit", value: $activity.last_commit})
+    }
+    
+    # Print compact table
+    if ($stats | length) > 0 {
+        for stat in $stats {
+            print $"($stat.metric | fill -a l -w 12) : ($stat.value)"
+        }
     }
 }
 

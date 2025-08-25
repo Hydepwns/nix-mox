@@ -440,7 +440,7 @@ def format_terminal_dashboard [data: record] {
     generate_analysis_report $data
 }
 
-# Generate polished analysis report
+# Generate compact tabular analysis report
 def generate_analysis_report [data: record] {
     print "nix-mox system analysis"
     print "========================"
@@ -448,72 +448,67 @@ def generate_analysis_report [data: record] {
     if "metadata" in $data {
         let meta = ($data | get metadata)
         let timestamp = ($meta.generated_at | format date '%Y-%m-%d %H:%M UTC')
-        print $"generated  : ($timestamp)"
+        print $"generated: ($timestamp)"
         print ""
     }
     
+    # Collect all statistics into one compact table
+    mut stats = []
+    
     # System information
     if "system" in $data {
-        print "SYSTEM"
-        print "------"
         let sys = ($data | get system)
-        
         if "platform" in $sys {
             let platform = ($sys | get platform)
-            print $"platform   : ($platform.normalized)/($platform.arch)"
-            print $"hostname   : ($platform.hostname)"
+            $stats = ($stats | append {metric: "platform", value: $"($platform.normalized)/($platform.arch)", status: ""})
+            $stats = ($stats | append {metric: "hostname", value: $platform.hostname, status: ""})
         }
         
         if "nix_info" in ($sys | default {}) {
             let nix = ($sys | get nix_info)
             let version = ($nix | get -o version | default 'unknown' | str substring 0..15)
             let health = ($nix | get -o store_health | default 'unknown')
-            print $"nix        : ($version)"
-            print $"store      : ($health)"
+            $stats = ($stats | append {metric: "nix", value: $version, status: ""})
+            $stats = ($stats | append {metric: "store", value: $health, status: ""})
         }
-        print ""
     }
     
     # Package analysis
     if "packages" in $data {
-        print "PACKAGES"
-        print "--------"
         let packages = ($data | get packages)
         
         if "nix_store" in $packages {
             let store = ($packages | get nix_store)
             let size = ($store | get -o total_size | default 'unknown')
             let count = ($store | get -o package_count | default 0)
-            print $"store size : ($size)"
-            print $"packages   : ($count)"
+            $stats = ($stats | append {metric: "store-size", value: $size, status: ""})
+            $stats = ($stats | append {metric: "packages", value: $count, status: ""})
         }
         
         if "generations" in $packages {
             let generations = ($packages | get generations)
             if "count" in $generations {
                 let gen_count = ($generations | get count)
-                let status = if $gen_count > 10 { " (cleanup recommended)" } else { "" }
-                print $"generations: ($gen_count)($status)"
+                let status = if $gen_count > 10 { "cleanup needed" } else { "ok" }
+                $stats = ($stats | append {metric: "generations", value: $gen_count, status: $status})
             }
         }
-        print ""
     }
     
-    # Code quality  
+    # Code quality
     if "code_quality" in $data {
-        print "CODE QUALITY"
-        print "------------"
         let quality = ($data | get code_quality)
         
         if "file_metrics" in $quality {
             let metrics = ($quality | get file_metrics)
             let files = ($metrics | get -o total_files | default 0)
-            let lines = ($metrics | get -o total_lines | default 0)  
+            let lines = ($metrics | get -o total_lines | default 0)
             let avg = ($metrics | get -o avg_lines_per_file | default 0)
             
-            print $"files      : ($files)"
-            print $"lines      : ($lines)"
-            print $"avg/file   : ($avg)" + (if $avg > 200 { " (large files detected)" } else { "" })
+            $stats = ($stats | append {metric: "files", value: $files, status: ""})
+            $stats = ($stats | append {metric: "lines", value: $lines, status: ""})
+            let avg_status = if $avg > 200 { "large files" } else { "ok" }
+            $stats = ($stats | append {metric: "avg/file", value: $avg, status: $avg_status})
         }
         
         if "complexity" in $quality {
@@ -525,37 +520,30 @@ def generate_analysis_report [data: record] {
                 
                 if $total > 0 {
                     let ratio = ($exported * 100 / $total | math round)
-                    let surface_note = if $ratio > 50 { " (high API surface)" } else { "" }
-                    print $"functions  : ($total) total, ($exported) public (($ratio)%)($surface_note)"
+                    $stats = ($stats | append {metric: "functions", value: $"($total) total", status: ""})
+                    let api_status = if $ratio > 50 { "high API surface" } else { "ok" }
+                    $stats = ($stats | append {metric: "public", value: $"($exported) (($ratio)%)", status: $api_status})
                 }
             }
         }
-        print ""
     }
     
-    # Security assessment
+    # Security assessment  
     if "security" in $data {
-        print "SECURITY"
-        print "--------"
         let security = ($data | get security)
-        mut has_issues = false
         
         if "dangerous_patterns" in $security {
             let patterns = ($security | get dangerous_patterns)
             let count = ($patterns | get -o total_issues | default 0)
-            if $count > 0 {
-                print $"dangerous  : ($count) patterns found"
-                $has_issues = true
-            }
+            let status = if $count > 0 { "review needed" } else { "ok" }
+            $stats = ($stats | append {metric: "dangerous", value: $"($count) patterns", status: $status})
         }
         
         if "secret_exposure" in $security {
             let secrets = ($security | get secret_exposure)
             let count = ($secrets | get -o potential_secrets | default 0)
-            if $count > 0 {
-                print $"secrets    : ($count) potential exposures"
-                $has_issues = true
-            }
+            let status = if $count > 0 { "secure needed" } else { "ok" }
+            $stats = ($stats | append {metric: "secrets", value: $"($count) potential", status: $status})
         }
         
         if "file_permissions" in $security {
@@ -565,32 +553,35 @@ def generate_analysis_report [data: record] {
                 let total_count = ($perms | get -o total_files | default 0)
                 if $total_count > 0 {
                     let ratio = ($exec_count * 100 / $total_count | math round)
-                    print $"executable : ($exec_count)/($total_count) files (($ratio)%)"
+                    $stats = ($stats | append {metric: "executable", value: $"($exec_count)/($total_count) (($ratio)%)", status: ""})
                 }
             }
         }
-        
-        if not $has_issues {
-            print "status     : no issues detected"
-        }
-        print ""
     }
     
     # Performance (if available)
     if "performance" in $data and ($data.performance | get -o note | default "") != "benchmarks not included" {
-        print "PERFORMANCE"
-        print "-----------"
         let perf = ($data | get performance)
         let iterations = ($perf | get -o iterations | default 0)
-        print $"benchmark  : ($iterations) iterations completed"
+        $stats = ($stats | append {metric: "benchmark", value: $"($iterations) iterations", status: "completed"})
+    }
+    
+    # Print compact statistics table
+    if ($stats | length) > 0 {
+        print "STATISTICS"
+        print "----------"
+        for stat in $stats {
+            let status_part = if ($stat.status | str length) > 0 { $" (($stat.status))" } else { "" }
+            print $"($stat.metric | fill -a l -w 12) : ($stat.value)($status_part)"
+        }
         print ""
     }
     
     # Action items
     let actions = (generate_action_items $data)
     if ($actions | length) > 0 {
-        print "ACTIONS REQUIRED"
-        print "----------------"
+        print "ACTIONS"
+        print "-------"
         for action in $actions {
             print $"• ($action)"
         }
