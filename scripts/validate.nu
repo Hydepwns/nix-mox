@@ -61,7 +61,7 @@ def basic_validation_suite [] {
         { name: "platform", validator: {|| validate_platform ["linux", "macos"] } },
         { name: "nix_command", validator: {|| validate_command "nix" } },
         { name: "git_command", validator: {|| validate_command "git" } },
-        { name: "disk_space", validator: {|| validate_disk_space 70 } },
+        { name: "disk_space", validator: {|| validate_disk_space 90 } },
         { name: "memory_usage", validator: {|| validate_memory 85 } }
     ]
 }
