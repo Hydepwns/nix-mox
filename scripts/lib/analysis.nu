@@ -440,101 +440,68 @@ def format_terminal_dashboard [data: record] {
     generate_analysis_report $data
 }
 
-# Generate comprehensive analysis report with actionable insights
+# Generate concise analysis report
 def generate_analysis_report [data: record] {
-    print "Nix-Mox System Analysis Report"
-    print "=============================="
-    print ""
+    print "nix-mox analysis"
+    print "================"
     
     if "metadata" in $data {
         let meta = ($data | get metadata)
-        print $"Report generated: ($meta.generated_at)"
-        print $"Analysis version: ($meta.version)"
-        print ""
+        print $"generated: ($meta.generated_at | date format '%Y-%m-%d %H:%M')"
     }
+    print ""
     
-    # System overview with ASCII diagram
+    # System overview
     if "system" in $data {
-        print "SYSTEM OVERVIEW"
-        print "---------------"
         let sys = ($data | get system)
         if "platform" in $sys {
             let platform = ($sys | get platform)
-            print $"Platform: ($platform.normalized) ($platform.arch)"
-            print $"Hostname: ($platform.hostname)"
+            print $"system: ($platform.normalized)/($platform.arch) ($platform.hostname)"
         }
         
-        # System architecture ASCII diagram
-        print ""
-        print "System Architecture:"
-        print "┌─────────────────┐    ┌─────────────────┐"
-        print "│   NixOS Host    │────│  Nix Store     │"
-        print "│                 │    │                 │"
         if "nix_info" in ($sys | default {}) {
             let nix = ($sys | get nix_info)
-            print $"│  Nix: ($nix | get -o version | default 'unknown' | str substring 0..10)     │    │  Status: ($nix | get -o store_health | default 'unknown')    │"
-        } else {
-            print "│  Nix: unknown   │    │  Status: unknown│"
+            let version = ($nix | get -o version | default 'unknown' | str substring 0..10)
+            let health = ($nix | get -o store_health | default 'unknown')
+            print $"nix: ($version) store=($health)"
         }
-        print "└─────────────────┘    └─────────────────┘"
         print ""
     }
     
-    # Package analysis with actionable metrics
+    # Package analysis
     if "packages" in $data {
-        print "PACKAGE ANALYSIS"
-        print "----------------"
         let packages = ($data | get packages)
         
         if "nix_store" in $packages {
             let store = ($packages | get nix_store)
-            let store_size = ($store | get -o total_size | default 'unknown')
-            let package_count = ($store | get -o package_count | default 0)
-            
-            print $"Nix store size: ($store_size)"
-            print $"Package count: ($package_count)"
-            
-            # Store usage visualization
-            if $package_count > 0 {
-                let usage_bar = (generate_usage_bar $package_count 1000 20)
-                print $"Store usage: ($usage_bar) ($package_count)/1000 typical"
-            }
+            let size = ($store | get -o total_size | default 'unknown')
+            let count = ($store | get -o package_count | default 0)
+            print $"store: ($size) packages=($count)"
         }
         
         if "generations" in $packages {
             let generations = ($packages | get generations)
             if "count" in $generations {
                 let gen_count = ($generations | get count)
-                print $"System generations: ($gen_count)"
-                if $gen_count > 10 {
-                    print "ACTION REQUIRED: Consider cleaning old generations with 'nix-collect-garbage -d'"
-                }
+                print $"generations: ($gen_count)" + (if $gen_count > 10 { " (cleanup needed)" } else { "" })
             }
         }
         print ""
     }
     
-    # Code quality with specific recommendations
+    # Code quality
     if "code_quality" in $data {
-        print "CODE QUALITY ASSESSMENT"
-        print "------------------------"
         let quality = ($data | get code_quality)
         
         if "file_metrics" in $quality {
             let metrics = ($quality | get file_metrics)
-            let total_files = ($metrics | get -o total_files | default 0)
-            let total_lines = ($metrics | get -o total_lines | default 0)
-            let avg_lines = ($metrics | get -o avg_lines_per_file | default 0)
+            let files = ($metrics | get -o total_files | default 0)
+            let lines = ($metrics | get -o total_lines | default 0)
+            let avg = ($metrics | get -o avg_lines_per_file | default 0)
+            print $"code: ($files) files, ($lines) lines, avg=($avg)"
             
-            print $"Total files: ($total_files)"
-            print $"Total lines: ($total_lines)"
-            print $"Average lines per file: ($avg_lines)"
-            
-            # Code complexity assessment
-            if $avg_lines > 200 {
-                print "RECOMMENDATION: Consider breaking down large files (>200 lines average)"
-            } else if $avg_lines < 50 {
-                print "STATUS: Good file size distribution maintained"
+            if $avg > 200 {
+                print "  warn: large files detected"
             }
         }
         
@@ -542,17 +509,15 @@ def generate_analysis_report [data: record] {
             let complexity = ($quality | get complexity)
             if "functions" in $complexity {
                 let functions = ($complexity | get functions)
-                let total_funcs = ($functions | get -o total | default 0)
-                let exported_funcs = ($functions | get -o exported | default 0)
+                let total = ($functions | get -o total | default 0)
+                let exported = ($functions | get -o exported | default 0)
                 
-                print $"Functions: ($total_funcs) total, ($exported_funcs) exported"
-                
-                if $total_funcs > 0 {
-                    let export_ratio = ($exported_funcs * 100 / $total_funcs | math round)
-                    print $"API surface: ($export_ratio)% of functions are public"
+                if $total > 0 {
+                    let ratio = ($exported * 100 / $total | math round)
+                    print $"functions: ($total) total, ($exported) public (($ratio)%)"
                     
-                    if $export_ratio > 50 {
-                        print "RECOMMENDATION: Consider reducing public API surface for better encapsulation"
+                    if $ratio > 50 {
+                        print "  warn: high API surface"
                     }
                 }
             }
@@ -560,107 +525,52 @@ def generate_analysis_report [data: record] {
         print ""
     }
     
-    # Security analysis with specific findings
+    # Security summary
     if "security" in $data {
-        print "SECURITY ASSESSMENT"
-        print "-------------------"
         let security = ($data | get security)
+        mut issues = []
         
         if "dangerous_patterns" in $security {
             let patterns = ($security | get dangerous_patterns)
-            if "total_issues" in $patterns {
-                let issues = ($patterns | get total_issues)
-                if $issues > 0 {
-                    print $"ALERT: ($issues) potentially dangerous patterns found"
-                    if "findings" in $patterns {
-                        for finding in ($patterns | get findings) {
-                            let pattern = ($finding | get pattern)
-                            let matches = ($finding | get matches)
-                            if $matches > 0 {
-                                print $"  - Pattern '($pattern)': ($matches) occurrences"
-                            }
-                        }
-                    }
-                } else {
-                    print "STATUS: No dangerous patterns detected"
-                }
+            let count = ($patterns | get -o total_issues | default 0)
+            if $count > 0 {
+                $issues = ($issues | append $"dangerous patterns: ($count)")
             }
         }
         
         if "secret_exposure" in $security {
             let secrets = ($security | get secret_exposure)
-            if "potential_secrets" in $secrets {
-                let secret_count = ($secrets | get potential_secrets)
-                if $secret_count > 0 {
-                    print $"WARNING: ($secret_count) potential secret exposures found"
-                    print "ACTION REQUIRED: Review and secure any exposed credentials"
-                } else {
-                    print "STATUS: No potential secret exposures detected"
-                }
+            let count = ($secrets | get -o potential_secrets | default 0)
+            if $count > 0 {
+                $issues = ($issues | append $"potential secrets: ($count)")
             }
         }
         
-        if "file_permissions" in $security {
-            let perms = ($security | get file_permissions)
-            if "executable_count" in $perms {
-                let exec_count = ($perms | get executable_count)
-                let total_count = ($perms | get -o total_files | default 0)
-                if $total_count > 0 {
-                    let exec_ratio = ($exec_count * 100 / $total_count | math round)
-                    print $"Executable files: ($exec_count)/($total_count) (($exec_ratio)%)"
-                }
-            }
+        if ($issues | length) > 0 {
+            print $"security: " + ($issues | str join ", ")
+        } else {
+            print "security: ok"
         }
         print ""
     }
     
-    # Performance analysis with benchmarks
+    # Performance summary
     if "performance" in $data and ($data.performance | get -o note | default "") != "benchmarks not included" {
-        print "PERFORMANCE ANALYSIS"
-        print "--------------------"
         let perf = ($data | get performance)
         let iterations = ($perf | get -o iterations | default 0)
-        print $"Benchmark iterations: ($iterations)"
-        
-        # CPU performance
-        if "cpu" in $perf {
-            let cpu = ($perf | get cpu)
-            if "avg_per_iteration" in $cpu {
-                let avg_time = ($cpu | get avg_per_iteration)
-                print $"CPU performance: ($avg_time) average per operation"
-            }
-        }
-        
-        # Memory performance  
-        if "memory" in $perf {
-            let memory = ($perf | get memory)
-            if "memory_delta" in $memory {
-                let delta = ($memory | get memory_delta)
-                print $"Memory usage delta: ($delta) bytes"
-            }
-        }
-        
-        # Nix operations performance
-        if "nix" in $perf {
-            let nix_perf = ($perf | get nix)
-            if "avg_per_operation" in $nix_perf {
-                let nix_avg = ($nix_perf | get avg_per_operation)
-                print $"Nix store ping average: ($nix_avg)"
-            }
-        }
+        print $"performance: ($iterations) iterations"
         print ""
     }
     
-    # Action items summary
-    print "ACTION ITEMS SUMMARY"
-    print "--------------------"
+    # Action items
     let actions = (generate_action_items $data)
     if ($actions | length) > 0 {
+        print "actions needed:"
         for action in $actions {
-            print $"- ($action)"
+            print $"  - ($action)"
         }
     } else {
-        print "No immediate actions required"
+        print "no actions needed"
     }
     
     $data
@@ -678,47 +588,30 @@ def generate_usage_bar [current: int, max: int, width: int] {
     $"[($bar)]"
 }
 
-# Generate actionable recommendations based on analysis data
+# Generate concise action items
 def generate_action_items [data: record] {
     mut actions = []
     
-    # Package management actions
     if "packages" in $data {
-        let packages = ($data | get packages)
-        if "generations" in $packages {
-            let gen_count = ($packages | get generations | get -o count | default 0)
-            if $gen_count > 10 {
-                $actions = ($actions | append "Clean old system generations to free disk space")
-            }
+        let gen_count = ($data | get packages | get -o generations.count | default 0)
+        if $gen_count > 10 {
+            $actions = ($actions | append "clean old generations")
         }
     }
     
-    # Security actions
     if "security" in $data {
         let security = ($data | get security)
-        if "dangerous_patterns" in $security {
-            let issues = ($security | get dangerous_patterns | get -o total_issues | default 0)
-            if $issues > 0 {
-                $actions = ($actions | append "Review and remediate dangerous code patterns")
-            }
-        }
+        let issues = ($security | get -o dangerous_patterns.total_issues | default 0)
+        let secrets = ($security | get -o secret_exposure.potential_secrets | default 0)
         
-        if "secret_exposure" in $security {
-            let secrets = ($security | get secret_exposure | get -o potential_secrets | default 0)
-            if $secrets > 0 {
-                $actions = ($actions | append "Audit and secure potential credential exposures")
-            }
-        }
+        if $issues > 0 { $actions = ($actions | append "review dangerous patterns") }
+        if $secrets > 0 { $actions = ($actions | append "secure exposed credentials") }
     }
     
-    # Code quality actions
     if "code_quality" in $data {
-        let quality = ($data | get code_quality)
-        if "file_metrics" in $quality {
-            let avg_lines = ($quality | get file_metrics | get -o avg_lines_per_file | default 0)
-            if $avg_lines > 200 {
-                $actions = ($actions | append "Refactor large files to improve maintainability")
-            }
+        let avg_lines = ($data | get code_quality | get -o file_metrics.avg_lines_per_file | default 0)
+        if $avg_lines > 200 {
+            $actions = ($actions | append "refactor large files")
         }
     }
     
