@@ -447,7 +447,7 @@ def generate_analysis_report [data: record] {
     
     if "metadata" in $data {
         let meta = ($data | get metadata)
-        let timestamp = ($meta.generated_at | date format '%Y-%m-%d %H:%M UTC')
+        let timestamp = ($meta.generated_at | format date '%Y-%m-%d %H:%M UTC')
         print $"generated  : ($timestamp)"
         print ""
     }
