@@ -1,5 +1,6 @@
-# Unified logging system for nix-mox
-# Consolidates all logging functionality into one consistent module
+# ⚠️  DEPRECATED: unified-logging.nu is deprecated!
+# Use lib/logging.nu instead - this legacy library will be removed
+# Consolidated logging system for nix-mox
 
 # Log levels with numeric values for comparison
 export const LOG_LEVELS = {

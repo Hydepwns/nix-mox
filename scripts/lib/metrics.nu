@@ -3,9 +3,9 @@
 # Real-time metrics collection for nix-mox
 # Prometheus-compatible metrics exporter
 
-use ../lib/unified-logging.nu *
+use logging.nu *
 use ../lib/performance.nu *
-use ../lib/unified-error-handling.nu *
+use ../lib/logging.nu *
 
 # Global metrics state
 mut METRICS_STATE = {

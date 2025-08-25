@@ -1,5 +1,5 @@
-# Unified check functions for nix-mox scripts
-# This library consolidates common validation functions used across multiple scripts
+# ⚠️  DEPRECATED: unified-checks.nu is deprecated!
+# Use lib/validators.nu instead - this legacy library will be removed
 
 export def check_command [cmd: string] {
     """Check if a command is available in PATH"""

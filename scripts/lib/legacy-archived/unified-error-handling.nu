@@ -1,7 +1,7 @@
-# Unified error handling system for nix-mox
-# Consolidates all error handling functionality into one consistent module
+# ⚠️  DEPRECATED: unified-error-handling.nu is deprecated!
+# Use lib/logging.nu instead - this legacy library will be removed
 
-use ./unified-logging.nu *
+use logging.nu *
 
 # Error codes for consistent error handling
 export const ERROR_CODES = {

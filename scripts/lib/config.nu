@@ -1,6 +1,6 @@
 # Configuration management module for nix-mox scripts
 # Handles loading, validating, and managing configuration files
-use ./unified-logging.nu *
+use logging.nu *
 use ./unified-error-handling.nu *
 
 # Default configuration schema

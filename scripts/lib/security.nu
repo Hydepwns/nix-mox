@@ -1,6 +1,6 @@
 # Security module for nix-mox scripts
 # Validates scripts for dangerous patterns and provides security recommendations
-use ./unified-logging.nu *
+use logging.nu *
 use ./unified-error-handling.nu *
 
 # Security threat levels

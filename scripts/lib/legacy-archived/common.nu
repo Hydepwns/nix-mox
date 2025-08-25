@@ -1,4 +1,5 @@
-# Common utility functions for nix-mox scripts
+# ⚠️  DEPRECATED: common.nu is deprecated!
+# Use lib/logging.nu for logging and other consolidated libraries
 
 # Export constants for use in other scripts
 export const RED = ansi red
