@@ -1,15 +1,15 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-error-handling.nu
+use ../lib/validators.nu *
+use ../lib/logging.nu
 
 # Component Browser for nix-mox
 # Browse and preview available configuration components
 # Usage: nu component-browser.nu [--category CATEGORY] [--component COMPONENT]
 
-use ../lib/unified-logging.nu *
-use ../lib/unified-error-handling.nu *
+use logging.nu *
+use ../lib/logging.nu *
 
 # Color definitions
 const GREEN = "ansi green"

@@ -1,16 +1,16 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-error-handling.nu
+use ../lib/validators.nu *
+use ../lib/logging.nu
 
 
 # Safe NixOS rebuild wrapper with mandatory validation
 # Prevents system damage by enforcing safety checks
 
 # Import common functions
-use ../lib/unified-logging.nu *
-use ../lib/unified-error-handling.nu *
+use logging.nu *
+use ../lib/logging.nu *
 
 def main [
     --flake: string = ".#nixosConfigurations.nixos"     # Flake configuration to deploy

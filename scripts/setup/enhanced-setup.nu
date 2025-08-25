@@ -1,15 +1,15 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-error-handling.nu
+use ../lib/validators.nu *
+use ../lib/logging.nu
 
 # Enhanced nix-mox Setup Script
 # Allows granular selection of favorite configuration parts
 # Usage: nu enhanced-setup.nu [--dry-run] [--help]
 
-use ../lib/unified-logging.nu *
-use ../lib/unified-error-handling.nu *
+use logging.nu *
+use ../lib/logging.nu *
 
 # Color definitions
 const GREEN = "ansi green"
@@ -142,7 +142,7 @@ def main [] {
                 usage
             }
             _ => {
-                log_error $"Unknown option: ($arg)"
+                error $"Unknown option: ($arg)"
                 usage
             }
         }
@@ -327,7 +327,7 @@ def create_configuration_files [] {
     # Create environment configuration
     create_env_config
 
-    log_success "Configuration files created successfully!"
+    success "Configuration files created successfully!"
 }
 
 def create_personal_config [] {
@@ -376,7 +376,7 @@ in
     if not $env.STATE.dry_run {
         $user_config | save $config_path
         $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $config_path))
-        log_info $"Created personal configuration: ($config_path)"
+        info $"Created personal configuration: ($config_path)"
     } else {
         log_dryrun $"Would create personal configuration: ($config_path)"
     }
@@ -457,7 +457,7 @@ def create_main_config [] {
     if not $env.STATE.dry_run {
         $main_config | save $config_path
         $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $config_path))
-        log_info $"Created main configuration: ($config_path)"
+        info $"Created main configuration: ($config_path)"
     } else {
         log_dryrun $"Would create main configuration: ($config_path)"
     }
@@ -567,7 +567,7 @@ NIXMOX_COMPONENTS=($env.STATE.selected_components | to json | str replace '"' '\
     if not $env.STATE.dry_run {
         $env_content | save .env
         $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append ".env"))
-        log_info "Created environment configuration: .env"
+        info "Created environment configuration: .env"
     } else {
         log_dryrun "Would create environment configuration: .env"
     }
@@ -642,6 +642,6 @@ def usage [] {
 try {
     main
 } catch {
-    log_error $"Setup failed: ($env.LAST_ERROR)"
+    error $"Setup failed: ($env.LAST_ERROR)"
     exit 1
 } 

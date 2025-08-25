@@ -1,9 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-logging.nu *
-use ../lib/unified-error-handling.nu *
+use ../lib/validators.nu *
+use logging.nu *
+use ../lib/logging.nu *
 
 
 # Simplified install script for nix-mox
@@ -34,7 +34,7 @@ export def main [args: list] {
     }
 
     # Validate installation prerequisites
-    let prereq_check = (check_prerequisites)
+    let prereq_check = (validate_prerequisites)
     if not $prereq_check.valid {
         error "Prerequisites not met" "install"
         exit 1
@@ -96,7 +96,7 @@ export def get_component_selection [args: list] {
 }
 
 # Check installation prerequisites
-export def check_prerequisites [] {
+export def validate_prerequisites [] {
     mut missing = []
     mut errors = []
 
@@ -246,7 +246,7 @@ export def create_configuration_files [] {
         },
         security: {
             validate_scripts: true,
-            check_permissions: true
+            validate_permissions: true
         },
         performance: {
             enable_monitoring: true,

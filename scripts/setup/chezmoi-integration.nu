@@ -1,309 +1,160 @@
 #!/usr/bin/env nu
 
-# Chezmoi Integration Script for nix-mox
-# Integrates chezmoi with nix-mox workflows and provides convenient commands
+# Consolidated chezmoi integration for nix-mox
+# Updated to use the consolidated chezmoi.nu script instead of individual scripts
 
-use ../lib/unified-error-handling.nu
+use ../lib/logging.nu
+use ../lib/validators.nu *
 
-def show_banner [] {
-    print "\n(ansi blue_bold)🔗 nix-mox: Chezmoi Integration(ansi reset)"
-    print "(ansi dark_gray)Integrating chezmoi with nix-mox workflows(ansi reset)\n"
+def print_header [] {
+    print "(ansi green_bold)Setting up chezmoi integration for nix-mox...(ansi reset)"
+    print "(ansi dark_gray)Using consolidated chezmoi management script(ansi reset)\n"
 }
 
 def check_chezmoi_installed [] {
     let chezmoi_installed = (which chezmoi | length) > 0
     if not $chezmoi_installed {
-        unified-error-handling log_error "Chezmoi is not installed. Please install it first." "integration"
+        unified-error-handling error "Chezmoi is not installed. Please install it first." "integration"
         return false
     }
-    unified-error-handling log_success "Chezmoi is installed" "integration"
+    unified-error-handling success "Chezmoi is installed" "integration"
     true
 }
 
 def create_chezmoi_aliases [] {
-    unified-error-handling log_info "Creating chezmoi aliases for nix-mox..." "integration"
+    unified-error-handling info "Creating chezmoi aliases for nix-mox..." "integration"
     
     let aliases = "
 # Chezmoi integration aliases for nix-mox
 alias cz='chezmoi'
-alias cza='chezmoi apply'
-alias czd='chezmoi diff'
-alias cze='chezmoi edit'
-alias czu='chezmoi update'
-alias czs='chezmoi status'
-alias czv='chezmoi verify'
+alias cza='nu scripts/chezmoi.nu apply'
+alias czd='nu scripts/chezmoi.nu diff'
+alias cze='nu scripts/chezmoi.nu edit'
+alias czu='nu scripts/chezmoi.nu sync'
+alias czs='nu scripts/chezmoi.nu status'
+alias czv='nu scripts/chezmoi.nu verify'
 
-# Nix-mox specific chezmoi commands
-alias nix-cz='chezmoi apply --source-path ~/.local/share/chezmoi'
-alias nix-cz-diff='chezmoi diff --source-path ~/.local/share/chezmoi'
-alias nix-cz-edit='chezmoi edit --source-path ~/.local/share/chezmoi'
+# Nix-mox specific chezmoi commands using consolidated script
+alias nix-cz='nu scripts/chezmoi.nu apply'
+alias nix-cz-diff='nu scripts/chezmoi.nu diff'
+alias nix-cz-status='nu scripts/chezmoi.nu status'
+alias nix-cz-sync='nu scripts/chezmoi.nu sync'
 "
     
     try {
         $aliases | save scripts/chezmoi-aliases.nu
-        unified-error-handling log_success "Chezmoi aliases created: scripts/chezmoi-aliases.nu" "integration"
+        unified-error-handling success "Chezmoi aliases created: scripts/chezmoi-aliases.nu" "integration"
         true
     } catch { |err|
-        unified-error-handling log_error $"Failed to create aliases: ($err.msg)" "integration"
+        unified-error-handling error $"Failed to create aliases: ($err.msg)" "integration"
         false
     }
 }
 
-def create_chezmoi_workflow_scripts [] {
-    unified-error-handling log_info "Creating chezmoi workflow scripts..." "integration"
+def validate_consolidated_script [] {
+    unified-error-handling info "Validating consolidated chezmoi script..." "integration"
     
-    # Create chezmoi apply script
-    let apply_script = "#!/usr/bin/env nu
-
-# Apply chezmoi configuration
-# This script applies chezmoi templates to the system
-
-use ../../../../lib/unified-error-handling.nu
-
-def main [] {
-    unified-error-handling log_info \"Applying chezmoi configuration...\" \"chezmoi-apply\"
-    
-    let result = (unified-error-handling safe_exec \"chezmoi apply\" \"chezmoi-apply\")
-    if \$result.success {
-        unified-error-handling log_success \"Chezmoi configuration applied successfully\" \"chezmoi-apply\"
-        unified-error-handling exit_with_success \"Configuration applied\" \"chezmoi-apply\"
-    } else {
-        unified-error-handling log_error \"Failed to apply chezmoi configuration\" \"chezmoi-apply\"
-        unified-error-handling exit_with_error \"Configuration failed\" 1 \"chezmoi-apply\"
+    # Check if the consolidated chezmoi script exists
+    if not ("scripts/chezmoi.nu" | path exists) {
+        unified-error-handling error "Consolidated chezmoi script not found at scripts/chezmoi.nu" "integration"
+        return false
     }
-}
-
-main
-"
     
-    # Create chezmoi diff script
-    let diff_script = "#!/usr/bin/env nu
-
-# Show chezmoi differences
-# This script shows what changes chezmoi would make
-
-use ../../../../lib/unified-error-handling.nu
-
-def main [] {
-    unified-error-handling log_info \"Checking chezmoi differences...\" \"chezmoi-diff\"
-    
-    let result = (unified-error-handling safe_exec \"chezmoi diff\" \"chezmoi-diff\")
-    if \$result.success {
-        if (\$result.output | str length) > 0 {
-            print \$result.output
-            unified-error-handling log_warning \"Differences found - run 'make chezmoi-apply' to apply them\" \"chezmoi-diff\"
-        } else {
-            unified-error-handling log_success \"No differences found - system is up to date\" \"chezmoi-diff\"
-        }
-    } else {
-        unified-error-handling log_error \"Failed to check chezmoi differences\" \"chezmoi-diff\"
-        unified-error-handling exit_with_error \"Diff check failed\" 1 \"chezmoi-diff\"
-    }
-}
-
-main
-"
-    
-    # Create chezmoi sync script
-    let sync_script = "#!/usr/bin/env nu
-
-# Sync chezmoi with remote repository
-# This script updates chezmoi from the remote dotfiles repository
-
-use ../../../../lib/unified-error-handling.nu
-
-def main [] {
-    unified-error-handling log_info \"Syncing chezmoi with remote repository...\" \"chezmoi-sync\"
-    
-    let result = (unified-error-handling safe_exec \"chezmoi update\" \"chezmoi-sync\")
-    if \$result.success {
-        unified-error-handling log_success \"Chezmoi synced successfully\" \"chezmoi-sync\"
-        unified-error-handling log_info \"Run 'make chezmoi-apply' to apply any new changes\" \"chezmoi-sync\"
-        unified-error-handling exit_with_success \"Sync completed\" \"chezmoi-sync\"
-    } else {
-        unified-error-handling log_error \"Failed to sync chezmoi\" \"chezmoi-sync\"
-        unified-error-handling exit_with_error \"Sync failed\" 1 \"chezmoi-sync\"
-    }
-}
-
-main
-"
-    
+    # Test that the consolidated script works
     try {
-        $apply_script | save scripts/chezmoi-apply.nu
-        $diff_script | save scripts/chezmoi-diff.nu
-        $sync_script | save scripts/chezmoi-sync.nu
-        
-        # Make scripts executable
-        chmod +x scripts/chezmoi-apply.nu
-        chmod +x scripts/chezmoi-diff.nu
-        chmod +x scripts/chezmoi-sync.nu
-        
-        unified-error-handling log_success "Chezmoi workflow scripts created" "integration"
-        true
+        let test_result = (nu scripts/chezmoi.nu help | complete)
+        if $test_result.exit_code == 0 {
+            unified-error-handling success "Consolidated chezmoi script is working" "integration"
+            unified-error-handling info "Use: nu scripts/chezmoi.nu [apply|diff|sync|status|help]" "integration"
+            true
+        } else {
+            unified-error-handling error "Consolidated chezmoi script failed test" "integration"
+            false
+        }
     } catch { |err|
-        unified-error-handling log_error $"Failed to create workflow scripts: ($err.msg)" "integration"
+        unified-error-handling error $"Failed to test chezmoi script: ($err.msg)" "integration"
         false
     }
 }
 
-def update_makefile [] {
-    unified-error-handling log_info "Updating Makefile with chezmoi targets..." "integration"
+def create_makefile_integration [] {
+    unified-error-handling info "Validating Makefile integration..." "integration"
     
-    let chezmoi_targets = '
-# Chezmoi integration targets
+    let makefile_content = "
+# Chezmoi integration targets (using consolidated script)
 chezmoi-apply: ## Apply chezmoi configuration
-	@echo "🔄 Applying chezmoi configuration..."
-	@nu scripts/chezmoi-apply.nu
+	@echo \"🔄 Applying chezmoi configuration...\"
+	@nu scripts/chezmoi.nu apply
 
 chezmoi-diff: ## Show chezmoi differences
-	@echo "🔍 Checking chezmoi differences..."
-	@nu scripts/chezmoi-diff.nu
+	@echo \"🔍 Checking chezmoi differences...\"
+	@nu scripts/chezmoi.nu diff
 
 chezmoi-sync: ## Sync chezmoi with remote repository
-	@echo "📡 Syncing chezmoi with remote repository..."
-	@nu scripts/chezmoi-sync.nu
+	@echo \"📡 Syncing chezmoi with remote repository...\"
+	@nu scripts/chezmoi.nu sync
 
 chezmoi-edit: ## Edit chezmoi configuration
-	@echo "✏️  Opening chezmoi configuration for editing..."
-	@chezmoi edit
+	@echo \"✏️  Opening chezmoi configuration for editing...\"
+	@nu scripts/chezmoi.nu edit
 
 chezmoi-status: ## Show chezmoi status
-	@echo "📊 Showing chezmoi status..."
-	@chezmoi status
+	@echo \"📊 Showing chezmoi status...\"
+	@nu scripts/chezmoi.nu status
 
 chezmoi-verify: ## Verify chezmoi configuration
-	@echo "✅ Verifying chezmoi configuration..."
-	@chezmoi verify
-
-chezmoi-setup: ## Complete chezmoi setup and integration
-	@echo "🔗 Setting up chezmoi integration..."
-	@nu scripts/setup/chezmoi-integration.nu
-'
+	@echo \"✅ Verifying chezmoi configuration...\"
+	@nu scripts/chezmoi.nu verify
+"
     
-    try {
-        $chezmoi_targets | save -a Makefile
-        unified-error-handling log_success "Makefile updated with chezmoi targets" "integration"
+    # Check if Makefile already has chezmoi targets
+    let makefile_has_targets = (open Makefile | str contains "chezmoi-apply")
+    if $makefile_has_targets {
+        unified-error-handling success "Makefile already contains chezmoi targets" "integration"
         true
-    } catch { |err|
-        unified-error-handling log_error $"Failed to update Makefile: ($err.msg)" "integration"
-        false
+    } else {
+        unified-error-handling info "Makefile targets will need to be added manually" "integration"
+        unified-error-handling info "Add the following targets to your Makefile:" "integration"
+        print $makefile_content
+        true
     }
 }
 
-def create_integration_report [] {
-    unified-error-handling log_info "Creating integration report..." "integration"
+def print_integration_summary [] {
+    print "\n(ansi green_bold)🎉 Chezmoi integration setup completed!(ansi reset)\n"
+    print "(ansi cyan_bold)Available commands:(ansi reset)"
+    print "- `make chezmoi-apply` - Apply chezmoi configuration"
+    print "- `make chezmoi-diff` - Show chezmoi differences"
+    print "- `make chezmoi-sync` - Sync with remote repository"
+    print "- `make chezmoi-edit` - Edit chezmoi configuration"
+    print "- `make chezmoi-status` - Show chezmoi status"
+    print "- `make chezmoi-verify` - Verify chezmoi configuration"
     
-    let report = "
-# Chezmoi Integration Report
-Generated: $(date now | format date '%Y-%m-%d %H:%M:%S')
-
-## Integration Components
-
-### ✅ Chezmoi Aliases
-- Created: scripts/chezmoi-aliases.nu
-- Provides convenient shortcuts for chezmoi commands
-
-### ✅ Workflow Scripts
-- Created: scripts/chezmoi-apply.nu
-- Created: scripts/chezmoi-diff.nu  
-- Created: scripts/chezmoi-sync.nu
-- Provides nix-mox integrated chezmoi workflows
-
-### ✅ Makefile Integration
-- Added chezmoi targets to Makefile
-- Provides convenient make commands for chezmoi operations
-
-## Available Commands
-
-### Make Commands
-- `make chezmoi-apply` - Apply chezmoi configuration
-- `make chezmoi-diff` - Show chezmoi differences
-- `make chezmoi-sync` - Sync with remote repository
-- `make chezmoi-edit` - Edit chezmoi configuration
-- `make chezmoi-status` - Show chezmoi status
-- `make chezmoi-verify` - Verify chezmoi configuration
-
-- `make chezmoi-setup` - Complete setup
-
-### Direct Scripts
-- `nu scripts/chezmoi-apply.nu` - Apply configuration
-- `nu scripts/chezmoi-diff.nu` - Show differences
-- `nu scripts/chezmoi-sync.nu` - Sync repository
-
-## Next Steps
-
-1. Test the integration: `make chezmoi-diff`
-2. Apply configuration: `make chezmoi-apply`
-3. Set up remote repository sync
-4. Configuration management complete
-5. Use chezmoi for all user configurations
-
-## Benefits
-
-- **Unified Workflow**: Chezmoi integrated with nix-mox
-- **Cross-Platform**: Works on macOS, Linux, Windows
-- **Version Control**: Git-based configuration management
-- **Templates**: Dynamic configuration based on environment
-- **Atomic Updates**: Safe, reversible configuration changes
-"
+    print "\n(ansi cyan_bold)Direct script usage:(ansi reset)"
+    print "- `nu scripts/chezmoi.nu apply` - Apply configuration"
+    print "- `nu scripts/chezmoi.nu diff` - Show differences"
+    print "- `nu scripts/chezmoi.nu sync` - Sync repository"
+    print "- `nu scripts/chezmoi.nu status` - Show status"
+    print "- `nu scripts/chezmoi.nu help` - Show all commands"
     
-    try {
-        $report | save CHEZMOI_INTEGRATION_REPORT.md
-        unified-error-handling log_success "Integration report created: CHEZMOI_INTEGRATION_REPORT.md" "integration"
-        true
-    } catch { |err|
-        unified-error-handling log_error $"Failed to create report: ($err.msg)" "integration"
-        false
-    }
+    print "\n(ansi yellow_bold)Next steps:(ansi reset)"
+    print "1. Test the integration: `make chezmoi-diff`"
+    print "2. Apply configuration: `make chezmoi-apply`"
+    print "3. Check status: `make chezmoi-status`"
 }
 
 def main [] {
-    show_banner
+    print_header
     
-    # Check prerequisites
-    if not (check_chezmoi_installed) {
-        unified-error-handling exit_with_error "Prerequisites not met" 1 "integration"
-    }
+    # Run integration steps
+    if not (check_chezmoi_installed) { return }
+    if not (validate_consolidated_script) { return }
+    if not (create_chezmoi_aliases) { return }
+    if not (create_makefile_integration) { return }
     
-    # Perform integration steps
-    unified-error-handling log_info "Step 1: Creating chezmoi aliases" "integration"
-    let step1_success = (create_chezmoi_aliases)
+    print_integration_summary
     
-    unified-error-handling log_info "Step 2: Creating workflow scripts" "integration"
-    let step2_success = (create_chezmoi_workflow_scripts)
-    
-    unified-error-handling log_info "Step 3: Updating Makefile" "integration"
-    let step3_success = (update_makefile)
-    
-    unified-error-handling log_info "Step 4: Creating integration report" "integration"
-    let step4_success = (create_integration_report)
-    
-    # Count successes
-    mut success_count = 0
-    let total_steps = 4
-    
-    if $step1_success { $success_count = $success_count + 1 }
-    if $step2_success { $success_count = $success_count + 1 }
-    if $step3_success { $success_count = $success_count + 1 }
-    if $step4_success { $success_count = $success_count + 1 }
-    
-    # Summary
-    print "\n(ansi blue_bold)📊 Integration Summary(ansi reset)"
-    print "(ansi dark_gray)══════════════════════════════════════════════════════════════(ansi reset)\n"
-    print $"✅ Completed: ($success_count)/($total_steps) steps"
-    
-    if $success_count == $total_steps {
-        unified-error-handling log_success "Integration completed successfully!" "integration"
-        unified-error-handling log_info "Review CHEZMOI_INTEGRATION_REPORT.md for available commands" "integration"
-        unified-error-handling log_info "Try: make chezmoi-diff" "integration"
-        unified-error-handling exit_with_success "Integration completed" "integration"
-    } else {
-        unified-error-handling log_warning "Integration completed with some failures" "integration"
-        unified-error-handling log_info "Review the output above and CHEZMOI_INTEGRATION_REPORT.md" "integration"
-        unified-error-handling exit_with_error "Integration had failures" 1 "integration"
-    }
+    unified-error-handling success "Chezmoi integration completed successfully" "integration"
 }
 
-# Run the integration
-main 
+main

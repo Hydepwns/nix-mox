@@ -1,16 +1,16 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-error-handling.nu
+use ../lib/validators.nu *
+use ../lib/logging.nu
 
 
 # Quick Favorites Setup for nix-mox
 # Quick setup for common favorite configurations
 # Usage: nu quick-favorites.nu [PRESET] [--dry-run]
 
-use ../lib/unified-logging.nu *
-use ../lib/unified-error-handling.nu *
+use logging.nu *
+use ../lib/logging.nu *
 
 # --- Quick Favorites Presets ---
 const QUICK_PRESETS = {

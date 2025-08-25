@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-error-handling.nu
+use ../lib/validators.nu *
+use ../lib/logging.nu
 
 
 # Simple working install script for nix-mox
@@ -22,7 +22,7 @@ def main [
     print ""
 
     # Check basic prerequisites
-    let prereq_check = check_prerequisites $create_dirs
+    let prereq_check = validate_prerequisites $create_dirs
     
     if not $prereq_check.success {
         print "❌ Prerequisites check failed:"
@@ -63,7 +63,7 @@ def main [
     }
 }
 
-def check_prerequisites [create_dirs: bool] {
+def validate_prerequisites [create_dirs: bool] {
     mut issues = []
     mut success = true
 

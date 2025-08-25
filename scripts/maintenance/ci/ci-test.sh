@@ -90,7 +90,7 @@ fi
 # Test 6: Check devshells
 echo ""
 echo "🔍 Checking devshells..."
-if nix develop --help > /dev/null 2>&1; then
+if (try { nix develop --help out+err> /dev/null; true } catch { false }); then
   echo "✅ Devshells are valid"
 else
   echo "❌ Devshells check failed"
