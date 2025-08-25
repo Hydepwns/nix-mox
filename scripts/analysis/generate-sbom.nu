@@ -1,14 +1,14 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-error-handling.nu
+use ../lib/validators.nu *
+use ../lib/logging.nu
 
 
 # nix-mox SBOM Generator
 # Generates Software Bill of Materials for compliance and security auditing
-use ../lib/unified-logging.nu *
-use ../lib/unified-error-handling.nu *
+use logging.nu *
+use ../lib/logging.nu *
 
 # List of supported systems
 let supported_systems = ["x86_64-linux", "aarch64-linux"]
@@ -26,7 +26,7 @@ def get_package_info [system: string, package_name: string] {
         # Get the outPath for the package
         let out_path = (nix eval .#packages.($system).($package_name).outPath --raw | complete | get stdout | str trim)
         if ($out_path == "") {
-            log_warn $"Package ($package_name) not available for ($system)"
+            warn $"Package ($package_name) not available for ($system)"
             return {
                 system: $system
                 name: $package_name
@@ -78,7 +78,7 @@ def get_package_info [system: string, package_name: string] {
             build_inputs: $dependencies_count  # Use dependencies as build inputs for simplicity
         }
     } catch { |err|
-        log_warn $"Could not get info for package ($package_name) on ($system): ($err)"
+        warn $"Could not get info for package ($package_name) on ($system): ($err)"
         {
             system: $system
             name: $package_name
@@ -208,8 +208,8 @@ def generate_csv_report [packages: list] {
 }
 
 def main [] {
-    log_info "Generating Software Bill of Materials for nix-mox..."
-    log_info "Collecting package information..."
+    info "Generating Software Bill of Materials for nix-mox..."
+    info "Collecting package information..."
 
     let packages = ($supported_systems | each { |system|
         $available_packages | each { |pkg| get_package_info $system $pkg }
@@ -217,15 +217,15 @@ def main [] {
 
     mkdir sbom
 
-    log_info "Generating SPDX format SBOM..."
+    info "Generating SPDX format SBOM..."
     let spdx_sbom = (generate_spdx_sbom $packages)
     $spdx_sbom | to json --indent 2 | save --force sbom/nix-mox.spdx.json
 
-    log_info "Generating CycloneDX format SBOM..."
+    info "Generating CycloneDX format SBOM..."
     let cyclonedx_sbom = (generate_cyclonedx_sbom $packages)
     $cyclonedx_sbom | to json --indent 2 | save --force sbom/nix-mox.cyclonedx.json
 
-    log_info "Generating CSV report..."
+    info "Generating CSV report..."
     let csv_report = (generate_csv_report $packages)
     $csv_report | save --force sbom/nix-mox-packages.csv
 
@@ -244,10 +244,10 @@ def main [] {
 
     $summary | to json --indent 2 | save --force sbom/sbom-summary.json
 
-    log_success "SBOM generation completed!"
-    log_info $"Generated ($total_packages) package-system pairs with ($total_dependencies) total dependencies"
-    log_info $"Total size: ($total_size)"
-    log_info "Files saved to sbom/ directory:"
+    success "SBOM generation completed!"
+    info $"Generated ($total_packages) package-system pairs with ($total_dependencies) total dependencies"
+    info $"Total size: ($total_size)"
+    info "Files saved to sbom/ directory:"
     print "  - nix-mox.spdx.json (SPDX format)"
     print "  - nix-mox.cyclonedx.json (CycloneDX format)"
     print "  - nix-mox-packages.csv (CSV report)"

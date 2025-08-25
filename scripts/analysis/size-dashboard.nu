@@ -1,32 +1,32 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-error-handling.nu
+use ../lib/validators.nu *
+use ../lib/logging.nu
 
 
 # nix-mox Size Analysis Dashboard
 # Web-based interactive dashboard for analyzing package sizes and dependencies
 
-def log_info [message: string] {
+def info [message: string] {
     print $"📊  ($message)"
 }
 
-def log_success [message: string] {
+def success [message: string] {
     print $"✅  ($message)"
 }
 
-def log_warning [message: string] {
+def warning [message: string] {
     print $"⚠️   ($message)"
 }
 
-def log_error [message: string] {
+def error [message: string] {
     print $"❌  ($message)"
 }
 
 # Analyze package sizes and dependencies
 def analyze_package_sizes [] {
-    log_info "Analyzing package sizes and dependencies..."
+    info "Analyzing package sizes and dependencies..."
 
     # Define available packages
     let packages = ["backup-system"]

@@ -1,15 +1,15 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-error-handling.nu
+use ../lib/validators.nu *
+use ../lib/logging.nu
 
 
 # Documentation generation tool for nix-mox scripts
 # Automatically generates comprehensive documentation using enhanced modules
-use ../lib/unified-logging.nu *
-use ../lib/unified-error-handling.nu *
-use ../lib/unified-logging.nu *
+use logging.nu *
+use ../lib/logging.nu *
+use logging.nu *
 use ../lib/discovery.nu *
 
 # Script metadata

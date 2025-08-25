@@ -1,10 +1,10 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-error-handling.nu
-use ../lib/unified-logging.nu *
-use ../lib/unified-error-handling.nu *
+use ../lib/validators.nu *
+use ../lib/logging.nu
+use logging.nu *
+use ../lib/logging.nu *
 
 # nix-mox Advanced Caching Strategy
 # Implements sophisticated build caching with multiple layers and optimization
@@ -94,13 +94,13 @@ def optimize_cache_config [] {
 
     # Update configuration with optimized cache order
     let optimized_config = ($config | upsert primary_caches $optimized_caches)
-    common log_success $"Optimized cache configuration with ($optimized_caches | length) healthy caches"
+    common success $"Optimized cache configuration with ($optimized_caches | length) healthy caches"
     $optimized_config
 }
 
 # Implement intelligent cache warming
 def warm_cache [packages: list] {
-    common log_info "Warming cache with frequently used packages..."
+    common info "Warming cache with frequently used packages..."
     let config = (get_cache_config)
     let warm_packages = ["nixpkgs-fmt" "nushell" "git" "vim" "wget" "curl" "htop" "docker" "docker-compose"]
 
@@ -110,7 +110,7 @@ def warm_cache [packages: list] {
     # Warm cache in parallel with limited concurrency
     let warm_results = ($all_packages | each { |pkg|
         try {
-            common log_info $"Warming cache for ($pkg)..."
+            common info $"Warming cache for ($pkg)..."
             nix build nixpkgs#($pkg) --no-link --accept-flake-config
             {
                 package: $pkg
@@ -129,13 +129,13 @@ def warm_cache [packages: list] {
 
     let success_count = ($warm_results | where status == "success" | length)
     let total_count = ($warm_results | length)
-    common log_success $"Cache warming completed: ($success_count)/($total_count) packages cached"
+    common success $"Cache warming completed: ($success_count)/($total_count) packages cached"
     $warm_results
 }
 
 # Implement cache-aware build scheduling
 def schedule_builds [packages: list] {
-    common log_info "Scheduling builds with cache optimization..."
+    common info "Scheduling builds with cache optimization..."
 
     # Analyze package dependencies and sizes
     let package_analysis = ($packages | each { |pkg|
@@ -162,7 +162,7 @@ def schedule_builds [packages: list] {
     # Sort by priority (heavy builds first, then light builds)
     let scheduled_builds = ($package_analysis | sort-by priority)
 
-    common log_info "Build schedule:"
+    common info "Build schedule:"
     $scheduled_builds | each { |pkg|
         print $"  - ($pkg.name) ($pkg.build_time) build, priority: ($pkg.priority)"
     }
@@ -171,7 +171,7 @@ def schedule_builds [packages: list] {
 
 # Implement cache-aware parallel builds
 def parallel_build [packages: list, max_jobs: int = 4] {
-    common log_info $"Starting parallel builds with max ($max_jobs) jobs..."
+    common info $"Starting parallel builds with max ($max_jobs) jobs..."
     let scheduled = (schedule_builds $packages)
     let total_packages = ($scheduled | length)
     mut completed = 0
@@ -183,7 +183,7 @@ def parallel_build [packages: list, max_jobs: int = 4] {
         let batch_end = ([$batch_start + $max_jobs - 1, $total_packages - 1] | math min)
         let batch_packages = ($scheduled | range $batch_start..$batch_end | get name)
 
-        common log_info $"Building batch: ($batch_packages | str join ', ')"
+        common info $"Building batch: ($batch_packages | str join ', ')"
 
         # Build batch in parallel
         let batch_results = ($batch_packages | each { |pkg|
@@ -215,16 +215,16 @@ def parallel_build [packages: list, max_jobs: int = 4] {
 
         # Update progress
         let progress = (($completed | into float) / ($total_packages | into float) * 100 | into int)
-        common log_info $"Progress: ($completed)/($total_packages) packages completed ($progress)%"
+        common info $"Progress: ($completed)/($total_packages) packages completed ($progress)%"
     }
 
     # Summary
     let success_count = ($results | where status == "success" | length)
     let failed_count = ($results | where status == "failed" | length)
-    common log_success $"Parallel build completed: ($success_count) successful, ($failed_count) failed"
+    common success $"Parallel build completed: ($success_count) successful, ($failed_count) failed"
 
     if ($failed_count > 0) {
-        common log_warning "Failed packages:"
+        common warning "Failed packages:"
         $results | where status == "failed" | each { |r| print $"  - ($r.package): ($r.error)" }
     }
     $results
@@ -232,29 +232,29 @@ def parallel_build [packages: list, max_jobs: int = 4] {
 
 # Cache cleanup and maintenance
 def maintain_cache [] {
-    common log_info "Performing cache maintenance..."
+    common info "Performing cache maintenance..."
 
     # Clean old build artifacts
     try {
         nix store gc --print-dead
-        common log_success "Cache garbage collection completed"
+        common success "Cache garbage collection completed"
     } catch {
-        common log_warning "Cache garbage collection failed"
+        common warning "Cache garbage collection failed"
     }
 
     # Optimize store
     try {
         nix store optimise
-        common log_success "Store optimization completed"
+        common success "Store optimization completed"
     } catch {
-        common log_warning "Store optimization failed"
+        common warning "Store optimization failed"
     }
 
     # Check cache health
     let config = (get_cache_config)
     let health_results = ($config.primary_caches | each { |cache| check_cache_health $cache })
 
-    common log_info "Cache health status:"
+    common info "Cache health status:"
     $health_results | each { |cache|
         let status_icon = (if $cache.available { "✅" } else { "❌" })
         print $"($status_icon) ($cache.url): ($cache.status)"
@@ -263,7 +263,7 @@ def maintain_cache [] {
 
 # Main function for advanced caching
 def main [packages: list = []] {
-    common log_info "Starting advanced caching strategy..."
+    common info "Starting advanced caching strategy..."
 
     # Optimize cache configuration
     let optimized_config = (optimize_cache_config)
@@ -293,8 +293,8 @@ def main [packages: list = []] {
 
     # Save report
     $report | to json --indent 2 | save cache-report.json
-    common log_success "Advanced caching strategy completed!"
-    common log_info "Report saved to cache-report.json"
+    common success "Advanced caching strategy completed!"
+    common info "Report saved to cache-report.json"
     $report
 }
 

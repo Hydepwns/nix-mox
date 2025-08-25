@@ -1,14 +1,14 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-error-handling.nu
+use ../../lib/validators.nu
+use ../../lib/logging.nu
 
 
 # nix-mox Code Quality Analysis Script
 # Analyzes code quality and suggests improvements
-use ../../lib/unified-logging.nu *
-use ../../lib/unified-error-handling.nu *
+use logging.nu *
+use ../../lib/logging.nu *
 
 def check_nix_syntax [] {
     info "Checking Nix syntax..." "code-quality"
@@ -42,7 +42,7 @@ def check_nushell_syntax [] {
     $results
 }
 
-def check_file_consistency [] {
+def validate_file_consistency [] {
     info "Checking file consistency..." "code-quality"
     mut issues = []
 
@@ -69,7 +69,7 @@ def check_file_consistency [] {
 }
 
 def check_documentation_coverage [] {
-    common log_info "Checking documentation coverage..."
+    common info "Checking documentation coverage..."
     mut issues = []
 
     # Check for README files
@@ -90,7 +90,7 @@ def check_documentation_coverage [] {
 }
 
 def check_security_issues [] {
-    common log_info "Checking for security issues..."
+    common info "Checking for security issues..."
     mut issues = []
 
     # Check for hardcoded secrets (simplified)
@@ -105,7 +105,7 @@ def check_security_issues [] {
 }
 
 def check_performance_issues [] {
-    common log_info "Checking for performance issues..."
+    common info "Checking for performance issues..."
     mut issues = []
 
     # Check for large files
@@ -260,7 +260,7 @@ def main [] {
     # Run all quality checks
     let nix_results = (check_nix_syntax)
     let nu_results = (check_nushell_syntax)
-    let consistency_issues = (check_file_consistency)
+    let consistency_issues = (validate_file_consistency)
     let doc_issues = (check_documentation_coverage)
     let security_issues = (check_security_issues)
     let perf_issues = (check_performance_issues)

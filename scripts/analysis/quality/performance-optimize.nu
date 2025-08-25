@@ -1,9 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/unified-checks.nu
-use ../../lib/unified-error-handling.nu
-use ../../lib/unified-logging.nu *
+use ../../lib/validators.nu
+use ../../lib/logging.nu
+use logging.nu *
 
 # nix-mox Performance Optimization Script
 # Analyze and optimize various aspects of the codebase
@@ -97,7 +97,7 @@ def analyze_build_performance [] {
 }
 
 def analyze_flake_evaluation [] {
-    log_info "Analyzing flake evaluation performance..."
+    info "Analyzing flake evaluation performance..."
 
     # Check if we're in a Nix flake
     if not ("flake.nix" | path exists) {

@@ -1,15 +1,15 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-error-handling.nu
+use ../lib/validators.nu *
+use ../lib/logging.nu
 
 
 # Simple nix-mox Dashboard
 # Shows system status without complex formatting
 
-use ../lib/unified-logging.nu *
-use ../lib/unified-error-handling.nu *
+use logging.nu *
+use ../lib/logging.nu *
 
 def show_simple_dashboard [] {
     print "╔══════════════════════════════════════════════════════════════════════════════╗"
