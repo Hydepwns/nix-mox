@@ -77,8 +77,8 @@ jobs:
           nu -c "source scripts/testing/run-tests.nu; run ['--unit', '--integration']"
 
           # Test flake evaluation for different systems
-          nix eval .#packages.x86_64-linux --accept-flake-config --json
-          nix eval .#packages.x86_64-darwin --accept-flake-config --json
+          nix --extra-experimental-features "nix-command flakes" eval .#packages.x86_64-linux --accept-flake-config --json
+          nix --extra-experimental-features "nix-command flakes" eval .#packages.x86_64-darwin --accept-flake-config --json
 
       - name: Upload Test Results
         if: always()

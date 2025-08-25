@@ -37,7 +37,7 @@ export const ICONS = {
 
 # Get current log level from environment or use default
 export def get_log_level [] {
-    if ($env | get -i LOG_LEVEL | is-empty) {
+    if ($env | get -o LOG_LEVEL | is-empty) {
         "INFO"
     } else {
         $env | get LOG_LEVEL

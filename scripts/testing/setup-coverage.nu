@@ -205,6 +205,6 @@ export def local_setup_coverage [] {
     }
 }
 
-if ($env | get -i NU_TEST | default "false") == "true" {
+if ($env | get -o NU_TEST | default "false") == "true" {
     # Test mode - do nothing
 }

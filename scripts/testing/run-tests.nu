@@ -40,7 +40,7 @@ def setup_test_config [] {
 
 def ensure_test_env [] {
     # Set default TEST_TEMP_DIR if not already set
-    if not ($env | get -i TEST_TEMP_DIR | is-not-empty) {
+    if not ($env | get -o TEST_TEMP_DIR | is-not-empty) {
         $env.TEST_TEMP_DIR = "coverage-tmp/nix-mox-tests"
     }
 
@@ -56,10 +56,10 @@ def ensure_test_env [] {
 
 def setup_test_env [] {
     # Ensure TEST_TEMP_DIR is set correctly for CI
-    let ci_val = ($env | get -i CI | default "");
+    let ci_val = ($env | get -o CI | default "");
     if $ci_val == "true" {
         $env.TEST_TEMP_DIR = "coverage-tmp/nix-mox-tests"
-    } else if not ($env | get -i TEST_TEMP_DIR | is-not-empty) {
+    } else if not ($env | get -o TEST_TEMP_DIR | is-not-empty) {
         $env.TEST_TEMP_DIR = "coverage-tmp/nix-mox-tests"
     }
 
@@ -262,7 +262,7 @@ def run_all_test_suites [config: record] {
             let report = do { export_coverage_report $config.export_format }
             print $"DEBUG: Coverage data length: ($report | str length)"
 
-            let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "coverage-tmp/nix-mox-tests");
+            let test_temp_dir = ($env | get -o TEST_TEMP_DIR | default "coverage-tmp/nix-mox-tests");
             let coverage_path = $"($test_temp_dir)/coverage.($config.export_format)"
             $report | save --force $coverage_path
             print $"($env.GREEN)Coverage report saved as ($coverage_path)($env.NC)"
@@ -286,7 +286,7 @@ def run_all_test_suites [config: record] {
     if not $config.generate_coverage {
         cleanup_test_env
     } else {
-        let test_temp_dir = if ($env | get -i TEST_TEMP_DIR | is-not-empty) {
+        let test_temp_dir = if ($env | get -o TEST_TEMP_DIR | is-not-empty) {
             $env.TEST_TEMP_DIR
         } else {
             "coverage-tmp/nix-mox-tests"

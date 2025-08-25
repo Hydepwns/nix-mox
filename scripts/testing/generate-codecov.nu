@@ -20,7 +20,7 @@ def main [
     print "📊 Generating Codecov coverage report..."
 
     # Ensure coverage environment is set up
-    if not ($env | get -i COVERAGE_DIR | default "" | is-empty) {
+    if not ($env | get -o COVERAGE_DIR | default "" | is-empty) {
         $env.COVERAGE_DIR = "coverage-tmp"
     }
 
@@ -116,6 +116,6 @@ export def generate_codecov_toml [] {
     main --format toml
 }
 
-if ($env | get -i NU_TEST | default "false") == "true" {
+if ($env | get -o NU_TEST | default "false") == "true" {
     # Test mode - do nothing
 }

@@ -12,7 +12,7 @@ use ../../lib/logging.nu *
 # --- Environment Setup ---
 export def setup_test_env [] {
     # Set up test environment variables
-    $env.TEST_TEMP_DIR = ($env | get -i TEMP | default "coverage-tmp") + "/nix-mox-tests"
+    $env.TEST_TEMP_DIR = ($env | get -o TEMP | default "coverage-tmp") + "/nix-mox-tests"
     $env.TEST_LOG_FILE = $env.TEST_TEMP_DIR + "/test.log"
 
     # Ensure test directory exists
@@ -30,14 +30,14 @@ export def setup_test_env [] {
 
 # --- Assertion Functions ---
 export def assert_true [condition: bool, message: string = ""] {
-    let green = ($env | get -i GREEN | default (ansi green))
-    let nc = ($env | get -i NC | default (ansi reset))
+    let green = ($env | get -o GREEN | default (ansi green))
+    let nc = ($env | get -o NC | default (ansi reset))
 
     if $condition {
         print $"($green)✓ PASS: ($message)($nc)"
         true
     } else {
-        let red = ($env | get -i RED | default (ansi red))
+        let red = ($env | get -o RED | default (ansi red))
         print $"($red)✗ FAIL: ($message)($nc)"
         false
     }
@@ -48,9 +48,9 @@ export def assert_false [condition: bool, message: string = ""] {
 }
 
 export def assert_equal [actual: any, expected: any, message: string = ""] {
-    let green = ($env | get -i GREEN | default (ansi green))
-    let red = ($env | get -i RED | default (ansi red))
-    let nc = ($env | get -i NC | default (ansi reset))
+    let green = ($env | get -o GREEN | default (ansi green))
+    let red = ($env | get -o RED | default (ansi red))
+    let nc = ($env | get -o NC | default (ansi reset))
 
     let result = ($actual == $expected)
     if $result {
@@ -63,9 +63,9 @@ export def assert_equal [actual: any, expected: any, message: string = ""] {
 }
 
 export def assert_not_equal [actual: any, expected: any, message: string = ""] {
-    let green = ($env | get -i GREEN | default (ansi green))
-    let red = ($env | get -i RED | default (ansi red))
-    let nc = ($env | get -i NC | default (ansi reset))
+    let green = ($env | get -o GREEN | default (ansi green))
+    let red = ($env | get -o RED | default (ansi red))
+    let nc = ($env | get -o NC | default (ansi reset))
 
     let result = ($actual != $expected)
     if $result {
@@ -78,9 +78,9 @@ export def assert_not_equal [actual: any, expected: any, message: string = ""] {
 }
 
 export def assert_contains [haystack: string, needle: string, message: string = ""] {
-    let green = ($env | get -i GREEN | default (ansi green))
-    let red = ($env | get -i RED | default (ansi red))
-    let nc = ($env | get -i NC | default (ansi reset))
+    let green = ($env | get -o GREEN | default (ansi green))
+    let red = ($env | get -o RED | default (ansi red))
+    let nc = ($env | get -o NC | default (ansi reset))
 
     let result = ($haystack | str contains $needle)
     if $result {
@@ -93,9 +93,9 @@ export def assert_contains [haystack: string, needle: string, message: string = 
 }
 
 export def assert_empty [value: any, message: string = ""] {
-    let green = ($env | get -i GREEN | default (ansi green))
-    let red = ($env | get -i RED | default (ansi red))
-    let nc = ($env | get -i NC | default (ansi reset))
+    let green = ($env | get -o GREEN | default (ansi green))
+    let red = ($env | get -o RED | default (ansi red))
+    let nc = ($env | get -o NC | default (ansi reset))
 
     let result = ($value | is-empty)
     if $result {
@@ -108,9 +108,9 @@ export def assert_empty [value: any, message: string = ""] {
 }
 
 export def assert_not_empty [value: any, message: string = ""] {
-    let green = ($env | get -i GREEN | default (ansi green))
-    let red = ($env | get -i RED | default (ansi red))
-    let nc = ($env | get -i NC | default (ansi reset))
+    let green = ($env | get -o GREEN | default (ansi green))
+    let red = ($env | get -o RED | default (ansi red))
+    let nc = ($env | get -o NC | default (ansi reset))
 
     let result = (not ($value | is-empty))
     if $result {
@@ -155,7 +155,7 @@ export def track_test [name: string, category: string, status: string, duration:
     }
 
     # Create the test temp directory if it doesn't exist
-    let test_temp_dir = ($env | get -i TEST_TEMP_DIR | default "coverage-tmp/nix-mox-tests");
+    let test_temp_dir = ($env | get -o TEST_TEMP_DIR | default "coverage-tmp/nix-mox-tests");
     if not ($test_temp_dir | path exists) {
         mkdir $test_temp_dir
     }

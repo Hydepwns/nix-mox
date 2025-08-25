@@ -19,7 +19,7 @@ export const LOG_LEVELS = {
 
 # Get current log level from environment or use default
 export def get_log_level [] {
-    if ($env | get -i LOG_LEVEL | is-empty) {
+    if ($env | get -o LOG_LEVEL | is-empty) {
         "INFO"
     } else {
         $env | get LOG_LEVEL
@@ -154,7 +154,7 @@ export def ensure_dir [path: string] {
 }
 
 export def is_ci_mode [] {
-    if ($env | get -i CI | is-empty) {
+    if ($env | get -o CI | is-empty) {
         false
     } else {
         ($env | get CI) == "true"

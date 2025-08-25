@@ -163,7 +163,7 @@ export def quick_status [] {
 
 # Export main functions
 export def main [] {
-    if ($env | get -i QUICK | default "false") == "true" {
+    if ($env | get -o QUICK | default "false") == "true" {
         quick_status
     } else {
         run_dashboard
@@ -171,6 +171,6 @@ export def main [] {
 }
 
 # Run if called directly
-if ($env | get -i NU_DASHBOARD | default "false") == "true" {
+if ($env | get -o NU_DASHBOARD | default "false") == "true" {
     main
 }

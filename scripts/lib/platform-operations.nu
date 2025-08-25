@@ -8,32 +8,30 @@ use platform.nu *
 use validators.nu *
 use command-wrapper.nu *
 
-# Higher-order function for platform-aware operations
-export def with_platform_operation [
+# Platform-aware operation dispatcher
+def execute_platform_operation [
+    operations: record,
     operation_name: string,
     --context: string = "platform-ops"
 ] {
-    |operations: record|
-    
     let platform = (get_platform)
     
-    with_logging $"($operation_name) on ($platform.normalized)" --context $context {||
-        
-        # Get platform-specific operation
-        let operation = ($operations | get -i $platform.normalized)
-        if ($operation | is-not-empty) {
-            debug $"Executing ($operation_name) for ($platform.normalized)" --context $context
-            do $operation
+    info $"Starting ($operation_name) on ($platform.normalized)" --context $context
+    
+    # Get platform-specific operation
+    let operation = ($operations | get -o $platform.normalized)
+    if ($operation | is-not-empty) {
+        debug $"Executing ($operation_name) for ($platform.normalized)" --context $context
+        do $operation
+    } else {
+        # Try default operation
+        let default_op = ($operations | get -o "default")
+        if ($default_op | is-not-empty) {
+            warn $"Using default operation for unsupported platform: ($platform.normalized)" --context $context
+            do $default_op
         } else {
-            # Try default operation
-            let default_op = ($operations | get -i "default")
-            if ($default_op | is-not-empty) {
-                warn $"Using default operation for unsupported platform: ($platform.normalized)" --context $context
-                do $default_op
-            } else {
-                error $"No ($operation_name) operation defined for platform: ($platform.normalized)" --context $context
-                return { success: false, message: "unsupported platform" }
-            }
+            error $"No ($operation_name) operation defined for platform: ($platform.normalized)" --context $context
+            return { success: false, message: "unsupported platform" }
         }
     }
 }
@@ -41,82 +39,90 @@ export def with_platform_operation [
 # Installation pipeline with platform-specific steps
 export def install_pipeline [
     package_name: string,
-    --pre-install: closure = {|| null},
-    --post-install: closure = {|| null},
+    --pre-install: closure,
+    --post-install: closure,
     --context: string = "install"
 ] {
-    with_logging $"installing ($package_name)" --context $context {||
-        
-        # Pre-installation checks and setup
+    info $"Starting installation of ($package_name)" --context $context
+    
+    # Pre-installation checks and setup
+    if ($pre_install | is-not-empty) {
         do $pre_install
-        
-        # Platform-specific installation
-        let result = (with_platform_operation "install" {
-            linux: {|| install_on_linux $package_name },
-            macos: {|| install_on_macos $package_name },
-            windows: {|| install_on_windows $package_name },
-            default: {|| error make { msg: $"Installation not supported for ($package_name)" } }
-        })
-        
-        if ($result | get -i success | default true) {
-            # Post-installation verification
-            do $post_install
-            success $"Successfully installed ($package_name)" --context $context
-        } else {
-            error $"Failed to install ($package_name)" --context $context
-        }
-        
-        $result
     }
+    
+    # Platform-specific installation
+    let operations = {
+        linux: {|| install_on_linux $package_name },
+        macos: {|| install_on_macos $package_name },
+        windows: {|| install_on_windows $package_name },
+        default: {|| error make { msg: $"Installation not supported for ($package_name)" } }
+    }
+    let result = (execute_platform_operation $operations "install")
+    
+    if ($result | get -o success | default true) {
+        # Post-installation verification
+        if ($post_install | is-not-empty) {
+            do $post_install
+        }
+        success $"Successfully installed ($package_name)" --context $context
+    } else {
+        error $"Failed to install ($package_name)" --context $context
+    }
+    
+    $result
 }
 
 # Uninstallation pipeline
 export def uninstall_pipeline [
     package_name: string,
-    --pre-uninstall: closure = {|| null},
-    --post-uninstall: closure = {|| null},
+    --pre-uninstall: closure,
+    --post-uninstall: closure,
     --context: string = "uninstall"
 ] {
-    with_logging $"uninstalling ($package_name)" --context $context {||
-        
-        # Pre-uninstallation checks
+    info $"Starting uninstallation of ($package_name)" --context $context
+    
+    # Pre-uninstallation checks
+    if ($pre_uninstall | is-not-empty) {
         do $pre_uninstall
-        
-        # Platform-specific uninstallation
-        let result = (with_platform_operation "uninstall" {
-            linux: {|| uninstall_on_linux $package_name },
-            macos: {|| uninstall_on_macos $package_name },
-            windows: {|| uninstall_on_windows $package_name },
-            default: {|| warn $"Manual uninstallation required for ($package_name)"; { success: true } }
-        })
-        
-        if ($result | get -i success | default true) {
-            # Post-uninstallation cleanup
-            do $post_uninstall
-            success $"Successfully uninstalled ($package_name)" --context $context
-        } else {
-            error $"Failed to uninstall ($package_name)" --context $context
-        }
-        
-        $result
     }
+    
+    # Platform-specific uninstallation
+    let operations = {
+        linux: {|| uninstall_on_linux $package_name },
+        macos: {|| uninstall_on_macos $package_name },
+        windows: {|| uninstall_on_windows $package_name },
+        default: {|| warn $"Manual uninstallation required for ($package_name)"; { success: true } }
+    }
+    let result = (execute_platform_operation $operations "uninstall")
+    
+    if ($result | get -o success | default true) {
+        # Post-uninstallation cleanup
+        if ($post_uninstall | is-not-empty) {
+            do $post_uninstall
+        }
+        success $"Successfully uninstalled ($package_name)" --context $context
+    } else {
+        error $"Failed to uninstall ($package_name)" --context $context
+    }
+    
+    $result
 }
 
 # Maintenance pipeline for platform-specific maintenance tasks
 export def maintenance_pipeline [
     --context: string = "maintenance"
 ] {
-    with_logging "system maintenance" --context $context {||
-        
-        let results = (with_platform_operation "maintenance" {
-            linux: {|| linux_maintenance },
-            macos: {|| macos_maintenance },
-            windows: {|| windows_maintenance },
-            default: {|| basic_maintenance }
-        })
-        
-        $results
+    info "Starting system maintenance" --context $context
+    
+    let operations = {
+        linux: {|| linux_maintenance },
+        macos: {|| macos_maintenance },
+        windows: {|| windows_maintenance },
+        default: {|| basic_maintenance }
     }
+    let results = (execute_platform_operation $operations "maintenance")
+    
+    $results
 }
 
 # Platform-specific installation functions
@@ -396,12 +402,13 @@ export def service_pipeline [
     service_name: string,
     --context: string = "service"
 ] {
-    with_platform_operation $"service ($action)" --context $context {
+    let operations = {
         linux: {|| linux_service_action $action $service_name },
         macos: {|| macos_service_action $action $service_name },
         windows: {|| windows_service_action $action $service_name },
         default: {|| error make { msg: $"Service management not supported on this platform" } }
     }
+    execute_platform_operation $operations $"service ($action)" --context $context
 }
 
 def linux_service_action [action: string, service: string] {

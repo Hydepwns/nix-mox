@@ -16,39 +16,73 @@ def main [
     --refresh: int = 5,
     --output: string = "",
     --format: string = "terminal",
-    --watch: bool = false,
-    --verbose: bool = false,
+    --watch,
+    --verbose,
     --context: string = "dashboard"
 ] {
-    if $verbose { $env.LOG_LEVEL = "DEBUG" }
+    if ($verbose | default false) { $env.LOG_LEVEL = "DEBUG" }
     
-    script_main "nix-mox dashboard" $"Displaying ($view) view" --context $context {||
-        
-        # Dispatch to appropriate dashboard view
-        match $view {
-            "overview" => (overview_dashboard $refresh $watch $output $format),
-            "system" => (system_dashboard $refresh $watch $output $format),
-            "performance" => (performance_dashboard $refresh $watch $output $format),
-            "testing" => (testing_dashboard $refresh $watch $output $format),
-            "security" => (security_dashboard $refresh $watch $output $format),
-            "gaming" => (gaming_dashboard $refresh $watch $output $format),
-            "analysis" => (analysis_dashboard $refresh $watch $output $format),
-            "help" => { show_dashboard_help; return },
-            _ => {
-                error $"Unknown dashboard view: ($view). Use 'help' to see available views."
-                return
-            }
+    info $"nix-mox dashboard: Displaying ($view) view" --context $context
+    
+    # Dispatch to appropriate dashboard view
+    match $view {
+        "overview" => (overview_dashboard $refresh $watch $output $format),
+        "system" => (system_dashboard $refresh $watch $output $format),
+        "performance" => (performance_dashboard $refresh $watch $output $format),
+        "testing" => (testing_dashboard $refresh $watch $output $format),
+        "security" => (security_dashboard $refresh $watch $output $format),
+        "gaming" => (gaming_dashboard $refresh $watch $output $format),
+        "analysis" => (analysis_dashboard $refresh $watch $output $format),
+        "help" => { show_dashboard_help; return },
+        _ => {
+            error $"Unknown dashboard view: ($view). Use 'help' to see available views."
+            return
         }
     }
 }
 
 # Data collection pipeline framework
-export def collect_data [...collectors: closure] {
-    $collectors | par-each { |collector|
+export def collect_data [...collectors: string] {
+    $collectors | par-each { |collector_name|
         try {
-            do $collector
+            # Call the collector function by name
+            match $collector_name {
+                "collect_basic_system_info" => (collect_basic_system_info),
+                "collect_nix_status" => (collect_nix_status),
+                "collect_disk_usage" => (collect_disk_usage),
+                "collect_memory_usage" => (collect_memory_usage),
+                "collect_service_status" => (collect_service_status),
+                "collect_recent_activity" => (collect_recent_activity),
+                "collect_detailed_hardware_info" => (collect_detailed_hardware_info),
+                "collect_network_info" => (collect_network_info),
+                "collect_process_info" => (collect_process_info),
+                "collect_environment_info" => (collect_environment_info),
+                "collect_cpu_metrics" => (collect_cpu_metrics),
+                "collect_memory_metrics" => (collect_memory_metrics),
+                "collect_disk_metrics" => (collect_disk_metrics),
+                "collect_network_metrics" => (collect_network_metrics),
+                "collect_nix_performance" => (collect_nix_performance),
+                "collect_test_results" => (collect_test_results),
+                "collect_coverage_data" => (collect_coverage_data),
+                "collect_quality_metrics" => (collect_quality_metrics),
+                "collect_security_status" => (collect_security_status),
+                "collect_vulnerability_scan" => (collect_vulnerability_scan),
+                "collect_audit_logs" => (collect_audit_logs),
+                "collect_gpu_info" => (collect_gpu_info),
+                "collect_gaming_services" => (collect_gaming_services),
+                "collect_audio_status" => (collect_audio_status),
+                "collect_controller_status" => (collect_controller_status),
+                "collect_package_analysis" => (collect_package_analysis),
+                "collect_size_analysis" => (collect_size_analysis),
+                "collect_dependency_analysis" => (collect_dependency_analysis),
+                "collect_performance_analysis" => (collect_performance_analysis),
+                _ => {
+                    warn $"Unknown collector: ($collector_name)" --context "data-collector"
+                    {}
+                }
+            }
         } catch { |err|
-            warn $"Data collection failed: ($err.msg)" --context "data-collector"
+            warn $"Data collection failed for ($collector_name): ($err.msg)" --context "data-collector"
             {}
         }
     } | reduce { |item, acc| $acc | merge $item }
@@ -63,7 +97,7 @@ def overview_dashboard [refresh: int, watch: bool, output: string, format: strin
             clear
             display_overview $data $format
             sleep ($refresh | into duration --unit sec)
-            $data = (collect_overview_data)
+            let data = (collect_overview_data)
         }
     } else {
         display_overview $data $format
@@ -83,7 +117,7 @@ def system_dashboard [refresh: int, watch: bool, output: string, format: string]
             clear
             display_system $data $format
             sleep ($refresh | into duration --unit sec)
-            $data = (collect_system_data)
+            let data = (collect_system_data)
         }
     } else {
         display_system $data $format
@@ -103,7 +137,7 @@ def performance_dashboard [refresh: int, watch: bool, output: string, format: st
             clear
             display_performance $data $format
             sleep ($refresh | into duration --unit sec)
-            $data = (collect_performance_data)
+            let data = (collect_performance_data)
         }
     } else {
         display_performance $data $format
@@ -157,60 +191,60 @@ def analysis_dashboard [refresh: int, watch: bool, output: string, format: strin
 # Data collection functions using functional composition
 def collect_overview_data [] {
     collect_data 
-        {|| collect_basic_system_info }
-        {|| collect_nix_status }
-        {|| collect_disk_usage }
-        {|| collect_memory_usage }
-        {|| collect_service_status }
-        {|| collect_recent_activity }
+        "collect_basic_system_info"
+        "collect_nix_status"
+        "collect_disk_usage"
+        "collect_memory_usage"
+        "collect_service_status"
+        "collect_recent_activity"
 }
 
 def collect_system_data [] {
     collect_data
-        {|| collect_basic_system_info }
-        {|| collect_detailed_hardware_info }
-        {|| collect_network_info }
-        {|| collect_process_info }
-        {|| collect_environment_info }
+        "collect_basic_system_info"
+        "collect_detailed_hardware_info"
+        "collect_network_info"
+        "collect_process_info"
+        "collect_environment_info"
 }
 
 def collect_performance_data [] {
     collect_data
-        {|| collect_cpu_metrics }
-        {|| collect_memory_metrics }
-        {|| collect_disk_metrics }
-        {|| collect_network_metrics }
-        {|| collect_nix_performance }
+        "collect_cpu_metrics"
+        "collect_memory_metrics"
+        "collect_disk_metrics"
+        "collect_network_metrics"
+        "collect_nix_performance"
 }
 
 def collect_testing_data [] {
     collect_data
-        {|| collect_test_results }
-        {|| collect_coverage_data }
-        {|| collect_quality_metrics }
+        "collect_test_results"
+        "collect_coverage_data"
+        "collect_quality_metrics"
 }
 
 def collect_security_data [] {
     collect_data
-        {|| collect_security_status }
-        {|| collect_vulnerability_scan }
-        {|| collect_audit_logs }
+        "collect_security_status"
+        "collect_vulnerability_scan"
+        "collect_audit_logs"
 }
 
 def collect_gaming_data [] {
     collect_data
-        {|| collect_gpu_info }
-        {|| collect_gaming_services }
-        {|| collect_audio_status }
-        {|| collect_controller_status }
+        "collect_gpu_info"
+        "collect_gaming_services"
+        "collect_audio_status"
+        "collect_controller_status"
 }
 
 def collect_analysis_data [] {
     collect_data
-        {|| collect_package_analysis }
-        {|| collect_size_analysis }
-        {|| collect_dependency_analysis }
-        {|| collect_performance_analysis }
+        "collect_package_analysis"
+        "collect_size_analysis"
+        "collect_dependency_analysis"
+        "collect_performance_analysis"
 }
 
 # Individual data collectors
@@ -324,7 +358,7 @@ def collect_recent_activity [] {
         {
             activity: {
                 recent_commits: ($git_activity.stdout | lines | length),
-                last_commit: ($git_activity.stdout | lines | get -i 0 | default "none")
+                last_commit: ($git_activity.stdout | lines | get -o 0 | default "none")
             }
         }
     } catch {
@@ -410,8 +444,8 @@ def collect_top_processes [sort_by: string] {
 def collect_environment_info [] {
     {
         environment: {
-            shell: ($env | get -i SHELL | default "unknown" | path basename),
-            user: ($env | get -i USER | default "unknown"),
+            shell: ($env | get -o SHELL | default "unknown" | path basename),
+            user: ($env | get -o USER | default "unknown"),
             is_ci: (is_ci),
             is_docker: (is_docker),
             is_wsl: (is_wsl)
@@ -508,7 +542,11 @@ def collect_network_metrics [] {
 
 def collect_nix_performance [] {
     try {
-        let nix_store_size = (du -sh /nix/store 2>/dev/null | split column "\t" | get column1.0 | default "unknown")
+        let nix_store_size = try { 
+            (run-external "du" "-sh" "/nix/store" | complete | get stdout | lines | get 0 | split column "\t" | get column1 | default "unknown")
+        } catch { 
+            "unknown" 
+        }
         
         {
             nix_performance: {
@@ -531,10 +569,10 @@ def collect_test_results [] {
             
             {
                 testing: {
-                    last_run: ($test_data | get -i timestamp | default "unknown"),
-                    total_tests: ($test_data | get -i total | default 0),
-                    passed: ($test_data | get -i passed | default 0),
-                    failed: ($test_data | get -i failed | default 0)
+                    last_run: ($test_data | get -o timestamp | default "unknown"),
+                    total_tests: ($test_data | get -o total | default 0),
+                    passed: ($test_data | get -o passed | default 0),
+                    failed: ($test_data | get -o failed | default 0)
                 }
             }
         } catch {
@@ -555,9 +593,9 @@ def collect_coverage_data [] {
             
             {
                 coverage: {
-                    percentage: ($coverage_data | get -i percentage | default 0),
-                    lines_covered: ($coverage_data | get -i lines_covered | default 0),
-                    total_lines: ($coverage_data | get -i total_lines | default 0)
+                    percentage: ($coverage_data | get -o percentage | default 0),
+                    lines_covered: ($coverage_data | get -o lines_covered | default 0),
+                    total_lines: ($coverage_data | get -o total_lines | default 0)
                 }
             }
         } catch {
@@ -615,7 +653,7 @@ def collect_gpu_info [] {
             {
                 gaming: {
                     gpu_detected: ($gpu_info.exit_code == 0),
-                    gpu_info: ($gpu_info.stdout | lines | get -i 0 | default "unknown"),
+                    gpu_info: ($gpu_info.stdout | lines | get -o 0 | default "unknown"),
                     nvidia_available: (which nvidia-smi | is-not-empty),
                     gpu_usage: ($nvidia_smi.stdout | default "not available")
                 }
@@ -650,7 +688,7 @@ def collect_audio_status [] {
         {
             audio: {
                 systems_available: $available,
-                primary: ($available | get -i 0 | default "none")
+                primary: ($available | get -o 0 | default "none")
             }
         }
     } else {
@@ -687,7 +725,11 @@ def collect_package_analysis [] {
 
 def collect_size_analysis [] {
     try {
-        let nix_store_size = (du -sh /nix/store 2>/dev/null | split column "\t" | get column1.0 | default "unknown")
+        let nix_store_size = try { 
+            (run-external "du" "-sh" "/nix/store" | complete | get stdout | lines | get 0 | split column "\t" | get column1 | default "unknown")
+        } catch { 
+            "unknown" 
+        }
         
         {
             sizes: {
@@ -775,8 +817,8 @@ def display_overview [data: record, format: string] {
     if "disk" in $data and "memory" in $data {
         let disk = ($data | get disk)
         let memory = ($data | get memory)
-        print $"Disk Usage: ($disk | get -i root_used | default 'unknown')"
-        print $"Memory Usage: ($memory | get -i usage_percent | default 'unknown')%"
+        print $"Disk Usage: ($disk | get -o root_used | default 'unknown')"
+        print $"Memory Usage: ($memory | get -o usage_percent | default 'unknown')%"
         print ""
     }
     
@@ -863,6 +905,5 @@ def show_dashboard_help [] {
 }
 
 # If script is run directly, call main with arguments
-if not ($nu.scope.args | is-empty) {
-    main ...$nu.scope.args
-}
+# Note: Direct execution not supported in Nushell 0.104.0+
+# Use: nu dashboard.nu <view> [options] instead

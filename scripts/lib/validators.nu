@@ -194,7 +194,7 @@ export def validate_root_required [] {
 # Environment variable validator
 export def validate_env_var [var_name: string, --required = true] {
     |input|
-    let value = ($env | get -i $var_name)
+    let value = ($env | get -o $var_name)
     if ($value | is-not-empty) {
         success $"Environment variable ($var_name) is set" --context "validator"
         validation_result true $"Environment variable ($var_name) OK"

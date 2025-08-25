@@ -469,8 +469,8 @@ def format_terminal_dashboard [data: record] {
         let packages = ($data | get packages)
         if "nix_store" in $packages {
             let store = ($packages | get nix_store)
-            print $"  Store Size: ($store | get -i total_size | default 'unknown')"
-            print $"  Package Count: ($store | get -i package_count | default 'unknown')"
+            print $"  Store Size: ($store | get -o total_size | default 'unknown')"
+            print $"  Package Count: ($store | get -o package_count | default 'unknown')"
         }
         print ""
     }
@@ -480,9 +480,9 @@ def format_terminal_dashboard [data: record] {
         let quality = ($data | get code_quality)
         if "file_metrics" in $quality {
             let metrics = ($quality | get file_metrics)
-            print $"  Total Files: ($metrics | get -i total_files | default 'unknown')"
-            print $"  Total Lines: ($metrics | get -i total_lines | default 'unknown')"
-            print $"  Avg Lines/File: ($metrics | get -i avg_lines_per_file | default 'unknown')"
+            print $"  Total Files: ($metrics | get -o total_files | default 'unknown')"
+            print $"  Total Lines: ($metrics | get -o total_lines | default 'unknown')"
+            print $"  Avg Lines/File: ($metrics | get -o avg_lines_per_file | default 'unknown')"
         }
         print ""
     }
@@ -494,10 +494,10 @@ def format_terminal_dashboard [data: record] {
         print ""
     }
     
-    if "performance" in $data and ($data.performance | get -i note | default "") != "benchmarks not included" {
+    if "performance" in $data and ($data.performance | get -o note | default "") != "benchmarks not included" {
         print "⚡ Performance Benchmarks:"
         let perf = ($data | get performance)
-        print $"  Benchmark completed with ($perf | get -i iterations | default 'unknown') iterations"
+        print $"  Benchmark completed with ($perf | get -o iterations | default 'unknown') iterations"
         print ""
     }
     

@@ -12,8 +12,8 @@ use lib/script-template.nu *
 # Main validation dispatcher
 def main [
     suite: string = "basic",
-    --verbose = false,
-    --fail_fast = false,
+    --verbose,
+    --fail_fast,
     --output: string = "",
     --context: string = "validation"
 ] {

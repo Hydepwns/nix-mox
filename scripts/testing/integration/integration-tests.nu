@@ -11,7 +11,7 @@ def main [] {
     # Test CI/CD integration
     print "Testing CI/CD integration..."
 
-    let ci_val = ($env | get -i CI | default "");
+    let ci_val = ($env | get -o CI | default "");
     if $ci_val == "true" {
         print "Running in CI environment"
         # Test debug logging in CI

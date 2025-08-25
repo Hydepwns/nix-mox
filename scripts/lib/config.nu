@@ -105,7 +105,7 @@ export def merge_config [base: record, override: record] {
     for key in ($override | columns) {
         let value = $override | get $key
 
-        if ($result | get -i $key) != null {
+        if ($result | get -o $key) != null {
             let base_value = $result | get $key
 
             # Deep merge for nested objects
@@ -164,24 +164,24 @@ export def validate_config [config: record] {
     # Check required top-level keys
     let required_keys = ["logging", "platform", "scripts", "security", "performance", "paths"]
     for key in $required_keys {
-        if ($config | get -i $key) == null {
+        if ($config | get -o $key) == null {
             $errors = ($errors | append $"Missing required key: ($key)")
         }
     }
 
     # Validate logging configuration
-    if ($config | get -i logging) != null {
+    if ($config | get -o logging) != null {
         let logging = $config | get logging
         let valid_levels = ["DEBUG", "INFO", "WARN", "ERROR"]
 
-        if ($logging | get -i level) != null {
+        if ($logging | get -o level) != null {
             let level = $logging | get level
             if not ($valid_levels | any { |l| $l == $level }) {
                 $errors = ($errors | append $"Invalid log level: ($level). Valid levels: ($valid_levels | str join ', ')")
             }
         }
 
-        if ($logging | get -i retention_days) != null {
+        if ($logging | get -o retention_days) != null {
             let retention = $logging | get retention_days
             if ($retention | into int) < 1 {
                 $errors = ($errors | append "Retention days must be at least 1")
@@ -190,11 +190,11 @@ export def validate_config [config: record] {
     }
 
     # Validate platform configuration
-    if ($config | get -i platform) != null {
+    if ($config | get -o platform) != null {
         let platform = $config | get platform
         let valid_platforms = ["auto", "linux", "darwin", "windows"]
 
-        if ($platform | get -i preferred) != null {
+        if ($platform | get -o preferred) != null {
             let preferred = $platform | get preferred
             if not ($valid_platforms | any { |p| $p == $preferred }) {
                 $errors = ($errors | append $"Invalid platform: ($preferred). Valid platforms: ($valid_platforms | str join ', ')")
@@ -203,17 +203,17 @@ export def validate_config [config: record] {
     }
 
     # Validate scripts configuration
-    if ($config | get -i scripts) != null {
+    if ($config | get -o scripts) != null {
         let scripts = $config | get scripts
 
-        if ($scripts | get -i timeout) != null {
+        if ($scripts | get -o timeout) != null {
             let timeout = $scripts | get timeout
             if ($timeout | into int) < 1 {
                 $errors = ($errors | append "Script timeout must be at least 1 second")
             }
         }
 
-        if ($scripts | get -i retry_attempts) != null {
+        if ($scripts | get -o retry_attempts) != null {
             let retries = $scripts | get retry_attempts
             if ($retries | into int) < 0 {
                 $errors = ($errors | append "Retry attempts must be non-negative")
@@ -256,7 +256,7 @@ export def get_config_value [config: record, path: string, default: any = null] 
     mut current = $config
 
     for key in $keys {
-        if ($current | get -i $key) != null {
+        if ($current | get -o $key) != null {
             $current = ($current | get $key)
         } else {
             return $default
@@ -274,7 +274,7 @@ export def set_config_value [config: record, path: string, value: any] {
     } else {
         let first = ($keys | get 0)
         let rest = ($keys | skip 1 | str join ".")
-        let sub = if ($config | get -i $first) == null {
+        let sub = if ($config | get -o $first) == null {
             {}
         } else {
             $config | get $first

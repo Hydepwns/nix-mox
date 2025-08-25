@@ -12,179 +12,175 @@ use lib/script-template.nu *
 # Main storage operations dispatcher
 def main [
     operation: string = "guard",
-    --fix: bool = false,
-    --auto-update: bool = false,
-    --backup: bool = true,
-    --dry-run: bool = false,
-    --verbose: bool = false,
+    --fix,
+    --auto-update,
+    --backup,
+    --dry-run,
+    --verbose,
     --context: string = "storage"
 ] {
-    if $verbose { $env.LOG_LEVEL = "DEBUG" }
+    if ($verbose | default false) { $env.LOG_LEVEL = "DEBUG" }
     
-    script_main "nix-mox storage operations" $"Running ($operation) operation" --context $context {||
-        
-        # Dispatch to appropriate storage operation
-        match $operation {
-            "guard" => (storage_guard $fix $backup $dry_run),
-            "fix" => (fix_storage_config $backup $dry_run),
-            "auto-update" => (auto_update_storage $backup $dry_run),
-            "validate" => (validate_storage_config $dry_run),
-            "backup" => (backup_storage_config),
-            "restore" => (restore_storage_config),
-            "health-check" => (storage_health_check),
-            "help" => { show_storage_help; return },
-            _ => {
-                error $"Unknown storage operation: ($operation). Use 'help' to see available operations."
-                return
-            }
+    info $"nix-mox storage operations: Running ($operation) operation" --context $context
+    
+    # Dispatch to appropriate storage operation
+    match $operation {
+        "guard" => (storage_guard $fix $backup $dry_run),
+        "fix" => (fix_storage_config $backup $dry_run),
+        "auto-update" => (auto_update_storage $backup $dry_run),
+        "validate" => (validate_storage_config $dry_run),
+        "backup" => (backup_storage_config),
+        "restore" => (restore_storage_config),
+        "health-check" => (storage_health_check),
+        "help" => { show_storage_help; return },
+        _ => {
+            error $"Unknown storage operation: ($operation). Use 'help' to see available operations."
+            return
         }
     }
 }
 
 # Storage guard - comprehensive safety validation before reboot
 def storage_guard [fix: bool, backup: bool, dry_run: bool] {
-    with_logging "storage guard validation" --context "storage-guard" {||
+    info "Starting storage guard validation" --context "storage-guard"
+    
+    critical "🛡️  STORAGE GUARD: Critical boot safety validation" --context "storage-guard"
+    
+    # Run comprehensive storage validation
+    let validation_results = (run_comprehensive_storage_validation)
+    
+    if not $validation_results.success {
+        critical "❌ STORAGE VALIDATION FAILED - DO NOT REBOOT!" --context "storage-guard"
+        error "Failed validations:" --context "storage-guard"
         
-        critical "🛡️  STORAGE GUARD: Critical boot safety validation" --context "storage-guard"
+        for failure in ($validation_results.results | where success == false) {
+            error $"  - ($failure.name): ($failure.message)" --context "storage-guard"
+        }
         
-        # Run comprehensive storage validation
-        let validation_results = (run_comprehensive_storage_validation)
-        
-        if not $validation_results.success {
-            critical "❌ STORAGE VALIDATION FAILED - DO NOT REBOOT!" --context "storage-guard"
-            error "Failed validations:" --context "storage-guard"
+        if $fix {
+            warn "Attempting automatic fixes..." --context "storage-guard"
+            let fix_result = (fix_storage_config $backup $dry_run)
             
-            for failure in ($validation_results.results | where success == false) {
-                error $"  - ($failure.name): ($failure.message)" --context "storage-guard"
-            }
-            
-            if $fix {
-                warn "Attempting automatic fixes..." --context "storage-guard"
-                let fix_result = (fix_storage_config $backup $dry_run)
+            if $fix_result.success {
+                info "Re-running validation after fixes..." --context "storage-guard"
+                let revalidation = (run_comprehensive_storage_validation)
                 
-                if $fix_result.success {
-                    info "Re-running validation after fixes..." --context "storage-guard"
-                    let revalidation = (run_comprehensive_storage_validation)
-                    
-                    if $revalidation.success {
-                        success "✅ Storage validation PASSED after fixes - system is safe to reboot" --context "storage-guard"
-                        return { success: true, fixed: true }
-                    } else {
-                        critical "❌ Storage validation STILL FAILING after fixes - DO NOT REBOOT!" --context "storage-guard"
-                        return { success: false, fixed: false }
-                    }
+                if $revalidation.success {
+                    success "✅ Storage validation PASSED after fixes - system is safe to reboot" --context "storage-guard"
+                    return { success: true, fixed: true }
                 } else {
-                    critical "❌ Automatic fixes FAILED - manual intervention required" --context "storage-guard"
+                    critical "❌ Storage validation STILL FAILING after fixes - DO NOT REBOOT!" --context "storage-guard"
                     return { success: false, fixed: false }
                 }
             } else {
-                critical "Use --fix to attempt automatic repairs" --context "storage-guard"
+                critical "❌ Automatic fixes FAILED - manual intervention required" --context "storage-guard"
                 return { success: false, fixed: false }
             }
         } else {
-            success "✅ Storage validation PASSED - system is safe to reboot" --context "storage-guard"
-            return { success: true, fixed: false }
+            critical "Use --fix to attempt automatic repairs" --context "storage-guard"
+            return { success: false, fixed: false }
         }
+    } else {
+        success "✅ Storage validation PASSED - system is safe to reboot" --context "storage-guard"
+        return { success: true, fixed: false }
     }
 }
 
 # Fix storage configuration issues
 def fix_storage_config [backup: bool, dry_run: bool] {
-    with_logging "fixing storage configuration" --context "storage-fix" {||
-        
-        if $backup and not $dry_run {
-            info "Creating backup before fixes..." --context "storage-fix"
-            backup_storage_config
-        }
-        
-        # Detect and fix common storage issues
-        let fixes = [
-            { name: "uuid_consistency", fixer: {|| fix_uuid_consistency $dry_run } },
-            { name: "mount_points", fixer: {|| fix_mount_points $dry_run } },
-            { name: "filesystem_table", fixer: {|| fix_filesystem_table $dry_run } },
-            { name: "boot_configuration", fixer: {|| fix_boot_configuration $dry_run } }
-        ]
-        
-        mut results = []
-        mut overall_success = true
-        
-        for fix in $fixes {
-            try {
-                let result = (do $fix.fixer)
-                $results = ($results | append { 
-                    name: $fix.name, 
-                    success: ($result | get -i success | default true),
-                    message: ($result | get -i message | default "completed"),
-                    dry_run: $dry_run
-                })
-                
-                if not ($result | get -i success | default true) {
-                    $overall_success = false
-                }
-            } catch { |err|
-                $results = ($results | append {
-                    name: $fix.name,
-                    success: false,
-                    message: $err.msg,
-                    dry_run: $dry_run
-                })
-                $overall_success = false
+    info "Starting fixing storage configuration" --context "storage-fix"
+    
+    if $backup and not $dry_run {
+        info "Creating backup before fixes..." --context "storage-fix"
+        backup_storage_config
+    }
+    
+    # Detect and fix common storage issues
+    let fixes = [
+        { name: "uuid_consistency", fixer: "fix_uuid_consistency" },
+        { name: "mount_points", fixer: "fix_mount_points" },
+        { name: "filesystem_table", fixer: "fix_filesystem_table" },
+        { name: "boot_configuration", fixer: "fix_boot_configuration" }
+    ]
+    
+    let results = ($fixes | each { |fix|
+        try {
+            let result = match $fix.fixer {
+                "fix_uuid_consistency" => (fix_uuid_consistency $dry_run),
+                "fix_mount_points" => (fix_mount_points $dry_run),
+                "fix_filesystem_table" => (fix_filesystem_table $dry_run),
+                "fix_boot_configuration" => (fix_boot_configuration $dry_run),
+                _ => { success: false, message: "Unknown fixer" }
+            }
+            { 
+                name: $fix.name, 
+                success: ($result | get -o success | default true),
+                message: ($result | get -o message | default "completed"),
+                dry_run: $dry_run
+            }
+        } catch { |err|
+            {
+                name: $fix.name,
+                success: false,
+                message: $err.msg,
+                dry_run: $dry_run
             }
         }
-        
-        if $overall_success {
-            success $"Storage fixes completed successfully (dry_run: ($dry_run))" --context "storage-fix"
-        } else {
-            error "Some storage fixes failed" --context "storage-fix"
-        }
-        
-        {
-            success: $overall_success,
-            fixes_applied: ($results | where success == true | length),
-            total_fixes: ($results | length),
-            results: $results,
-            dry_run: $dry_run
-        }
+    })
+    
+    let overall_success = ($results | all {|r| $r.success })
+    
+    if $overall_success {
+        success $"Storage fixes completed successfully (dry_run: ($dry_run))" --context "storage-fix"
+    } else {
+        error "Some storage fixes failed" --context "storage-fix"
+    }
+    
+    {
+        success: $overall_success,
+        fixes_applied: ($results | where success == true | length),
+        total_fixes: ($results | length),
+        results: $results,
+        dry_run: $dry_run
     }
 }
 
 # Auto-update storage configuration
 def auto_update_storage [backup: bool, dry_run: bool] {
-    with_logging "auto-updating storage configuration" --context "storage-update" {||
-        
-        let platform = (get_platform)
-        if not $platform.is_linux {
-            warn "Auto-update storage is primarily designed for Linux systems" --context "storage-update"
-        }
-        
-        if $backup and not $dry_run {
-            backup_storage_config
-        }
-        
-        # Update hardware configuration
-        let hw_config_result = (update_hardware_configuration $dry_run)
-        
-        # Update filesystem configuration  
-        let fs_config_result = (update_filesystem_configuration $dry_run)
-        
-        # Validate updated configuration
-        let validation_result = if not $dry_run {
-            (run_comprehensive_storage_validation)
-        } else {
-            { success: true, message: "dry run - validation skipped" }
-        }
-        
-        let overall_success = ($hw_config_result | get -i success | default true) and 
-                              ($fs_config_result | get -i success | default true) and
-                              ($validation_result | get -i success | default true)
-        
-        {
-            success: $overall_success,
-            hardware_config: $hw_config_result,
-            filesystem_config: $fs_config_result,
-            validation: $validation_result,
-            dry_run: $dry_run
-        }
+    info "Starting auto-updating storage configuration" --context "storage-update"
+    
+    let platform = (get_platform)
+    if not $platform.is_linux {
+        warn "Auto-update storage is primarily designed for Linux systems" --context "storage-update"
+    }
+    
+    if $backup and not $dry_run {
+        backup_storage_config
+    }
+    
+    # Update hardware configuration
+    let hw_config_result = (update_hardware_configuration $dry_run)
+    
+    # Update filesystem configuration  
+    let fs_config_result = (update_filesystem_configuration $dry_run)
+    
+    # Validate updated configuration
+    let validation_result = if not $dry_run {
+        (run_comprehensive_storage_validation)
+    } else {
+        { success: true, message: "dry run - validation skipped" }
+    }
+    
+    let overall_success = (($hw_config_result | get -o success | default true) and 
+                          ($fs_config_result | get -o success | default true) and
+                          ($validation_result | get -o success | default true))
+    
+    {
+        success: $overall_success,
+        hardware_config: $hw_config_result,
+        filesystem_config: $fs_config_result,
+        validation: $validation_result,
+        dry_run: $dry_run
     }
 }
 
@@ -196,13 +192,13 @@ def validate_storage_config [dry_run: bool] {
 # Comprehensive storage validation
 def run_comprehensive_storage_validation [] {
     let storage_validations = [
-        { name: "hardware_config_exists", validator: {|| validate_file "config/hardware/hardware-configuration.nix" } },
-        { name: "boot_partition_mounted", validator: {|| validate_boot_partition_mounted } },
-        { name: "root_partition_healthy", validator: {|| validate_root_partition_healthy } },
-        { name: "uuid_consistency", validator: {|| validate_uuid_consistency } },
-        { name: "filesystem_table", validator: {|| validate_filesystem_table } },
-        { name: "boot_loader_config", validator: {|| validate_boot_loader_config } },
-        { name: "mount_point_accessibility", validator: {|| validate_mount_points } }
+        { name: "hardware_config_exists", validator: "validate_file" },
+        { name: "boot_partition_mounted", validator: "validate_boot_partition_mounted" },
+        { name: "root_partition_healthy", validator: "validate_root_partition_healthy" },
+        { name: "uuid_consistency", validator: "validate_uuid_consistency" },
+        { name: "filesystem_table", validator: "validate_filesystem_table" },
+        { name: "boot_loader_config", validator: "validate_boot_loader_config" },
+        { name: "mount_point_accessibility", validator: "validate_mount_points" }
     ]
     
     run_validations $storage_validations --fail-fast false --context "storage-validation"
@@ -434,166 +430,163 @@ def update_filesystem_configuration [dry_run: bool] {
 
 # Backup and restore functions
 def backup_storage_config [] {
-    with_logging "backing up storage configuration" --context "storage-backup" {||
-        
-        let backup_dir = "tmp/storage-backups"
-        let timestamp = (date now | format date '%Y%m%d-%H%M%S')
-        let backup_name = $"storage-backup-($timestamp)"
-        let full_backup_path = $"($backup_dir)/($backup_name)"
-        
-        # Create backup directory
-        if not ($backup_dir | path exists) {
-            mkdir $backup_dir
+    info "Starting backing up storage configuration" --context "storage-backup"
+    
+    let backup_dir = "tmp/storage-backups"
+    let timestamp = (date now | format date '%Y%m%d-%H%M%S')
+    let backup_name = $"storage-backup-($timestamp)"
+    let full_backup_path = $"($backup_dir)/($backup_name)"
+    
+    # Create backup directory
+    if not ($backup_dir | path exists) {
+        mkdir $backup_dir
+    }
+    mkdir $full_backup_path
+    
+    # Files to backup
+    let config_files = [
+        "config/hardware/hardware-configuration.nix",
+        "config/nixos/configuration.nix"
+    ]
+    
+    let system_files = [
+        "/etc/fstab"
+    ]
+    
+    # Backup configuration files
+    for file in $config_files {
+        if ($file | path exists) {
+            cp $file $"($full_backup_path)/(($file | path basename))"
+            debug $"Backed up: ($file)" --context "storage-backup"
         }
-        mkdir $full_backup_path
-        
-        # Files to backup
-        let config_files = [
-            "config/hardware/hardware-configuration.nix",
-            "config/nixos/configuration.nix"
-        ]
-        
-        let system_files = [
-            "/etc/fstab"
-        ]
-        
-        # Backup configuration files
-        for file in $config_files {
-            if ($file | path exists) {
-                cp $file $"($full_backup_path)/(($file | path basename))"
-                debug $"Backed up: ($file)" --context "storage-backup"
-            }
+    }
+    
+    # Backup system files (if accessible)
+    for file in $system_files {
+        try {
+            cp $file $"($full_backup_path)/(($file | path basename))"
+            debug $"Backed up: ($file)" --context "storage-backup"
+        } catch {
+            warn $"Could not backup system file: ($file)" --context "storage-backup"
         }
-        
-        # Backup system files (if accessible)
-        for file in $system_files {
-            try {
-                cp $file $"($full_backup_path)/(($file | path basename))"
-                debug $"Backed up: ($file)" --context "storage-backup"
-            } catch {
-                warn $"Could not backup system file: ($file)" --context "storage-backup"
-            }
-        }
-        
-        # Create backup metadata
-        let metadata = {
-            timestamp: (date now),
-            platform: (get_platform | get normalized),
-            files: ($config_files | append $system_files),
-            backup_path: $full_backup_path
-        }
-        
-        $metadata | to json | save $"($full_backup_path)/metadata.json"
-        
-        success $"Storage configuration backed up: ($full_backup_path)" --context "storage-backup"
-        
-        {
-            success: true,
-            backup_path: $full_backup_path,
-            files_backed_up: ($config_files | length),
-            metadata: $metadata
-        }
+    }
+    
+    # Create backup metadata
+    let metadata = {
+        timestamp: (date now),
+        platform: (get_platform | get normalized),
+        files: ($config_files | append $system_files),
+        backup_path: $full_backup_path
+    }
+    
+    $metadata | to json | save $"($full_backup_path)/metadata.json"
+    
+    success $"Storage configuration backed up: ($full_backup_path)" --context "storage-backup"
+    
+    {
+        success: true,
+        backup_path: $full_backup_path,
+        files_backed_up: ($config_files | length),
+        metadata: $metadata
     }
 }
 
 def restore_storage_config [] {
-    with_logging "restoring storage configuration" --context "storage-restore" {||
-        
-        let backup_dir = "tmp/storage-backups"
-        
-        if not ($backup_dir | path exists) {
-            error "No backup directory found" --context "storage-restore"
-            return { success: false, message: "no backups available" }
+    info "Starting restoring storage configuration" --context "storage-restore"
+    
+    let backup_dir = "tmp/storage-backups"
+    
+    if not ($backup_dir | path exists) {
+        error "No backup directory found" --context "storage-restore"
+        return { success: false, message: "no backups available" }
+    }
+    
+    # Find most recent backup
+    let backups = (ls $backup_dir | where type == "dir" | sort-by modified | reverse)
+    
+    if ($backups | length) == 0 {
+        error "No backups found" --context "storage-restore"
+        return { success: false, message: "no backups found" }
+    }
+    
+    let latest_backup = ($backups | get 0)
+    let backup_path = $latest_backup.name
+    
+    info $"Restoring from backup: ($backup_path)" --context "storage-restore"
+    
+    # Restore files
+    try {
+        if ($"($backup_path)/hardware-configuration.nix" | path exists) {
+            cp $"($backup_path)/hardware-configuration.nix" "config/hardware/hardware-configuration.nix"
         }
         
-        # Find most recent backup
-        let backups = (ls $backup_dir | where type == "dir" | sort-by modified | reverse)
-        
-        if ($backups | length) == 0 {
-            error "No backups found" --context "storage-restore"
-            return { success: false, message: "no backups found" }
+        if ($"($backup_path)/configuration.nix" | path exists) {
+            cp $"($backup_path)/configuration.nix" "config/nixos/configuration.nix"
         }
         
-        let latest_backup = ($backups | get 0)
-        let backup_path = $latest_backup.name
+        success "Storage configuration restored successfully" --context "storage-restore"
         
-        info $"Restoring from backup: ($backup_path)" --context "storage-restore"
-        
-        # Restore files
-        try {
-            if ($"($backup_path)/hardware-configuration.nix" | path exists) {
-                cp $"($backup_path)/hardware-configuration.nix" "config/hardware/hardware-configuration.nix"
-            }
-            
-            if ($"($backup_path)/configuration.nix" | path exists) {
-                cp $"($backup_path)/configuration.nix" "config/nixos/configuration.nix"
-            }
-            
-            success "Storage configuration restored successfully" --context "storage-restore"
-            
-            {
-                success: true,
-                restored_from: $backup_path,
-                timestamp: $latest_backup.modified
-            }
-        } catch { |err|
-            error $"Failed to restore configuration: ($err.msg)" --context "storage-restore"
-            { success: false, message: $err.msg }
+        {
+            success: true,
+            restored_from: $backup_path,
+            timestamp: $latest_backup.modified
         }
+    } catch { |err|
+        error $"Failed to restore configuration: ($err.msg)" --context "storage-restore"
+        { success: false, message: $err.msg }
     }
 }
 
 # Storage health check
 def storage_health_check [] {
-    with_logging "storage health check" --context "storage-health" {||
-        
-        let health_checks = [
-            { name: "disk_usage", checker: {|| check_disk_usage } },
-            { name: "filesystem_errors", checker: {|| validate_filesystem_errors } },
-            { name: "mount_status", checker: {|| check_mount_status } },
-            { name: "storage_devices", checker: {|| check_storage_devices } }
-        ]
-        
-        mut results = []
-        mut overall_healthy = true
-        
-        for check in $health_checks {
-            try {
-                let result = (do $check.checker)
-                $results = ($results | append {
-                    name: $check.name,
-                    healthy: ($result | get -i healthy | default true),
-                    message: ($result | get -i message | default "OK"),
-                    details: ($result | get -i details | default {})
-                })
-                
-                if not ($result | get -i healthy | default true) {
-                    $overall_healthy = false
-                }
-            } catch { |err|
-                $results = ($results | append {
-                    name: $check.name,
-                    healthy: false,
-                    message: $err.msg,
-                    details: {}
-                })
-                $overall_healthy = false
+    info "Starting storage health check" --context "storage-health"
+    
+    let health_checks = [
+        { name: "disk_usage", checker: "check_disk_usage" },
+        { name: "filesystem_errors", checker: "validate_filesystem_errors" },
+        { name: "mount_status", checker: "check_mount_status" },
+        { name: "storage_devices", checker: "check_storage_devices" }
+    ]
+    
+    let results = ($health_checks | each { |check|
+        try {
+            let result = match $check.checker {
+                "check_disk_usage" => (check_disk_usage),
+                "validate_filesystem_errors" => (validate_filesystem_errors),
+                "check_mount_status" => (check_mount_status),
+                "check_storage_devices" => (check_storage_devices),
+                _ => { healthy: false, message: "Unknown checker" }
+            }
+            {
+                name: $check.name,
+                healthy: ($result | get -o healthy | default true),
+                message: ($result | get -o message | default "OK"),
+                details: ($result | get -o details | default {})
+            }
+        } catch { |err|
+            {
+                name: $check.name,
+                healthy: false,
+                message: $err.msg,
+                details: {}
             }
         }
-        
-        if $overall_healthy {
-            success "Storage health check passed" --context "storage-health"
-        } else {
-            warn "Storage health issues detected" --context "storage-health"
-        }
-        
-        {
-            healthy: $overall_healthy,
-            checks_performed: ($results | length),
-            checks_passed: ($results | where healthy == true | length),
-            results: $results,
-            timestamp: (date now)
-        }
+    })
+    
+    let overall_healthy = ($results | all {|r| $r.healthy })
+    
+    if $overall_healthy {
+        success "Storage health check passed" --context "storage-health"
+    } else {
+        warn "Storage health issues detected" --context "storage-health"
+    }
+    
+    {
+        healthy: $overall_healthy,
+        checks_performed: ($results | length),
+        checks_passed: ($results | where healthy == true | length),
+        results: $results,
+        timestamp: (date now)
     }
 }
 
@@ -749,6 +742,5 @@ def show_storage_help [] {
 }
 
 # If script is run directly, call main with arguments
-if not ($nu.scope.args | is-empty) {
-    main ...$nu.scope.args
-}
+# Note: Direct execution not supported in Nushell 0.104.0+
+# Use: nu storage.nu <operation> [options] instead

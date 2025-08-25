@@ -149,6 +149,6 @@ def main [] {
     print "Argparse module unit tests completed successfully"
 }
 
-if ($env | get -i NU_TEST | default "false") == "true" {
+if ($env | get -o NU_TEST | default "false") == "true" {
     main
 }

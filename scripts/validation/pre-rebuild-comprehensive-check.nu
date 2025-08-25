@@ -13,8 +13,8 @@ use ../lib/logging.nu *
 use ../lib/platform.nu *
 
 def main [
-    --verbose: bool = false  # Show detailed output
-    --force: bool = false    # Skip non-critical warnings
+    --verbose  # Show detailed output
+    --force    # Skip non-critical warnings
 ] {
     print_header "Comprehensive Pre-Rebuild Safety Check"
     print_warning "This will validate your configuration before rebuild..."

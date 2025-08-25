@@ -374,7 +374,7 @@ export def install_completions [shell: string = "auto"] {
         }
         "fish" => {
             generate_fish_completions
-            let fish_config_dir = ($env | get -i FISH_CONFIG_DIR | default "~/.config/fish")
+            let fish_config_dir = ($env | get -o FISH_CONFIG_DIR | default "~/.config/fish")
             print $"Copy completions/nix-mox.fish to ($fish_config_dir)/completions/"
         }
         "nu" => {

@@ -11,7 +11,7 @@ use lib/validators.nu *
 def main [
     ...args
 ] {
-    let command = ($args | get -i 0 | default "help")
+    let command = ($args | get -o 0 | default "help")
     let dry_run = ("--dry-run" in $args)
     let context = "chezmoi"
     info $"chezmoi ($command)" --context $context
@@ -41,7 +41,7 @@ def main [
 }
 
 # Apply chezmoi configuration
-def chezmoi_apply [--dry-run = false, --context: string = "chezmoi"] {
+def chezmoi_apply [--dry-run, --context: string = "chezmoi"] {
     info "Applying chezmoi configuration..." --context $context
     
     if $dry_run {

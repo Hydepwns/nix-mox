@@ -387,7 +387,7 @@ export def show_help [] {
 }
 
 # Main execution
-if ($env | get -i NIXMOX_ARGS | is-not-empty) {
+if ($env | get -o NIXMOX_ARGS | is-not-empty) {
     let args = ($env.NIXMOX_ARGS | split row " ")
     main $args
 } else {

@@ -20,27 +20,27 @@ jobs:
         
       - name: Setup Nushell
         run: |
-          nix-shell -p nushell --run "echo 'Nushell installed'"
+          nix --extra-experimental-features "nix-command flakes" develop --command echo "Nushell installed"
           
       - name: Run Basic Validation
         run: |
-          nix-shell -p nushell --run "nu scripts/validate.nu basic --verbose"
+          nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/validate.nu basic --verbose
           
       - name: Run Configuration Validation  
         run: |
-          nix-shell -p nushell --run "nu scripts/validate.nu config --verbose"
+          nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/validate.nu config --verbose
           
       - name: Check Flake Syntax
         run: |
-          nix flake check --no-build
+          nix --extra-experimental-features "nix-command flakes" flake check --no-build
           
       - name: Test Configuration Build
         run: |
-          nix build .#nixosConfigurations.nixos.config.system.build.toplevel --dry-run
+          nix --extra-experimental-features "nix-command flakes" build .#nixosConfigurations.nixos.config.system.build.toplevel --dry-run
           
       - name: Check Code Formatting
         run: |
-          nix run .#fmt --check
+          nix --extra-experimental-features "nix-command flakes" run .#fmt --check
 
   testing:
     runs-on: ubuntu-latest
@@ -56,15 +56,15 @@ jobs:
             
       - name: Setup Test Environment
         run: |
-          nix-shell -p nushell --run "nu scripts/setup.nu automated --component testing --dry-run"
+          nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/setup.nu automated --component testing --dry-run
           
       - name: Run Unit Tests
         run: |
-          nix-shell -p nushell --run "nu scripts/validate.nu basic"
+          nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/validate.nu basic
           
       - name: Generate Coverage Report
         run: |
-          nix-shell -p nushell --run "nu scripts/coverage.nu lcov --output coverage-tmp/lcov.info"
+          nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/coverage.nu lcov --output coverage-tmp/lcov.info
           
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -87,7 +87,7 @@ jobs:
             
       - name: Run Security Analysis
         run: |
-          nix-shell -p nushell --run "nu scripts/dashboard.nu security --output security-report.json"
+          nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/dashboard.nu security --output security-report.json
           
       - name: Upload Security Report
         uses: actions/upload-artifact@v4
@@ -116,15 +116,15 @@ jobs:
             
       - name: Test Platform Detection
         run: |
-          nix-shell -p nushell --run "nu -c 'use scripts/lib/platform.nu *; get_platform | to json'"
+          nix --extra-experimental-features "nix-command flakes" develop --command nu -c 'use scripts/lib/platform.nu *; get_platform | to json'
           
       - name: Run Platform-Specific Validation
         run: |
-          nix-shell -p nushell --run "nu scripts/validate.nu basic --verbose"
+          nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/validate.nu basic --verbose
           
       - name: Test Platform Operations
         run: |
-          nix-shell -p nushell --run "nu -c 'use scripts/lib/platform-operations.nu *; maintenance_pipeline'"
+          nix --extra-experimental-features "nix-command flakes" develop --command nu -c 'use scripts/lib/platform-operations.nu *; maintenance_pipeline'
 
   documentation:
     runs-on: ubuntu-latest
@@ -141,11 +141,11 @@ jobs:
             
       - name: Generate System Report
         run: |
-          nix-shell -p nushell --run "nu -c 'use scripts/lib/analysis.nu *; generate_system_report --include-benchmarks true --output system-report.json'"
+          nix --extra-experimental-features "nix-command flakes" develop --command nu -c 'use scripts/lib/analysis.nu *; generate_system_report --include-benchmarks true --output system-report.json'
           
       - name: Generate Dashboard Report
         run: |
-          nix-shell -p nushell --run "nu scripts/dashboard.nu analysis --output analysis-report.json"
+          nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/dashboard.nu analysis --output analysis-report.json
           
       - name: Upload Reports
         uses: actions/upload-artifact@v4

@@ -53,7 +53,7 @@ def check-test-status [] {
     let test_results = try {
         # Check if we're in CI environment
         let is_ci = (
-            if ($env | get -i CI) == "true" {
+            if ($env | get -o CI) == "true" {
                 true
             } else {
                 false

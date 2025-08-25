@@ -35,10 +35,10 @@ export def platform_info [] {
         raw_name: $host_info.name,
         normalized: $final_platform,
         arch: (uname | get machine),
-        kernel: ($host_info | get -i kernel_version | default "unknown"),
-        hostname: ($host_info | get -i hostname | default "unknown"),
-        uptime: ($host_info | get -i uptime | default "unknown"),
-        os_version: ($host_info | get -i os_version | default "unknown"),
+        kernel: ($host_info | get -o kernel_version | default "unknown"),
+        hostname: ($host_info | get -o hostname | default "unknown"),
+        uptime: ($host_info | get -o uptime | default "unknown"),
+        os_version: ($host_info | get -o os_version | default "unknown"),
         is_linux: ($final_platform == "linux"),
         is_macos: ($final_platform == "macos"),
         is_windows: ($final_platform == "windows"),
@@ -68,13 +68,13 @@ export def run_on_platform [platforms: list<string>] {
 # Functional platform branching
 export def platform_switch [platform_map: record] {
     let current = (get_platform)
-    let handler = ($platform_map | get -i $current.normalized)
+    let handler = ($platform_map | get -o $current.normalized)
     
     if ($handler | is-not-empty) {
         debug $"Executing platform-specific handler for: ($current.normalized)" --context "platform"
         do $handler
     } else {
-        let default_handler = ($platform_map | get -i "default")
+        let default_handler = ($platform_map | get -o "default")
         if ($default_handler | is-not-empty) {
             debug $"Executing default handler for unsupported platform: ($current.normalized)" --context "platform"
             do $default_handler
@@ -111,9 +111,9 @@ export def get_platform_paths [] {
     
     match $current.normalized {
         "linux" => {
-            config_home: ($env | get -i XDG_CONFIG_HOME | default $"($env.HOME)/.config"),
-            data_home: ($env | get -i XDG_DATA_HOME | default $"($env.HOME)/.local/share"),
-            cache_home: ($env | get -i XDG_CACHE_HOME | default $"($env.HOME)/.cache"),
+            config_home: ($env | get -o XDG_CONFIG_HOME | default $"($env.HOME)/.config"),
+            data_home: ($env | get -o XDG_DATA_HOME | default $"($env.HOME)/.local/share"),
+            cache_home: ($env | get -o XDG_CACHE_HOME | default $"($env.HOME)/.cache"),
             temp_dir: "/tmp",
             path_separator: ":",
             line_ending: "\n"
@@ -127,17 +127,17 @@ export def get_platform_paths [] {
             line_ending: "\n"
         },
         "windows" => {
-            config_home: ($env | get -i APPDATA | default $"($env.USERPROFILE)\\AppData\\Roaming"),
-            data_home: ($env | get -i APPDATA | default $"($env.USERPROFILE)\\AppData\\Roaming"),
-            cache_home: ($env | get -i TEMP | default $"($env.USERPROFILE)\\AppData\\Local\\Temp"),
-            temp_dir: ($env | get -i TEMP | default "C:\\Windows\\Temp"),
+            config_home: ($env | get -o APPDATA | default $"($env.USERPROFILE)\\AppData\\Roaming"),
+            data_home: ($env | get -o APPDATA | default $"($env.USERPROFILE)\\AppData\\Roaming"),
+            cache_home: ($env | get -o TEMP | default $"($env.USERPROFILE)\\AppData\\Local\\Temp"),
+            temp_dir: ($env | get -o TEMP | default "C:\\Windows\\Temp"),
             path_separator: ";",
             line_ending: "\r\n"
         },
         _ => {
-            config_home: ($env | get -i HOME | default "."),
-            data_home: ($env | get -i HOME | default "."),
-            cache_home: ($env | get -i HOME | default "."),
+            config_home: ($env | get -o HOME | default "."),
+            data_home: ($env | get -o HOME | default "."),
+            cache_home: ($env | get -o HOME | default "."),
             temp_dir: "/tmp",
             path_separator: ":",
             line_ending: "\n"
@@ -177,19 +177,29 @@ export def get_service_manager [] {
     let current = (get_platform)
     
     match $current.normalized {
-        "linux" => {
-            if (which systemctl | is-not-empty) { "systemd" }
-            else if (which service | is-not-empty) { "sysvinit" }
-            else { "unknown" }
-        },
-        "macos" => {
-            if (which launchctl | is-not-empty) { "launchd" }
-            else { "unknown" }
-        },
-        "windows" => {
-            if (which sc | is-not-empty) { "windows-services" }
-            else { "unknown" }
-        },
+        "linux" => (
+            if (which systemctl | is-not-empty) { 
+                "systemd" 
+            } else if (which service | is-not-empty) { 
+                "sysvinit" 
+            } else { 
+                "unknown" 
+            }
+        ),
+        "macos" => (
+            if (which launchctl | is-not-empty) { 
+                "launchd" 
+            } else { 
+                "unknown" 
+            }
+        ),
+        "windows" => (
+            if (which sc | is-not-empty) { 
+                "windows-services" 
+            } else { 
+                "unknown" 
+            }
+        ),
         _ => "unknown"
     }
 }
@@ -219,18 +229,18 @@ export def is_docker [] {
 }
 
 export def is_ci [] {
-    let ci = (($env | get -i CI | default "false") == "true")
-    let github = (($env | get -i GITHUB_ACTIONS | default "false") == "true")
-    let gitlab = (($env | get -i GITLAB_CI | default "false") == "true")
-    let jenkins = (($env | get -i JENKINS_URL | is-not-empty))
-    let buildkite = (($env | get -i BUILDKITE | default "false") == "true")
+    let ci = (($env | get -o CI | default "false") == "true")
+    let github = (($env | get -o GITHUB_ACTIONS | default "false") == "true")
+    let gitlab = (($env | get -o GITLAB_CI | default "false") == "true")
+    let jenkins = (($env | get -o JENKINS_URL | is-not-empty))
+    let buildkite = (($env | get -o BUILDKITE | default "false") == "true")
     
     $ci or $github or $gitlab or $jenkins or $buildkite
 }
 
 # Platform-specific shell detection
 export def get_shell_info [] {
-    let current_shell = ($env | get -i SHELL | default "unknown" | path basename)
+    let current_shell = ($env | get -o SHELL | default "unknown" | path basename)
     let shells = ["bash", "zsh", "fish", "nu", "cmd", "powershell"]
     
     {
@@ -288,12 +298,12 @@ export def platform_executable_name [base_name: string] {
 # Platform-aware command wrapper
 export def platform_command [command_map: record] {
     let current = (get_platform)
-    let command = ($command_map | get -i $current.normalized)
+    let command = ($command_map | get -o $current.normalized)
     
     if ($command | is-not-empty) {
         $command
     } else {
-        let default_command = ($command_map | get -i "default")
+        let default_command = ($command_map | get -o "default")
         if ($default_command | is-not-empty) {
             $default_command
         } else {
