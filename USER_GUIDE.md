@@ -20,21 +20,13 @@ nu scripts/setup/unified-setup.nu
 make chezmoi-apply
 ```
 
-## Architecture Overview
+## System Overview
 
-### Unified Libraries
-All scripts use unified libraries for consistent behavior:
-
-- **`scripts/lib/unified-checks.nu`** - Common validation functions
-- **`scripts/lib/unified-error-handling.nu`** - Standardized error handling and logging
+For detailed architecture and development setup, see [CLAUDE.md](CLAUDE.md#architecture-overview).
 
 ### Chezmoi Integration
-User configurations are managed through Chezmoi for cross-platform compatibility:
-
-- **Cross-Platform**: Works on Linux, macOS, and Windows
-- **Template System**: Dynamic configuration based on environment
-- **Version Control**: Git-based dotfile management
-- **Atomic Updates**: Safe, reversible configuration changes
+User configurations are managed through Chezmoi for cross-platform compatibility.
+For full details, see [Configuration Management](#configuration-management) below.
 
 ## Available Commands
 
@@ -117,8 +109,9 @@ When creating new scripts, follow this template:
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-error-handling.nu
+use ../lib/logging.nu *
+use ../lib/validators.nu *
+use ../lib/platform.nu *
 
 def main [] {
     # Your script logic here
@@ -185,8 +178,9 @@ If you see "Module not found" errors:
 ls scripts/lib/
 
 # Verify import paths are correct
-# For scripts in scripts/validation/, use: use ../lib/unified-checks.nu
-# For scripts in scripts/maintenance/, use: use ../lib/unified-checks.nu
+# Modern consolidated imports for all scripts:
+# use ../lib/logging.nu *
+# use ../lib/validators.nu *
 ```
 
 #### Chezmoi Configuration Issues
@@ -333,34 +327,7 @@ When reporting issues, include:
 
 ## Quick Reference
 
-### Essential Commands
-```bash
-# Setup
-nu scripts/setup/unified-setup.nu
-
-# Apply configuration
-make chezmoi-apply
-
-# Validate system
-nu scripts/validation/validate-config.nu
-
-# Health check
-nu scripts/maintenance/health-check.nu
-
-# Dashboard
-nu scripts/analysis/dashboard.nu
-```
-
-### File Locations
-- **NixOS Config**: `config/nixos/configuration.nix`
-- **User Config**: Managed by Chezmoi
-- **Gaming Config**: `flakes/gaming/`
-- **Scripts**: `scripts/`
-- **Unified Libraries**: `scripts/lib/`
-
-### Key Scripts
-- **Setup**: `scripts/setup/unified-setup.nu`
-- **Validation**: `scripts/validation/validate-config.nu`
-- **Health Check**: `scripts/maintenance/health-check.nu`
-- **Dashboard**: `scripts/analysis/dashboard.nu`
-- **Storage Guard**: `scripts/storage/storage-guard.nu` 
+For comprehensive command references:
+- **Development Commands**: See [CLAUDE.md](CLAUDE.md#essential-development-commands)
+- **Script Documentation**: See [scripts/README.md](scripts/README.md)
+- **All Available Commands**: Run `make help` in the project root 

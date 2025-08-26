@@ -6,6 +6,13 @@ This directory contains all platform-specific and automation scripts for the nix
 
 ```bash
 scripts/
+├── validate.nu        # Unified validation system (replaces 9 scripts)
+├── test.nu           # Comprehensive test runner with coverage
+├── setup.nu          # Consolidated setup system
+├── dashboard.nu      # Interactive system dashboard
+├── chezmoi.nu        # Consolidated chezmoi management
+├── storage.nu        # Storage operations consolidation
+├── coverage.nu       # Testing coverage consolidation
 ├── storage/           # Storage safety and configuration tools
 │   ├── storage-guard.nu          # Pre-reboot storage validation
 │   └── fix-storage-config.nu     # Auto-fix storage issues
@@ -81,12 +88,29 @@ scripts/
 
 ## Script Categories
 
-### Unified Libraries (Core)
+### Consolidated Scripts (Root Level)
+- **Purpose**: Modern functional dispatchers that replace multiple individual scripts
+- **Location**: `scripts/` (root level)
+- **Key Scripts**:
+  - `validate.nu` - Unified validation system (replaces 9 validation scripts)
+  - `test.nu` - Comprehensive test runner with coverage integration
+  - `setup.nu` - Consolidated setup system with all setup operations
+  - `dashboard.nu` - Interactive system dashboard with real-time monitoring
+  - `chezmoi.nu` - Consolidated chezmoi management (replaces 4 scripts)
+  - `storage.nu` - Storage operations including guard, fix, and validation
+  - `coverage.nu` - Testing coverage generation and reporting
+- **Benefits**: Reduces duplication, provides consistent interface, enables functional composition
+
+### Consolidated Libraries (Core)
 - **Purpose**: Common functions used across all scripts
 - **Location**: `scripts/lib/`
 - **Key Libraries**: 
-  - `unified-checks.nu` - Validation and system checks
-  - `unified-error-handling.nu` - Error handling and logging
+  - `logging.nu` - Unified logging with 15+ helper functions
+  - `validators.nu` - Pipeline-based validation system
+  - `command-wrapper.nu` - Functional command execution
+  - `platform.nu` - Cross-platform detection
+  - `script-template.nu` - Standard script patterns
+  - `analysis.nu` - System analysis functions
 - **Usage**: Imported by all other scripts
 
 ### Storage Safety (Critical)
@@ -139,18 +163,19 @@ All scripts follow a consistent template:
 ```nushell
 #!/usr/bin/env nu
 
-# Import unified libraries
-use ../lib/unified-checks.nu
-use ../lib/unified-error-handling.nu
+# Import modern consolidated libraries
+use ../lib/logging.nu *
+use ../lib/validators.nu *
+use ../lib/platform.nu *
 
 def main [] {
     # Script logic here
-    log_info "Starting execution"
+    banner "Starting execution"
     
-    # Use unified functions
-    let platform = (check_platform)
+    # Use modern functions
+    let platform = (get_platform)
     
-    log_success "Completed successfully"
+    progress "Completed successfully"
 }
 
 # Run the main function

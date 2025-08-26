@@ -48,10 +48,12 @@ nix-shell -p nushell --run "nu scripts/maintenance/safe-rebuild.nu --backup --te
 
 ## Architecture
 
-### Unified Libraries
-All scripts use unified libraries for consistent behavior:
-- **`scripts/lib/unified-checks.nu`** - Common validation functions
-- **`scripts/lib/unified-error-handling.nu`** - Standardized error handling and logging
+### Consolidated Libraries
+All scripts use modern consolidated libraries with functional patterns:
+- **`scripts/lib/logging.nu`** - Unified logging system with 15+ helper functions
+- **`scripts/lib/validators.nu`** - Pipeline-based validation with composable validators
+- **`scripts/lib/command-wrapper.nu`** - Functional command execution patterns
+- **`scripts/lib/platform.nu`** - Universal cross-platform detection
 
 ### Chezmoi Integration
 User configurations are managed through Chezmoi for cross-platform compatibility:
@@ -60,53 +62,19 @@ User configurations are managed through Chezmoi for cross-platform compatibility
 - **Version Control**: Git-based dotfile management
 - **Atomic Updates**: Safe, reversible configuration changes
 
-## Available Commands
+## Quick Start Commands
 
-### Chezmoi Operations
 ```bash
-make chezmoi-apply      # Apply configuration
-make chezmoi-diff       # Show differences
-make chezmoi-sync       # Sync with remote repository
-make chezmoi-edit       # Edit configuration
-make chezmoi-status     # Show status
-make chezmoi-verify     # Verify configuration
+make help          # Show all available commands
+make dev           # Enter development shell
+make test          # Run all tests
+make safe-rebuild  # Safe system rebuild
 ```
 
-### System Validation
-```bash
-# Validate NixOS configuration
-nu scripts/validation/validate-config.nu
-
-# Pre-rebuild safety check
-nu scripts/validation/pre-rebuild-safety-check.nu
-
-# Storage validation
-nu scripts/storage/storage-guard.nu
-```
-
-### Maintenance
-```bash
-# System health check
-nu scripts/maintenance/health-check.nu
-
-# Cleanup
-nu scripts/maintenance/cleanup.nu
-
-# Safe rebuild
-nu scripts/maintenance/safe-rebuild.nu
-```
-
-### Analysis and Monitoring
-```bash
-# System dashboard
-nu scripts/analysis/dashboard.nu
-
-# Package size analysis
-nu scripts/analysis/analyze-sizes.nu
-
-# Performance benchmarks
-nu scripts/analysis/benchmarks/gaming-benchmark.nu
-```
+For comprehensive command documentation:
+- **Development Commands**: See [CLAUDE.md](CLAUDE.md#essential-development-commands)
+- **User Operations**: See [USER_GUIDE.md](USER_GUIDE.md#available-commands)
+- **Script Details**: See [scripts/README.md](scripts/README.md)
 
 ## Features
 
@@ -144,6 +112,8 @@ secrets-edit     # Edit encrypted secrets
 
 ## Configuration Management
 
+For detailed configuration documentation, see [USER_GUIDE.md](USER_GUIDE.md#configuration-management).
+
 ### NixOS Configuration
 The main NixOS configuration is in `config/nixos/configuration.nix`. This file contains:
 - System-level packages and services
@@ -166,23 +136,12 @@ Gaming-specific configurations are in `flakes/gaming/`:
 - Performance optimizations
 - Controller support
 
-## Script Architecture
+## Architecture
 
-### Unified Libraries (Core)
-- **Purpose**: Common functions used across all scripts
-- **Location**: `scripts/lib/`
-- **Key Libraries**: 
-  - `unified-checks.nu` - Validation and system checks
-  - `unified-error-handling.nu` - Error handling and logging
-- **Usage**: Imported by all other scripts
-
-### Script Categories
-- **Storage Safety**: `scripts/storage/` - Critical boot safety
-- **Maintenance**: `scripts/maintenance/` - System health and cleanup
-- **Analysis**: `scripts/analysis/` - Performance monitoring
-- **Setup**: `scripts/setup/` - Installation and configuration
-- **Testing**: `scripts/testing/` - Comprehensive testing
-- **Validation**: `scripts/validation/` - System validation
+For detailed architecture documentation:
+- **Script Architecture**: See [scripts/README.md](scripts/README.md)
+- **Development Setup**: See [CLAUDE.md](CLAUDE.md#architecture-overview)
+- **System Components**: See [USER_GUIDE.md](USER_GUIDE.md#system-overview)
 - **Platforms**: `scripts/platforms/` - Platform-specific tools
 
 ## Quick Reference
