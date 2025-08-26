@@ -218,9 +218,15 @@ export def run_validations [
     let results = ($validations | each { |validation|
         try {
             let validator = ($validation.validator)
-            null | do $validator
+            let result = (null | do $validator)
+            # Add name from validation to result
+            $result | merge {name: $validation.name}
         } catch { |err|
-            validation_result false $"Validation error: ($err.msg)"
+            {
+                success: false,
+                message: $"Validation error: ($err.msg)",
+                name: $validation.name
+            }
         }
     })
     

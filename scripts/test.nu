@@ -8,6 +8,7 @@ use lib/testing.nu *
 use lib/validators.nu *
 use lib/platform.nu *
 use lib/script-template.nu *
+use lib/command-wrapper.nu [execute_command]
 
 # Main test runner dispatcher
 def main [
@@ -131,11 +132,11 @@ def run_unit_tests [coverage: bool, output: string, parallel: bool, fail_fast: b
     info "Starting running unit tests" --context "unit-tests"
     
     let unit_tests = [
-        { name: "logging_tests", func: "test_logging_system" },
-        { name: "platform_tests", func: "test_platform_detection" },
-        { name: "validation_tests", func: "test_validation_functions" },
-        { name: "command_wrapper_tests", func: "test_command_wrappers" },
-        { name: "analysis_tests", func: "test_analysis_functions" }
+        { name: "logging_tests", func: {|| test_logging_system } },
+        { name: "platform_tests", func: {|| test_platform_detection } },
+        { name: "validation_tests", func: {|| test_validation_functions } },
+        { name: "command_wrapper_tests", func: {|| test_command_wrappers } },
+        { name: "analysis_tests", func: {|| test_analysis_functions } }
     ]
     
     let results = (test_suite "unit_tests" $unit_tests --parallel $parallel --fail-fast $fail_fast)
@@ -150,10 +151,10 @@ def run_integration_tests [coverage: bool, output: string, parallel: bool, fail_
     info "Starting running integration tests" --context "integration-tests"
     
     let integration_tests = [
-        { name: "setup_integration", func: "test_setup_integration" },
-        { name: "validation_integration", func: "test_validation_integration" },
-        { name: "storage_integration", func: "test_storage_integration" },
-        { name: "dashboard_integration", func: "test_dashboard_integration" }
+        { name: "setup_integration", func: {|| test_setup_integration } },
+        { name: "validation_integration", func: {|| test_validation_integration } },
+        { name: "storage_integration", func: {|| test_storage_integration } },
+        { name: "dashboard_integration", func: {|| test_dashboard_integration } }
     ]
     
     let results = (test_suite "integration_tests" $integration_tests --parallel false --fail-fast $fail_fast)

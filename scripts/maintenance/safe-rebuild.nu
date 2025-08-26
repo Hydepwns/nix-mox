@@ -2,15 +2,10 @@
 
 # Import unified libraries
 use ../lib/validators.nu *
-use ../lib/logging.nu
-
+use ../lib/logging.nu *
 
 # Safe NixOS rebuild wrapper with mandatory validation
 # Prevents system damage by enforcing safety checks
-
-# Import common functions
-use logging.nu *
-use ../lib/logging.nu *
 
 def main [
     --flake: string = ".#nixosConfigurations.nixos"     # Flake configuration to deploy
@@ -28,7 +23,8 @@ def main [
         print "⚠️  WARNING: Force mode enabled - skipping safety checks!"
         print "   This could result in an unbootable system."
         print ""
-        let confirm = (input "Type 'I UNDERSTAND THE RISKS' to continue: ")
+        print "Type 'I UNDERSTAND THE RISKS' to continue:"
+        let confirm = (input "")
         if $confirm != "I UNDERSTAND THE RISKS" {
             print "❌ Aborted - safety checks are mandatory"
             exit 1
@@ -59,7 +55,8 @@ def main [
             print "⚠️  Storage auto-update encountered issues:"
             print $storage_update_result.stderr
             print ""
-            let confirm = (input "Continue anyway? (yes/no): ")
+            print "Continue anyway? (yes/no):"
+            let confirm = (input "")
             if $confirm != "yes" {
                 print "❌ Rebuild cancelled due to storage configuration issues"
                 exit 1
@@ -134,7 +131,8 @@ def main [
         print "  sudo nixos-rebuild --rollback switch"
         print ""
         
-        let confirm = (input "Proceed with rebuild? (yes/no): ")
+        print "Proceed with rebuild? (yes/no):"
+        let confirm = (input "")
         if $confirm != "yes" {
             print "❌ Rebuild cancelled by user"
             exit 0

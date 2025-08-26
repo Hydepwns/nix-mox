@@ -25,14 +25,13 @@ export def test_result [
 }
 
 # Higher-order test runner with timing and error handling
-export def run_test [test_name: string, --timeout: duration = 30sec] {
-    |test_func: closure|
-    
+export def run_test [test_name: string, test_func: closure, --timeout: duration = 30sec] {
     let start_time = (date now)
     debug $"Running test: ($test_name)" --context "test"
     
     try {
-        let result = (timeout $timeout { do $test_func })
+        # Run the test function directly
+        let result = (do $test_func)
         let duration = ((date now) - $start_time)
         
         # Determine success based on result type
@@ -129,12 +128,12 @@ export def test_suite [
     let results = if $parallel {
         # Run tests in parallel
         $tests | par-each { |test|
-            $test.func | run_test $test.name --timeout ($test | get -o timeout | default $timeout)
+            run_test $test.name $test.func --timeout ($test | get -o timeout | default $timeout)
         }
     } else {
         # Run tests sequentially
         $tests | reduce --fold [] { |test, acc|
-            let result = ($test.func | run_test $test.name --timeout ($test | get -o timeout | default $timeout))
+            let result = (run_test $test.name $test.func --timeout ($test | get -o timeout | default $timeout))
             let new_acc = ($acc | append $result)
             
             if $fail_fast and (not $result.success) {
@@ -303,7 +302,7 @@ export def integration_test [
         if ($setup | is-not-empty) { do $setup }
         
         # Run test
-        let result = ($test_func | run_test $test_name)
+        let result = (run_test $test_name $test_func)
         
         # Always run teardown
         if ($teardown | is-not-empty) {

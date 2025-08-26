@@ -121,8 +121,8 @@
     };
   };
 
-  # Desktop environment - Using Plasma 5 (available in NixOS 25.05)
-  services.xserver.desktopManager.plasma5.enable = true;
+  # Desktop environment - Using Plasma 6 (modern KDE)
+  services.desktopManager.plasma6.enable = true;
 
   # Display manager configuration
   services.displayManager = {

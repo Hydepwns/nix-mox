@@ -192,25 +192,42 @@ def validate_storage_config [dry_run: bool] {
 # Comprehensive storage validation
 def run_comprehensive_storage_validation [] {
     let storage_validations = [
-        { name: "hardware_config_exists", validator: "validate_file" },
-        { name: "boot_partition_mounted", validator: "validate_boot_partition_mounted" },
-        { name: "root_partition_healthy", validator: "validate_root_partition_healthy" },
-        { name: "uuid_consistency", validator: "validate_uuid_consistency" },
-        { name: "filesystem_table", validator: "validate_filesystem_table" },
-        { name: "boot_loader_config", validator: "validate_boot_loader_config" },
-        { name: "mount_point_accessibility", validator: "validate_mount_points" }
+        { name: "hardware_config_exists", validator: {|| validate_hardware_config_exists } },
+        { name: "boot_partition_mounted", validator: {|| validate_boot_partition_mounted } },
+        { name: "root_partition_healthy", validator: {|| validate_root_partition_healthy } },
+        { name: "uuid_consistency", validator: {|| validate_uuid_consistency } },
+        { name: "filesystem_table", validator: {|| validate_filesystem_table } },
+        { name: "boot_loader_config", validator: {|| validate_boot_loader_config } },
+        { name: "mount_point_accessibility", validator: {|| validate_mount_points } }
     ]
     
     run_validations $storage_validations --fail-fast false --context "storage-validation"
 }
 
 # Individual validation functions
+def validate_hardware_config_exists [] {
+    try {
+        let hw_config = "/etc/nixos/hardware-configuration.nix"
+        if ($hw_config | path exists) {
+            validation_result true "Hardware configuration exists"
+        } else {
+            validation_result false "Hardware configuration missing at /etc/nixos/hardware-configuration.nix"
+        }
+    } catch {
+        validation_result false "Failed to check hardware configuration"
+    }
+}
+
 def validate_boot_partition_mounted [] {
     try {
         let boot_check = (df /boot | complete)
         if $boot_check.exit_code == 0 {
-            let boot_info = ($boot_check.stdout | from ssv -a | get 0)
-            validation_result true $"Boot partition mounted: ($boot_info.filesystem)"
+            let lines = ($boot_check.stdout | lines)
+            if ($lines | length) > 1 {
+                validation_result true $"Boot partition mounted"
+            } else {
+                validation_result false "Boot partition not mounted"
+            }
         } else {
             validation_result false "Boot partition not accessible"
         }
@@ -223,13 +240,25 @@ def validate_root_partition_healthy [] {
     try {
         let root_check = (df / | complete)
         if $root_check.exit_code == 0 {
-            let root_info = ($root_check.stdout | from ssv -a | get 0)
-            let usage = ($root_info.use% | str replace "%" "" | into int)
-            
-            if $usage < 95 {
-                validation_result true $"Root partition healthy: ($usage)% used"
+            let lines = ($root_check.stdout | lines)
+            if ($lines | length) > 1 {
+                # Parse the usage percentage from df output
+                let usage_line = ($lines | last)
+                let parts = ($usage_line | split row -r '\s+')
+                if ($parts | length) >= 5 {
+                    let usage_str = ($parts | get 4)
+                    let usage = ($usage_str | str replace "%" "" | into int)
+                    
+                    if $usage < 95 {
+                        validation_result true $"Root partition healthy: ($usage)% used"
+                    } else {
+                        validation_result false $"Root partition critically full: ($usage)% used"
+                    }
+                } else {
+                    validation_result true "Root partition mounted and accessible"
+                }
             } else {
-                validation_result false $"Root partition critically full: ($usage)% used"
+                validation_result false "Root partition output parsing failed"
             }
         } else {
             validation_result false "Root partition not accessible"

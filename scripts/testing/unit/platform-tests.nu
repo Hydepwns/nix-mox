@@ -206,11 +206,11 @@ def main [] {
     track_test "detect_platform_basic" "unit" "passed" 0.1
 
     # Test validate_platform
-    assert_true (validate_platform "linux") "validate_platform accepts linux"
-    assert_true (validate_platform "windows") "validate_platform accepts windows"
-    assert_true (validate_platform "darwin") "validate_platform accepts darwin"
-    assert_true (validate_platform "auto") "validate_platform accepts auto"
-    assert_false (validate_platform "foo") "validate_platform rejects unknown"
+    assert_true ((null | validate_platform ["linux"]).success) "validate_platform accepts linux"
+    assert_true ((null | validate_platform ["windows"]).success) "validate_platform accepts windows"
+    assert_true ((null | validate_platform ["darwin"]).success) "validate_platform accepts darwin"
+    assert_true ((null | validate_platform ["linux", "darwin", "windows"]).success) "validate_platform accepts multiple platforms"
+    assert_false ((null | validate_platform ["foo"]).success) "validate_platform rejects unknown"
     track_test "validate_platform_basic" "unit" "passed" 0.1
 
     # Test get_platform_script

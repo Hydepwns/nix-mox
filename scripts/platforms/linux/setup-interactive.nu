@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/validators.nu
-use ../../lib/logging.nu
+use ../../lib/validators.nu *
+use ../../lib/logging.nu *
 
 # setup-interactive.nu - Interactive nix-mox Setup Script
 # Usage: nu setup-interactive.nu [--dry-run] [--help]
@@ -11,8 +11,6 @@ use ../../lib/logging.nu
 # - Guides users through personal, system, and environment configuration
 # - Creates configuration files and sets up the development environment
 # - Is idempotent and safe to re-run
-use logging.nu *
-use ../../lib/logging.nu *
 
 # --- Global Variables ---
 const CONFIG_DIR = "config"
@@ -114,7 +112,8 @@ def select_setup_type [] {
     print "5. Minimal system (bare minimum configuration)"
     print ""
 
-    let choice = (input "Enter choice (1-5): " | str trim)
+    print "Enter choice (1-5):"
+    let choice = (input "" | str trim)
 
     match $choice {
         "1" => { "personal" }
@@ -135,11 +134,16 @@ def collect_personal_info [] {
     print "Please provide your personal information:"
     print ""
 
-    let username = (input "Username (for system account): " | str trim)
-    let email = (input "Email address: " | str trim)
-    let git_username = (input "Git username: " | str trim)
-    let git_email = (input "Git email: " | str trim)
-    let initial_password = (input "Initial password (for system account): " | str trim)
+    print "Username (for system account):"
+    let username = (input "" | str trim)
+    print "Email address:"
+    let email = (input "" | str trim)
+    print "Git username:"
+    let git_username = (input "" | str trim)
+    print "Git email:"
+    let git_email = (input "" | str trim)
+    print "Initial password (for system account):"
+    let initial_password = (input "" | str trim)
 
     {
         username: $username
@@ -156,8 +160,10 @@ def collect_system_info [] {
     print "Please provide system configuration:"
     print ""
 
-    let hostname = (input "Hostname: " | str trim)
-    let timezone = (input "Timezone (e.g., America/New_York): " | str trim)
+    print "Hostname:"
+    let hostname = (input "" | str trim)
+    print "Timezone (e.g., America/New_York):"
+    let timezone = (input "" | str trim)
 
     {
         hostname: $hostname
@@ -188,7 +194,8 @@ def setup_environment [] {
     # Setup Hydepwns dotfiles if available
     let dotfiles_script = "scripts/setup/setup-hydepwns-dotfiles.sh"
     if (file_exists $dotfiles_script) {
-        let response = (input "Setup Hydepwns dotfiles integration? (y/N): " | str trim)
+        print "Setup Hydepwns dotfiles integration? (y/N):"
+        let response = (input "" | str trim)
         if $response == "y" or $response == "Y" {
             info "Setting up Hydepwns dotfiles..."
             if not $env.STATE.dry_run {
@@ -221,7 +228,8 @@ def select_template [setup_type: string] {
 
     if (file_exists ($TEMPLATES_DIR + "/" + $default_template)) {
         print $"Recommended template for ($setup_type) setup: ($default_template)"
-        let response = (input "Use recommended template? (Y/n): " | str trim)
+        print "Use recommended template? (Y/n):"
+        let response = (input "" | str trim)
 
         if $response == "" or $response == "y" or $response == "Y" {
             $default_template
@@ -231,7 +239,8 @@ def select_template [setup_type: string] {
             for template in (ls ($TEMPLATES_DIR + "/*.nix") | get name | path basename) {
                 print $"  • ($template)"
             }
-            let custom_template = (input "Enter template name: " | str trim)
+            print "Enter template name:"
+            let custom_template = (input "" | str trim)
             if (file_exists ($TEMPLATES_DIR + "/" + $custom_template)) {
                 $custom_template
             } else {
@@ -423,7 +432,7 @@ def usage [] {
 # --- Execution ---
 try {
     main
-} catch {
-    error $"Setup failed: ($env.LAST_ERROR)"
+} catch { |err|
+    error $"Setup failed: ($err.msg)"
     exit 1
 }
