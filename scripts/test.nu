@@ -136,7 +136,10 @@ def run_unit_tests [coverage: bool, output: string, parallel: bool, fail_fast: b
         { name: "platform_tests", func: {|| test_platform_detection } },
         { name: "validation_tests", func: {|| test_validation_functions } },
         { name: "command_wrapper_tests", func: {|| test_command_wrappers } },
-        { name: "analysis_tests", func: {|| test_analysis_functions } }
+        { name: "analysis_tests", func: {|| test_analysis_functions } },
+        { name: "validators_library_tests", func: {|| test_validators_library } },
+        { name: "command_wrapper_library_tests", func: {|| test_command_wrapper_library } },
+        { name: "analysis_library_tests", func: {|| test_analysis_library } }
     ]
     
     let results = (test_suite "unit_tests" $unit_tests --parallel $parallel --fail-fast $fail_fast)
@@ -154,7 +157,10 @@ def run_integration_tests [coverage: bool, output: string, parallel: bool, fail_
         { name: "setup_integration", func: {|| test_setup_integration } },
         { name: "validation_integration", func: {|| test_validation_integration } },
         { name: "storage_integration", func: {|| test_storage_integration } },
-        { name: "dashboard_integration", func: {|| test_dashboard_integration } }
+        { name: "dashboard_integration", func: {|| test_dashboard_integration } },
+        { name: "setup_consolidated_integration", func: {|| test_setup_consolidated_integration } },
+        { name: "dashboard_consolidated_integration", func: {|| test_dashboard_consolidated_integration } },
+        { name: "chezmoi_consolidated_integration", func: {|| test_chezmoi_consolidated_integration } }
     ]
     
     let results = (test_suite "integration_tests" $integration_tests --parallel false --fail-fast $fail_fast)
@@ -344,6 +350,31 @@ def test_analysis_functions [] {
     { success: true, message: "analysis functions test passed" }
 }
 
+# New comprehensive library tests
+def test_validators_library [] {
+    # Run the comprehensive validators test file
+    let result = (^nu "scripts/testing/unit/validators-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "validators library tests should pass"
+    
+    { success: true, message: "validators library test passed" }
+}
+
+def test_command_wrapper_library [] {
+    # Run the comprehensive command-wrapper test file
+    let result = (^nu "scripts/testing/unit/command-wrapper-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "command-wrapper library tests should pass"
+    
+    { success: true, message: "command-wrapper library test passed" }
+}
+
+def test_analysis_library [] {
+    # Run the comprehensive analysis test file
+    let result = (^nu "scripts/testing/unit/analysis-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "analysis library tests should pass"
+    
+    { success: true, message: "analysis library test passed" }
+}
+
 # Integration test functions
 def test_setup_integration [] {
     setup_test_environment
@@ -380,6 +411,31 @@ def test_dashboard_integration [] {
     assert ("tmp/test-dashboard.json" | path exists) "Dashboard output file should be created"
     
     { success: true, message: "dashboard integration test passed" }
+}
+
+# New consolidated script integration tests
+def test_setup_consolidated_integration [] {
+    # Run the comprehensive setup integration test file
+    let result = (^nu "scripts/testing/integration/setup-integration-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "setup consolidated integration tests should pass"
+    
+    { success: true, message: "setup consolidated integration test passed" }
+}
+
+def test_dashboard_consolidated_integration [] {
+    # Run the comprehensive dashboard integration test file
+    let result = (^nu "scripts/testing/integration/dashboard-integration-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "dashboard consolidated integration tests should pass"
+    
+    { success: true, message: "dashboard consolidated integration test passed" }
+}
+
+def test_chezmoi_consolidated_integration [] {
+    # Run the comprehensive chezmoi integration test file
+    let result = (^nu "scripts/testing/integration/chezmoi-integration-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "chezmoi consolidated integration tests should pass"
+    
+    { success: true, message: "chezmoi consolidated integration test passed" }
 }
 
 # Platform-specific test functions
