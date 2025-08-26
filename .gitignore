@@ -67,3 +67,4 @@ package-lock.json
 nix-mox-public.key
 nix-mox-secret.key
 nix-mox-signing.key
+extensions/vscode/out/
