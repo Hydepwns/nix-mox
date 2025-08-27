@@ -173,8 +173,17 @@ def coverage_dashboard [refresh: int, watch: bool, output: string, format: strin
 
 def security_dashboard [refresh: int, watch: bool, output: string, format: string] {
     info "Security dashboard - collecting security status..."
-    let data = (collect_basic_data)
-    display_basic_info $data $format
+    let data = (collect_security_data)
+    
+    if $format == "json" or not ($output | is-empty) {
+        display_security_json $data $format
+    } else {
+        display_security_info $data $format
+    }
+    
+    if not ($output | is-empty) {
+        save_data $data $output
+    }
 }
 
 def gaming_dashboard [refresh: int, watch: bool, output: string, format: string] {
@@ -193,6 +202,55 @@ def quick_status_dashboard [] {
     banner "Quick Status"
     let data = (collect_basic_data)
     display_basic_info $data "table"
+}
+
+# Security-specific data collection
+def collect_security_data [] {
+    let basic = (collect_basic_data)
+    
+    # Check for common security indicators
+    let nix_store_permissions = (try {
+        let store_info = (^ls -la /nix/store | head -5 | complete)
+        if $store_info.exit_code == 0 { "accessible" } else { "restricted" }
+    } catch { "unknown" })
+    
+    let firewall_status = (try {
+        # Check if iptables binary exists (indicates firewall capability)
+        if (which iptables | is-not-empty) { "available" } else { "not_available" }
+    } catch { "unknown" })
+    
+    let ssh_status = (try {
+        # Check if ssh/sshd binaries exist
+        if (which ssh | is-not-empty) { "ssh_client_available" } else { "not_available" }
+    } catch { "unknown" })
+    
+    # Security scan results
+    let security_analysis = {
+        nix_store_permissions: $nix_store_permissions,
+        firewall_status: $firewall_status,  
+        ssh_service: $ssh_status,
+        scan_timestamp: (date now),
+        security_level: "basic_scan"
+    }
+    
+    $basic | merge { security: $security_analysis }
+}
+
+# Security display functions
+def display_security_info [data: record, format: string] {
+    display_basic_info $data $format
+    
+    if "security" in $data {
+        info $"Nix Store: ($data.security.nix_store_permissions)"
+        info $"Firewall: ($data.security.firewall_status)"  
+        info $"SSH Service: ($data.security.ssh_service)"
+        info $"Security Level: ($data.security.security_level)"
+    }
+}
+
+def display_security_json [data: record, format: string] {
+    # For JSON format, just return the data structure
+    $data | to json | print
 }
 
 # Data saving function
