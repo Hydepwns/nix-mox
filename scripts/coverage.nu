@@ -23,224 +23,217 @@ def main [
 ] {
     if $verbose { $env.LOG_LEVEL = "DEBUG" }
     
-    script_main "nix-mox coverage analysis" $"Generating ($format) coverage report" --context $context {||
-        
-        # Dispatch to appropriate coverage format
-        match $format {
-            "lcov" => (generate_lcov_coverage $output $include_pattern $exclude_pattern $threshold $upload),
-            "codecov" => (generate_codecov_coverage $output $include_pattern $exclude_pattern $upload),
-            "html" => (generate_html_coverage $output $include_pattern $exclude_pattern),
-            "json" => (generate_json_coverage $output $include_pattern $exclude_pattern),
-            "xml" => (generate_xml_coverage $output $include_pattern $exclude_pattern),
-            "all" => (generate_all_coverage_formats $output $include_pattern $exclude_pattern $threshold $upload),
-            "watch" => (watch_coverage $include_pattern $exclude_pattern),
-            "help" => { show_coverage_help; return },
-            _ => {
-                error $"Unknown coverage format: ($format). Use 'help' to see available formats."
-                return
-            }
+    info $"nix-mox coverage analysis: Generating ($format) coverage report" --context $context
+    
+    # Dispatch to appropriate coverage format
+    match $format {
+        "lcov" => (generate_lcov_coverage $output $include_pattern $exclude_pattern $threshold $upload),
+        "codecov" => (generate_codecov_coverage $output $include_pattern $exclude_pattern $upload),
+        "html" => (generate_html_coverage $output $include_pattern $exclude_pattern),
+        "json" => (generate_json_coverage $output $include_pattern $exclude_pattern),
+        "xml" => (generate_xml_coverage $output $include_pattern $exclude_pattern),
+        "all" => (generate_all_coverage_formats $output $include_pattern $exclude_pattern $threshold $upload),
+        "watch" => (watch_coverage $include_pattern $exclude_pattern),
+        "help" => { show_coverage_help; return },
+        _ => {
+            error $"Unknown coverage format: ($format). Use 'help' to see available formats."
+            return
         }
     }
 }
 
 # Generate LCOV format coverage report
 def generate_lcov_coverage [output: string, include_pattern: string, exclude_pattern: string, threshold: int, upload: bool] {
-    with_logging "LCOV coverage generation" --context "lcov" {||
+    info "Starting LCOV coverage generation" --context "lcov"
+    
+    let coverage_data = (collect_coverage_data $include_pattern $exclude_pattern)
+    let lcov_report = (format_lcov_report $coverage_data)
+    
+    let output_file = if ($output | is-empty) { 
+        "coverage-tmp/lcov.info" 
+    } else { 
+        $output 
+    }
+    
+    # Ensure output directory exists
+    let output_dir = ($output_file | path dirname)
+    if not ($output_dir | path exists) {
+        mkdir $output_dir
+    }
+    
+    # Save LCOV report
+    $lcov_report | save $output_file
+    
+    # Generate HTML report from LCOV if genhtml is available
+    if (which genhtml | is-not-empty) {
+        let html_dir = $"($output_dir)/html"
+        let html_result = (execute_command ["genhtml" $output_file "-o" $html_dir] --context "lcov")
         
-        let coverage_data = (collect_coverage_data $include_pattern $exclude_pattern)
-        let lcov_report = (format_lcov_report $coverage_data)
-        
-        let output_file = if ($output | is-empty) { 
-            "coverage-tmp/lcov.info" 
-        } else { 
-            $output 
+        if $html_result.exit_code == 0 {
+            success $"HTML coverage report generated: ($html_dir)/index.html" --context "lcov"
         }
-        
-        # Ensure output directory exists
-        let output_dir = ($output_file | path dirname)
-        if not ($output_dir | path exists) {
-            mkdir $output_dir
-        }
-        
-        # Save LCOV report
-        $lcov_report | save $output_file
-        
-        # Generate HTML report from LCOV if genhtml is available
-        if (which genhtml | is-not-empty) {
-            let html_dir = $"($output_dir)/html"
-            let html_result = (execute_command ["genhtml" $output_file "-o" $html_dir] --context "lcov")
-            
-            if $html_result.exit_code == 0 {
-                success $"HTML coverage report generated: ($html_dir)/index.html" --context "lcov"
-            }
-        }
-        
-        # Check coverage threshold
-        let coverage_percentage = ($coverage_data.summary.coverage_percentage | math round)
-        if $coverage_percentage >= $threshold {
-            success $"Coverage threshold met: ($coverage_percentage)% >= ($threshold)%" --context "lcov"
-        } else {
-            warn $"Coverage below threshold: ($coverage_percentage)% < ($threshold)%" --context "lcov"
-        }
-        
-        # Upload to Codecov if requested
-        if $upload {
-            upload_to_codecov $output_file
-        }
-        
-        success $"LCOV coverage report saved: ($output_file)" --context "lcov"
-        
-        {
-            success: true,
-            format: "lcov",
-            output_file: $output_file,
-            coverage_percentage: $coverage_percentage,
-            threshold_met: ($coverage_percentage >= $threshold),
-            upload_attempted: $upload
-        }
+    }
+    
+    # Check coverage threshold
+    let coverage_percentage = ($coverage_data.summary.coverage_percentage | math round)
+    if $coverage_percentage >= $threshold {
+        success $"Coverage threshold met: ($coverage_percentage)% >= ($threshold)%" --context "lcov"
+    } else {
+        warn $"Coverage below threshold: ($coverage_percentage)% < ($threshold)%" --context "lcov"
+    }
+    
+    # Upload to Codecov if requested
+    if $upload {
+        upload_to_codecov $output_file
+    }
+    
+    success $"LCOV coverage report saved: ($output_file)" --context "lcov"
+    
+    {
+        success: true,
+        format: "lcov",
+        output_file: $output_file,
+        coverage_percentage: $coverage_percentage,
+        threshold_met: ($coverage_percentage >= $threshold),
+        upload_attempted: $upload
     }
 }
 
 # Generate Codecov format coverage report
 def generate_codecov_coverage [output: string, include_pattern: string, exclude_pattern: string, upload: bool] {
-    with_logging "Codecov coverage generation" --context "codecov" {||
-        
-        # Generate LCOV first (Codecov accepts LCOV format)
-        let lcov_result = (generate_lcov_coverage $output $include_pattern $exclude_pattern 0 false)
-        
-        if $upload {
-            let coverage_file = ($lcov_result | get output_file)
-            upload_to_codecov $coverage_file
-        }
-        
-        $lcov_result | merge { format: "codecov" }
+    info "Starting Codecov coverage generation" --context "codecov"
+    
+    # Generate LCOV first (Codecov accepts LCOV format)
+    let lcov_result = (generate_lcov_coverage $output $include_pattern $exclude_pattern 0 false)
+    
+    if $upload {
+        let coverage_file = ($lcov_result | get output_file)
+        upload_to_codecov $coverage_file
     }
+    
+    $lcov_result | merge { format: "codecov" }
 }
 
 # Generate HTML coverage report
 def generate_html_coverage [output: string, include_pattern: string, exclude_pattern: string] {
-    with_logging "HTML coverage generation" --context "html" {||
-        
-        let coverage_data = (collect_coverage_data $include_pattern $exclude_pattern)
-        
-        let output_dir = if ($output | is-empty) { 
-            "coverage-tmp/html" 
-        } else { 
-            $output 
-        }
-        
-        # Ensure output directory exists
-        if not ($output_dir | path exists) {
-            mkdir $output_dir
-        }
-        
-        # Generate HTML report
-        let html_content = (generate_html_report $coverage_data)
-        let index_file = $"($output_dir)/index.html"
-        
-        $html_content | save $index_file
-        
-        # Generate CSS for styling
-        let css_content = (generate_coverage_css)
-        $css_content | save $"($output_dir)/style.css"
-        
-        success $"HTML coverage report generated: ($index_file)" --context "html"
-        
-        {
-            success: true,
-            format: "html",
-            output_dir: $output_dir,
-            index_file: $index_file
-        }
+    info "Starting HTML coverage generation" --context "html"
+    
+    let coverage_data = (collect_coverage_data $include_pattern $exclude_pattern)
+    
+    let output_dir = if ($output | is-empty) { 
+        "coverage-tmp/html" 
+    } else { 
+        $output 
+    }
+    
+    # Ensure output directory exists
+    if not ($output_dir | path exists) {
+        mkdir $output_dir
+    }
+    
+    # Generate HTML report
+    let html_content = (generate_html_report $coverage_data)
+    let index_file = $"($output_dir)/index.html"
+    
+    $html_content | save $index_file
+    
+    # Generate CSS for styling
+    let css_content = (generate_coverage_css)
+    $css_content | save $"($output_dir)/style.css"
+    
+    success $"HTML coverage report generated: ($index_file)" --context "html"
+    
+    {
+        success: true,
+        format: "html",
+        output_dir: $output_dir,
+        index_file: $index_file
     }
 }
 
 # Generate JSON coverage report
 def generate_json_coverage [output: string, include_pattern: string, exclude_pattern: string] {
-    with_logging "JSON coverage generation" --context "json" {||
-        
-        let coverage_data = (collect_coverage_data $include_pattern $exclude_pattern)
-        
-        let output_file = if ($output | is-empty) { 
-            "coverage-tmp/coverage.json" 
-        } else { 
-            $output 
-        }
-        
-        # Ensure output directory exists
-        let output_dir = ($output_file | path dirname)
-        if not ($output_dir | path exists) {
-            mkdir $output_dir
-        }
-        
-        # Save JSON report
-        $coverage_data | to json | save $output_file
-        
-        success $"JSON coverage report saved: ($output_file)" --context "json"
-        
-        {
-            success: true,
-            format: "json",
-            output_file: $output_file,
-            coverage_data: $coverage_data
-        }
+    info "Starting JSON coverage generation" --context "json"
+    
+    let coverage_data = (collect_coverage_data $include_pattern $exclude_pattern)
+    
+    let output_file = if ($output | is-empty) { 
+        "coverage-tmp/coverage.json" 
+    } else { 
+        $output 
+    }
+    
+    # Ensure output directory exists
+    let output_dir = ($output_file | path dirname)
+    if not ($output_dir | path exists) {
+        mkdir $output_dir
+    }
+    
+    # Save JSON report
+    $coverage_data | to json | save $output_file
+    
+    success $"JSON coverage report saved: ($output_file)" --context "json"
+    
+    {
+        success: true,
+        format: "json",
+        output_file: $output_file,
+        coverage_data: $coverage_data
     }
 }
 
 # Generate XML coverage report (JUnit/Cobertura format)
 def generate_xml_coverage [output: string, include_pattern: string, exclude_pattern: string] {
-    with_logging "XML coverage generation" --context "xml" {||
-        
-        let coverage_data = (collect_coverage_data $include_pattern $exclude_pattern)
-        let xml_content = (format_cobertura_xml $coverage_data)
-        
-        let output_file = if ($output | is-empty) { 
-            "coverage-tmp/coverage.xml" 
-        } else { 
-            $output 
-        }
-        
-        # Ensure output directory exists
-        let output_dir = ($output_file | path dirname)
-        if not ($output_dir | path exists) {
-            mkdir $output_dir
-        }
-        
-        # Save XML report
-        $xml_content | save $output_file
-        
-        success $"XML coverage report saved: ($output_file)" --context "xml"
-        
-        {
-            success: true,
-            format: "xml",
-            output_file: $output_file
-        }
+    info "Starting XML coverage generation" --context "xml"
+    
+    let coverage_data = (collect_coverage_data $include_pattern $exclude_pattern)
+    let xml_content = (format_cobertura_xml $coverage_data)
+    
+    let output_file = if ($output | is-empty) { 
+        "coverage-tmp/coverage.xml" 
+    } else { 
+        $output 
+    }
+    
+    # Ensure output directory exists
+    let output_dir = ($output_file | path dirname)
+    if not ($output_dir | path exists) {
+        mkdir $output_dir
+    }
+    
+    # Save XML report
+    $xml_content | save $output_file
+    
+    success $"XML coverage report saved: ($output_file)" --context "xml"
+    
+    {
+        success: true,
+        format: "xml",
+        output_file: $output_file
     }
 }
 
 # Generate all coverage formats
 def generate_all_coverage_formats [output: string, include_pattern: string, exclude_pattern: string, threshold: int, upload: bool] {
-    with_logging "generating all coverage formats" --context "all-formats" {||
-        
-        let base_dir = if ($output | is-empty) { "coverage-tmp" } else { $output }
-        
-        let lcov_result = (generate_lcov_coverage $"($base_dir)/lcov.info" $include_pattern $exclude_pattern $threshold $upload)
-        let html_result = (generate_html_coverage $"($base_dir)/html" $include_pattern $exclude_pattern)
-        let json_result = (generate_json_coverage $"($base_dir)/coverage.json" $include_pattern $exclude_pattern)
-        let xml_result = (generate_xml_coverage $"($base_dir)/coverage.xml" $include_pattern $exclude_pattern)
-        
-        {
-            success: true,
-            formats_generated: ["lcov", "html", "json", "xml"],
-            results: {
-                lcov: $lcov_result,
-                html: $html_result,
-                json: $json_result,
-                xml: $xml_result
-            },
-            base_directory: $base_dir
-        }
+    info "Generating all coverage formats" --context "all-formats"
+    
+    let base_dir = if ($output | is-empty) { "coverage-tmp" } else { $output }
+    
+    let lcov_result = (generate_lcov_coverage $"($base_dir)/lcov.info" $include_pattern $exclude_pattern $threshold $upload)
+    let html_result = (generate_html_coverage $"($base_dir)/html" $include_pattern $exclude_pattern)
+    let json_result = (generate_json_coverage $"($base_dir)/coverage.json" $include_pattern $exclude_pattern)
+    let xml_result = (generate_xml_coverage $"($base_dir)/coverage.xml" $include_pattern $exclude_pattern)
+    
+    {
+        success: true,
+        formats_generated: ["lcov", "html", "json", "xml"],
+        results: {
+            lcov: $lcov_result,
+            html: $html_result,
+            json: $json_result,
+            xml: $xml_result
+        },
+        base_directory: $base_dir
     }
 }
 
@@ -319,17 +312,19 @@ def analyze_file_coverage [file_path: string] {
         # Count executable lines (simplified heuristic)
         let executable_lines = ($lines | where {|line| 
             let trimmed = ($line | str trim)
-            ($trimmed | str length) > 0 and 
-            not ($trimmed | str starts-with "#") and
-            not ($trimmed | str starts-with "use ") and
-            not ($trimmed | str starts-with "export ") and
-            ($trimmed != "")
+            if ($trimmed | str length) == 0 { false }
+            else if ($trimmed | str starts-with "#") { false }
+            else if ($trimmed | str starts-with "use ") { false }
+            else if ($trimmed | str starts-with "export ") { false }
+            else { true }
         } | length)
         
         # Count functions
         let functions = ($lines | where {|line| 
-            ($line | str trim | str starts-with "def ") or 
-            ($line | str trim | str starts-with "export def ")
+            let trimmed = ($line | str trim)
+            if ($trimmed | str starts-with "def ") { true }
+            else if ($trimmed | str starts-with "export def ") { true }
+            else { false }
         } | length)
         
         # For now, assume 80% of executable lines are covered (placeholder)
@@ -373,7 +368,7 @@ def format_lcov_report [coverage_data: record] {
     mut lcov_content = "TN:\n"  # Test name
     
     for file_data in ($coverage_data.files) {
-        if "error" not in $file_data {
+        if not ("error" in $file_data) {
             $lcov_content += $"SF:($file_data.file)\n"  # Source file
             
             # Function coverage
@@ -426,7 +421,7 @@ def format_cobertura_xml [coverage_data: record] {
     $xml_content += "      <classes>\n"
     
     for file_data in ($coverage_data.files) {
-        if "error" not in $file_data {
+        if not ("error" in $file_data) {
             let class_name = ($file_data.file | str replace "/" "." | str replace ".nu" "")
             $xml_content += $"        <class name=\"($class_name)\" filename=\"($file_data.file)\" "
             $xml_content += $"line-rate=\"($file_data.lines.coverage_percentage / 100)\" branch-rate=\"0.0\">\n"
@@ -480,7 +475,7 @@ def generate_html_report [coverage_data: record] {
     $html_content += "      <tr><th>File</th><th>Lines</th><th>Functions</th><th>Coverage</th></tr>\n"
     
     for file_data in ($coverage_data.files) {
-        if "error" not in $file_data {
+        if not ("error" in $file_data) {
             let coverage_class = if $file_data.lines.coverage_percentage >= 80 {
                 "high"
             } else if $file_data.lines.coverage_percentage >= 60 {
@@ -592,7 +587,7 @@ def display_coverage_summary [coverage_data: record] {
     
     # Show files with low coverage
     let low_coverage_files = ($coverage_data.files | where {|file| 
-        ("error" not in $file) and ($file.lines.coverage_percentage < 60)
+        (not ("error" in $file)) and ($file.lines.coverage_percentage < 60)
     })
     
     if ($low_coverage_files | length) > 0 {
@@ -608,30 +603,29 @@ def generate_coverage_bar [percentage: float] {
     let filled = ($percentage / 100 * $bar_width | math round)
     let empty = ($bar_width - $filled)
     
-    let filled_bar = ("█" | str repeat $filled)
-    let empty_bar = ("░" | str repeat $empty)
+    let filled_bar = (seq 1 $filled | each { "█" } | str join "")
+    let empty_bar = (seq 1 $empty | each { "░" } | str join "")
     
     $"($filled_bar)($empty_bar)"
 }
 
 # Upload to Codecov
 def upload_to_codecov [coverage_file: string] {
-    with_logging "uploading coverage to Codecov" --context "codecov" {||
-        
-        if not (which codecov | is-not-empty) {
-            warn "Codecov uploader not found. Please install: pip install codecov" --context "codecov"
-            return { success: false, message: "codecov not installed" }
-        }
-        
-        let upload_result = (execute_command ["codecov" "-f" $coverage_file] --context "codecov")
-        
-        if $upload_result.exit_code == 0 {
-            success "Coverage successfully uploaded to Codecov" --context "codecov"
-            { success: true, message: "uploaded successfully" }
-        } else {
-            error "Failed to upload coverage to Codecov" --context "codecov"
-            { success: false, message: $upload_result.stderr }
-        }
+    info "Uploading coverage to Codecov" --context "codecov"
+    
+    if not (which codecov | is-not-empty) {
+        warn "Codecov uploader not found. Please install: pip install codecov" --context "codecov"
+        return { success: false, message: "codecov not installed" }
+    }
+    
+    let upload_result = (execute_command ["codecov" "-f" $coverage_file] --context "codecov")
+    
+    if $upload_result.exit_code == 0 {
+        success "Coverage successfully uploaded to Codecov" --context "codecov"
+        { success: true, message: "uploaded successfully" }
+    } else {
+        error "Failed to upload coverage to Codecov" --context "codecov"
+        { success: false, message: $upload_result.stderr }
     }
 }
 
@@ -660,7 +654,5 @@ def show_coverage_help [] {
     ]
 }
 
-# If script is run directly, call main with arguments
-if not ($nu.scope.args | is-empty) {
-    main ...$nu.scope.args
-}
+# If script is run directly, call main with arguments  
+# Note: Direct execution handled by main function parameter parsing
