@@ -241,7 +241,7 @@ def check_display_manager_config [] {
     
     # Check if SDDM is configured for X11 (not Wayland)
     let sddm_wayland_disabled = (try {
-        ^grep -q "wayland.enable.*false" /etc/sddm.conf 2>/dev/null || echo "not_found"
+        (^grep -q "wayland.enable.*false" /etc/sddm.conf 2>/dev/null; if $env.LAST_EXIT_CODE == 0 { "found" } else { "not_found" })
     } catch { "unknown" })
     
     {
@@ -291,8 +291,8 @@ def check_current_session [] {
 # Collect comprehensive system display information
 def collect_system_display_info [] {
     {
-        hostname: (hostname),
-        kernel: (uname -r),
+        hostname: (^hostname),
+        kernel: (^uname -r),
         nvidia_driver: (try { ^nvidia-smi --query-gpu=name,driver_version --format=csv,noheader } catch { "not_available" }),
         gpu_info: (try { ^lspci | grep -i vga } catch { "not_available" }),
         display_env: ($env | get DISPLAY -o | default "not_set"),
