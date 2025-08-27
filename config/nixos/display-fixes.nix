@@ -104,6 +104,13 @@
   };
 
   # ============================================================================
+  # KERNEL MODULE BLACKLIST - PREVENT DRIVER CONFLICTS
+  # ============================================================================
+
+  # Blacklist nouveau to prevent conflicts with proprietary NVIDIA drivers
+  boot.blacklistedKernelModules = [ "nouveau" "nvidiafb" ];
+
+  # ============================================================================
   # KERNEL PARAMETERS - UPDATED FOR PLASMA 6 + NVIDIA
   # ============================================================================
 
@@ -111,6 +118,10 @@
     # NVIDIA settings - critical for Plasma 6
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
+
+    # Force proprietary NVIDIA driver loading
+    "modprobe.blacklist=nouveau"
+    "rd.driver.blacklist=nouveau"
 
     # Disable problematic features that conflict with Plasma 6
     "nvidia.NVreg_PreserveVideoMemoryAllocations=0"
