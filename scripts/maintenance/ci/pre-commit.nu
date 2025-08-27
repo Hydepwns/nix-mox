@@ -1,27 +1,24 @@
 #!/usr/bin/env nu
 
-# Import unified libraries
-use ../../lib/validators.nu
-use ../../lib/logging.nu
-
-
 # nix-mox Pre-commit Hook
 # Runs code quality checks before commits
 
+use ../../lib/validators.nu *
+use ../../lib/logging.nu *
+
 def main [] {
-    print "🔍 nix-mox Pre-commit Checks"
-    print "============================"
+    banner "nix-mox Pre-commit Checks" --context "pre-commit"
 
     let start_time = (date now)
     mut failed_checks = []
 
     # Run essential checks
-    print "\n🔍 Running essential checks..."
+    info "Running essential checks..." --context "pre-commit"
 
     # Check for TODOs/FIXMEs (warning only)
     let todo_result = (check_todos)
     if not $todo_result {
-        print "  ⚠️  TODO/FIXME check failed (warning only - not blocking commit)"
+        warn "TODO/FIXME check failed (warning only - not blocking commit)" --context "pre-commit"
     }
 
     # Check syntax
@@ -38,6 +35,11 @@ def main [] {
     let security_result = (check_security)
     if not $security_result {
         print "  ⚠️  Security check failed (warning only - not blocking commit)"
+    }
+
+    # Check for banned terminology
+    if not (check_banned_names) {
+        $failed_checks = ($failed_checks | append "Banned terminology found")
     }
 
     let end_time = (date now)
@@ -146,6 +148,64 @@ def check_security [] {
         false
     } else {
         print "    ✅ No obvious security issues found"
+        true
+    }
+}
+
+def check_banned_names [] {
+    print "  Checking for inclusive terminology..."
+    
+    # Define banned terms and their suggested replacements
+    let banned_terms = [
+        {term: "master", suggest: "main, primary, leader"},
+        {term: "slave", suggest: "replica, follower, secondary"},
+        {term: "whitelist", suggest: "allowlist, safelist"},
+        {term: "blacklist", suggest: "blocklist, denylist"},
+        {term: "dummy", suggest: "placeholder, sample"},
+        {term: "sanity", suggest: "consistency, validity"}
+    ]
+    
+    let issues_found = ($banned_terms | each { |term_info|
+        let pattern = $term_info.term
+        let files_with_term = (try {
+            do { grep -r -l -i $pattern . --exclude-dir=.git --exclude-dir=coverage-tmp --exclude-dir=tmp --exclude-dir=result --exclude-dir=.direnv --exclude-dir=node_modules --exclude="*.md" --exclude="CLAUDE.md" --exclude="*.log" --exclude="*.lock" --exclude="pre-commit.nu" } | complete
+        } catch {
+            {exit_code: 1, stdout: ""}
+        })
+        
+        if $files_with_term.exit_code == 0 and ($files_with_term.stdout | str trim) != "" {
+            let file_list = ($files_with_term.stdout | lines)
+            let count = ($file_list | length)
+            if $count > 0 {
+                {
+                    term: $pattern
+                    count: $count
+                    suggest: $term_info.suggest
+                    files: ($file_list | first 3 | str join ", ")
+                }
+            } else {
+                null
+            }
+        } else {
+            null
+        }
+    } | where $it != null)
+    
+    if ($issues_found | length) > 0 {
+        print "    ❌ Found non-inclusive terminology:"
+        for issue in $issues_found {
+            print $"      • '($issue.term)' found in ($issue.count) file\(s\)"
+            print $"        Suggested: ($issue.suggest)"
+            if $issue.count <= 3 {
+                print $"        Files: ($issue.files)"
+            } else {
+                print $"        Files: ($issue.files), ..."
+            }
+        }
+        print "    💡 Please update to use inclusive terminology"
+        false
+    } else {
+        print "    ✅ All terminology is inclusive"
         true
     }
 }
