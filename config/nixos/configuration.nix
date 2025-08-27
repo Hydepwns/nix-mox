@@ -7,6 +7,9 @@
 
     # User configuration from personal
     ../personal/hydepwns.nix
+
+    # Display fixes for KDE Plasma 6 + NVIDIA on NixOS 25.11
+    ./display-fixes.nix
   ];
 
   # ============================================================================
