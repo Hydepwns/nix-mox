@@ -30,9 +30,13 @@ def main [
         "system" => (system_dashboard $refresh $watch $output $format),
         "performance" => (performance_dashboard $refresh $watch $output $format),
         "testing" => (testing_dashboard $refresh $watch $output $format),
+        "coverage" => (coverage_dashboard $refresh $watch $output $format),
         "security" => (security_dashboard $refresh $watch $output $format),
         "gaming" => (gaming_dashboard $refresh $watch $output $format),
         "analysis" => (analysis_dashboard $refresh $watch $output $format),
+        "size" => (size_dashboard $refresh $watch $output $format),
+        "project" => (project_dashboard $refresh $watch $output $format),
+        "quick" => (quick_status_dashboard),
         "help" => { show_dashboard_help; return },
         _ => {
             error $"Unknown dashboard view: ($view). Use 'help' to see available views."
@@ -158,6 +162,16 @@ def testing_dashboard [refresh: int, watch: bool, output: string, format: string
     }
 }
 
+# Coverage dashboard - dedicated test coverage reporting
+def coverage_dashboard [refresh: int, watch: bool, output: string, format: string] {
+    let data = (collect_coverage_data)
+    display_coverage $data $format
+    
+    if not ($output | is-empty) {
+        save_dashboard_data $data $output
+    }
+}
+
 # Security dashboard - security status and threats
 def security_dashboard [refresh: int, watch: bool, output: string, format: string] {
     let data = (collect_security_data)
@@ -203,6 +217,105 @@ def collect_performance_data [] {
 
 def collect_testing_data [] {
     collect_data "collect_test_results" "collect_coverage_data" "collect_quality_metrics"
+}
+
+def collect_coverage_data [] {
+    info "Collecting comprehensive coverage data" --context "coverage-dashboard"
+    
+    try {
+        # Generate coverage data using the fixed coverage.nu script
+        # Try multiple paths to find the coverage script
+        let coverage_paths = [
+            "scripts/coverage.nu",           # From project root
+            "coverage.nu",                   # From scripts directory
+            "../coverage.nu",                # From subdirectory
+            "./scripts/coverage.nu"         # Explicit relative path
+        ]
+        
+        mut coverage_script = ""
+        for path in $coverage_paths {
+            if ($path | path exists) {
+                $coverage_script = $path
+                break
+            }
+        }
+        
+        if ($coverage_script | str length) == 0 {
+            error "coverage.nu script not found in expected locations" --context "coverage-dashboard"
+            return {
+                error: "coverage.nu script not found",
+                coverage: { summary: { coverage_percentage: 0, files_analyzed: 0 } },
+                metrics: { test_files: 0, lib_files: 0, coverage_ratio: 0 }
+            }
+        }
+        
+        info $"Using coverage script: ($coverage_script)" --context "coverage-dashboard"
+        let lcov_result = (^nu $coverage_script "lcov" | complete)
+        let json_result = (^nu $coverage_script "json" | complete)
+        
+        # Parse coverage results
+        let coverage_summary = if ($json_result.exit_code == 0) {
+            try {
+                # Try multiple paths for coverage output
+                let json_paths = [
+                    "coverage-tmp/coverage.json",
+                    "./coverage-tmp/coverage.json",
+                    "../coverage-tmp/coverage.json"
+                ]
+                
+                mut json_data = { summary: { coverage_percentage: 0, files_analyzed: 0 } }
+                for json_path in $json_paths {
+                    if ($json_path | path exists) {
+                        $json_data = (open $json_path)
+                        break
+                    }
+                }
+                $json_data
+            } catch {
+                { summary: { coverage_percentage: 0, files_analyzed: 0 } }
+            }
+        } else {
+            { summary: { coverage_percentage: 0, files_analyzed: 0 } }
+        }
+        
+        # Collect additional test metrics
+        let test_files = (glob "scripts/testing/**/*.nu" | length)
+        let lib_files = (glob "scripts/lib/*.nu" | length)
+        let coverage_ratio = if $lib_files > 0 { ($test_files * 100 / $lib_files | math round) } else { 0 }
+        
+        {
+            metadata: {
+                generated_at: (date now),
+                generator: "nix-mox coverage dashboard",
+                version: "1.0.0"
+            },
+            coverage: $coverage_summary,
+            metrics: {
+                test_files: $test_files,
+                lib_files: $lib_files,
+                coverage_ratio: $coverage_ratio,
+                lcov_status: ($lcov_result.exit_code == 0),
+                json_status: ($json_result.exit_code == 0)
+            },
+            reports: {
+                lcov_available: (["coverage-tmp/lcov.info", "./coverage-tmp/lcov.info"] | any { |p| $p | path exists }),
+                json_available: (["coverage-tmp/coverage.json", "./coverage-tmp/coverage.json"] | any { |p| $p | path exists }),
+                html_available: (["coverage-tmp/html/index.html", "./coverage-tmp/html/index.html"] | any { |p| $p | path exists })
+            }
+        }
+    } catch { |err|
+        error $"Coverage data collection failed: ($err.msg)" --context "coverage-dashboard"
+        {
+            metadata: {
+                generated_at: (date now),
+                generator: "nix-mox coverage dashboard",
+                version: "1.0.0"
+            },
+            error: $err.msg,
+            coverage: { summary: { coverage_percentage: 0, files_analyzed: 0 } },
+            metrics: { test_files: 0, lib_files: 0, coverage_ratio: 0 }
+        }
+    }
 }
 
 def collect_security_data [] {
@@ -870,6 +983,89 @@ def display_testing [data: record, format: string] {
     print ($data | to yaml)
 }
 
+def display_coverage [data: record, format: string] {
+    banner "nix-mox Coverage Dashboard" --context "coverage"
+    print ""
+    
+    if "error" in $data {
+        error $"Coverage collection failed: ($data.error)" --context "coverage"
+        return
+    }
+    
+    # Display coverage summary
+    section "Coverage Summary" --context "coverage"
+    
+    let coverage_pct = ($data.coverage.summary.coverage_percentage | default 0)
+    let files_analyzed = ($data.coverage.summary.files_analyzed | default 0)
+    
+    # Coverage status with color coding
+    let coverage_status = if $coverage_pct >= 80 { 
+        $"✅ ($coverage_pct)% (Excellent)" 
+    } else if $coverage_pct >= 60 { 
+        $"⚠️  ($coverage_pct)% (Good)" 
+    } else if $coverage_pct >= 40 { 
+        $"⚠️  ($coverage_pct)% (Needs Improvement)" 
+    } else { 
+        $"❌ ($coverage_pct)% (Poor)" 
+    }
+    
+    info $"Overall Coverage: ($coverage_status)" --context "coverage"
+    info $"Files Analyzed: ($files_analyzed)" --context "coverage"
+    
+    # Test metrics
+    section "Test Metrics" --context "coverage"
+    info $"Test Files: ($data.metrics.test_files)" --context "coverage"
+    info $"Library Files: ($data.metrics.lib_files)" --context "coverage"
+    info $"Test-to-Library Ratio: ($data.metrics.coverage_ratio)%" --context "coverage"
+    
+    # Report availability
+    section "Available Reports" --context "coverage"
+    let lcov_status = if $data.reports.lcov_available { "✅ Available" } else { "❌ Not Generated" }
+    let json_status = if $data.reports.json_available { "✅ Available" } else { "❌ Not Generated" }
+    let html_status = if $data.reports.html_available { "✅ Available" } else { "❌ Not Generated" }
+    
+    info $"LCOV Report: ($lcov_status)" --context "coverage"
+    info $"JSON Report: ($json_status)" --context "coverage" 
+    info $"HTML Report: ($html_status)" --context "coverage"
+    
+    # Coverage generation status
+    section "Generation Status" --context "coverage"
+    let lcov_gen = if $data.metrics.lcov_status { "✅ Success" } else { "❌ Failed" }
+    let json_gen = if $data.metrics.json_status { "✅ Success" } else { "❌ Failed" }
+    
+    info $"LCOV Generation: ($lcov_gen)" --context "coverage"
+    info $"JSON Generation: ($json_gen)" --context "coverage"
+    
+    # Show file coverage details if available
+    if "files" in $data.coverage {
+        section "File Coverage Details" --context "coverage"
+        
+        let low_coverage = ($data.coverage.files | where { |file|
+            ("error" not in $file) and ($file.lines.coverage_percentage < 60)
+        })
+        
+        if ($low_coverage | length) > 0 {
+            warn "Files with low coverage (<60%):" --context "coverage"
+            for file in $low_coverage {
+                warn $"  ($file.file): ($file.lines.coverage_percentage)%" --context "coverage"
+            }
+        } else {
+            success "All files have good coverage!" --context "coverage"
+        }
+    }
+    
+    # Usage instructions
+    section "Coverage Reports" --context "coverage"
+    info "To generate fresh coverage reports:" --context "coverage"
+    info "  nu coverage.nu lcov     - Generate LCOV report" --context "coverage"
+    info "  nu coverage.nu html     - Generate HTML report" --context "coverage"
+    info "  nu coverage.nu all      - Generate all formats" --context "coverage"
+    
+    if $data.reports.html_available {
+        success "View HTML report: open coverage-tmp/html/index.html" --context "coverage"
+    }
+}
+
 def display_security [data: record, format: string] {
     print "=== Security Dashboard ==="
     print ""
@@ -898,15 +1094,167 @@ def save_dashboard_data [data: record, output_path: string] {
     }
 }
 
+# Size analysis dashboard - package and store size analysis
+def size_dashboard [refresh: int, watch: bool, output: string, format: string] {
+    let data = (collect_size_analysis_data)
+    
+    if $watch {
+        loop {
+            clear
+            display_size_analysis $data $format
+            sleep ($refresh | into duration --unit sec)
+            let data = (collect_size_analysis_data)
+        }
+    } else {
+        display_size_analysis $data $format
+        if $output != "" {
+            save_dashboard_data $data $output $format
+        }
+    }
+}
+
+# Project status dashboard - git, flake, and development status
+def project_dashboard [refresh: int, watch: bool, output: string, format: string] {
+    let data = (collect_project_status_data)
+    
+    if $watch {
+        loop {
+            clear
+            display_project_status $data $format
+            sleep ($refresh | into duration --unit sec)
+            let data = (collect_project_status_data)
+        }
+    } else {
+        display_project_status $data $format
+        if $output != "" {
+            save_dashboard_data $data $output $format
+        }
+    }
+}
+
+# Quick status dashboard - minimal non-interactive status check
+def quick_status_dashboard [] {
+    let system_info = (collect_basic_system_info)
+    let nix_status = (collect_nix_status)
+    let disk_usage = (collect_disk_usage)
+    
+    print "🚀 nix-mox Quick Status"
+    print "======================="
+    print $"System: (($system_info.basic_system.hostname) // 'unknown')"
+    print $"Uptime: (($system_info.basic_system.uptime) // 'unknown')"
+    print $"Nix Generations: (($nix_status.nix_status.generations) // 'unknown')"
+    print $"Disk Usage: (($disk_usage.disk_usage | each { |d| $"($d.mount): ($d.usage_percent)%" } | str join ', ') // 'unknown')"
+    print ""
+}
+
+# Collect size analysis data
+def collect_size_analysis_data [] {
+    collect_data "collect_size_analysis" "collect_package_analysis" "collect_dependency_analysis"
+}
+
+# Collect project status data  
+def collect_project_status_data [] {
+    let git_status = try {
+        let status = (run-external "git" "status" "--porcelain" | complete)
+        let branch = (run-external "git" "branch" "--show-current" | complete | get stdout | str trim)
+        let commits_ahead = (run-external "git" "rev-list" "--count" "origin/main..HEAD" | complete | get stdout | str trim)
+        
+        {
+            branch: $branch,
+            modified_files: ($status.stdout | lines | where { |l| $l | str starts-with " M" } | length),
+            untracked_files: ($status.stdout | lines | where { |l| $l | str starts-with "??" } | length),
+            commits_ahead: $commits_ahead
+        }
+    } catch {
+        { branch: "unknown", modified_files: 0, untracked_files: 0, commits_ahead: 0 }
+    }
+    
+    let flake_status = try {
+        let flake_check = (run-external "nix" "flake" "check" "--no-build" | complete)
+        { valid: ($flake_check.exit_code == 0) }
+    } catch {
+        { valid: false }
+    }
+    
+    {
+        project_status: {
+            git: $git_status,
+            flake: $flake_status,
+            timestamp: (date now | format date "%Y-%m-%d %H:%M:%S")
+        }
+    }
+}
+
+# Display size analysis
+def display_size_analysis [data: record, format: string] {
+    if $format == "json" {
+        $data | to json --indent 2
+    } else {
+        print "📊 Package Size Analysis"
+        print "========================"
+        
+        if "size_analysis" in $data {
+            let analysis = $data.size_analysis
+            if "largest_packages" in $analysis {
+                print "\n📦 Largest Packages:"
+                $analysis.largest_packages | each { |pkg|
+                    print $"  • ($pkg.name): ($pkg.size)"
+                }
+            }
+        }
+        
+        if "dependency_analysis" in $data {
+            print "\n🔗 Dependencies:"
+            let deps = $data.dependency_analysis
+            if "total_dependencies" in $deps {
+                print $"  Total: ($deps.total_dependencies)"
+            }
+        }
+    }
+}
+
+# Display project status
+def display_project_status [data: record, format: string] {
+    if $format == "json" {
+        $data | to json --indent 2
+    } else {
+        print "📁 Project Status Dashboard"
+        print "==========================="
+        
+        if "project_status" in $data {
+            let status = $data.project_status
+            
+            if "git" in $status {
+                print "\n🔀 Git Status:"
+                print $"  Branch: ($status.git.branch)"
+                print $"  Modified: ($status.git.modified_files) files"
+                print $"  Untracked: ($status.git.untracked_files) files"
+                print $"  Commits ahead: ($status.git.commits_ahead)"
+            }
+            
+            if "flake" in $status {
+                print "\n❄️  Flake Status:"
+                print $"  Valid: (if $status.flake.valid { '✅' } else { '❌' })"
+            }
+            
+            print $"\n⏰ Last Updated: ($status.timestamp)"
+        }
+    }
+}
+
 def show_dashboard_help [] {
     format_help "nix-mox dashboard" "Functional dashboard and analysis system" "nu dashboard.nu <view> [options]" [
         { name: "overview", description: "High-level system overview (default)" }
         { name: "system", description: "Detailed system information" }
         { name: "performance", description: "Performance metrics and analysis" }
         { name: "testing", description: "Test results and coverage" }
+        { name: "coverage", description: "Dedicated test coverage dashboard" }
         { name: "security", description: "Security status and threats" }
         { name: "gaming", description: "Gaming system status" }
         { name: "analysis", description: "Comprehensive system analysis" }
+        { name: "size", description: "Package and store size analysis" }
+        { name: "project", description: "Project and git status" }
+        { name: "quick", description: "Quick non-interactive status check" }
     ] [
         { name: "refresh", description: "Refresh interval in seconds (default: 5)" }
         { name: "output", description: "Save data to JSON file" }
