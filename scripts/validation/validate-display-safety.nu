@@ -676,7 +676,7 @@ def check_critical_failures [results: record] {
     let critical_components = ["stage1" "display_manager" "gpu_driver" "config_syntax"]
     
     let has_critical_failure = ($critical_components | any {|component|
-        if ($results | get ?$component | is-not-empty) {
+        if ($results | get $ -ocomponent | is-not-empty) {
             let result = ($results | get $component)
             if ($result | get critical? | default false) {
                 not $result.success
