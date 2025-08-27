@@ -4,23 +4,23 @@
 # Testing targets
 test: check-nushell
 	@echo "🧪 Running all tests..."
-	$(NUSHELL) -c "source scripts/testing/run-tests.nu; run ['--verbose']"
+	$(NUSHELL) scripts/test.nu all --verbose
 
 test-unit: check-nushell
 	@echo "🧪 Running unit tests..."
-	$(NUSHELL) -c "source scripts/testing/run-tests.nu; run ['--unit', '--verbose']"
+	$(NUSHELL) scripts/test.nu unit --verbose
 
 test-integration: check-nushell
 	@echo "🧪 Running integration tests..."
-	$(NUSHELL) -c "source scripts/testing/run-tests.nu; run ['--integration', '--verbose']"
+	$(NUSHELL) scripts/test.nu integration --verbose
 
 test-flake: check-nushell
 	@echo "🧪 Running flake tests..."
-	$(NUSHELL) -c "source scripts/testing/run-tests.nu; run ['--flake', '--verbose']"
+	$(NUSHELL) scripts/test.nu flake --verbose
 
 test-gaming: check-nushell
 	@echo "🧪 Running gaming tests..."
-	$(NUSHELL) -c "source scripts/testing/run-tests.nu; run ['--gaming', '--verbose']"
+	$(NUSHELL) scripts/test.nu gaming --verbose
 
 # Display testing targets
 display-test: check-nushell
@@ -47,20 +47,20 @@ display-test-all: check-nushell
 
 coverage-grcov: check-nushell
 	@echo "📊 Setting up grcov coverage..."
-	$(NUSHELL) -c "source scripts/testing/generate-coverage.nu; run ['--approach', 'grcov', '--verbose']"
+	$(NUSHELL) scripts/coverage.nu generate --approach grcov --verbose
 
 coverage-tarpaulin: check-nushell
 	@echo "📊 Setting up tarpaulin coverage..."
-	$(NUSHELL) -c "source scripts/testing/generate-coverage.nu; run ['--approach', 'tarpaulin', '--verbose']"
+	$(NUSHELL) scripts/coverage.nu generate --approach tarpaulin --verbose
 
 coverage-custom: check-nushell
 	@echo "📊 Setting up custom coverage..."
-	$(NUSHELL) -c "source scripts/testing/generate-coverage.nu; run ['--approach', 'custom', '--verbose']"
+	$(NUSHELL) scripts/coverage.nu generate --approach custom --verbose
 
 coverage-ci: check-nushell
 	@echo "📊 Setting up coverage for CI..."
-	$(NUSHELL) -c "source scripts/testing/generate-coverage.nu; run ['ci_setup_coverage']"
+	$(NUSHELL) scripts/coverage.nu generate --output-dir ./coverage-report --ci
 
 coverage-local: check-nushell
 	@echo "📊 Setting up coverage for local development..."
-	$(NUSHELL) -c "source scripts/testing/generate-coverage.nu; run ['local_setup_coverage']" 
+	$(NUSHELL) scripts/coverage.nu generate --output-dir ./coverage-report 

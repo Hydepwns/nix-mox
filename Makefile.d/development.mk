@@ -71,6 +71,19 @@ storage-health: check-nushell
 	@echo "🏥 Checking storage health..."
 	$(NUSHELL) scripts/storage.nu health-check
 
+# Display troubleshooting
+display-troubleshoot: check-nushell
+	@echo "🖥️  Running display troubleshooting..."
+	$(NUSHELL) scripts/testing/display/kde-display-troubleshoot.nu --verbose
+
+display-fix: check-nushell
+	@echo "🔧 Applying display fixes..."
+	$(NUSHELL) scripts/testing/display/kde-display-troubleshoot.nu --fix --verbose
+
+emergency-display-recovery: check-nushell
+	@echo "🚨 Running emergency display recovery..."
+	$(NUSHELL) scripts/emergency-display-recovery.nu --auto
+
 # Coverage operations
 coverage: check-nushell
 	@echo "📊 Generating LCOV coverage report..."
