@@ -254,7 +254,7 @@ def watch_coverage [include_pattern: string, exclude_pattern: string] {
 # Core coverage collection function
 def collect_coverage_data [include_pattern: string, exclude_pattern: string] {
     let files = (glob $include_pattern | where {|file| 
-        not ($file =~ $exclude_pattern)
+        not ($file | str contains $exclude_pattern)
     })
     
     mut file_coverage = []

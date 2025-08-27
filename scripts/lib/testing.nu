@@ -175,7 +175,7 @@ export def mock_command [command: string, output: string, exit_code: int = 0] {
 
 export def run_mocked [command: string, ...args: string] {
     let mock_key = $"MOCK_($command | str upcase)"
-    let mock_data = ($env | get ?$mock_key)
+    let mock_data = ($env | get $mock_key -o)
     
     if ($mock_data | is-not-empty) {
         {

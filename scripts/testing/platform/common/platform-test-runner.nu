@@ -45,7 +45,7 @@ export def run_platform_tests [
     info $"Target platform: ($target_platform)" --context "platform-tests"
     
     # Get platform test files
-    let test_files = ($PLATFORM_TESTS | get ?$target_platform | default [])
+    let test_files = ($PLATFORM_TESTS | get $ -otarget_platform | default [])
     
     if ($test_files | length) == 0 {
         warn $"No tests defined for platform: ($target_platform)" --context "platform-tests"

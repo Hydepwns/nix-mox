@@ -363,9 +363,9 @@ def run_security_tests [coverage: bool, output: string, parallel: bool, fail_fas
     info "Starting running security tests" --context "security-tests"
     
     let security_tests = [
-        { name: "script_security_scan", func: "test_script_security" },
-        { name: "file_permissions_check", func: "test_file_permissions" },
-        { name: "secret_detection", func: "test_secret_detection" }
+        { name: "script_security_scan", func: { test_script_security } },
+        { name: "file_permissions_check", func: { test_file_permissions } },
+        { name: "secret_detection", func: { test_secret_detection } }
     ]
     
     let results = (test_suite "security_tests" $security_tests --parallel $parallel --fail-fast $fail_fast)
@@ -380,9 +380,9 @@ def run_performance_tests [coverage: bool, output: string, parallel: bool, fail_
     info "Starting running performance tests" --context "performance-tests"
     
     let performance_tests = [
-        { name: "logging_performance", func: "benchmark_logging_performance" },
-        { name: "validation_performance", func: "benchmark_validation_performance" },
-        { name: "platform_detection_performance", func: "benchmark_platform_detection" }
+        { name: "logging_performance", func: { benchmark_logging_performance } },
+        { name: "validation_performance", func: { benchmark_validation_performance } },
+        { name: "platform_detection_performance", func: { benchmark_platform_detection } }
     ]
     
     let benchmark_results = ($performance_tests | each { |test|
@@ -863,8 +863,11 @@ def test_file_permissions [] {
     
     # Check that script files have reasonable permissions
     for file in $script_files {
-        let perms = (ls -la $file | get mode | get 0)
-        assert (not ($perms | str contains "w" and $perms | str contains "o")) "Scripts should not be world-writable"
+        let file_info = (ls -la $file | get 0)
+        let perms = $file_info.mode
+        let has_world_write = ($perms | str contains "w")
+        let has_other_write = ($perms | str contains "o")
+        assert (not ($has_world_write and $has_other_write)) "Scripts should not be world-writable"
     }
     
     { success: true, message: "file permissions check test passed" }

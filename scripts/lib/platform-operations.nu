@@ -19,13 +19,13 @@ def execute_platform_operation [
     info $"Starting ($operation_name) on ($platform.normalized)" --context $context
     
     # Get platform-specific operation
-    let operation = ($operations | get ?$platform.normalized)
+    let operation = ($operations | get $platform.normalized -o)
     if ($operation | is-not-empty) {
         debug $"Executing ($operation_name) for ($platform.normalized)" --context $context
         do $operation
     } else {
         # Try default operation
-        let default_op = ($operations | get ?"default")
+        let default_op = ($operations | get "default" -o)
         if ($default_op | is-not-empty) {
             warn $"Using default operation for unsupported platform: ($platform.normalized)" --context $context
             do $default_op
@@ -59,8 +59,8 @@ export def install_pipeline [
     }
     let result = (execute_platform_operation $operations "install")
     
-    if ($result | get success? | default true) {
-        # Post-installation verification
+    if ($result | get success -o | default true) {
+        # Post-onstallation verification
         if ($post_install | is-not-empty) {
             do $post_install
         }
@@ -95,7 +95,7 @@ export def uninstall_pipeline [
     }
     let result = (execute_platform_operation $operations "uninstall")
     
-    if ($result | get success? | default true) {
+    if ($result | get success -o | default true) {
         # Post-uninstallation cleanup
         if ($post_uninstall | is-not-empty) {
             do $post_uninstall
@@ -134,13 +134,13 @@ def install_on_linux [package: string] {
             nix_command "profile" --extra-args ["install" $package]
         },
         "apt" => {
-            execute_command ["sudo" "apt" "install" "-y" $package] --context "apt-install"
+            execute_command ["sudo" "apt" "install" "-y" $package] --context "apt-onstall"
         },
         "yum" => {
-            execute_command ["sudo" "yum" "install" "-y" $package] --context "yum-install"
+            execute_command ["sudo" "yum" "install" "-y" $package] --context "yum-onstall"
         },
         "pacman" => {
-            execute_command ["sudo" "pacman" "-S" "--noconfirm" $package] --context "pacman-install"
+            execute_command ["sudo" "pacman" "-S" "--noconfirm" $package] --context "pacman-onstall"
         },
         _ => {
             error make { msg: $"No supported package manager found for ($package)" }
@@ -156,10 +156,10 @@ def install_on_macos [package: string] {
             nix_command "profile" --extra-args ["install" $package]
         },
         "brew" => {
-            execute_command ["brew" "install" $package] --context "brew-install"
+            execute_command ["brew" "install" $package] --context "brew-onstall"
         },
         "macports" => {
-            execute_command ["sudo" "port" "install" $package] --context "macports-install"
+            execute_command ["sudo" "port" "install" $package] --context "macports-onstall"
         },
         _ => {
             error make { msg: $"No supported package manager found for ($package)" }
@@ -175,13 +175,13 @@ def install_on_windows [package: string] {
             nix_command "profile" --extra-args ["install" $package]
         },
         "chocolatey" => {
-            execute_command ["choco" "install" "-y" $package] --context "choco-install"
+            execute_command ["choco" "install" "-y" $package] --context "choco-onstall"
         },
         "scoop" => {
-            execute_command ["scoop" "install" $package] --context "scoop-install"
+            execute_command ["scoop" "install" $package] --context "scoop-onstall"
         },
         "winget" => {
-            execute_command ["winget" "install" $package] --context "winget-install"
+            execute_command ["winget" "install" $package] --context "winget-onstall"
         },
         _ => {
             error make { msg: $"No supported package manager found for ($package)" }
@@ -380,8 +380,16 @@ def cleanup_temp_files [] {
             let files = (glob $pattern)
             for file in $files {
                 if ($file | path exists) {
-                    rm -f $file
-                    $cleaned = ($cleaned | append $file)
+                    try {
+                        if ($file | path type) == "dir" {
+                            rm -rf $file
+                        } else {
+                            rm -f $file
+                        }
+                        $cleaned = ($cleaned | append $file)
+                    } catch {
+                        # Ignore errors for individual file cleanup
+                    }
                 }
             }
         } catch {
