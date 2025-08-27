@@ -13,6 +13,31 @@
 - User account: `hydepwns` (primary user)
 - Basic shell access (no additional packages required initially)
 
+### ⚠️ **CRITICAL: KDE Plasma 6 + NVIDIA Display Issues**
+If you experience **lock screen reset loops** or **black screen issues** after rebuild:
+
+```bash
+# Emergency recovery - run from TTY (Ctrl+Alt+F2)
+cd /path/to/nix-mox
+nix develop --command nu scripts/emergency-display-recovery.nu --auto
+
+# Or use the Makefile shortcuts
+make emergency-display-recovery     # Auto recovery
+make display-troubleshoot          # Diagnose issues  
+make display-fix                   # Apply fixes
+```
+
+**Known Issues on NixOS 25.11:**
+- KDE Plasma 6 + NVIDIA drivers have compatibility problems
+- Wayland sessions may fail with NVIDIA proprietary drivers
+- Lock screen may reset to login screen repeatedly
+
+**Solutions implemented in this config:**
+- Automatic X11 forcing (no Wayland)
+- NVIDIA beta drivers for better Plasma 6 support
+- Display manager fixes for SDDM + NVIDIA
+- Emergency recovery scripts for when GUI fails
+
 ### Installation
 
 ```bash

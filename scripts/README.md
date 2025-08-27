@@ -226,6 +226,8 @@ if $health.healthy {
 - **Health Check**: `scripts/maintenance/health-check.nu` - System health
 - **Safe Rebuild**: `scripts/maintenance/safe-rebuild.nu` - Safe system rebuild
 - **Validate Config**: `scripts/validation/validate-config.nu` - Configuration validation
+- **Display Troubleshoot**: `scripts/testing/display/kde-display-troubleshoot.nu` - KDE+NVIDIA display issues
+- **Emergency Recovery**: `scripts/emergency-display-recovery.nu` - Emergency display recovery
 
 ### Setup Scripts
 - **Unified Setup**: `scripts/setup/unified-setup.nu` - Complete setup
@@ -241,6 +243,7 @@ if $health.healthy {
 - **Run Tests**: `scripts/testing/run-tests.nu` - Test runner
 - **Setup Coverage**: `scripts/testing/setup-coverage.nu` - Coverage setup
 - **Unit Tests**: `scripts/testing/unit/` - Unit test suite
+- **Display Tests**: `scripts/testing/display/` - Display and KDE testing tools
 
 ## Development
 
@@ -273,6 +276,42 @@ nu scripts/maintenance/health-check.nu --verbose
 # Check script syntax
 nu -c "source scripts/your-script.nu"
 ```
+
+## Display Troubleshooting (KDE Plasma 6 + NVIDIA)
+
+### Emergency Situation
+If you can't get past the lock screen after rebuild:
+
+```bash
+# From TTY (Ctrl+Alt+F2):
+cd /path/to/nix-mox
+nix develop --command nu scripts/emergency-display-recovery.nu --auto
+```
+
+### Diagnostic Tools
+```bash
+# Diagnose display issues
+nu scripts/testing/display/kde-display-troubleshoot.nu --verbose
+
+# Apply automatic fixes
+nu scripts/testing/display/kde-display-troubleshoot.nu --fix --verbose
+
+# Pre-rebuild validation 
+nu scripts/testing/display/kde-display-troubleshoot.nu --pre-rebuild --verbose
+```
+
+### Common Issues
+- **KDE Plasma 6 + NVIDIA compatibility problems** on NixOS 25.11
+- **Wayland sessions failing** with NVIDIA proprietary drivers
+- **Lock screen reset loops** after login
+- **Black screen issues** with SDDM display manager
+
+### Prevention
+The configuration includes automatic fixes:
+- Forces X11 sessions (disables Wayland)
+- Uses NVIDIA beta drivers for better Plasma 6 support
+- Configures SDDM with NVIDIA-specific settings
+- Adds systemd services for display recovery
 
 ## Best Practices
 
