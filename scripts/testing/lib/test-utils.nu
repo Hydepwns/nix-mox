@@ -11,7 +11,7 @@ use ../../lib/logging.nu *
 # --- Environment Setup ---
 export def setup_test_env [] {
     # Set up test environment variables
-    $env.TEST_TEMP_DIR = ($env | get -o TEMP | default "coverage-tmp") + "/nix-mox-tests"
+    $env.TEST_TEMP_DIR = ($env | get TEMP? | default "coverage-tmp") + "/nix-mox-tests"
     $env.TEST_LOG_FILE = $env.TEST_TEMP_DIR + "/test.log"
 
     # Ensure test directory exists
@@ -29,14 +29,14 @@ export def setup_test_env [] {
 
 # --- Assertion Functions ---
 export def assert_true [condition: bool, message: string = ""] {
-    let green = ($env | get -o GREEN | default (ansi green))
-    let nc = ($env | get -o NC | default (ansi reset))
+    let green = ($env | get GREEN? | default (ansi green))
+    let nc = ($env | get NC? | default (ansi reset))
 
     if $condition {
         print $"($green)✓ PASS: ($message)($nc)"
         true
     } else {
-        let red = ($env | get -o RED | default (ansi red))
+        let red = ($env | get RED? | default (ansi red))
         print $"($red)✗ FAIL: ($message)($nc)"
         false
     }
@@ -47,9 +47,9 @@ export def assert_false [condition: bool, message: string = ""] {
 }
 
 export def assert_equal [actual: any, expected: any, message: string = ""] {
-    let green = ($env | get -o GREEN | default (ansi green))
-    let red = ($env | get -o RED | default (ansi red))
-    let nc = ($env | get -o NC | default (ansi reset))
+    let green = ($env | get GREEN? | default (ansi green))
+    let red = ($env | get RED? | default (ansi red))
+    let nc = ($env | get NC? | default (ansi reset))
 
     let result = ($actual == $expected)
     if $result {
@@ -62,9 +62,9 @@ export def assert_equal [actual: any, expected: any, message: string = ""] {
 }
 
 export def assert_not_equal [actual: any, expected: any, message: string = ""] {
-    let green = ($env | get -o GREEN | default (ansi green))
-    let red = ($env | get -o RED | default (ansi red))
-    let nc = ($env | get -o NC | default (ansi reset))
+    let green = ($env | get GREEN? | default (ansi green))
+    let red = ($env | get RED? | default (ansi red))
+    let nc = ($env | get NC? | default (ansi reset))
 
     let result = ($actual != $expected)
     if $result {
@@ -77,9 +77,9 @@ export def assert_not_equal [actual: any, expected: any, message: string = ""] {
 }
 
 export def assert_contains [haystack: string, needle: string, message: string = ""] {
-    let green = ($env | get -o GREEN | default (ansi green))
-    let red = ($env | get -o RED | default (ansi red))
-    let nc = ($env | get -o NC | default (ansi reset))
+    let green = ($env | get GREEN? | default (ansi green))
+    let red = ($env | get RED? | default (ansi red))
+    let nc = ($env | get NC? | default (ansi reset))
 
     let result = ($haystack | str contains $needle)
     if $result {
@@ -92,9 +92,9 @@ export def assert_contains [haystack: string, needle: string, message: string = 
 }
 
 export def assert_empty [value: any, message: string = ""] {
-    let green = ($env | get -o GREEN | default (ansi green))
-    let red = ($env | get -o RED | default (ansi red))
-    let nc = ($env | get -o NC | default (ansi reset))
+    let green = ($env | get GREEN? | default (ansi green))
+    let red = ($env | get RED? | default (ansi red))
+    let nc = ($env | get NC? | default (ansi reset))
 
     let result = ($value | is-empty)
     if $result {
@@ -107,9 +107,9 @@ export def assert_empty [value: any, message: string = ""] {
 }
 
 export def assert_not_empty [value: any, message: string = ""] {
-    let green = ($env | get -o GREEN | default (ansi green))
-    let red = ($env | get -o RED | default (ansi red))
-    let nc = ($env | get -o NC | default (ansi reset))
+    let green = ($env | get GREEN? | default (ansi green))
+    let red = ($env | get RED? | default (ansi red))
+    let nc = ($env | get NC? | default (ansi reset))
 
     let result = (not ($value | is-empty))
     if $result {
@@ -154,7 +154,7 @@ export def track_test [name: string, category: string, status: string, duration:
     }
 
     # Create the test temp directory if it doesn't exist
-    let test_temp_dir = ($env | get -o TEST_TEMP_DIR | default "coverage-tmp/nix-mox-tests");
+    let test_temp_dir = ($env | get TEST_TEMP_DIR? | default "coverage-tmp/nix-mox-tests");
     if not ($test_temp_dir | path exists) {
         mkdir $test_temp_dir
     }
@@ -263,10 +263,10 @@ export def run_all_tests [] {
 
 # --- Core Test Functions ---
 export def test_retry [max_attempts: int, delay: int, test_func: closure, expected_result: bool] {
-    let green = ($env | get -o GREEN | default (ansi green))
-    let yellow = ($env | get -o YELLOW | default (ansi yellow))
-    let red = ($env | get -o RED | default (ansi red))
-    let nc = ($env | get -o NC | default (ansi reset))
+    let green = ($env | get GREEN? | default (ansi green))
+    let yellow = ($env | get YELLOW? | default (ansi yellow))
+    let red = ($env | get RED? | default (ansi red))
+    let nc = ($env | get NC? | default (ansi reset))
     
     mut attempt = 1
     mut last_result = null
@@ -294,9 +294,9 @@ export def test_retry [max_attempts: int, delay: int, test_func: closure, expect
 }
 
 export def test_logging [level: string, message: string, expected_output: string] {
-    let green = ($env | get -o GREEN | default (ansi green))
-    let red = ($env | get -o RED | default (ansi red))
-    let nc = ($env | get -o NC | default (ansi reset))
+    let green = ($env | get GREEN? | default (ansi green))
+    let red = ($env | get RED? | default (ansi red))
+    let nc = ($env | get NC? | default (ansi reset))
     
     let log_prefix = match $level {
         "DEBUG" => "[DEBUG] ",
@@ -316,9 +316,9 @@ export def test_logging [level: string, message: string, expected_output: string
 }
 
 export def test_config_validation [config_value: string, error_message: string] {
-    let green = ($env | get -o GREEN | default (ansi green))
-    let red = ($env | get -o RED | default (ansi red))
-    let nc = ($env | get -o NC | default (ansi reset))
+    let green = ($env | get GREEN? | default (ansi green))
+    let red = ($env | get RED? | default (ansi red))
+    let nc = ($env | get NC? | default (ansi reset))
     
     if ($config_value | is-empty) {
         print $"($red)✗ FAIL: test_config_validation - ($error_message)($nc)"

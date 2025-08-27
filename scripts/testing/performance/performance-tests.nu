@@ -18,7 +18,7 @@ def main [] {
     setup_test_env
 
     # Ensure TEST_TEMP_DIR is set
-    if not ($env | get -o TEST_TEMP_DIR | is-not-empty) {
+    if not ($env | get TEST_TEMP_DIR? | is-not-empty) {
         $env.TEST_TEMP_DIR = "coverage-tmp/nix-mox-tests"
     }
 
@@ -196,12 +196,12 @@ def generate_performance_report [results: record] {
         let status = (if $test_result.success { "(ansi green)✅" } else { "(ansi red)❌" })
         print $"($status) ($test_name): ($test_result.duration | into string -d 3)s"
         
-        if ($test_result | get -o results | is-not-empty) {
+        if ($test_result | get results? | is-not-empty) {
             $test_result.results | transpose key value | each { |subrow|
                 let subtest_name = $subrow.key
                 let subtest_result = $subrow.value
                 let sub_status = (if $subtest_result.success { "(ansi green)  ✓" } else { "(ansi red)  ✗" })
-                let duration_str = if ($subtest_result | get -o duration | is-not-empty) {
+                let duration_str = if ($subtest_result | get duration? | is-not-empty) {
                     $"($subtest_result.duration | into string -d 3)s"
                 } else {
                     "N/A"

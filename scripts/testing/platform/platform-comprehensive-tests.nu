@@ -374,7 +374,7 @@ export def test_platform_environment_validation [] {
     mut env_vars_available = 0
     
     for var in $required_env_vars {
-        if ($env | get -o $var | is-not-empty) {
+        if ($env | get ?$var | is-not-empty) {
             $env_vars_available += 1
         }
     }

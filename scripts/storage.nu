@@ -114,8 +114,8 @@ def fix_storage_config [backup: bool, dry_run: bool] {
             }
             { 
                 name: $fix.name, 
-                success: ($result | get -o success | default true),
-                message: ($result | get -o message | default "completed"),
+                success: ($result | get success? | default true),
+                message: ($result | get message? | default "completed"),
                 dry_run: $dry_run
             }
         } catch { |err|
@@ -171,9 +171,9 @@ def auto_update_storage [backup: bool, dry_run: bool] {
         { success: true, message: "dry run - validation skipped" }
     }
     
-    let overall_success = (($hw_config_result | get -o success | default true) and 
-                          ($fs_config_result | get -o success | default true) and
-                          ($validation_result | get -o success | default true))
+    let overall_success = (($hw_config_result | get success? | default true) and 
+                          ($fs_config_result | get success? | default true) and
+                          ($validation_result | get success? | default true))
     
     {
         success: $overall_success,
@@ -323,13 +323,23 @@ def validate_boot_loader_config [] {
     }
     
     try {
-        # Check for GRUB configuration
-        if ("/boot/grub/grub.cfg" | path exists) {
-            validation_result true "GRUB configuration found"
-        } else if ("/boot/loader" | path exists) {
-            validation_result true "systemd-boot configuration found"
+        # Check bootctl status for systemd-boot
+        let bootctl_check = (bootctl status | complete)
+        
+        # If bootctl command exists and shows systemd-boot info (even with permissions error)
+        if ($bootctl_check.stdout | str contains "systemd-boot") {
+            validation_result true "Boot loader configuration found (systemd-boot)"
+        } else if ($bootctl_check.exit_code == 0) {
+            validation_result true "Boot loader accessible via bootctl"
         } else {
-            validation_result false "No boot loader configuration found"
+            # Fallback to file checks for GRUB
+            if ("/boot/grub/grub.cfg" | path exists) {
+                validation_result true "GRUB configuration found"
+            } else if ("/boot/loader" | path exists) {
+                validation_result true "systemd-boot configuration found"
+            } else {
+                validation_result false "No boot loader configuration found"
+            }
         }
     } catch {
         validation_result false "Failed to validate boot loader configuration"
@@ -588,9 +598,9 @@ def storage_health_check [] {
             }
             {
                 name: $check.name,
-                healthy: ($result | get -o healthy | default true),
-                message: ($result | get -o message | default "OK"),
-                details: ($result | get -o details | default {})
+                healthy: ($result | get healthy? | default true),
+                message: ($result | get message? | default "OK"),
+                details: ($result | get details? | default {})
             }
         } catch { |err|
             {

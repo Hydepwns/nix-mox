@@ -37,7 +37,7 @@ export def run_test [test_name: string, test_func: closure, --timeout: duration 
         # Determine success based on result type
         let success = match ($result | describe) {
             "bool" => $result,
-            "record" => ($result | get -o success | default true),
+            "record" => ($result | get success? | default true),
             _ => true
         }
         
@@ -128,12 +128,12 @@ export def test_suite [
     let results = if $parallel {
         # Run tests in parallel
         $tests | par-each { |test|
-            run_test $test.name $test.func --timeout ($test | get -o timeout | default $timeout)
+            run_test $test.name $test.func --timeout ($test | get timeout? | default $timeout)
         }
     } else {
         # Run tests sequentially
         $tests | reduce --fold [] { |test, acc|
-            let result = (run_test $test.name $test.func --timeout ($test | get -o timeout | default $timeout))
+            let result = (run_test $test.name $test.func --timeout ($test | get timeout? | default $timeout))
             let new_acc = ($acc | append $result)
             
             if $fail_fast and (not $result.success) {
@@ -175,7 +175,7 @@ export def mock_command [command: string, output: string, exit_code: int = 0] {
 
 export def run_mocked [command: string, ...args: string] {
     let mock_key = $"MOCK_($command | str upcase)"
-    let mock_data = ($env | get -o $mock_key)
+    let mock_data = ($env | get ?$mock_key)
     
     if ($mock_data | is-not-empty) {
         {
@@ -206,7 +206,7 @@ export def setup_test_environment [
 
 # Cleanup test environment
 export def cleanup_test_environment [] {
-    let test_dir = ($env | get -o NIX_MOX_TEST_DIR | default "coverage-tmp/nix-mox-tests")
+    let test_dir = ($env | get NIX_MOX_TEST_DIR? | default "coverage-tmp/nix-mox-tests")
     
     if ($test_dir | path exists) {
         rm -rf $test_dir

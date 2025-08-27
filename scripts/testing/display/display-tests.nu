@@ -50,7 +50,7 @@ export def main [] {
     $env.LAST_ERROR = ""
     
     # Ensure TEST_TEMP_DIR is set
-    if not ($env | get -o TEST_TEMP_DIR | is-not-empty) {
+    if not ($env | get TEST_TEMP_DIR? | is-not-empty) {
         $env.TEST_TEMP_DIR = "coverage-tmp/nix-mox-tests"
     }
 
@@ -216,9 +216,9 @@ export def quick_test [] {
 
 # Test runner for CI/CD
 export def run_tests [] {
-    if ($env | get -o INTERACTIVE | default "false") == "true" {
+    if ($env | get INTERACTIVE? | default "false") == "true" {
         interactive_mode
-    } else if ($env | get -o QUICK | default "false") == "true" {
+    } else if ($env | get QUICK? | default "false") == "true" {
         quick_test
     } else {
         main

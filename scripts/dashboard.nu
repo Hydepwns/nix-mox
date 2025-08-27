@@ -479,7 +479,7 @@ def collect_recent_activity [] {
         {
             activity: {
                 recent_commits: ($git_activity.stdout | lines | length),
-                last_commit: ($git_activity.stdout | lines | get -o 0 | default "none")
+                last_commit: ($git_activity.stdout | lines | get ?0 | default "none")
             }
         }
     } catch {
@@ -565,8 +565,8 @@ def collect_top_processes [sort_by: string] {
 def collect_environment_info [] {
     {
         environment: {
-            shell: ($env | get -o SHELL | default "unknown" | path basename),
-            user: ($env | get -o USER | default "unknown"),
+            shell: ($env | get SHELL? | default "unknown" | path basename),
+            user: ($env | get USER? | default "unknown"),
             is_ci: (is_ci),
             is_docker: (is_docker),
             is_wsl: (is_wsl)
@@ -690,10 +690,10 @@ def collect_test_results [] {
             
             {
                 testing: {
-                    last_run: ($test_data | get -o timestamp | default "unknown"),
-                    total_tests: ($test_data | get -o total | default 0),
-                    passed: ($test_data | get -o passed | default 0),
-                    failed: ($test_data | get -o failed | default 0)
+                    last_run: ($test_data | get timestamp? | default "unknown"),
+                    total_tests: ($test_data | get total? | default 0),
+                    passed: ($test_data | get passed? | default 0),
+                    failed: ($test_data | get failed? | default 0)
                 }
             }
         } catch {
@@ -714,9 +714,9 @@ def collect_coverage_data [] {
             
             {
                 coverage: {
-                    percentage: ($coverage_data | get -o percentage | default 0),
-                    lines_covered: ($coverage_data | get -o lines_covered | default 0),
-                    total_lines: ($coverage_data | get -o total_lines | default 0)
+                    percentage: ($coverage_data | get percentage? | default 0),
+                    lines_covered: ($coverage_data | get lines_covered? | default 0),
+                    total_lines: ($coverage_data | get total_lines? | default 0)
                 }
             }
         } catch {
@@ -774,7 +774,7 @@ def collect_gpu_info [] {
             {
                 gaming: {
                     gpu_detected: ($gpu_info.exit_code == 0),
-                    gpu_info: ($gpu_info.stdout | lines | get -o 0 | default "unknown"),
+                    gpu_info: ($gpu_info.stdout | lines | get ?0 | default "unknown"),
                     nvidia_available: (which nvidia-smi | is-not-empty),
                     gpu_usage: ($nvidia_smi.stdout | default "not available")
                 }
@@ -809,7 +809,7 @@ def collect_audio_status [] {
         {
             audio: {
                 systems_available: $available,
-                primary: ($available | get -o 0 | default "none")
+                primary: ($available | get ?0 | default "none")
             }
         }
     } else {
@@ -940,8 +940,8 @@ def display_overview [data: record, format: string] {
     if "disk" in $data and "memory" in $data {
         let disk = ($data | get disk)
         let memory = ($data | get memory)
-        $stats = ($stats | append {metric: "disk", value: ($disk | get -o root_used | default 'unknown')})
-        $stats = ($stats | append {metric: "memory", value: $"($memory | get -o usage_percent | default 'unknown')%"})
+        $stats = ($stats | append {metric: "disk", value: ($disk | get root_used? | default 'unknown')})
+        $stats = ($stats | append {metric: "memory", value: $"($memory | get usage_percent? | default 'unknown')%"})
     }
     
     # Services

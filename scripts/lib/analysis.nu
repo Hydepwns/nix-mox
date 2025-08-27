@@ -466,8 +466,8 @@ def generate_analysis_report [data: record] {
         
         if "nix_info" in ($sys | default {}) {
             let nix = ($sys | get nix_info)
-            let version = ($nix | get -o version | default 'unknown' | str substring 0..15)
-            let health = ($nix | get -o store_health | default 'unknown')
+            let version = ($nix | get version? | default 'unknown' | str substring 0..15)
+            let health = ($nix | get store_health? | default 'unknown')
             $stats = ($stats | append {metric: "nix", value: $version, status: ""})
             $stats = ($stats | append {metric: "store", value: $health, status: ""})
         }
@@ -479,8 +479,8 @@ def generate_analysis_report [data: record] {
         
         if "nix_store" in $packages {
             let store = ($packages | get nix_store)
-            let size = ($store | get -o total_size | default 'unknown')
-            let count = ($store | get -o package_count | default 0)
+            let size = ($store | get total_size? | default 'unknown')
+            let count = ($store | get package_count? | default 0)
             $stats = ($stats | append {metric: "store-size", value: $size, status: ""})
             $stats = ($stats | append {metric: "packages", value: $count, status: ""})
         }
@@ -501,9 +501,9 @@ def generate_analysis_report [data: record] {
         
         if "file_metrics" in $quality {
             let metrics = ($quality | get file_metrics)
-            let files = ($metrics | get -o total_files | default 0)
-            let lines = ($metrics | get -o total_lines | default 0)
-            let avg = ($metrics | get -o avg_lines_per_file | default 0)
+            let files = ($metrics | get total_files? | default 0)
+            let lines = ($metrics | get total_lines? | default 0)
+            let avg = ($metrics | get avg_lines_per_file? | default 0)
             
             $stats = ($stats | append {metric: "files", value: $files, status: ""})
             $stats = ($stats | append {metric: "lines", value: $lines, status: ""})
@@ -515,8 +515,8 @@ def generate_analysis_report [data: record] {
             let complexity = ($quality | get complexity)
             if "functions" in $complexity {
                 let functions = ($complexity | get functions)
-                let total = ($functions | get -o total | default 0)
-                let exported = ($functions | get -o exported | default 0)
+                let total = ($functions | get total? | default 0)
+                let exported = ($functions | get exported? | default 0)
                 
                 if $total > 0 {
                     let ratio = ($exported * 100 / $total | math round)
@@ -534,14 +534,14 @@ def generate_analysis_report [data: record] {
         
         if "dangerous_patterns" in $security {
             let patterns = ($security | get dangerous_patterns)
-            let count = ($patterns | get -o total_issues | default 0)
+            let count = ($patterns | get total_issues? | default 0)
             let status = if $count > 0 { "review needed" } else { "ok" }
             $stats = ($stats | append {metric: "dangerous", value: $"($count) patterns", status: $status})
         }
         
         if "secret_exposure" in $security {
             let secrets = ($security | get secret_exposure)
-            let count = ($secrets | get -o potential_secrets | default 0)
+            let count = ($secrets | get potential_secrets? | default 0)
             let status = if $count > 0 { "secure needed" } else { "ok" }
             $stats = ($stats | append {metric: "secrets", value: $"($count) potential", status: $status})
         }
@@ -550,7 +550,7 @@ def generate_analysis_report [data: record] {
             let perms = ($security | get file_permissions)
             if "executable_count" in $perms {
                 let exec_count = ($perms | get executable_count)
-                let total_count = ($perms | get -o total_files | default 0)
+                let total_count = ($perms | get total_files? | default 0)
                 if $total_count > 0 {
                     let ratio = ($exec_count * 100 / $total_count | math round)
                     $stats = ($stats | append {metric: "executable", value: $"($exec_count)/($total_count) (($ratio)%)", status: ""})
@@ -560,9 +560,9 @@ def generate_analysis_report [data: record] {
     }
     
     # Performance (if available)
-    if "performance" in $data and ($data.performance | get -o note | default "") != "benchmarks not included" {
+    if "performance" in $data and ($data.performance | get note? | default "") != "benchmarks not included" {
         let perf = ($data | get performance)
-        let iterations = ($perf | get -o iterations | default 0)
+        let iterations = ($perf | get iterations? | default 0)
         $stats = ($stats | append {metric: "benchmark", value: $"($iterations) iterations", status: "completed"})
     }
     
@@ -610,7 +610,7 @@ def generate_action_items [data: record] {
     mut actions = []
     
     if "packages" in $data {
-        let gen_count = ($data | get packages | get -o generations.count | default 0)
+        let gen_count = ($data | get packages | get generations?.count | default 0)
         if $gen_count > 10 {
             $actions = ($actions | append "clean old generations")
         }
@@ -618,15 +618,15 @@ def generate_action_items [data: record] {
     
     if "security" in $data {
         let security = ($data | get security)
-        let issues = ($security | get -o dangerous_patterns.total_issues | default 0)
-        let secrets = ($security | get -o secret_exposure.potential_secrets | default 0)
+        let issues = ($security | get dangerous_patterns?.total_issues | default 0)
+        let secrets = ($security | get secret_exposure?.potential_secrets | default 0)
         
         if $issues > 0 { $actions = ($actions | append "review dangerous patterns") }
         if $secrets > 0 { $actions = ($actions | append "secure exposed credentials") }
     }
     
     if "code_quality" in $data {
-        let avg_lines = ($data | get code_quality | get -o file_metrics.avg_lines_per_file | default 0)
+        let avg_lines = ($data | get code_quality | get file_metrics?.avg_lines_per_file | default 0)
         if $avg_lines > 200 {
             $actions = ($actions | append "refactor large files")
         }

@@ -106,10 +106,10 @@ def test_get_platform_info [] {
 
     track_test "get_platform_info_basic" "unit" "passed" 0.1
     let platform_info = (sys host)
-    assert_true ($platform_info | get -o name | is-not-empty) "Platform info contains name"
-    assert_true ($platform_info | get -o os_version | is-not-empty) "Platform info contains os_version"
-    assert_true ($platform_info | get -o long_os_version | is-not-empty) "Platform info contains long_os_version"
-    assert_true ($platform_info | get -o kernel_version | is-not-empty) "Platform info contains kernel_version"
+    assert_true ($platform_info | get name? | is-not-empty) "Platform info contains name"
+    assert_true ($platform_info | get os_version? | is-not-empty) "Platform info contains os_version"
+    assert_true ($platform_info | get long_os_version? | is-not-empty) "Platform info contains long_os_version"
+    assert_true ($platform_info | get kernel_version? | is-not-empty) "Platform info contains kernel_version"
 }
 
 def test_detect_platform_requirements [] {
@@ -238,6 +238,6 @@ def main [] {
     print "Platform module unit tests completed successfully"
 }
 
-if ($env | get -o NU_TEST | default "false") == "true" {
+if ($env | get NU_TEST? | default "false") == "true" {
     main
 }

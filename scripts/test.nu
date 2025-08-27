@@ -70,7 +70,7 @@ def main [
     cleanup_test_environment
     
     # Exit with appropriate code based on test results
-    if not ($results | get -o success | default false) {
+    if not ($results | get success? | default false) {
         exit 1
     }
     
@@ -121,7 +121,7 @@ def run_all_tests [coverage: bool, output: string, parallel: bool, fail_fast: bo
             }
             {
                 suite: $suite.name,
-                success: ($result | get -o success | default false),
+                success: ($result | get success? | default false),
                 results: $result
             }
         } catch { |err|
@@ -956,10 +956,10 @@ def generate_test_report [results: record, output_dir: string] {
             version: "2.0.0"
         },
         summary: {
-            success: ($results | get -o success | default false),
-            total_suites: ($results | get -o total_suites | default 1),
-            passed_suites: ($results | get -o passed_suites | default 0),
-            failed_suites: ($results | get -o failed_suites | default 0)
+            success: ($results | get success? | default false),
+            total_suites: ($results | get total_suites? | default 1),
+            passed_suites: ($results | get passed_suites? | default 0),
+            failed_suites: ($results | get failed_suites? | default 0)
         },
         results: $results
     }

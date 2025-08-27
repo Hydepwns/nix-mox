@@ -19,13 +19,13 @@ def execute_platform_operation [
     info $"Starting ($operation_name) on ($platform.normalized)" --context $context
     
     # Get platform-specific operation
-    let operation = ($operations | get -o $platform.normalized)
+    let operation = ($operations | get ?$platform.normalized)
     if ($operation | is-not-empty) {
         debug $"Executing ($operation_name) for ($platform.normalized)" --context $context
         do $operation
     } else {
         # Try default operation
-        let default_op = ($operations | get -o "default")
+        let default_op = ($operations | get ?"default")
         if ($default_op | is-not-empty) {
             warn $"Using default operation for unsupported platform: ($platform.normalized)" --context $context
             do $default_op
@@ -59,7 +59,7 @@ export def install_pipeline [
     }
     let result = (execute_platform_operation $operations "install")
     
-    if ($result | get -o success | default true) {
+    if ($result | get success? | default true) {
         # Post-installation verification
         if ($post_install | is-not-empty) {
             do $post_install
@@ -95,7 +95,7 @@ export def uninstall_pipeline [
     }
     let result = (execute_platform_operation $operations "uninstall")
     
-    if ($result | get -o success | default true) {
+    if ($result | get success? | default true) {
         # Post-uninstallation cleanup
         if ($post_uninstall | is-not-empty) {
             do $post_uninstall

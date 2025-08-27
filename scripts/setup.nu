@@ -163,7 +163,7 @@ def gather_user_preferences [component: string] {
         chezmoi: $chezmoi_enabled,
         components: $components,
         platform: $platform_info.normalized,
-        user: ($env | get -o USER | default "unknown")
+        user: ($env | get USER? | default "unknown")
     }
 }
 
@@ -172,9 +172,9 @@ def show_setup_plan [config: record, component: string] {
     info "Setup Plan:" --context "setup"
     info $"  Platform: ($config.platform)" --context "setup"
     info $"  Components: ($config.components | str join ', ')" --context "setup"
-    info $"  Gaming: ($config | get -o gaming | default false)" --context "setup"
-    info $"  Development: ($config | get -o development | default false)" --context "setup"
-    info $"  Chezmoi: ($config | get -o chezmoi | default false)" --context "setup"
+    info $"  Gaming: ($config | get gaming? | default false)" --context "setup"
+    info $"  Development: ($config | get development? | default false)" --context "setup"
+    info $"  Chezmoi: ($config | get chezmoi? | default false)" --context "setup"
     print ""
 }
 
@@ -445,11 +445,11 @@ def show_post_setup_instructions [config: record] {
     info "3. Test configuration: sudo nixos-rebuild test --flake .#nixos" --context "setup"
     info "4. Apply configuration: make safe-rebuild" --context "setup"
     
-    if ($config | get -o gaming | default false) {
+    if ($config | get gaming? | default false) {
         info "Gaming setup complete - check flakes/gaming/ for configuration" --context "setup"
     }
     
-    if ($config | get -o development | default false) {
+    if ($config | get development? | default false) {
         info "Development environment ready - use 'make dev' to enter" --context "setup"
     }
 }

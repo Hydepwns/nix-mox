@@ -251,7 +251,7 @@ def main [] {
 }
 
 # Run main function if script is executed directly
-if ($env | get -o SCRIPT_NAME | default "" | str contains "generate-sbom.nu") {
+if ($env | get SCRIPT_NAME? | default "" | str contains "generate-sbom.nu") {
     main
 }
 

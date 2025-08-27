@@ -676,9 +676,9 @@ def check_critical_failures [results: record] {
     let critical_components = ["stage1" "display_manager" "gpu_driver" "config_syntax"]
     
     let has_critical_failure = ($critical_components | any {|component|
-        if ($results | get -o $component | is-not-empty) {
+        if ($results | get ?$component | is-not-empty) {
             let result = ($results | get $component)
-            if ($result | get -o critical | default false) {
+            if ($result | get critical? | default false) {
                 not $result.success
             } else {
                 false
@@ -699,7 +699,7 @@ def print_validation_report [results: record] {
     $results | transpose key value | each {|row|
         let component = $row.key
         let result = $row.value
-        let is_critical = ($result | get -o critical | default false)
+        let is_critical = ($result | get critical? | default false)
         let component_name = ($component | str replace '_' ' ' | str capitalize)
         
         if $result.success { 
@@ -710,7 +710,7 @@ def print_validation_report [results: record] {
             warn $"($component_name) validation had issues" --context $context
         }
         
-        if ($result | get -o checks | is-not-empty) {
+        if ($result | get checks? | is-not-empty) {
             $result.checks | each {|check|
                 let check_message = $"($check.name): ($check.message)"
                 if $check.success {
@@ -719,7 +719,7 @@ def print_validation_report [results: record] {
                     warn $"  ✗ ($check_message)" --context $context
                 }
                 
-                if ($check | get -o error | is-not-empty) and ($check.error | is-not-empty) {
+                if ($check | get error? | is-not-empty) and ($check.error | is-not-empty) {
                     warn $"    Error details: ($check.error | lines | first | default '')" --context $context
                 }
             }

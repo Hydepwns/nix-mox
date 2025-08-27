@@ -82,6 +82,6 @@ def show_help [] {
 }
 
 # Main execution when run directly
-if ($env | get -o SCRIPT_NAME | default "" | str contains "setup-remote-builder.nu") {
+if ($env | get SCRIPT_NAME? | default "" | str contains "setup-remote-builder.nu") {
     main
 }

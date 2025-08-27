@@ -135,8 +135,8 @@ def run_validation [script: string, verbose: bool] {
         
         {
             success: ($result.exit_code == 0)
-            message: if ($result.exit_code == 0) { "Passed" } else { "Failed" }
-            details: if $verbose { $result.stdout } else { null }
+            message: (if ($result.exit_code == 0) { "Passed" } else { "Failed" })
+            details: (if $verbose { $result.stdout } else { null })
         }
     }
 }
@@ -155,7 +155,7 @@ def validate_config_syntax [verbose: bool] {
             {
                 success: true
                 message: "Configuration syntax is valid"
-                details: if $verbose { $result.stdout } else { null }
+                details: (if $verbose { $result.stdout } else { null })
             }
         } else {
             {
@@ -207,7 +207,7 @@ def validate_display_safety_inline [verbose: bool] {
             {
                 success: true
                 message: "Display configuration is valid"
-                details: if $verbose { $"Display manager: ($dm_enabled), X11: ($x_enabled), Drivers: ($drivers | str join ', ')" } else { null }
+                details: (if $verbose { $"Display manager: ($dm_enabled), X11: ($x_enabled), Drivers: ($drivers | str join ', ')" } else { null })
             }
         } else if (not $has_display) {
             {
@@ -273,7 +273,7 @@ def validate_storage_config_inline [verbose: bool] {
             {
                 success: true
                 message: "Storage configuration looks valid"
-                details: if $verbose { $"Root: ($root_device), Boot: ($boot_device)" } else { null }
+                details: (if $verbose { $"Root: ($root_device), Boot: ($boot_device)" } else { null })
             }
         }
     } catch {
@@ -305,8 +305,8 @@ def validate_gaming_setup_inline [verbose: bool] {
         
         {
             success: true
-            message: if ($gaming_enabled or $steam_enabled) { "Gaming support enabled" } else { "Gaming not configured" }
-            details: if $verbose { $"Gaming service: ($gaming_enabled), Steam: ($steam_enabled)" } else { null }
+            message: (if ($gaming_enabled or $steam_enabled) { "Gaming support enabled" } else { "Gaming not configured" })
+            details: (if $verbose { $"Gaming service: ($gaming_enabled), Steam: ($steam_enabled)" } else { null })
         }
     } catch {
         {
@@ -337,8 +337,8 @@ def validate_network_config_inline [verbose: bool] {
         
         {
             success: true
-            message: if ($nm_enabled or $dhcp_enabled) { "Network configured" } else { "Manual network configuration" }
-            details: if $verbose { $"NetworkManager: ($nm_enabled), DHCP: ($dhcp_enabled)" } else { null }
+            message: (if ($nm_enabled or $dhcp_enabled) { "Network configured" } else { "Manual network configuration" })
+            details: (if $verbose { $"NetworkManager: ($nm_enabled), DHCP: ($dhcp_enabled)" } else { null })
         }
     } catch {
         {

@@ -25,23 +25,23 @@ test-gaming: check-nushell
 # Display testing targets
 display-test: check-nushell
 	@echo "🧪 Testing display configuration..."
-	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; run ['--test', '--verbose']"
+	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; main"
 
 display-test-interactive: check-nushell
 	@echo "🧪 Interactive display testing..."
-	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; run ['--test', '--interactive', '--verbose']"
+	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; main"
 
 display-test-backup: check-nushell
 	@echo "🧪 Display testing with backup..."
-	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; run ['--test', '--backup', '--verbose']"
+	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; main"
 
 display-test-verbose: check-nushell
 	@echo "🧪 Verbose display testing..."
-	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; run ['--test', '--verbose', '--full']"
+	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; main"
 
 display-test-all: check-nushell
 	@echo "🧪 Comprehensive display testing..."
-	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; run ['--test', '--all', '--verbose']"
+	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; main"
 
 # Coverage targets (main coverage target is in development.mk)
 

@@ -50,7 +50,7 @@ export def dir_exists [path: path] {
 
 # CI detection using environment validation
 export def is_ci_mode [] {
-    let ci_env = ($env | get -o CI | default "false")
+    let ci_env = ($env | get CI? | default "false")
     $ci_env == "true" or $ci_env == "1"
 }
 

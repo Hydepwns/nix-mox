@@ -508,12 +508,12 @@ def print_validation_report [results: record] {
         
         print $"\n($status) ($component | str capitalize)"
         
-        if ($result | get -o checks | is-not-empty) {
+        if ($result | get checks? | is-not-empty) {
             $result.checks | each {|check|
                 let check_status = if $check.success { "  ✓" } else { "  ✗" }
                 print $"($check_status) ($check.name): ($check.message)"
                 
-                if ($check | get -o recommendation | is-not-empty) {
+                if ($check | get recommendation? | is-not-empty) {
                     if ($check.recommendation | str length) > 0 {
                         print $"      → ($check.recommendation)"
                     }
@@ -548,6 +548,6 @@ def print_warning [message: string] {
 }
 
 # Run main if called directly
-if ($env | get -o CURRENT_FILE | is-not-empty) {
+if ($env | get CURRENT_FILE? | is-not-empty) {
     main
 }

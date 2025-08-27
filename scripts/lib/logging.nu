@@ -27,7 +27,7 @@ const STYLES = {
 
 # Get current log level from environment
 export def get_log_level [] {
-    $env | get -o LOG_LEVEL | default "INFO"
+    $env | get LOG_LEVEL? | default "INFO"
 }
 
 # Core logging function with functional composition
@@ -170,7 +170,7 @@ export def dry_run [message: string, --context: string = ""] {
 # Batch logging for multiple messages
 export def log_batch [messages: list<record>] {
     $messages | each { |msg|
-        log $msg.level $msg.message --context ($msg | get -o context | default "") --file ($msg | get -o file | default "")
+        log $msg.level $msg.message --context ($msg | get context? | default "") --file ($msg | get file? | default "")
     }
 }
 

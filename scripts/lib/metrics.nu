@@ -301,6 +301,6 @@ export def wrap_script_with_metrics [script_name: string, script_block: closure]
 }
 
 # Auto-initialization
-if ($env | get -o NIX_MOX_METRICS_ENABLED | default "false") == "true" {
+if ($env | get NIX_MOX_METRICS_ENABLED? | default "false") == "true" {
     init_core_metrics
 }

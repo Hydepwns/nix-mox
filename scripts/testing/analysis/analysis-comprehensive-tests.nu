@@ -449,7 +449,7 @@ export def test_analysis_data_output [] {
             
             # Validate output format
             let loaded_data = (open $test_output_file | from json)
-            if ($loaded_data | get -o test_metric) == 42 {
+            if ($loaded_data | get test_metric?) == 42 {
                 success "Analysis output format validation passed" --context "analysis-test"
                 track_test "analysis_output_format" "analysis" "passed" 0.1
             } else {
