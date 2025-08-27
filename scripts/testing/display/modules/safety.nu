@@ -9,7 +9,7 @@ use ../../../lib/logging.nu *
 # Handles backup creation, safety checks, and recovery procedures
 
 use ../../lib/test-utils.nu *
-use ../../lib/testing.nu *
+use ../../../lib/testing.nu *
 
 export def setup_safety_backups [backup_dir: string] {
     print $"($env.CYAN)💾 Setting up safety backups... ($env.NC)"

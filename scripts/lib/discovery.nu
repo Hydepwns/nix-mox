@@ -1,7 +1,6 @@
 # Script discovery module for nix-mox scripts
 # Helps find and manage available scripts with metadata extraction
 use logging.nu *
-use ./unified-error-handling.nu *
 
 # Script metadata structure
 export const SCRIPT_METADATA = {

@@ -3,6 +3,7 @@
 # Import unified libraries
 use ../../lib/validators.nu
 use ../../lib/logging.nu *
+use ./coverage-core.nu *
 
 
 # Test coverage utilities for nix-mox
@@ -125,7 +126,6 @@ export def generate_report [coverage_data: record, format: string = "json"] {
 
 # --- Export Coverage Report ---
 export def export_coverage_report [format: string = "json"] {
-    use ./coverage-core.nu *
     let raw = aggregate_coverage
     let coverage_data = {
         summary: {

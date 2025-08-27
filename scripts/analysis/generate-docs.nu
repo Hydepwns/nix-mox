@@ -7,9 +7,7 @@ use ../lib/logging.nu
 
 # Documentation generation tool for nix-mox scripts
 # Automatically generates comprehensive documentation using enhanced modules
-use logging.nu *
 use ../lib/logging.nu *
-use logging.nu *
 use ../lib/discovery.nu *
 
 # Script metadata
@@ -22,20 +20,34 @@ export const SCRIPT_METADATA = {
 }
 
 # Main documentation generation function
-export def main [args: list] {
+export def main [
+    --help (-h)                   # Show help message
+    --verbose (-v)                # Enable verbose output
+    --force (-f)                  # Force overwrite existing files
+    --examples                    # Include usage examples
+    --format: string = "markdown" # Output format
+    --output: string = "docs/generated" # Output directory
+] {
     # Set script name for logging context
     $env.SCRIPT_NAME = "generate-docs"
 
-    # Parse arguments
-    let parsed_args = (parse_doc_args $args)
+    # Create args structure
+    let parsed_args = {
+        help: $help
+        verbose: $verbose
+        force: $force
+        include_examples: $examples
+        format: $format
+        output_dir: $output
+    }
 
     if $parsed_args.help {
         show_help
         exit 0
     }
 
-    info $"Starting documentation generation" "generate-docs"
-    info $"Configuration" "generate-docs"
+    info $"Starting documentation generation" --context "generate-docs"
+    info $"Configuration" --context "generate-docs"
 
     # Discover all scripts
     let all_scripts = (discover_scripts)
@@ -44,14 +56,14 @@ export def main [args: list] {
     # Generate documentation
     try {
         let result = (generate_documentation $all_scripts $parsed_args)
-        info $"Documentation generation completed" "generate-docs"
-        info $"Results" "generate-docs"
+        info $"Documentation generation completed" --context "generate-docs"
+        info $"Results" --context "generate-docs"
 
         # Show summary
         show_generation_summary $result
         exit 0
     } catch { |err|
-        error $"Documentation generation failed: ($err)" "generate-docs"
+        error $"Documentation generation failed: ($err)" --context "generate-docs"
         exit 1
     }
 }
@@ -60,6 +72,7 @@ export def main [args: list] {
 export def parse_doc_args [args: list] {
     let help = ($args | any { |it| $it == "--help" or $it == "-h" })
     let verbose = ($args | any { |it| $it == "--verbose" or $it == "-v" })
+    let force = ($args | any { |it| $it == "--force" or $it == "-f" })
     let include_examples = ($args | any { |it| $it == "--examples" })
     let format = (get_flag_value $args "--format" "markdown")
     let output_dir = (get_flag_value $args "--output" "docs/generated")
@@ -67,6 +80,7 @@ export def parse_doc_args [args: list] {
     {
         help: $help
         verbose: $verbose
+        force: $force
         include_examples: $include_examples
         format: $format
         output_dir: $output_dir
@@ -94,7 +108,11 @@ export def generate_documentation [scripts: list, args: record] {
 
     # Generate main documentation
     let main_doc = (generate_main_documentation $scripts $args)
-    $main_doc | save $"($args.output_dir)/scripts-reference.md"
+    if $args.force {
+        $main_doc | save --force $"($args.output_dir)/scripts-reference.md"
+    } else {
+        $main_doc | save $"($args.output_dir)/scripts-reference.md"
+    }
     $files_generated = ($files_generated | append "scripts-reference.md")
 
     # Generate category-specific documentation
@@ -102,18 +120,30 @@ export def generate_documentation [scripts: list, args: record] {
     for category in $categories {
         let category_scripts = ($scripts | where category == $category)
         let category_doc = (generate_category_documentation $category $category_scripts $args)
-        $category_doc | save $"($args.output_dir)/($category)-scripts.md"
+        if $args.force {
+            $category_doc | save --force $"($args.output_dir)/($category)-scripts.md"
+        } else {
+            $category_doc | save $"($args.output_dir)/($category)-scripts.md"
+        }
         $files_generated = ($files_generated | append $"($category)-scripts.md")
     }
 
     # Generate JSON index
     let json_index = ($scripts | to json)
-    $json_index | save $"($args.output_dir)/scripts-index.json"
+    if $args.force {
+        $json_index | save --force $"($args.output_dir)/scripts-index.json"
+    } else {
+        $json_index | save $"($args.output_dir)/scripts-index.json"
+    }
     $files_generated = ($files_generated | append "scripts-index.json")
 
     # Generate README
     let readme = (generate_readme $scripts $args)
-    $readme | save $"($args.output_dir)/README.md"
+    if $args.force {
+        $readme | save --force $"($args.output_dir)/README.md"
+    } else {
+        $readme | save $"($args.output_dir)/README.md"
+    }
     $files_generated = ($files_generated | append "README.md")
 
     # Generate examples if requested
@@ -151,7 +181,7 @@ export def generate_main_documentation [scripts: list, args: record] {
     let categories = ($scripts | get category | uniq)
     for category in $categories {
         let category_scripts = ($scripts | where category == $category)
-        $markdown = ($markdown | append $"- [$category Scripts (($category_scripts | length))](#$category-scripts)")
+        $markdown = ($markdown | append $"- [($category | str title-case) Scripts (($category_scripts | length))](#($category | str downcase | str replace ' ' '-')-scripts)")
     }
     $markdown = ($markdown | append "")
 
@@ -217,19 +247,19 @@ export def generate_main_documentation [scripts: list, args: record] {
 export def generate_category_documentation [category: string, scripts: list, args: record] {
     mut markdown = []
 
-    $markdown = ($markdown | append $"# $category Scripts")
+    $markdown = ($markdown | append $"# ($category | str title-case) Scripts")
     $markdown = ($markdown | append "")
-    $markdown = ($markdown | append $"This document lists all scripts in the $category category.")
+    $markdown = ($markdown | append $"This document lists all scripts in the ($category) category.")
     $markdown = ($markdown | append "")
-    $markdown = ($markdown | append $"Total scripts: ($scripts | length)")
+    $markdown = ($markdown | append $"Total scripts: (($scripts | length))")
     $markdown = ($markdown | append "")
 
     for script in $scripts {
-        $markdown = ($markdown | append $"## $script.name")
+        $markdown = ($markdown | append $"## ($script.name)")
         $markdown = ($markdown | append "")
-        $markdown = ($markdown | append $script.description)
+        $markdown = ($markdown | append ($script.description))
         $markdown = ($markdown | append "")
-        $markdown = ($markdown | append $"**Usage:** `$script.path`")
+        $markdown = ($markdown | append $"**Usage:** `($script.path)`")
         $markdown = ($markdown | append "")
 
         if ($script.dependencies | length) > 0 {
@@ -387,9 +417,5 @@ export def show_help [] {
 }
 
 # Main execution
-if ($env | get -o NIXMOX_ARGS | is-not-empty) {
-    let args = ($env.NIXMOX_ARGS | split row " ")
-    main $args
-} else {
-    main ($in | default [])
-}
+# Entry point - just call main directly
+# Nushell will handle argument parsing automatically

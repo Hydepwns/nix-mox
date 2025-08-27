@@ -9,7 +9,7 @@ use ../../../lib/logging.nu *
 # Handles Nix evaluation, flake check, and configuration build benchmarks
 
 use ../../lib/test-utils.nu *
-use ../../lib/test-coverage.nu *
+use ../../../lib/testing.nu *
 
 export def test_build_performance [] {
     print "(ansi cyan)🔨 Build Performance Tests...(ansi reset)"

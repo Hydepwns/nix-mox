@@ -1,14 +1,13 @@
 #!/usr/bin/env nu
 
-# Import unified libraries
-use ../../lib/validators.nu
+# Unit tests for logging.nu library using consolidated patterns
+use ../../lib/constants.nu *
+use ../../lib/test-patterns.nu *
 use ../../lib/logging.nu *
-
-
 use ../lib/test-utils.nu *
 
 def main [] {
-    print "Running logging module unit tests..."
+    test_header "Logging Module" $CONTEXTS.unit_test
 
     # Test text log formatting
     let text_log = format_text_log "INFO" "Hello world" {user: "alice"}

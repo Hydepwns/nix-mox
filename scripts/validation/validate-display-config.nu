@@ -1,11 +1,10 @@
 #!/usr/bin/env nu
 
-# Import unified libraries
-use ../lib/validators.nu
-use ../lib/logging.nu
-
 # Display Configuration Validator for nix-mox
 # User-friendly script to validate display configurations before applying changes
+
+use ../lib/validators.nu *
+use ../lib/logging.nu *
 
 def show_banner [] {
     print "🖥️  nix-mox: Display Configuration Validator"

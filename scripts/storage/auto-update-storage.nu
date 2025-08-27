@@ -1,13 +1,10 @@
 #!/usr/bin/env nu
 
-# Import unified libraries
-use ../lib/validators.nu *
-use logging.nu *
-use ../lib/logging.nu *
-
-
 # Auto-update storage configuration to prevent boot failures
 # This script detects and fixes UUID mismatches before rebuilds
+
+use ../lib/validators.nu *
+use ../lib/logging.nu *
 
 def main [
     --verbose (-v)      # Enable verbose output

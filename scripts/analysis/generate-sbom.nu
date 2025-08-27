@@ -1,13 +1,9 @@
 #!/usr/bin/env nu
 
-# Import unified libraries
-use ../lib/validators.nu *
-use ../lib/logging.nu
-
-
 # nix-mox SBOM Generator
 # Generates Software Bill of Materials for compliance and security auditing
-use logging.nu *
+
+use ../lib/validators.nu *
 use ../lib/logging.nu *
 
 # List of supported systems

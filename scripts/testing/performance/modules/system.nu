@@ -8,8 +8,7 @@ use ../../../lib/logging.nu *
 # System performance testing module
 # Handles CPU, system load, and process creation benchmarks
 
-use ../../lib/test-utils.nu *
-use ../../lib/test-coverage.nu *
+# Only import existing libraries
 
 export def test_system_performance [] {
     print "(ansi cyan)🖥️  System Performance Tests...(ansi reset)"

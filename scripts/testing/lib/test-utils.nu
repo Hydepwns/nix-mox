@@ -263,17 +263,22 @@ export def run_all_tests [] {
 
 # --- Core Test Functions ---
 export def test_retry [max_attempts: int, delay: int, test_func: closure, expected_result: bool] {
+    let green = ($env | get -o GREEN | default (ansi green))
+    let yellow = ($env | get -o YELLOW | default (ansi yellow))
+    let red = ($env | get -o RED | default (ansi red))
+    let nc = ($env | get -o NC | default (ansi reset))
+    
     mut attempt = 1
     mut last_result = null
     mut passed = false
     while $attempt <= $max_attempts {
         let result = (do $test_func)
         if $result == $expected_result {
-            print $"($env.GREEN)✓ PASS: test_retry succeeded on attempt ($attempt)($env.NC)"
+            print $"($green)✓ PASS: test_retry succeeded on attempt ($attempt)($nc)"
             $passed = true
             break
         } else {
-            print $"($env.YELLOW)Retry ($attempt) failed, retrying...($env.NC)"
+            print $"($yellow)Retry ($attempt) failed, retrying...($nc)"
             $last_result = $result
             if $attempt < $max_attempts {
                 sleep ($delay | into int)
@@ -283,12 +288,16 @@ export def test_retry [max_attempts: int, delay: int, test_func: closure, expect
         $attempt = $next_attempt
     }
     if not $passed {
-        print $"($env.RED)✗ FAIL: test_retry did not succeed after ($max_attempts) attempts. Last result: ($last_result)($env.NC)"
+        print $"($red)✗ FAIL: test_retry did not succeed after ($max_attempts) attempts. Last result: ($last_result)($nc)"
     }
     $passed
 }
 
 export def test_logging [level: string, message: string, expected_output: string] {
+    let green = ($env | get -o GREEN | default (ansi green))
+    let red = ($env | get -o RED | default (ansi red))
+    let nc = ($env | get -o NC | default (ansi reset))
+    
     let log_prefix = match $level {
         "DEBUG" => "[DEBUG] ",
         "INFO" => "[INFO] ",
@@ -298,20 +307,24 @@ export def test_logging [level: string, message: string, expected_output: string
     }
     let output = $"($log_prefix)($message)"
     if $output == $expected_output {
-        print $"($env.GREEN)✓ PASS: test_logging output matched($env.NC)"
+        print $"($green)✓ PASS: test_logging output matched($nc)"
         true
     } else {
-        print $"($env.RED)✗ FAIL: test_logging output did not match. Got: ($output), Expected: ($expected_output)($env.NC)"
+        print $"($red)✗ FAIL: test_logging output did not match. Got: ($output), Expected: ($expected_output)($nc)"
         false
     }
 }
 
 export def test_config_validation [config_value: string, error_message: string] {
+    let green = ($env | get -o GREEN | default (ansi green))
+    let red = ($env | get -o RED | default (ansi red))
+    let nc = ($env | get -o NC | default (ansi reset))
+    
     if ($config_value | is-empty) {
-        print $"($env.RED)✗ FAIL: test_config_validation - ($error_message)($env.NC)"
+        print $"($red)✗ FAIL: test_config_validation - ($error_message)($nc)"
         false
     } else {
-        print $"($env.GREEN)✓ PASS: test_config_validation - config is valid($env.NC)"
+        print $"($green)✓ PASS: test_config_validation - config is valid($nc)"
         true
     }
 }

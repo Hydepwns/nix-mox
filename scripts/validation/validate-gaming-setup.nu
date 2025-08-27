@@ -2,7 +2,7 @@
 
 # Import unified libraries
 use ../lib/validators.nu *
-use ../lib/logging.nu
+use ../lib/logging.nu *
 
 # Gaming Setup Validation Script
 # Comprehensive validation for gaming workstation configuration

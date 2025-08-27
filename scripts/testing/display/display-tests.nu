@@ -8,9 +8,7 @@ use ../../lib/logging.nu *
 # This module provides comprehensive display configuration testing and validation
 
 export-env {
-    use ../lib/test-utils.nu *
-    use ../lib/testing.nu *
-    use ../lib/coverage-core.nu *
+    use ../../lib/testing.nu *
 }
 
 # Import modular components

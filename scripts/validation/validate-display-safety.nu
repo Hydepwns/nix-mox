@@ -1,20 +1,17 @@
 #!/usr/bin/env nu
 
-# Import unified libraries
-use ../lib/validators.nu
-use ../lib/logging.nu
-
-
 # Display Manager Safety Validation
 # Comprehensive tests to ensure rebuild won't break display/greeter
 # Run this BEFORE nixos-rebuild switch to prevent display breakage
 
+use ../lib/validators.nu *
 use ../lib/logging.nu *
 use ../lib/platform.nu *
 
 def main [] {
-    print_header "Display Manager Safety Validation"
-    print_warning "Running comprehensive display safety checks before rebuild..."
+    let context = "display-safety"
+    banner "Display Manager Safety Validation" --context $context
+    warn "Running comprehensive display safety checks before rebuild..." --context $context
     
     let results = {
         stage1: (validate_stage1_boot),
@@ -33,25 +30,25 @@ def main [] {
     let critical_failures = check_critical_failures $results
     
     if $critical_failures {
-        print_error "❌ CRITICAL: Display configuration has issues that WILL break your system!"
-        print_error "DO NOT proceed with nixos-rebuild switch!"
-        print_warning "Fix the issues above before rebuilding."
+        error "❌ CRITICAL: Display configuration has issues that WILL break your system!" --context $context
+        error "DO NOT proceed with nixos-rebuild switch!" --context $context
+        warn "Fix the issues above before rebuilding." --context $context
         exit 1
     }
     
     let all_passed = ($results | values | all {|r| $r.success})
     if $all_passed {
-        print_success "✅ Display configuration validated - safe to rebuild"
+        success "✅ Display configuration validated - safe to rebuild" --context $context
         exit 0
     } else {
-        print_warning "⚠️  Some display checks failed - review carefully before rebuilding"
+        warn "⚠️  Some display checks failed - review carefully before rebuilding" --context $context
         exit 1
     }
 }
 
 # Validate stage-1 boot won't fail
 def validate_stage1_boot [] {
-    print_info "Validating stage-1 boot configuration..."
+    info "Validating stage-1 boot configuration..." --context "display-safety"
     
     let checks = []
     
@@ -103,7 +100,7 @@ def validate_stage1_boot [] {
             {
                 name: "GPU Boot Modules"
                 success: true
-                message: if $has_gpu_module { "GPU modules configured" } else { "No GPU modules in boot - may use auto-detection" }
+                message: (if $has_gpu_module { "GPU modules configured" } else { "No GPU modules in boot - may use auto-detection" })
                 modules: $modules
             }
         } else {
@@ -135,7 +132,7 @@ def validate_stage1_boot [] {
             {
                 name: "Boot Loader"
                 success: true
-                message: if $systemd_boot { "systemd-boot enabled" } else { "Using alternative bootloader" }
+                message: (if $systemd_boot { "systemd-boot enabled" } else { "Using alternative bootloader" })
             }
         } else {
             {
@@ -165,12 +162,12 @@ def validate_stage1_boot [] {
         {
             name: "Stage-1 Build Test"
             success: ($build_result.exit_code == 0)
-            message: if ($build_result.exit_code == 0) { 
+            message: (if ($build_result.exit_code == 0) { 
                 "Stage-1 (initrd) builds successfully" 
             } else { 
                 "Stage-1 build FAILED - DO NOT REBUILD!" 
-            }
-            error: if ($build_result.exit_code != 0) { $build_result.stderr } else { null }
+            })
+            error: (if ($build_result.exit_code != 0) { $build_result.stderr } else { null })
         }
     } catch {
         {
@@ -191,7 +188,7 @@ def validate_stage1_boot [] {
 
 # Validate display manager configuration
 def validate_display_manager [] {
-    print_info "Validating display manager configuration..."
+    info "Validating display manager configuration..." --context "display-safety"
     
     let checks = []
     
@@ -286,7 +283,7 @@ def validate_display_manager [] {
 
 # Validate greeter configuration
 def validate_greeter_config [] {
-    print_info "Validating greeter configuration..."
+    info "Validating greeter configuration..." --context "display-safety"
     
     let checks = []
     
@@ -371,7 +368,7 @@ def validate_greeter_config [] {
 
 # Validate X server configuration
 def validate_xserver_config [] {
-    print_info "Validating X server configuration..."
+    info "Validating X server configuration..." --context "display-safety"
     
     let checks = []
     
@@ -457,7 +454,7 @@ def validate_xserver_config [] {
 
 # Validate Wayland configuration
 def validate_wayland_config [] {
-    print_info "Checking Wayland configuration..."
+    info "Checking Wayland configuration..." --context "display-safety"
     
     let checks = []
     
@@ -509,7 +506,7 @@ def validate_wayland_config [] {
 
 # Validate GPU drivers are properly configured
 def validate_gpu_drivers [] {
-    print_info "Validating GPU driver configuration..."
+    info "Validating GPU driver configuration..." --context "display-safety"
     
     let checks = []
     
@@ -593,7 +590,7 @@ def validate_gpu_drivers [] {
 
 # Validate display dependencies
 def validate_display_dependencies [] {
-    print_info "Checking display dependencies..."
+    info "Checking display dependencies..." --context "display-safety"
     
     let checks = []
     
@@ -635,7 +632,7 @@ def validate_display_dependencies [] {
 
 # Validate configuration syntax
 def validate_config_syntax [] {
-    print_info "Validating configuration syntax..."
+    info "Validating configuration syntax..." --context "display-safety"
     
     let checks = []
     
@@ -696,66 +693,39 @@ def check_critical_failures [results: record] {
 
 # Print validation report
 def print_validation_report [results: record] {
-    print "\n📊 Display Safety Validation Report"
-    print "===================================="
+    let context = "display-safety"
+    banner "Display Safety Validation Report" --context $context
     
     $results | transpose key value | each {|row|
         let component = $row.key
         let result = $row.value
         let is_critical = ($result | get -o critical | default false)
-        let status = if $result.success { "✅" } else if $is_critical { "❌" } else { "⚠️" }
+        let component_name = ($component | str replace '_' ' ' | str capitalize)
         
-        print $"\n($status) ($component | str replace '_' ' ' | str capitalize)"
+        if $result.success { 
+            success $"($component_name) validation passed" --context $context
+        } else if $is_critical { 
+            error $"($component_name) validation failed (CRITICAL)" --context $context
+        } else { 
+            warn $"($component_name) validation had issues" --context $context
+        }
         
         if ($result | get -o checks | is-not-empty) {
             $result.checks | each {|check|
-                let check_status = if $check.success { "  ✓" } else { "  ✗" }
-                print $"($check_status) ($check.name): ($check.message)"
-                
-                if ($check | get -o warning | is-not-empty) {
-                    if $check.warning {
-                        print $"      ⚠️  Warning: ($check.message)"
-                    }
+                let check_message = $"($check.name): ($check.message)"
+                if $check.success {
+                    info $"  ✓ ($check_message)" --context $context
+                } else {
+                    warn $"  ✗ ($check_message)" --context $context
                 }
                 
-                if ($check | get -o error | is-not-empty) {
-                    if ($check.error | is-not-empty) {
-                        print "      Error details:"
-                        $check.error | lines | first 5 | each {|line|
-                            print $"        ($line)"
-                        }
-                    }
+                if ($check | get -o error | is-not-empty) and ($check.error | is-not-empty) {
+                    warn $"    Error details: ($check.error | lines | first | default '')" --context $context
                 }
             }
         }
     }
-    
-    print "\n"
-}
-
-# Helper functions
-def print_header [title: string] {
-    print $"(ansi blue)🖥️  ($title)(ansi reset)"
-    print $"(ansi blue)================================(ansi reset)\n"
-}
-
-def print_info [message: string] {
-    print $"(ansi cyan)ℹ️  ($message)(ansi reset)"
-}
-
-def print_success [message: string] {
-    print $"(ansi green)($message)(ansi reset)"
-}
-
-def print_error [message: string] {
-    print $"(ansi red)($message)(ansi reset)"
-}
-
-def print_warning [message: string] {
-    print $"(ansi yellow)⚠️  ($message)(ansi reset)"
 }
 
 # Run main if called directly
-if $env.FILE_PWD == (which $env.CURRENT_FILE | get path | first) {
-    main
-}
+main

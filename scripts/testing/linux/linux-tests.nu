@@ -3,11 +3,11 @@
 # Import unified libraries
 use ../../lib/validators.nu
 use ../../lib/logging.nu *
+use ../lib/testing.nu *
 
 # Linux-specific tests entrypoint
 
 export-env {
-  use ../lib/testing.nu *
 }
 
 print "🔧 Running Linux storage guard..."

@@ -1,14 +1,10 @@
 #!/usr/bin/env nu
 
-# Import unified libraries
-use ../lib/validators.nu
-use ../lib/logging.nu
-
-
 # Comprehensive Pre-Rebuild Safety Check
 # Run this BEFORE any nixos-rebuild to prevent system breakage
 # Covers: boot, display, storage, and configuration validation
 
+use ../lib/validators.nu *
 use ../lib/logging.nu *
 use ../lib/platform.nu *
 
@@ -16,9 +12,9 @@ def main [
     --verbose  # Show detailed output
     --force    # Skip non-critical warnings
 ] {
-    print_header "Comprehensive Pre-Rebuild Safety Check"
-    print_warning "This will validate your configuration before rebuild..."
-    print ""
+    let context = "pre-rebuild-check"
+    banner "Comprehensive Pre-Rebuild Safety Check" --context $context
+    warn "This will validate your configuration before rebuild..." --context $context
     
     # Run all validation checks
     let validations = [
@@ -72,19 +68,19 @@ def main [
     
     if (($critical_failures | length) > 0) {
         print ""
-        print_error "❌ CRITICAL FAILURES DETECTED!"
-        print_error "DO NOT PROCEED WITH REBUILD!"
+        error "❌ CRITICAL FAILURES DETECTED!" --context $context
+        error "DO NOT PROCEED WITH REBUILD!" --context $context
         print ""
         print "Critical issues:"
         $critical_failures | each {|failure|
             print $"  • ($failure.name): ($failure.message)"
         }
         print ""
-        print_error "Fix these issues before running nixos-rebuild"
+        error "Fix these issues before running nixos-rebuild" --context $context
         exit 1
     } else if ((($warnings | length) > 0) and (not $force)) {
         print ""
-        print_warning "⚠️  Non-critical warnings detected:"
+        warn "⚠️  Non-critical warnings detected:" --context $context
         $warnings | each {|warning|
             print $"  • ($warning.name): ($warning.message)"
         }
@@ -99,8 +95,8 @@ def main [
         }
     } else {
         print ""
-        print_success "✅ All safety checks passed!"
-        print_success "System is ready for nixos-rebuild"
+        success "✅ All safety checks passed!" --context $context
+        success "System is ready for nixos-rebuild" --context $context
         
         # Provide the rebuild command
         print ""
@@ -355,56 +351,23 @@ def validate_network_config_inline [verbose: bool] {
 
 # Print summary of validation results
 def print_summary [results: list] {
-    print ""
-    print "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    print "            VALIDATION SUMMARY"
-    print "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    print ""
+    let context = "pre-rebuild-check"
+    banner "VALIDATION SUMMARY" --context $context
     
     $results | each {|result|
-        let status = if $result.success {
-            "(ansi green)✅ PASS(ansi reset)"
+        if $result.success {
+            success $"✅ ($result.name)" --context $context
         } else if $result.critical {
-            "(ansi red)❌ FAIL(ansi reset)"
+            error $"❌ ($result.name) [CRITICAL]" --context $context
         } else {
-            "(ansi yellow)⚠️  WARN(ansi reset)"
+            warn $"⚠️ ($result.name)" --context $context
         }
-        
-        let critical_tag = if $result.critical { " (ansi red)[CRITICAL](ansi reset)" } else { "" }
-        
-        print $"  ($status) ($result.name)($critical_tag)"
         
         if (not $result.success and ($result.details | is-not-empty)) {
-            print $"      → ($result.details)"
+            info $"  → ($result.details)" --context $context
         }
     }
-    
-    print "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-}
-
-# Helper functions
-def print_header [title: string] {
-    print $"(ansi blue)🛡️  ($title)(ansi reset)"
-    print $"(ansi blue)════════════════════════════════════════(ansi reset)\n"
-}
-
-def print_info [message: string] {
-    print $"(ansi cyan)ℹ️  ($message)(ansi reset)"
-}
-
-def print_success [message: string] {
-    print $"(ansi green)($message)(ansi reset)"
-}
-
-def print_error [message: string] {
-    print $"(ansi red)($message)(ansi reset)"
-}
-
-def print_warning [message: string] {
-    print $"(ansi yellow)($message)(ansi reset)"
 }
 
 # Run main if called directly
-if $env.FILE_PWD == (which $env.CURRENT_FILE | get path | first) {
-    main
-}
+main

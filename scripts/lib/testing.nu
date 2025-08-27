@@ -213,9 +213,9 @@ export def cleanup_test_environment [] {
         debug $"Cleaned up test directory: ($test_dir)" --context "test-env"
     }
     
-    # Remove test environment variables
-    hide-env NIX_MOX_TEST_DIR
-    hide-env NIX_MOX_TEST_MODE
+    # Remove test environment variables if they exist
+    try { hide-env NIX_MOX_TEST_DIR }
+    try { hide-env NIX_MOX_TEST_MODE }
 }
 
 # Property-based testing helper

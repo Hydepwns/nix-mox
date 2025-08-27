@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/validators.nu
-use ../lib/logging.nu
+use ../lib/validators.nu *
+use ../lib/logging.nu *
 
 
 # Storage configuration validator

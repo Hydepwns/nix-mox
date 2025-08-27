@@ -39,7 +39,16 @@ def main [
         "unit" => (run_unit_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
         "integration" => (run_integration_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
         "validation" => (run_validation_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
+        "maintenance" => (run_maintenance_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
+        "setup" => (run_setup_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
         "platform" => (run_platform_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
+        "analysis" => (run_analysis_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
+        "gaming" => (run_gaming_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
+        "gaming-scripts" => (run_gaming_scripts_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
+        "handlers" => (run_handlers_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
+        "macos-platform" => (run_macos_platform_specific_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
+        "windows-platform" => (run_windows_platform_specific_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
+        "infrastructure" => (run_infrastructure_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
         "security" => (run_security_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
         "performance" => (run_performance_tests ($coverage | default false) $output ($parallel | default true) ($fail_fast | default false)),
         "help" => { show_test_help; return },
@@ -74,8 +83,17 @@ def run_all_tests [coverage: bool, output: string, parallel: bool, fail_fast: bo
     
     let test_suites = [
         { name: "validation", runner: "run_validation_tests" },
+        { name: "maintenance", runner: "run_maintenance_tests" },
+        { name: "setup", runner: "run_setup_tests" },
         { name: "unit", runner: "run_unit_tests" },
         { name: "platform", runner: "run_platform_tests" },
+        { name: "analysis", runner: "run_analysis_tests" },
+        { name: "gaming", runner: "run_gaming_tests" },
+        { name: "gaming-scripts", runner: "run_gaming_scripts_tests" },
+        { name: "handlers", runner: "run_handlers_tests" },
+        { name: "macos-platform", runner: "run_macos_platform_specific_tests" },
+        { name: "windows-platform", runner: "run_windows_platform_specific_tests" },
+        { name: "infrastructure", runner: "run_infrastructure_tests" },
         { name: "integration", runner: "run_integration_tests" },
         { name: "security", runner: "run_security_tests" }
     ]
@@ -86,8 +104,17 @@ def run_all_tests [coverage: bool, output: string, parallel: bool, fail_fast: bo
         try {
             let result = match $suite.runner {
                 "run_validation_tests" => (run_validation_tests $coverage $output $parallel $fail_fast),
+                "run_maintenance_tests" => (run_maintenance_tests $coverage $output $parallel $fail_fast),
+                "run_setup_tests" => (run_setup_tests $coverage $output $parallel $fail_fast),
                 "run_unit_tests" => (run_unit_tests $coverage $output $parallel $fail_fast),
                 "run_platform_tests" => (run_platform_tests $coverage $output $parallel $fail_fast),
+                "run_analysis_tests" => (run_analysis_tests $coverage $output $parallel $fail_fast),
+                "run_gaming_tests" => (run_gaming_tests $coverage $output $parallel $fail_fast),
+                "run_gaming_scripts_tests" => (run_gaming_scripts_tests $coverage $output $parallel $fail_fast),
+                "run_handlers_tests" => (run_handlers_tests $coverage $output $parallel $fail_fast),
+                "run_macos_platform_specific_tests" => (run_macos_platform_specific_tests $coverage $output $parallel $fail_fast),
+                "run_windows_platform_specific_tests" => (run_windows_platform_specific_tests $coverage $output $parallel $fail_fast),
+                "run_infrastructure_tests" => (run_infrastructure_tests $coverage $output $parallel $fail_fast),
                 "run_integration_tests" => (run_integration_tests $coverage $output $parallel $fail_fast),
                 "run_security_tests" => (run_security_tests $coverage $output $parallel $fail_fast),
                 _ => { error: "Unknown test suite runner" }
@@ -139,7 +166,13 @@ def run_unit_tests [coverage: bool, output: string, parallel: bool, fail_fast: b
         { name: "analysis_tests", func: {|| test_analysis_functions } },
         { name: "validators_library_tests", func: {|| test_validators_library } },
         { name: "command_wrapper_library_tests", func: {|| test_command_wrapper_library } },
-        { name: "analysis_library_tests", func: {|| test_analysis_library } }
+        { name: "analysis_library_tests", func: {|| test_analysis_library } },
+        { name: "metrics_library_tests", func: {|| test_metrics_library } },
+        { name: "completions_library_tests", func: {|| test_completions_library } },
+        { name: "enhanced_error_handling_library_tests", func: {|| test_enhanced_error_handling_library } },
+        { name: "platform_operations_library_tests", func: {|| test_platform_operations_library } },
+        { name: "script_template_library_tests", func: {|| test_script_template_library } },
+        { name: "testing_library_tests", func: {|| test_testing_library } }
     ]
     
     let results = (test_suite "unit_tests" $unit_tests --parallel $parallel --fail-fast $fail_fast)
@@ -174,7 +207,103 @@ def run_integration_tests [coverage: bool, output: string, parallel: bool, fail_
 def run_validation_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
     info "Starting running validation tests" --context "validation-tests"
     
-    # Test our consolidated validation system
+    # Run comprehensive validation and maintenance tests
+    let validation_tests = [
+        { name: "validation_safety_tests", func: {|| test_validation_safety } },
+        { name: "maintenance_safety_tests", func: {|| test_maintenance_safety } },
+        { name: "validation_basic", func: {|| test_validation_basic } },
+        { name: "validation_config", func: {|| test_validation_config } },
+        { name: "validation_platform", func: {|| test_validation_platform } }
+    ]
+    
+    let results = (test_suite "validation_tests" $validation_tests --parallel false --fail-fast $fail_fast)
+    
+    success $"Validation tests completed: ($results.passed)/($results.total) passed" --context "validation-tests"
+    
+    $results
+}
+
+# New validation test functions
+def test_validation_safety [] {
+    # Run the comprehensive validation safety test suite
+    let result = (^nu "scripts/testing/validation/validation-safety-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "validation safety tests should pass"
+    
+    { success: true, message: "validation safety test passed" }
+}
+
+def test_maintenance_safety [] {
+    # Run the comprehensive maintenance safety test suite
+    let result = (^nu "scripts/testing/maintenance/maintenance-safety-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "maintenance safety tests should pass"
+    
+    { success: true, message: "maintenance safety test passed" }
+}
+
+def test_validation_basic [] {
+    # Test our consolidated validation system - basic
+    let result = (run-external "nu" "scripts/validate.nu" "basic" | complete)
+    assert_equal $result.exit_code 0 "basic validation should pass"
+    
+    { success: true, message: "validation basic test passed" }
+}
+
+def test_validation_config [] {
+    # Test our consolidated validation system - config  
+    let result = (run-external "nu" "scripts/validate.nu" "config" | complete)
+    assert_equal $result.exit_code 0 "config validation should pass"
+    
+    { success: true, message: "validation config test passed" }
+}
+
+def test_validation_platform [] {
+    # Test our consolidated validation system - platform
+    let result = (run-external "nu" "scripts/validate.nu" "platform" | complete)
+    assert_equal $result.exit_code 0 "platform validation should pass"
+    
+    { success: true, message: "validation platform test passed" }
+}
+
+# Run maintenance tests
+def run_maintenance_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
+    info "Starting running maintenance tests" --context "maintenance-tests"
+    
+    let maintenance_tests = [
+        { name: "maintenance_safety_tests", func: {|| test_maintenance_safety } }
+    ]
+    
+    let results = (test_suite "maintenance_tests" $maintenance_tests --parallel false --fail-fast $fail_fast)
+    
+    success $"Maintenance tests completed: ($results.passed)/($results.total) passed" --context "maintenance-tests"
+    
+    $results
+}
+
+# Run setup tests
+def run_setup_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
+    info "Starting running setup tests" --context "setup-tests"
+    
+    let setup_tests = [
+        { name: "setup_safety_tests", func: {|| test_setup_safety } }
+    ]
+    
+    let results = (test_suite "setup_tests" $setup_tests --parallel false --fail-fast $fail_fast)
+    
+    success $"Setup tests completed: ($results.passed)/($results.total) passed" --context "setup-tests"
+    
+    $results
+}
+
+def test_setup_safety [] {
+    # Run the comprehensive setup safety test suite
+    let result = (^nu "scripts/testing/setup/setup-safety-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "setup safety tests should pass"
+    
+    { success: true, message: "setup safety test passed" }
+}
+
+# Legacy validation test runner for compatibility
+def run_legacy_validation_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
     let validation_suites = ["basic", "config", "platform"]
     
     let validation_results = ($validation_suites | each { |suite|
@@ -213,9 +342,13 @@ def run_platform_tests [coverage: bool, output: string, parallel: bool, fail_fas
     info "Starting running platform tests" --context "platform-tests"
     
     let platform_tests = [
-        { name: "platform_detection", func: "test_platform_detection_accuracy" },
-        { name: "platform_operations", func: "test_platform_operations" },
-        { name: "cross_platform_compatibility", func: "test_cross_platform_compatibility" }
+        { name: "platform_detection", func: {|| test_platform_detection_accuracy } },
+        { name: "platform_operations", func: {|| test_platform_operations } },
+        { name: "cross_platform_compatibility", func: {|| test_cross_platform_compatibility } },
+        { name: "nixos_tests", func: {|| test_nixos_platform } },
+        { name: "homebrew_tests", func: {|| test_homebrew_platform } },
+        { name: "powershell_tests", func: {|| test_powershell_platform } },
+        { name: "platform_comprehensive_tests", func: {|| test_platform_comprehensive } }
     ]
     
     let results = (test_suite "platform_tests" $platform_tests --parallel $parallel --fail-fast $fail_fast)
@@ -373,6 +506,248 @@ def test_analysis_library [] {
     assert_equal $result.exit_code 0 "analysis library tests should pass"
     
     { success: true, message: "analysis library test passed" }
+}
+
+def test_metrics_library [] {
+    # Run the comprehensive metrics test file
+    let result = (^nu "scripts/testing/unit/metrics-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "metrics library tests should pass"
+    
+    { success: true, message: "metrics library test passed" }
+}
+
+def test_completions_library [] {
+    # Run the comprehensive completions test file
+    let result = (^nu "scripts/testing/unit/completions-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "completions library tests should pass"
+    
+    { success: true, message: "completions library test passed" }
+}
+
+def test_enhanced_error_handling_library [] {
+    # Run the comprehensive enhanced-error-handling test file
+    let result = (^nu "scripts/testing/unit/enhanced-error-handling-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "enhanced-error-handling library tests should pass"
+    
+    { success: true, message: "enhanced-error-handling library test passed" }
+}
+
+def test_platform_operations_library [] {
+    # Run the comprehensive platform-operations test file
+    let result = (^nu "scripts/testing/unit/platform-operations-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "platform-operations library tests should pass"
+    
+    { success: true, message: "platform-operations library test passed" }
+}
+
+def test_script_template_library [] {
+    # Run the comprehensive script-template test file
+    let result = (^nu "scripts/testing/unit/script-template-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "script-template library tests should pass"
+    
+    { success: true, message: "script-template library test passed" }
+}
+
+def test_testing_library [] {
+    # Run the comprehensive testing test file (meta-testing)
+    let result = (^nu "scripts/testing/unit/testing-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "testing library tests should pass"
+    
+    { success: true, message: "testing library test passed" }
+}
+
+# Platform test functions
+def test_nixos_platform [] {
+    # Run the NixOS platform test file
+    let result = (^nu "scripts/testing/platform/linux/nixos-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "NixOS platform tests should pass"
+    
+    { success: true, message: "NixOS platform test passed" }
+}
+
+def test_homebrew_platform [] {
+    # Run the Homebrew/macOS platform test file
+    let result = (^nu "scripts/testing/platform/macos/homebrew-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "Homebrew platform tests should pass"
+    
+    { success: true, message: "Homebrew platform test passed" }
+}
+
+def test_powershell_platform [] {
+    # Run the PowerShell/Windows platform test file
+    let result = (^nu "scripts/testing/platform/windows/powershell-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "PowerShell platform tests should pass"
+    
+    { success: true, message: "PowerShell platform test passed" }
+}
+
+def test_platform_comprehensive [] {
+    # Run the comprehensive platform test suite
+    let result = (^nu "scripts/testing/platform/platform-comprehensive-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "platform comprehensive tests should pass"
+    
+    { success: true, message: "platform comprehensive test passed" }
+}
+
+# Run analysis tests
+def run_analysis_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
+    info "Starting running analysis tests" --context "analysis-tests"
+    
+    let analysis_tests = [
+        { name: "analysis_comprehensive_tests", func: {|| test_analysis_comprehensive } }
+    ]
+    
+    let results = (test_suite "analysis_tests" $analysis_tests --parallel false --fail-fast $fail_fast)
+    
+    success $"Analysis tests completed: ($results.passed)/($results.total) passed" --context "analysis-tests"
+    
+    $results
+}
+
+def test_analysis_comprehensive [] {
+    # Run the comprehensive analysis test suite
+    let result = (^nu "scripts/testing/analysis/analysis-comprehensive-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "analysis comprehensive tests should pass"
+    
+    { success: true, message: "analysis comprehensive test passed" }
+}
+
+# Gaming tests
+def run_gaming_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
+    info "Starting running gaming tests" --context "gaming-tests"
+    
+    let gaming_tests = [
+        { name: "gaming_comprehensive_tests", func: {|| test_gaming_comprehensive } }
+    ]
+    
+    let results = (test_suite "gaming_tests" $gaming_tests --parallel false --fail-fast $fail_fast)
+    
+    success $"Gaming tests completed: ($results.passed)/($results.total) passed" --context "gaming-tests"
+    
+    $results
+}
+
+def test_gaming_comprehensive [] {
+    # Run the comprehensive gaming test suite
+    let result = (^nu "scripts/testing/gaming/gaming-comprehensive-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "gaming comprehensive tests should pass"
+    
+    { success: true, message: "gaming comprehensive test passed" }
+}
+
+# Infrastructure tests
+def run_infrastructure_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
+    info "Starting running infrastructure tests" --context "infrastructure-tests"
+    
+    let infrastructure_tests = [
+        { name: "infrastructure_comprehensive_tests", func: {|| test_infrastructure_comprehensive } }
+    ]
+    
+    let results = (test_suite "infrastructure_tests" $infrastructure_tests --parallel false --fail-fast $fail_fast)
+    
+    success $"Infrastructure tests completed: ($results.passed)/($results.total) passed" --context "infrastructure-tests"
+    
+    $results
+}
+
+def test_infrastructure_comprehensive [] {
+    # Run the comprehensive infrastructure test suite
+    let result = (^nu "scripts/testing/infrastructure/infrastructure-comprehensive-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "infrastructure comprehensive tests should pass"
+    
+    { success: true, message: "infrastructure comprehensive test passed" }
+}
+
+# Gaming scripts tests
+def run_gaming_scripts_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
+    info "Starting running gaming scripts tests" --context "gaming-scripts-tests"
+    
+    let gaming_scripts_tests = [
+        { name: "gaming_scripts_comprehensive_tests", func: {|| test_gaming_scripts_comprehensive } }
+    ]
+    
+    let results = (test_suite "gaming_scripts_tests" $gaming_scripts_tests --parallel false --fail-fast $fail_fast)
+    
+    success $"Gaming scripts tests completed: ($results.passed)/($results.total) passed" --context "gaming-scripts-tests"
+    
+    $results
+}
+
+def test_gaming_scripts_comprehensive [] {
+    # Run the comprehensive gaming scripts test suite
+    let result = (^nu "scripts/testing/gaming/gaming-scripts-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "gaming scripts comprehensive tests should pass"
+    
+    { success: true, message: "gaming scripts comprehensive test passed" }
+}
+
+# Handlers tests
+def run_handlers_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
+    info "Starting running handlers tests" --context "handlers-tests"
+    
+    let handlers_tests = [
+        { name: "handlers_comprehensive_tests", func: {|| test_handlers_comprehensive } }
+    ]
+    
+    let results = (test_suite "handlers_tests" $handlers_tests --parallel false --fail-fast $fail_fast)
+    
+    success $"Handlers tests completed: ($results.passed)/($results.total) passed" --context "handlers-tests"
+    
+    $results
+}
+
+def test_handlers_comprehensive [] {
+    # Run the comprehensive handlers test suite
+    let result = (^nu "scripts/testing/handlers/handlers-comprehensive-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "handlers comprehensive tests should pass"
+    
+    { success: true, message: "handlers comprehensive test passed" }
+}
+
+# MacOS platform-specific tests
+def run_macos_platform_specific_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
+    info "Starting running MacOS platform-specific tests" --context "macos-platform-tests"
+    
+    let macos_platform_tests = [
+        { name: "macos_platform_specific_tests", func: {|| test_macos_platform_specific_comprehensive } }
+    ]
+    
+    let results = (test_suite "macos_platform_tests" $macos_platform_tests --parallel false --fail-fast $fail_fast)
+    
+    success $"MacOS platform-specific tests completed: ($results.passed)/($results.total) passed" --context "macos-platform-tests"
+    
+    $results
+}
+
+def test_macos_platform_specific_comprehensive [] {
+    # Run the comprehensive MacOS platform-specific test suite
+    let result = (^nu "scripts/testing/platform/macos/macos-platform-specific-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "MacOS platform-specific comprehensive tests should pass"
+    
+    { success: true, message: "MacOS platform-specific comprehensive test passed" }
+}
+
+# Windows platform-specific tests
+def run_windows_platform_specific_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
+    info "Starting running Windows platform-specific tests" --context "windows-platform-tests"
+    
+    let windows_platform_tests = [
+        { name: "windows_platform_specific_tests", func: {|| test_windows_platform_specific_comprehensive } }
+    ]
+    
+    let results = (test_suite "windows_platform_tests" $windows_platform_tests --parallel false --fail-fast $fail_fast)
+    
+    success $"Windows platform-specific tests completed: ($results.passed)/($results.total) passed" --context "windows-platform-tests"
+    
+    $results
+}
+
+def test_windows_platform_specific_comprehensive [] {
+    # Run the comprehensive Windows platform-specific test suite
+    let result = (^nu "scripts/testing/platform/windows/windows-platform-specific-tests.nu" | complete)
+    assert_equal $result.exit_code 0 "Windows platform-specific comprehensive tests should pass"
+    
+    { success: true, message: "Windows platform-specific comprehensive test passed" }
 }
 
 # Integration test functions

@@ -48,13 +48,25 @@ def main [] {
 
     # Test error handling integration
     print "Testing error handling integration..."
-    test_retry 3 1 { false } false
-    test_logging "ERROR" "Retry failed" "[ERROR] Retry failed"
+    let retry_result = test_retry 3 1 { false } false
+    let log_result = test_logging "ERROR" "Retry failed" "[ERROR] Retry failed"
+    
+    if $retry_result and $log_result {
+        print "Error handling integration test passed"
+    } else {
+        print "Error handling integration test failed"
+    }
 
     # Test configuration validation with logging
     print "Testing configuration validation with logging..."
-    test_config_validation "" "Configuration validation failed"
-    test_logging "ERROR" "Configuration validation failed" "[ERROR] Configuration validation failed"
+    let config_result = test_config_validation "" "Configuration validation failed"
+    let config_log_result = test_logging "ERROR" "Configuration validation failed" "[ERROR] Configuration validation failed"
+    
+    if (not $config_result) and $config_log_result {
+        print "Configuration validation integration test passed"
+    } else {
+        print "Configuration validation integration test failed"
+    }
 
     # Run library integration tests
     print "Running library integration tests..."

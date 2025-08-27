@@ -1,14 +1,15 @@
 #!/usr/bin/env nu
-# Comprehensive tests for validators.nu library
+# Comprehensive tests for validators.nu library using consolidated patterns
 
+use ../../lib/constants.nu *
+use ../../lib/test-patterns.nu *  
+use ../../lib/script-helpers.nu *
 use ../../lib/validators.nu *
-use ../../lib/logging.nu *
-use ../../lib/platform.nu *
 use ../lib/test-utils.nu *
 
 # Test validate_command
 def test_validate_command [] {
-    info "Testing validate_command function" --context "test"
+    info "Testing validate_command function" --context $CONTEXTS.unit_test
     
     # Test with existing command
     let result = (null | validate_command "ls")

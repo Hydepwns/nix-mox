@@ -24,7 +24,7 @@ scripts/
 │   └── ci/                       # CI/CD tools
 ├── analysis/          # Analysis and reporting tools
 │   ├── analyze-sizes.nu          # Package size analysis
-│   ├── analyze-sizes.sh          # Shell version of size analysis
+│   ├── quality/                  # Code quality analysis tools
 │   ├── advanced-cache.nu         # Cache optimization
 │   ├── generate-docs.nu          # Documentation generation
 │   ├── generate-sbom.nu          # Software bill of materials
@@ -44,8 +44,7 @@ scripts/
 │   ├── unified-setup.nu          # All-in-one setup
 │   ├── install.nu                # Installation tools
 │   ├── setup-cachix.nu           # Cachix configuration
-│   ├── setup-remote-builder.nu   # Remote builder setup
-│   ├── setup-remote-builder.sh   # Shell version
+│   ├── setup-remote-builder.nu   # Modern remote builder setup (replaces .sh version)
 │   ├── test-remote-builder.nu    # Remote builder testing
 │   └── test-remote-builder.sh    # Shell version
 ├── testing/          # Testing and validation tools
@@ -79,6 +78,7 @@ scripts/
 │   └── validate-gaming-config.nu      # Gaming validation
 ├── platforms/        # Platform-specific tools
 │   ├── linux/                    # Linux-specific scripts
+│   │   └── common.nu             # Linux common utilities (modern)
 │   ├── macos/                    # macOS-specific scripts
 │   └── windows/                  # Windows-specific scripts
 ├── lib/              # Shared libraries and utilities

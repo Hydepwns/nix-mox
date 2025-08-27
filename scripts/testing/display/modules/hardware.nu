@@ -8,8 +8,7 @@ use ../../../lib/logging.nu *
 # Hardware detection module for display tests
 # Handles GPU detection, display environment detection, and hardware analysis
 
-use ../../lib/test-utils.nu *
-use ../../lib/testing.nu *
+use ../../../lib/testing.nu *
 
 export def detect_gpu_hardware [] {
     print $"($env.CYAN)🔍 Detecting GPU hardware... ($env.NC)"

@@ -9,7 +9,7 @@ use ../../../lib/logging.nu *
 # Handles configuration parsing, validation, and risk assessment
 
 use ../../lib/test-utils.nu *
-use ../../lib/testing.nu *
+use ../../../lib/testing.nu *
 
 export def analyze_display_config [] {
     print $"($env.CYAN)⚙️  Analyzing display configuration... ($env.NC)"

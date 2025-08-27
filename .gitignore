@@ -9,7 +9,7 @@ tmp/
 *.log
 
 # Coverage reports
-coverage.*
+coverage-tmp/
 coverage.yaml
 coverage.toml
 

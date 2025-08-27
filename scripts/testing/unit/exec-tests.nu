@@ -122,9 +122,9 @@ def test_run_with_retry_logic [] {
 def test_error_logic [] {
     print "Testing error logic..."
     # This will exit, so we just check that the function exists and can be called with dummy args
-    let did_error = (do { error { code: 1, message: "Test error", details: "Details" } "test" } | default "error")
-    track_test "error_exit" "unit" (if $did_error == "error" { "passed" } else { "failed" }) 0.1
-    assert_true ($did_error == "error") "error returns error (exits)"
+    let did_error = (do { error "Test error" } | complete | get exit_code | default 1)
+    track_test "error_exit" "unit" (if $did_error != 0 { "passed" } else { "failed" }) 0.1
+    assert_true ($did_error != 0) "error returns non-zero exit code"
 }
 
 def test_main_function [] {
