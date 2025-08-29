@@ -27,6 +27,81 @@ export def setup_test_env [] {
     $env.NC = (ansi reset)  # No Color
 }
 
+# Enhanced test isolation setup
+export def setup_isolated_test_env [test_name: string] {
+    # Create isolated test directory for this specific test
+    let base_temp = ($env | get TEMP? | default "coverage-tmp")
+    let test_id = (date now | format date "%Y%m%d_%H%M%S") + "_" + ($test_name | str replace -a " " "_")
+    let isolated_dir = $base_temp + "/nix-mox-tests/" + $test_id
+    
+    if not ($isolated_dir | path exists) {
+        mkdir $isolated_dir
+    }
+    
+    # Store original environment state for restoration
+    let original_env = {
+        TEST_TEMP_DIR: ($env | get TEST_TEMP_DIR? | default null),
+        TEST_LOG_FILE: ($env | get TEST_LOG_FILE? | default null),
+        PWD: ($env.PWD),
+        PATH: ($env.PATH)
+    }
+    
+    # Set isolated environment
+    $env.TEST_TEMP_DIR = $isolated_dir
+    $env.TEST_LOG_FILE = $isolated_dir + "/test.log"
+    $env.TEST_ISOLATED = true
+    $env.TEST_ORIGINAL_ENV = ($original_env | to json)
+    
+    # Set up color codes if not present
+    if not ($env | get GREEN?) {
+        $env.GREEN = (ansi green)
+        $env.RED = (ansi red)
+        $env.YELLOW = (ansi yellow)
+        $env.BLUE = (ansi blue)
+        $env.NC = (ansi reset)
+    }
+    
+    $isolated_dir
+}
+
+# Cleanup isolated test environment
+export def cleanup_isolated_test_env [] {
+    if ($env | get TEST_ISOLATED? | default false) {
+        let test_dir = $env.TEST_TEMP_DIR
+        
+        # Restore original environment
+        if ($env | get TEST_ORIGINAL_ENV?) {
+            let original_env = ($env.TEST_ORIGINAL_ENV | from json)
+            
+            if ($original_env.TEST_TEMP_DIR != null) {
+                $env.TEST_TEMP_DIR = $original_env.TEST_TEMP_DIR
+            } else {
+                hide-env TEST_TEMP_DIR
+            }
+            
+            if ($original_env.TEST_LOG_FILE != null) {
+                $env.TEST_LOG_FILE = $original_env.TEST_LOG_FILE
+            } else {
+                hide-env TEST_LOG_FILE
+            }
+        }
+        
+        # Remove isolation flags
+        hide-env TEST_ISOLATED
+        hide-env TEST_ORIGINAL_ENV
+        
+        # Clean up test directory
+        if ($test_dir | path exists) {
+            try {
+                rm -rf $test_dir
+            } catch {
+                # If cleanup fails, at least warn about it
+                print $"Warning: Could not clean up test directory ($test_dir)"
+            }
+        }
+    }
+}
+
 # --- Assertion Functions ---
 export def assert_true [condition: bool, message: string = ""] {
     let green = ($env | get GREEN? | default (ansi green))
@@ -187,6 +262,40 @@ export def run_test [test_file: string] {
         track_test $test_name "unit" "failed" $duration
         false
     }
+}
+
+# Enhanced isolated test runner
+export def run_isolated_test [test_func: closure, test_name: string, category: string = "unit"] {
+    # Setup isolated environment
+    let test_dir = (setup_isolated_test_env $test_name)
+    let start_time = (date now | into int)
+    
+    print $"($env.GREEN)Running isolated test: ($test_name)($env.NC)"
+    print $"  Test directory: ($test_dir)"
+    
+    let result = try {
+        # Run the test function in isolation
+        let test_result = (do $test_func)
+        let end_time = (date now | into int)
+        let duration = (($end_time - $start_time) | into float) / 1000000000
+        
+        print $"($env.GREEN)✓ Isolated test passed: ($test_name) - ($duration)s($env.NC)"
+        track_test $test_name $category "passed" $duration
+        {success: true, duration: $duration, error: null}
+    } catch { |err|
+        let end_time = (date now | into int)
+        let duration = (($end_time - $start_time) | into float) / 1000000000
+        
+        print $"($env.RED)✗ Isolated test failed: ($test_name) - ($duration)s($env.NC)"
+        print $"($env.RED)Error: ($err.msg)($env.NC)"
+        track_test $test_name $category "failed" $duration
+        {success: false, duration: $duration, error: $err.msg}
+    }
+    
+    # Always cleanup, even if test failed
+    cleanup_isolated_test_env
+    
+    $result.success
 }
 
 export def run_tests [test_dir: string, category: string = "unit"] {

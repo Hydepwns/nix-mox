@@ -1,8 +1,9 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/validators.nu
+use ../../lib/validators.nu *
 use ../../lib/logging.nu *
+use ../../lib/platform.nu *
 
 use ../lib/test-utils.nu *
 use ../lib/test-coverage.nu *
