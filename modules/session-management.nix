@@ -84,21 +84,7 @@ in
     
     # Add systemd user services for session management
     systemd.user.services = {
-      # Ensure PolicyKit authentication agent is running for GUI
-      polkit-kde-authentication-agent = mkIf config.services.xserver.desktopManager.plasma5.enable {
-        description = "PolicyKit Authentication Agent";
-        wantedBy = [ "graphical-session.target" ];
-        wants = [ "graphical-session.target" ];
-        after = [ "graphical-session.target" ];
-        serviceConfig = {
-          Type = "simple";
-          ExecStart = "${pkgs.libsForQt5.polkit-kde-agent}/libexec/polkit-kde-authentication-agent-1";
-          Restart = "on-failure";
-          RestartSec = 1;
-          TimeoutStopSec = 10;
-        };
-      };
-      
+      # Ensure PolicyKit authentication agent is running for GUI (Plasma 6)
       polkit-kde-authentication-agent-plasma6 = mkIf config.services.desktopManager.plasma6.enable {
         description = "PolicyKit Authentication Agent for Plasma 6";
         wantedBy = [ "graphical-session.target" ];
