@@ -106,7 +106,9 @@ help:
 	@echo "  validate-storage - Validate storage safety"
 	@echo "  validate-pre-rebuild - Comprehensive pre-rebuild validation"
 	@echo "  safety-check - Run mandatory safety validation"
-	@echo "  safe-rebuild - Run safe nixos-rebuild with validation"
+	@echo "  safe-rebuild - Run safe nixos-rebuild with full validation"
+	@echo "  rebuild-test - Test rebuild without making permanent"
+	@echo "  rebuild-check - Validate config before rebuild"
 	@echo "  storage-guard - Validate storage configuration"
 	@echo "  storage-fix - Fix storage configuration issues"
 	@echo "  storage-health - Comprehensive storage health check"
@@ -220,3 +222,22 @@ hooks-test: check-nushell ## Test all hooks without committing
 	@nu scripts/maintenance/ci/nix-syntax-check.nu check
 	@nu scripts/maintenance/ci/import-validation.nu check
 	@nu scripts/maintenance/ci/large-file-check.nu check
+	@nu scripts/maintenance/ci/nixos-config-check.nu check
+
+# Safe Rebuild Targets
+safe-rebuild: check-nushell ## Safe NixOS rebuild with full validation
+	@echo "🛡️  Running safe NixOS rebuild..."
+	@nu scripts/maintenance/safe-rebuild.nu
+
+rebuild-test: check-nushell ## Test rebuild without making permanent
+	@echo "🧪 Testing NixOS configuration..."
+	@nu scripts/maintenance/safe-rebuild.nu test
+
+rebuild-check: check-nushell ## Validate configuration before rebuild
+	@echo "✔️  Validating NixOS configuration..."
+	@nu scripts/validation/nixos-config-validator.nu --pre-rebuild=true
+	@nu scripts/testing/system/reboot-diagnostics.nu
+
+rebuild-quick: ## Quick rebuild without validation (dangerous!)
+	@echo "⚡ Quick rebuild (no validation)..."
+	@nu scripts/maintenance/safe-rebuild.nu --quick=true

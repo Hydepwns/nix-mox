@@ -17,7 +17,7 @@ FAILED=0
 
 # 1. Function naming consistency check
 echo ""
-echo "📝 [1/6] Checking function naming consistency..."
+echo "📝 [1/7] Checking function naming consistency..."
 if ! nu scripts/maintenance/ci/function-naming-check.nu check --staged-only=true; then
     echo "❌ Function naming violations found!"
     echo "Fix with: nu scripts/maintenance/ci/function-naming-check.nu fix --staged-only=true"
@@ -26,7 +26,7 @@ fi
 
 # 2. Nushell syntax validation
 echo ""
-echo "🐚 [2/6] Validating Nushell syntax..."
+echo "🐚 [2/7] Validating Nushell syntax..."
 if ! nu scripts/maintenance/ci/nushell-syntax-check.nu check --staged-only=true; then
     echo "❌ Nushell syntax errors found!"
     FAILED=1
@@ -34,7 +34,7 @@ fi
 
 # 3. Secret detection
 echo ""
-echo "🔒 [3/6] Scanning for secrets..."
+echo "🔒 [3/7] Scanning for secrets..."
 if ! nu scripts/maintenance/ci/secret-detection.nu scan --staged-only=true; then
     echo "❌ Potential secrets detected!"
     FAILED=1
@@ -42,7 +42,7 @@ fi
 
 # 4. Nix syntax validation
 echo ""
-echo "❄️  [4/6] Validating Nix syntax..."
+echo "❄️  [4/7] Validating Nix syntax..."
 if ! nu scripts/maintenance/ci/nix-syntax-check.nu check --staged-only=true; then
     echo "❌ Nix syntax errors found!"
     FAILED=1
@@ -50,7 +50,7 @@ fi
 
 # 5. Import validation
 echo ""
-echo "📦 [5/6] Validating imports..."
+echo "📦 [5/7] Validating imports..."
 if ! nu scripts/maintenance/ci/import-validation.nu check --staged-only=true; then
     echo "❌ Import errors found!"
     FAILED=1
@@ -58,10 +58,20 @@ fi
 
 # 6. Large file detection
 echo ""
-echo "📊 [6/6] Checking for large files..."
+echo "📊 [6/7] Checking for large files..."
 if ! nu scripts/maintenance/ci/large-file-check.nu check --staged-only=true; then
     echo "❌ Large files detected!"
     echo "Consider using Git LFS or adding them to .gitignore"
+    FAILED=1
+fi
+
+# 7. NixOS configuration validation
+echo ""
+echo "❄️  [7/7] Validating NixOS configuration..."
+if ! nu scripts/maintenance/ci/nixos-config-check.nu check --staged-only=true; then
+    echo "❌ NixOS configuration issues found!"
+    echo "These will cause problems after rebuild!"
+    echo "Run: nu scripts/maintenance/ci/nixos-config-check.nu suggest-fixes"
     FAILED=1
 fi
 
