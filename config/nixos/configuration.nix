@@ -89,22 +89,8 @@
   };
 
   # ============================================================================
-  # HARDWARE - NVIDIA RTX 4070
+  # HARDWARE - NVIDIA RTX 4070 (configured in display-fixes.nix)
   # ============================================================================
-
-  # NVIDIA configuration for RTX 4070
-  hardware.nvidia = {
-    modesetting.enable = true;
-    powerManagement.enable = false;
-    powerManagement.finegrained = false;
-    open = false; # Use closed source drivers
-    nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
-    forceFullCompositionPipeline = false;
-    prime = {
-      offload.enable = false;
-    };
-  };
 
   hardware = {
     # Enable all firmware
@@ -303,41 +289,10 @@
   };
 
   # ============================================================================
-  # ENVIRONMENT VARIABLES - OPTIMIZED FOR NVIDIA RTX 4070
+  # ENVIRONMENT VARIABLES (gaming/NVIDIA vars in display-fixes.nix)
   # ============================================================================
 
   environment.variables = {
-    # Proton/Wine
-    WINEDEBUG = "-all";
-    WINEESYNC = "1";
-    WINEFSYNC = "1";
-    WINE_LARGE_ADDRESS_AWARE = "1";
-
-    # Proton GE and Anticheat Support
-    PROTON_ENABLE_NVAPI = "1";
-    PROTON_HIDE_NVIDIA_GPU = "0";
-    PROTON_NO_ESYNC = "0";
-    PROTON_NO_FSYNC = "0";
-    PROTON_EAC_RUNTIME = "1";
-    PROTON_BATTLEYE_RUNTIME = "1";
-    PROTON_FORCE_LARGE_ADDRESS_AWARE = "1";
-    DXVK_HUD = "compiler";
-    VKD3D_DEBUG = "none";
-    VKD3D_CONFIG = "dxr,dxr11";
-
-    # NVIDIA (X11 optimized)
-    __GL_THREADED_OPTIMIZATIONS = "1";
-    __GL_SHADER_DISK_CACHE_SKIP_CLEANUP = "1";
-    __NV_PRIME_RENDER_OFFLOAD = "1";
-    __VK_LAYER_NV_optimus = "NVIDIA_only";
-
-    # Gaming optimizations
-    MANGOHUD = "1";
-    GAMEMODE = "1";
-
-    # SDL
-    SDL_VIDEODRIVER = "x11";
-
     # Git configuration
     GIT_EDITOR = "nvim";
 
