@@ -213,3 +213,4 @@ nu scripts/analysis/dashboard.nu
 - **Health Check**: `scripts/maintenance/health-check.nu`
 - **Dashboard**: `scripts/analysis/dashboard.nu`
 - **Storage Guard**: `scripts/storage/storage-guard.nu`
+# Test change
