@@ -10,6 +10,9 @@
 
     # Display fixes for KDE Plasma 6 + NVIDIA on NixOS 25.11
     ./display-fixes.nix
+
+    # Session management module - prevents reboot issues after rebuilds
+    ../../modules/session-management.nix
   ];
 
   # ============================================================================
@@ -29,6 +32,17 @@
 
   # Allow unfree packages (required for Steam, NVIDIA drivers)
   nixpkgs.config.allowUnfree = true;
+
+  # ============================================================================
+  # SESSION MANAGEMENT - PREVENT REBOOT ISSUES AFTER REBUILDS
+  # ============================================================================
+
+  # Enable session management with safety features
+  services.sessionManagement = {
+    enable = true;
+    ensureRebootCapability = true;
+    preventServiceRestartIssues = true;
+  };
 
   # ============================================================================
   # BOOT & KERNEL - OPTIMIZED FOR INTEL i7-13700K + NVIDIA RTX 4070
