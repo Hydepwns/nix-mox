@@ -79,7 +79,7 @@ in
     services.dbus.packages = with pkgs; [ 
       dconf
       gcr
-      gnome.gnome-settings-daemon
+      gnome-settings-daemon
     ];
     
     # Add systemd user services for session management
@@ -99,7 +99,7 @@ in
         };
       };
       
-      polkit-kde-authentication-agent-plasma6 = mkIf config.services.xserver.desktopManager.plasma6.enable {
+      polkit-kde-authentication-agent-plasma6 = mkIf config.services.desktopManager.plasma6.enable {
         description = "PolicyKit Authentication Agent for Plasma 6";
         wantedBy = [ "graphical-session.target" ];
         wants = [ "graphical-session.target" ];
@@ -116,7 +116,7 @@ in
     
     # Add warning for common issues
     warnings = 
-      (if config.services.xserver.desktopManager.plasma6.enable && !cfg.preventServiceRestartIssues then
+      (if config.services.desktopManager.plasma6.enable && !cfg.preventServiceRestartIssues then
         [ "Plasma 6 is enabled but service restart prevention is disabled. This may cause reboot issues after rebuilds." ]
       else []) ++
       (if !config.security.polkit.enable then
