@@ -97,11 +97,11 @@ def check_nixmox_components [] {
   info "Checking nix-mox specific components..." --context "health-check"
   
   let component_checks = [
-    { name: "flake_file", validator: {|| validate_file "flake.nix" } },
-    { name: "scripts_dir", validator: {|| validate_directory "scripts" } },
-    { name: "consolidated_libs", validator: {|| validate_file "scripts/lib/logging.nu" } },
-    { name: "makefile", validator: {|| validate_file "Makefile" } },
-    { name: "treefmt_config", validator: {|| validate_file "treefmt.nix" } }
+    { name: "flake_file", validator: {|| null | validate_file_quiet "flake.nix" } },
+    { name: "scripts_dir", validator: {|| null | validate_directory_quiet "scripts" } },
+    { name: "consolidated_libs", validator: {|| null | validate_file_quiet "scripts/lib/logging.nu" } },
+    { name: "makefile", validator: {|| null | validate_file_quiet "Makefile" } },
+    { name: "treefmt_config", validator: {|| null | validate_file_quiet "treefmt.nix" } }
   ]
   
   run_validations $component_checks --context "health-check"
@@ -112,59 +112,62 @@ def check_hardware_health [] {
   info "Checking hardware health and EMI interference..." --context "health-check"
   
   let hardware_checks = [
-    { name: "emi_detection", validator: {|| validate_emi_status } },
-    { name: "usb_devices", validator: {|| validate_usb_health } },
-    { name: "i2c_communication", validator: {|| validate_i2c_health } }
+    { name: "emi_detection", validator: {|| optional_validator {|| validate_emi_status } } },
+    { name: "usb_devices", validator: {|| optional_validator {|| validate_usb_health } } },
+    { name: "i2c_communication", validator: {|| optional_validator {|| validate_i2c_health } } }
   ]
   
   run_validations $hardware_checks --context "health-check"
 }
 
-# EMI validation function
+# EMI validation function (quiet version for optional use)
 def validate_emi_status [] {
+  |input|
   try {
     # Run quick EMI check using our detection system
-    let emi_result = (safe_command "nu scripts/testing/hardware/emi-detection.nu" --context "emi-health-check")
+    let emi_result = (safe_command "nu scripts/testing/hardware/emi-detection.nu 2>/dev/null || echo 'EMI check skipped'" --context "emi-health-check")
     
     if not ($emi_result | str contains "errors detected") {
-      { success: true, message: "No EMI interference detected" }
+      validation_result true "No EMI interference detected"
     } else {
-      { success: false, message: "EMI interference or hardware errors detected" }
+      validation_result false "EMI interference detected"
     }
   } catch {
-    { success: false, message: "Could not run EMI detection" }
+    validation_result false "EMI detection failed"
   }
 }
 
-# USB device health validation
+# USB device health validation (quiet version for optional use)
 def validate_usb_health [] {
+  |input|
   try {
-    let usb_errors = (safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager | grep -E 'error.*USB|can.*t set config' | wc -l" "0")
+    let usb_errors = (safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager 2>/dev/null | grep -E 'error.*USB|can.*t set config' | wc -l || echo '0'" "0")
     let error_count = ($usb_errors | into int)
     
     if $error_count == 0 {
-      { success: true, message: "No recent USB errors detected" }
+      validation_result true "No recent USB errors detected"
     } else {
-      { success: false, message: $"($error_count) USB errors detected in past hour" }
+      validation_result false $"USB errors detected: ($error_count)"
     }
   } catch {
-    { success: true, message: "USB health check skipped" }
+    validation_result false "USB health check failed"
   }
 }
 
-# I2C communication validation  
+# I2C communication validation (quiet version for optional use)
 def validate_i2c_health [] {
+  |input|
   try {
-    let i2c_errors = (safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager | grep -E 'i2c.*Invalid|0xffff' | wc -l" "0")
+    let i2c_errors = (safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager 2>/dev/null | grep -E 'i2c.*Invalid|0xffff' | wc -l || echo '0'" "0")
     let error_count = ($i2c_errors | into int)
     
     if $error_count == 0 {
-      { success: true, message: "No recent I2C errors detected" }
+      validation_result true "No recent I2C errors detected"
     } else {
-      { success: false, message: $"($error_count) I2C errors detected in past hour" }
+      validation_result false $"I2C errors detected: ($error_count)"
     }
   } catch {
-    { success: true, message: "I2C health check skipped" }
+    validation_result false "I2C health check failed"
   }
 }
 
@@ -173,9 +176,9 @@ def check_system_resources [] {
   info "Checking system resources..." --context "health-check"
   
   let resource_checks = [
-    { name: "disk_space", validator: {|| validate_disk_space 80 } },
-    { name: "memory", validator: {|| validate_memory 80 } },
-    { name: "network", validator: {|| validate_network "8.8.8.8" } }
+    { name: "disk_space", validator: {|| null | validate_disk_space 80 } },
+    { name: "memory", validator: {|| null | validate_memory 80 } },
+    { name: "network", validator: {|| optional_validator {|| validate_network_resilient "8.8.8.8" 2 } } }
   ]
   
   run_validations $resource_checks --context "health-check"

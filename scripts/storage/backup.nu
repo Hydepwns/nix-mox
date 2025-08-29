@@ -5,9 +5,9 @@
 use ../lib/logging.nu *
 use ../lib/platform.nu *
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # BACKUP AND RESTORE FUNCTIONS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def backup_storage_config [] {
     info "Starting backing up storage configuration" --context "storage-backup"

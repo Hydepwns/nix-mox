@@ -5,9 +5,9 @@
 use ../lib/logging.nu *
 use ../lib/platform.nu *
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # DASHBOARD DISPLAY FUNCTIONS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def display_overview [data: record, format: string] {
     if $format == "json" {
@@ -271,9 +271,9 @@ export def display_project_status [data: record, format: string] {
     info "Project status display not fully implemented" --context "project"
 }
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # UTILITY FUNCTIONS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def save_dashboard_data [data: record, output_path: string] {
     try {

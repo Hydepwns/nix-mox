@@ -31,7 +31,7 @@ def main [
         boot_config_check: (check_boot_config $flake_path $verbose),
         network_check: (check_network_config $flake_path $verbose),
         service_check: (check_critical_services $flake_path $verbose),
-        flake_syntax_check: (check_flake_syntax $flake_path $verbose)
+        flake_syntax_check: (check_flake_validation $flake_path $verbose)
     }
     
     print_results $results
@@ -270,7 +270,8 @@ def check_critical_services [flake_path: string, verbose: bool] {
     }
 }
 
-
+def check_flake_validation [flake_path: string, verbose: bool] {
+    if $verbose { print "🔍 Validating flake configuration..." }
     
     try {
         # Test flake evaluation

@@ -2,9 +2,9 @@
 # Component database for nix-mox setup system
 # Extracted from scripts/setup/component-browser.nu
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # COMPONENT DATABASE DEFINITIONS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export const COMPONENT_DB = {
     development: {

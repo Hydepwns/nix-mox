@@ -371,7 +371,7 @@ def validate_performance_config [] {
 
 def validate_backup_system [] {
     # Check if backup system is configured
-    let backup_scripts = (safe_command_with_fallback "ls scripts/backup*" "" --context "backup-validation" --quiet)
+    let backup_scripts = (safe_command_with_fallback "ls scripts/backup*" "" --context "backup-validation")
     if ($backup_scripts | str length) > 0 {
         validation_result true "Backup system available"
     } else {

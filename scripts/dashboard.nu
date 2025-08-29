@@ -2,6 +2,8 @@
 # Simplified dashboard system for nix-mox
 # Basic dashboard functionality without complex module dependencies
 
+use lib/command-wrapper.nu *
+
 # Simple logging functions
 def info [msg: string, --context: string = "dashboard"] {
     print $"[INFO] (ansi green)($msg)(ansi reset)"
@@ -30,7 +32,7 @@ def banner [title: string, context: string = "dashboard"] {
 # Platform detection
 def get_platform [] {
     let os = $env.OS?
-    let uname = (safe_command_with_fallback "uname -s" "unknown" --context "platform-detection" --quiet | str downcase)
+    let uname = (safe_command_with_fallback "uname -s" "unknown" --context "platform-detection" | str downcase)
     
     if $os == "Windows_NT" {
         "windows"
@@ -106,8 +108,8 @@ def collect_basic_data [] {
     {
         platform: $platform,
         timestamp: $timestamp,
-        hostname: (safe_command_with_fallback "hostname" "unknown" --context "system-info" --quiet),
-        uptime: (safe_command_with_fallback "uptime" "unknown" --context "system-info" --quiet | str trim)
+        hostname: (safe_command_with_fallback "hostname" "unknown" --context "system-info" ),
+        uptime: (safe_command_with_fallback "uptime" "unknown" --context "system-info"  | str trim)
     }
 }
 

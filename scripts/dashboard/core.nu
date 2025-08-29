@@ -8,9 +8,9 @@ use ../lib/script-template.nu *
 use data-collectors.nu *
 use displays.nu *
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # MAIN DASHBOARD FUNCTIONS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def overview_dashboard [refresh: int, watch: bool, output: string, format: string] {
     if $watch {

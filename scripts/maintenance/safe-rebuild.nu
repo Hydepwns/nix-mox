@@ -3,6 +3,7 @@
 # Import unified libraries
 use ../lib/validators.nu *
 use ../lib/logging.nu *
+use ../lib/secure-command.nu *
 
 # Safe NixOS rebuild wrapper with mandatory validation
 # Prevents system damage by enforcing safety checks
@@ -106,13 +107,14 @@ def main [
     # Step 6: Dry-run validation (always, unless action is already dry)
     if not ($rebuild_action in ["dry-activate", "dry-build"]) {
         print "🧪 Running dry-run validation..."
-        let dry_run_result = (nixos-rebuild dry-activate --flake .#nixos | complete)
+        let dry_run_result = (secure_sudo "nixos-rebuild" ["dry-activate" "--flake" ".#nixos"] --context "rebuild-dry-run" --require-confirmation false)
         
         if $dry_run_result.exit_code != 0 {
             print "❌ Dry-run validation failed!"
             print $dry_run_result.stderr
             print ""
             print "🚨 Configuration has evaluation or syntax errors"
+            log_security_event "dry_run_failed" "nixos-rebuild" { error: $dry_run_result.stderr }
             exit 1
         }
         
@@ -139,14 +141,28 @@ def main [
         }
     }
 
-    # Step 8: Execute rebuild with monitoring
+    # Step 8: Execute rebuild with monitoring - SECURE EXECUTION
     print $"🚀 Executing nixos-rebuild ($rebuild_action)..."
     print "==============================================="
     
+    # Security validation before execution
+    if not (validate_script_before_execution "safe-rebuild.nu") {
+        print "❌ Security validation failed for rebuild script"
+        exit 1
+    }
+    
     let start_time = (date now)
-    let rebuild_result = (nixos-rebuild $rebuild_action --flake .#nixos | complete)
+    let rebuild_result = (secure_sudo "nixos-rebuild" [$rebuild_action "--flake" ".#nixos"] --context "system-rebuild" --require-confirmation false)
     let end_time = (date now)
     let duration = ($end_time - $start_time)
+    
+    # Log rebuild attempt
+    log_security_event "system_rebuild_executed" "nixos-rebuild" {
+        action: $rebuild_action
+        flake: $flake_target
+        duration: $duration
+        success: $rebuild_result.success
+    }
     
     if $rebuild_result.exit_code == 0 {
         print ""

@@ -6,9 +6,9 @@ use ../lib/logging.nu *
 use ../lib/platform.nu *
 use ../lib/command-wrapper.nu *
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # MAIN FIXING COORDINATOR
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def fix_storage_config [backup: bool, dry_run: bool] {
     info "Starting fixing storage configuration" --context "storage-fix"
@@ -70,9 +70,9 @@ export def fix_storage_config [backup: bool, dry_run: bool] {
     }
 }
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # INDIVIDUAL FIXING FUNCTIONS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def fix_uuid_consistency [dry_run: bool] {
     if $dry_run {

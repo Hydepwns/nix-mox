@@ -6,9 +6,9 @@ use ../lib/logging.nu *
 use ../lib/platform.nu *
 use ../lib/command-wrapper.nu [execute_command]
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # MAIN UPDATE COORDINATOR
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def auto_update_storage [backup: bool, dry_run: bool] {
     info "Starting auto-updating storage configuration" --context "storage-update"
@@ -51,9 +51,9 @@ export def auto_update_storage [backup: bool, dry_run: bool] {
     }
 }
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # UPDATE FUNCTIONS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def update_hardware_configuration [dry_run: bool] {
     if $dry_run {

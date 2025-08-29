@@ -6,7 +6,7 @@ use ../lib/logging.nu
 
 
 # nix-mox Size Analysis Script
-# ============================
+# ──────────────────────────────────────────────────────────
 # Analyzes the size of all packages, devshells, and templates
 # Provides detailed reporting and performance tradeoffs
 

@@ -7,9 +7,9 @@ use ../../lib/testing.nu *
 use ../../lib/validators.nu *
 use ../../lib/command-wrapper.nu [execute_command]
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # VALIDATION TEST IMPLEMENTATIONS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def test_validation_safety [] {
     # Test that validation safety checks work correctly
@@ -79,9 +79,9 @@ export def test_setup_safety [] {
     { success: true, message: "setup safety test passed" }
 }
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # UNIT TEST IMPLEMENTATIONS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def test_logging_system [] {
     # Test logging system functionality
@@ -144,9 +144,9 @@ export def test_analysis_system [] {
     { success: true, message: "analysis system test passed" }
 }
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # LIBRARY TEST IMPLEMENTATIONS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def test_validators_library [] {
     # Test validators library
@@ -239,9 +239,9 @@ export def test_testing_library [] {
     { success: true, message: "testing library test passed" }
 }
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # INTEGRATION TEST IMPLEMENTATIONS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def test_setup_integration [] {
     # Test setup integration
@@ -318,9 +318,9 @@ export def test_chezmoi_consolidated_integration [] {
     { success: true, message: "chezmoi consolidated integration test passed" }
 }
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # PLATFORM-SPECIFIC TEST IMPLEMENTATIONS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def test_platform_detection_comprehensive [] {
     # Comprehensive platform detection test
@@ -359,9 +359,9 @@ export def test_cross_platform_compatibility [] {
     { success: true, message: "cross-platform compatibility test passed" }
 }
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # STUB TEST IMPLEMENTATIONS (to be expanded)
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def test_nixos_platform_specific [] {
     { success: true, message: "nixos platform test passed" }

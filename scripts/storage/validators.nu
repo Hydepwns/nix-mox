@@ -7,9 +7,9 @@ use ../lib/platform.nu *
 use ../lib/validators.nu *
 use ../lib/command-wrapper.nu *
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # COMPREHENSIVE VALIDATION RUNNER
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def run_comprehensive_storage_validation [] {
     let storage_validations = [
@@ -25,9 +25,9 @@ export def run_comprehensive_storage_validation [] {
     run_validations $storage_validations --fail-fast false --context "storage-validation"
 }
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # INDIVIDUAL VALIDATION FUNCTIONS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def validate_hardware_config_exists [] {
     try {

@@ -6,9 +6,9 @@ use ../../lib/logging.nu *
 use ../../lib/testing.nu *
 use implementations.nu *
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # MAIN TEST RUNNERS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def run_all_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
     info "Starting running all test suites" --context "test-all"
@@ -148,9 +148,9 @@ export def run_validation_tests [coverage: bool, output: string, parallel: bool,
     $results
 }
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # SPECIALIZED TEST RUNNERS
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def run_maintenance_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
     info "Starting running maintenance tests" --context "maintenance-tests"
@@ -200,9 +200,9 @@ export def run_platform_tests [coverage: bool, output: string, parallel: bool, f
     $results
 }
 
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 # STUB RUNNERS (to be implemented)
-# =============================================================================
+# ──────────────────────────────────────────────────────────
 
 export def run_analysis_tests [coverage: bool, output: string, parallel: bool, fail_fast: bool] {
     info "Starting running analysis tests" --context "analysis-tests"
