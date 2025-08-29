@@ -5,6 +5,51 @@
 
 use logging.nu *
 
+# Simple safe command execution (commonly used pattern)
+export def safe_command [
+    command: string,
+    --context: string = "command",
+    --quiet = false
+] {
+    try {
+        let result = (^sh -c $command | complete)
+        if not $quiet and $result.exit_code != 0 {
+            warn $"Command failed: ($command)" --context $context
+        }
+        $result.stdout
+    } catch { |err|
+        if not $quiet {
+            error $"Command execution failed: ($err.msg)" --context $context
+        }
+        ""
+    }
+}
+
+# Safe command with fallback value
+export def safe_command_with_fallback [
+    command: string,
+    fallback: string,
+    --context: string = "command",
+    --quiet = false
+] {
+    try {
+        let result = (^sh -c $command | complete)
+        if $result.exit_code == 0 {
+            $result.stdout
+        } else {
+            if not $quiet {
+                warn $"Command failed, using fallback: ($command)" --context $context
+            }
+            $fallback
+        }
+    } catch { |err|
+        if not $quiet {
+            warn $"Command execution failed, using fallback: ($err.msg)" --context $context
+        }
+        $fallback
+    }
+}
+
 # Core command execution with functional error handling
 export def execute_command [
     command: list<string>,

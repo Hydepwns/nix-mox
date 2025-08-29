@@ -18,20 +18,20 @@ def main [] {
 
     # Clear system caches
     print "🧹 Clearing system caches..."
-    clear-system-caches
+    clear_system_caches
 
     # Clean up Homebrew
     print "🍺 Cleaning up Homebrew..."
-    clean-homebrew
+    clean_homebrew
 
     # Check disk space
     print "💾 Checking disk space..."
-    check-disk-space
+    check_disk_space
 
     print "✅ macOS maintenance complete!"
 }
 
-def clear-system-caches [] {
+def clear_system_caches [] {
     # Clear various system caches
     sudo rm -rf /Library/Caches/*
     sudo rm -rf ~/Library/Caches/*
@@ -44,7 +44,7 @@ def clear-system-caches [] {
     print "✅ System caches cleared"
 }
 
-def clean-homebrew [] {
+def clean_homebrew [] {
     if (which brew | is-empty) {
         print "⚠️  Homebrew not installed, skipping Homebrew cleanup"
         return
@@ -57,7 +57,7 @@ def clean-homebrew [] {
     print "✅ Homebrew cleanup complete"
 }
 
-def check-disk-space [] {
+def check_disk_space [] {
     # Get disk usage information
     df -h | where Filesystem =~ "/dev/"
 

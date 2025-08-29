@@ -30,7 +30,7 @@ def banner [title: string, context: string = "dashboard"] {
 # Platform detection
 def get_platform [] {
     let os = $env.OS?
-    let uname = (try { (^uname -s | str downcase) } catch { "unknown" })
+    let uname = (safe_command_with_fallback "uname -s" "unknown" --context "platform-detection" --quiet | str downcase)
     
     if $os == "Windows_NT" {
         "windows"
@@ -106,8 +106,8 @@ def collect_basic_data [] {
     {
         platform: $platform,
         timestamp: $timestamp,
-        hostname: (try { (^hostname) } catch { "unknown" }),
-        uptime: (try { (^uptime | str trim) } catch { "unknown" })
+        hostname: (safe_command_with_fallback "hostname" "unknown" --context "system-info" --quiet),
+        uptime: (safe_command_with_fallback "uptime" "unknown" --context "system-info" --quiet | str trim)
     }
 }
 
@@ -127,7 +127,27 @@ def collect_system_data [] {
         }
     } catch { { total: "unknown", used: "unknown", usage_percent: 0 } })
     
-    $basic | merge { disk: $disk, memory: $memory }
+    let hardware = (try {
+        let emi_status = (^nu scripts/testing/hardware/emi-detection.nu | complete)
+        let usb_errors = (^journalctl --since "1 hour ago" --no-pager | grep -E "error.*USB|can.*t set config" | wc -l | str trim | into int)
+        let i2c_errors = (^journalctl --since "1 hour ago" --no-pager | grep -E "i2c.*Invalid|0xffff" | wc -l | str trim | into int)
+        
+        {
+            emi_healthy: (($emi_status.exit_code == 0) and not ($emi_status.stdout | str contains "errors detected")),
+            usb_errors: $usb_errors,
+            i2c_errors: $i2c_errors,
+            overall_health: (if ($usb_errors == 0 and $i2c_errors == 0) { "healthy" } else { "issues_detected" })
+        }
+    } catch { 
+        { 
+            emi_healthy: true, 
+            usb_errors: 0, 
+            i2c_errors: 0, 
+            overall_health: "unknown" 
+        } 
+    })
+    
+    $basic | merge { disk: $disk, memory: $memory, hardware: $hardware }
 }
 
 # Display functions
@@ -149,6 +169,20 @@ def display_system_info [data: record, format: string] {
     if "memory" in $data {
         info $"Memory Usage: ($data.memory.usage_percent)%"
         info $"Memory Total: ($data.memory.total)"
+    }
+    
+    if "hardware" in $data {
+        let status_icon = if ($data.hardware.overall_health == "healthy") { "✅" } else if ($data.hardware.overall_health == "issues_detected") { "⚠️ " } else { "❓" }
+        info $"Hardware Health: ($status_icon) ($data.hardware.overall_health)"
+        if ($data.hardware.usb_errors > 0) {
+            info $"USB Errors (1h): ($data.hardware.usb_errors)"
+        }
+        if ($data.hardware.i2c_errors > 0) {
+            info $"I2C Errors (1h): ($data.hardware.i2c_errors)"  
+        }
+        if not $data.hardware.emi_healthy {
+            info "EMI Interference: Detected"
+        }
     }
 }
 

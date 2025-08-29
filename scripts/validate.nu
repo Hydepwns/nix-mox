@@ -28,6 +28,7 @@ def main [
         "gaming" => (gaming_validation_suite),
         "display" => (display_validation_suite),
         "storage" => (storage_validation_suite),
+        "hardware" => (hardware_validation_suite),
         "pre-rebuild" => (pre_rebuild_validation_suite),
         "comprehensive" => (comprehensive_validation_suite),
         "safety" => (safety_validation_suite),
@@ -83,9 +84,9 @@ def gaming_validation_suite [] {
     basic_validation_suite | append [
         { name: "gaming_flake", validator: {|| validate_file "flakes/gaming/flake.nix" --required false } },
         { name: "gaming_module", validator: {|| validate_file "flakes/gaming/module.nix" --required false } },
-        { name: "steam_available", validator: {|| try { validate_command "steam" } catch { validation_result false "Steam not found (optional)" } } },
-        { name: "lutris_available", validator: {|| try { validate_command "lutris" } catch { validation_result false "Lutris not found (optional)" } } },
-        { name: "gamemode_available", validator: {|| try { validate_command "gamemoderun" } catch { validation_result false "GameMode not found (optional)" } } },
+        { name: "steam_available", validator: {|| if (which steam | is-not-empty) { validation_result true "Steam available" } else { validation_result false "Steam not found (optional)" } } },
+        { name: "lutris_available", validator: {|| if (which lutris | is-not-empty) { validation_result true "Lutris available" } else { validation_result false "Lutris not found (optional)" } } },
+        { name: "gamemode_available", validator: {|| if (which gamemoderun | is-not-empty) { validation_result true "GameMode available" } else { validation_result false "GameMode not found (optional)" } } },
         { name: "graphics_drivers", validator: {|| validate_graphics_drivers } }
     ]
 }
@@ -93,8 +94,8 @@ def gaming_validation_suite [] {
 # Display configuration validation suite  
 def display_validation_suite [] {
     [
-        { name: "xorg_available", validator: {|| try { validate_command "Xorg" } catch { validation_result false "Xorg not found (optional)" } } },
-        { name: "wayland_available", validator: {|| try { validate_command "weston" } catch { validation_result false "Wayland not found (optional)" } } },
+        { name: "xorg_available", validator: {|| if (which Xorg | is-not-empty) { validation_result true "Xorg available" } else { validation_result false "Xorg not found (optional)" } } },
+        { name: "wayland_available", validator: {|| if (which weston | is-not-empty) { validation_result true "Wayland available" } else { validation_result false "Wayland not found (optional)" } } },
         { name: "display_manager", validator: {|| validate_display_manager } },
         { name: "graphics_config", validator: {|| validate_graphics_config } },
         { name: "desktop_environment", validator: {|| validate_desktop_environment } }
@@ -122,6 +123,16 @@ def pre_rebuild_validation_suite [] {
     ]
 }
 
+# Hardware health validation suite
+def hardware_validation_suite [] {
+    [
+        { name: "emi_interference", validator: {|| validate_emi_interference } },
+        { name: "usb_device_health", validator: {|| validate_usb_device_health } },
+        { name: "i2c_communication", validator: {|| validate_i2c_communication } },
+        { name: "hardware_errors", validator: {|| validate_hardware_error_rate } }
+    ]
+}
+
 # Comprehensive validation suite (all checks)
 def comprehensive_validation_suite [] {
     basic_validation_suite 
@@ -129,6 +140,7 @@ def comprehensive_validation_suite [] {
     | append (gaming_validation_suite) 
     | append (display_validation_suite)
     | append (storage_validation_suite)
+    | append (hardware_validation_suite)
     | append [
         { name: "security_config", validator: {|| validate_security_config } },
         { name: "performance_config", validator: {|| validate_performance_config } },
@@ -162,11 +174,11 @@ def validate_graphics_drivers [] {
     if $platform.is_linux {
         # Check for NVIDIA/AMD drivers
         try {
-            let lspci_output = (lspci | complete)
-            if ($lspci_output.stdout | str contains -i "nvidia") {
-                try { validate_command "nvidia-smi" } catch { validation_result false "NVIDIA tools not found (optional)" }
-            } else if ($lspci_output.stdout | str contains -i "amd") {
-                try { validate_command "amdgpu-pro" } catch { validation_result false "AMD tools not found (optional)" }
+            let lspci_output = (safe_command "lspci" --context "graphics-validation")
+            if ($lspci_output | str contains -i "nvidia") {
+                if (which nvidia-smi | is-not-empty) { validation_result true "NVIDIA tools available" } else { validation_result false "NVIDIA tools not found (optional)" }
+            } else if ($lspci_output | str contains -i "amd") {
+                if (which amdgpu-pro | is-not-empty) { validation_result true "AMD tools available" } else { validation_result false "AMD tools not found (optional)" }
             } else {
                 validation_result true "Integrated graphics detected"
             }
@@ -223,8 +235,8 @@ def validate_desktop_environment [] {
 
 def validate_boot_partition [] {
     try {
-        let boot_mount = (df /boot | complete)
-        if $boot_mount.exit_code == 0 {
+        let boot_mount = (safe_command_with_fallback "df /boot" "error" --context "boot-validation")
+        if ($boot_mount != "error") {
             validation_result true "Boot partition accessible"
         } else {
             validation_result false "Boot partition not accessible"
@@ -236,8 +248,8 @@ def validate_boot_partition [] {
 
 def validate_root_partition [] {
     try {
-        let root_mount = (df / | complete)
-        if $root_mount.exit_code == 0 {
+        let root_mount = (safe_command_with_fallback "df /" "error" --context "root-validation")
+        if ($root_mount != "error") {
             validation_result true "Root partition accessible" 
         } else {
             validation_result false "Root partition not accessible"
@@ -261,8 +273,8 @@ def validate_uuid_consistency [] {
 def validate_filesystem_health [] {
     try {
         # Basic filesystem health check
-        let df_result = (df -h | complete)
-        if $df_result.exit_code == 0 {
+        let df_result = (safe_command "df -h" --context "filesystem-validation")
+        if ($df_result | str length) > 0 {
             validation_result true "Filesystem health OK"
         } else {
             validation_result false "Filesystem health issues detected"
@@ -289,8 +301,8 @@ def validate_system_health [] {
 
 def validate_nix_channels [] {
     try {
-        let channels = (nix-channel --list | complete)
-        if $channels.exit_code == 0 {
+        let channels = (safe_command "nix-channel --list" --context "nix-validation")
+        if ($channels | str length) > 0 {
             validation_result true "Nix channels accessible"
         } else {
             validation_result false "Nix channels issues"
@@ -302,8 +314,8 @@ def validate_nix_channels [] {
 
 def validate_nixos_config [] {
     try {
-        let build_result = (nix build .#nixosConfigurations.nixos.config.system.build.toplevel --dry-run | complete)
-        if $build_result.exit_code == 0 {
+        let build_result = (safe_command "nix build .#nixosConfigurations.nixos.config.system.build.toplevel --dry-run" --context "nixos-validation")
+        if ($build_result | str length) > 0 {
             validation_result true "NixOS configuration builds successfully"
         } else {
             validation_result false $"NixOS configuration build failed: ($build_result.stderr)"
@@ -330,9 +342,9 @@ def validate_critical_nixos_config [] {
 
 def validate_rollback_capability [] {
     try {
-        let generations = (nix-env --list-generations | complete)
-        if $generations.exit_code == 0 {
-            let gen_count = ($generations.stdout | lines | length)
+        let generations = (safe_command "nix-env --list-generations" --context "rollback-validation")
+        if ($generations | str length) > 0 {
+            let gen_count = ($generations | lines | length)
             if $gen_count > 1 {
                 let msg = "Rollback capability available (" + ($gen_count | into string) + " generations)"
                 validation_result true $msg
@@ -359,8 +371,8 @@ def validate_performance_config [] {
 
 def validate_backup_system [] {
     # Check if backup system is configured
-    let backup_scripts = (ls scripts/backup* | complete)
-    if $backup_scripts.exit_code == 0 {
+    let backup_scripts = (safe_command_with_fallback "ls scripts/backup*" "" --context "backup-validation" --quiet)
+    if ($backup_scripts | str length) > 0 {
         validation_result true "Backup system available"
     } else {
         validation_result false "No backup system found"
@@ -402,6 +414,68 @@ def generate_validation_report [results: record, output_path: string] {
 }
 
 # Show help for validation suites
+# Hardware validation functions
+def validate_emi_interference [] {
+    try {
+        let emi_result = (safe_command "nu scripts/testing/hardware/emi-detection.nu" --context "emi-validation")
+        
+        if not ($emi_result | str contains "errors detected") {
+            validation_result true "No EMI interference detected"
+        } else {
+            validation_result false "EMI interference or hardware errors detected"
+        }
+    } catch {
+        validation_result false "EMI detection check failed"
+    }
+}
+
+def validate_usb_device_health [] {
+    try {
+        let usb_errors = (safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager | grep -E 'error.*USB|can.*t set config' | wc -l" "0")
+        let error_count = ($usb_errors | str trim | into int)
+        
+        if $error_count == 0 {
+            validation_result true "No recent USB errors detected"
+        } else {
+            validation_result false $"($error_count) USB errors detected in past hour"
+        }
+    } catch {
+        validation_result true "USB health check skipped"
+    }
+}
+
+def validate_i2c_communication [] {
+    try {
+        let i2c_errors = (safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager | grep -E 'i2c.*Invalid|0xffff' | wc -l" "0")
+        let error_count = ($i2c_errors | str trim | into int)
+        
+        if $error_count == 0 {
+            validation_result true "No recent I2C errors detected"
+        } else {
+            validation_result false $"($error_count) I2C communication errors detected"
+        }
+    } catch {
+        validation_result true "I2C communication check skipped"
+    }
+}
+
+def validate_hardware_error_rate [] {
+    try {
+        let total_errors = (safe_command_with_fallback "journalctl --since '6 hours ago' --no-pager | grep -E 'error.*hardware|EMI|disabled by hub' | wc -l" "0")
+        let error_count = ($total_errors | str trim | into int)
+        
+        if $error_count == 0 {
+            validation_result true "No hardware errors detected"
+        } else if $error_count < 5 {
+            validation_result true $"Low hardware error rate: ($error_count) errors in 6h"
+        } else {
+            validation_result false $"High hardware error rate: ($error_count) errors in 6h"
+        }
+    } catch {
+        validation_result true "Hardware error rate check skipped"
+    }
+}
+
 def show_validation_help [] {
     format_help "nix-mox validation" "Consolidated validation system for nix-mox" "nu validate.nu <suite> [options]" [
         { name: "basic", description: "Basic system validation (platform, commands, resources)" }
@@ -409,6 +483,7 @@ def show_validation_help [] {
         { name: "gaming", description: "Gaming setup validation (drivers, tools, configs)" }
         { name: "display", description: "Display system validation (X11, Wayland, drivers)" }
         { name: "storage", description: "Storage safety validation (partitions, UUIDs, health)" }
+        { name: "hardware", description: "Hardware health validation (EMI, USB, I2C errors)" }
         { name: "pre-rebuild", description: "Pre-rebuild safety checks (comprehensive)" }
         { name: "comprehensive", description: "All validation suites combined" }
         { name: "safety", description: "Safety-critical validations only" }

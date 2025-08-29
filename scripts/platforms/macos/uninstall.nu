@@ -22,7 +22,7 @@ def main [] {
 
     # Clean up any remaining files
     print "🧹 Cleaning up remaining files..."
-    cleanup-files
+    cleanup_files
 
     print "✅ nix-mox uninstallation complete!"
     print ""
@@ -32,7 +32,7 @@ def main [] {
     print "sudo rm -rf ~/.nix-defexpr"
 }
 
-def cleanup-files [] {
+def cleanup_files [] {
     # Remove any nix-mox specific files
     rm -rf ~/.config/nix-mox
     rm -rf ~/.local/share/nix-mox

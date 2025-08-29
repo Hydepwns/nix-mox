@@ -22,7 +22,7 @@ def main [] {
     print "✅ macOS-specific tests completed successfully!"
 }
 
-def test-macos-commands [] {
+def test_macos_commands [] {
     print "🔧 Testing macOS-specific commands..."
     # Test common macOS commands
     let commands = ["sw_vers", "system_profiler", "defaults", "launchctl", "pmset", "ioreg"]
@@ -35,7 +35,7 @@ def test-macos-commands [] {
     }
 }
 
-def test-homebrew-functionality [] {
+def test_homebrew_functionality [] {
     print "🍺 Testing Homebrew functionality..."
     # Check if Homebrew is available
     if (which brew | is-empty) {
@@ -53,7 +53,7 @@ def test-homebrew-functionality [] {
     }
 }
 
-def test-xcode-functionality [] {
+def test_xcode_functionality [] {
     print "🛠️  Testing Xcode functionality..."
     # Check if Xcode command line tools are available
     if (which xcodebuild | is-empty) {
@@ -71,7 +71,7 @@ def test-xcode-functionality [] {
     }
 }
 
-def test-macos-security [] {
+def test_macos_security [] {
     print "🔒 Testing macOS security features..."
     # Test security commands
     let security_commands = ["spctl", "csrutil", "fdesetup"]

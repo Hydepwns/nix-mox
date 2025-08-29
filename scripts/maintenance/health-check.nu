@@ -107,6 +107,67 @@ def check_nixmox_components [] {
   run_validations $component_checks --context "health-check"
 }
 
+# Hardware health and EMI detection checks
+def check_hardware_health [] {
+  info "Checking hardware health and EMI interference..." --context "health-check"
+  
+  let hardware_checks = [
+    { name: "emi_detection", validator: {|| validate_emi_status } },
+    { name: "usb_devices", validator: {|| validate_usb_health } },
+    { name: "i2c_communication", validator: {|| validate_i2c_health } }
+  ]
+  
+  run_validations $hardware_checks --context "health-check"
+}
+
+# EMI validation function
+def validate_emi_status [] {
+  try {
+    # Run quick EMI check using our detection system
+    let emi_result = (safe_command "nu scripts/testing/hardware/emi-detection.nu" --context "emi-health-check")
+    
+    if not ($emi_result | str contains "errors detected") {
+      { success: true, message: "No EMI interference detected" }
+    } else {
+      { success: false, message: "EMI interference or hardware errors detected" }
+    }
+  } catch {
+    { success: false, message: "Could not run EMI detection" }
+  }
+}
+
+# USB device health validation
+def validate_usb_health [] {
+  try {
+    let usb_errors = (safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager | grep -E 'error.*USB|can.*t set config' | wc -l" "0")
+    let error_count = ($usb_errors | into int)
+    
+    if $error_count == 0 {
+      { success: true, message: "No recent USB errors detected" }
+    } else {
+      { success: false, message: $"($error_count) USB errors detected in past hour" }
+    }
+  } catch {
+    { success: true, message: "USB health check skipped" }
+  }
+}
+
+# I2C communication validation  
+def validate_i2c_health [] {
+  try {
+    let i2c_errors = (safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager | grep -E 'i2c.*Invalid|0xffff' | wc -l" "0")
+    let error_count = ($i2c_errors | into int)
+    
+    if $error_count == 0 {
+      { success: true, message: "No recent I2C errors detected" }
+    } else {
+      { success: false, message: $"($error_count) I2C errors detected in past hour" }
+    }
+  } catch {
+    { success: true, message: "I2C health check skipped" }
+  }
+}
+
 # Performance and resource checks  
 def check_system_resources [] {
   info "Checking system resources..." --context "health-check"
@@ -127,11 +188,13 @@ def main [] {
   # Run all health checks
   let health_results = (run_health_checks)
   let component_results = (check_nixmox_components)
+  let hardware_results = (check_hardware_health)
   let resource_results = (check_system_resources)
   
   # Generate comprehensive report
   let all_categories = $health_results | append [
     { name: "Components", results: $component_results },
+    { name: "Hardware", results: $hardware_results },
     { name: "Resources", results: $resource_results }
   ]
   

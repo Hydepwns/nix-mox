@@ -19,7 +19,7 @@ def main [] {
     # Check if Homebrew is installed
     if (which brew | is-empty) {
         print "❌ Homebrew is not installed. Installing Homebrew..."
-        install-homebrew
+        install_homebrew
     } else {
         print "✅ Homebrew is already installed"
     }
@@ -60,7 +60,7 @@ def main [] {
     print "3. Run 'brew upgrade' to upgrade packages"
 }
 
-def install-homebrew [] {
+def install_homebrew [] {
     print "📥 Installing Homebrew..."
 
     # Install Homebrew

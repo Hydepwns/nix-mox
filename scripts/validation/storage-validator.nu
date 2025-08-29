@@ -26,7 +26,7 @@ def main [
     print ""
     
     # Parse all storage references
-    let storage_refs = parse-storage-references $config $verbose
+    let storage_refs = parse_storage_references $config $verbose
     
     if ($storage_refs | is-empty) {
         print "⚠️  No storage references found in configuration"
@@ -34,7 +34,7 @@ def main [
     }
     
     # Validate each reference
-    let validation_results = validate-references $storage_refs $verbose
+    let validation_results = validate_references $storage_refs $verbose
     
     # Report results
     let errors = ($validation_results | where status == "error")
@@ -68,7 +68,7 @@ def main [
         
         if $fix {
             print "🔧 Attempting automatic fixes..."
-            fix-storage-issues $config $errors
+            fix_storage_issues $config $errors
         } else {
             print "💡 Run with --fix to attempt automatic repairs"
             print "   Or run: nu scripts/storage/auto-update-storage.nu"
@@ -81,7 +81,7 @@ def main [
 }
 
 # Parse storage references from configuration
-def parse-storage-references [config_path: path, verbose: bool] {
+def parse_storage_references [config_path: path, verbose: bool] {
     let content = (open $config_path)
     mut references = []
     
@@ -140,11 +140,11 @@ def parse-storage-references [config_path: path, verbose: bool] {
 }
 
 # Validate each storage reference
-def validate-references [references: list, verbose: bool] {
+def validate_references [references: list, verbose: bool] {
     mut results = []
     
     for ref in $references {
-        let result = (validate-single-reference $ref $verbose)
+        let result = (validate_single_reference $ref $verbose)
         $results = ($results | append $result)
     }
     
@@ -152,7 +152,7 @@ def validate-references [references: list, verbose: bool] {
 }
 
 # Validate a single storage reference
-def validate-single-reference [ref: record, verbose: bool] {
+def validate_single_reference [ref: record, verbose: bool] {
     if $verbose {
         print $"  Checking ($ref.type): ($ref.value)..."
     }
@@ -172,7 +172,7 @@ def validate-single-reference [ref: record, verbose: bool] {
         } else {
             # Try to find similar UUIDs
             let all_uuids = (blkid -s UUID | parse -r 'UUID="([^"]+)"' | get capture0)
-            let suggestion = find-similar-uuid $ref.value $all_uuids
+            let suggestion = find_similar_uuid $ref.value $all_uuids
             
             return {
                 ...$ref
@@ -264,7 +264,7 @@ def validate-single-reference [ref: record, verbose: bool] {
 }
 
 # Find similar UUIDs (for typo detection)
-def find-similar-uuid [target: string, uuids: list] {
+def find_similar_uuid [target: string, uuids: list] {
     for uuid in $uuids {
         # Simple similarity check - if most characters match
         let target_chars = ($target | split chars)
@@ -290,7 +290,7 @@ def find-similar-uuid [target: string, uuids: list] {
 }
 
 # Attempt to fix storage issues
-def fix-storage-issues [config_path: path, errors: list] {
+def fix_storage_issues [config_path: path, errors: list] {
     print "🔧 Attempting to fix storage issues..."
     
     # Group errors by type

@@ -18,24 +18,24 @@ def main [] {
 
     # Check firewall status
     print "🔥 Checking firewall status..."
-    check-firewall
+    check_firewall
 
     # Check Gatekeeper status
     print "🚪 Checking Gatekeeper status..."
-    check-gatekeeper
+    check_gatekeeper
 
     # Check SIP status
     print "🛡️  Checking System Integrity Protection..."
-    check-sip
+    check_sip
 
     # Check FileVault status
     print "🔐 Checking FileVault status..."
-    check-filevault
+    check_filevault
 
     print "✅ Security audit complete!"
 }
 
-def check-firewall [] {
+def check_firewall [] {
     let firewall_status = (sudo /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate)
     print $"Firewall status: ($firewall_status)"
 
@@ -47,7 +47,7 @@ def check-firewall [] {
     }
 }
 
-def check-gatekeeper [] {
+def check_gatekeeper [] {
     let gatekeeper_status = (spctl --status)
     print $"Gatekeeper status: ($gatekeeper_status)"
 
@@ -58,7 +58,7 @@ def check-gatekeeper [] {
     }
 }
 
-def check-sip [] {
+def check_sip [] {
     let sip_status = (csrutil status)
     print $"SIP status: ($sip_status)"
 
@@ -69,7 +69,7 @@ def check-sip [] {
     }
 }
 
-def check-filevault [] {
+def check_filevault [] {
     let filevault_status = (fdesetup status)
     print $"FileVault status: ($filevault_status)"
 

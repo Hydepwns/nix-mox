@@ -4,7 +4,7 @@
 # Maintenance targets
 health-check: check-nushell
 	@echo "🏥 Running system health check..."
-	$(NUSHELL) scripts/maintenance/health-check.nu --verbose
+	$(NUSHELL) scripts/maintenance/health-check.nu
 
 cleanup: check-nushell
 	@echo "🧹 Running cleanup..."

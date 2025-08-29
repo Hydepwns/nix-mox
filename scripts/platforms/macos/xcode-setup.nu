@@ -19,7 +19,7 @@ def main [] {
     # Check if Xcode command line tools are installed
     if (xcode-select -p 2>/dev/null | is-empty) {
         print "❌ Xcode command line tools are not installed. Installing..."
-        install-xcode-tools
+        install_xcode_tools
     } else {
         print "✅ Xcode command line tools are already installed"
         let xcode_path = (xcode-select -p)
@@ -37,7 +37,7 @@ def main [] {
     print "✅ Xcode setup complete!"
 }
 
-def install-xcode-tools [] {
+def install_xcode_tools [] {
     print "📥 Installing Xcode command line tools..."
 
     # Install Xcode command line tools

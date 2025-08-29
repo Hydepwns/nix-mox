@@ -18,7 +18,7 @@ const TEMPLATES_DIR = $CONFIG_DIR + "/templates"
 const PERSONAL_DIR = $CONFIG_DIR + "/personal"
 const NIXOS_DIR = $CONFIG_DIR + "/nixos"
 
-def update-state [field: string, value: any] {
+def update_state [field: string, value: any] {
     $env.STATE = ($env.STATE | upsert $field $value)
 }
 

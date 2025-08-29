@@ -14,7 +14,7 @@ const INSTALL_DIR = "/usr/local/bin"
 const MANIFEST_DIR = "/etc/nix-mox"
 const MANIFEST_FILE = $MANIFEST_DIR + "/install_manifest.txt"
 
-def update-state [field: string, value: any] {
+def update_state [field: string, value: any] {
     $env.STATE = ($env.STATE | upsert $field $value)
 }
 

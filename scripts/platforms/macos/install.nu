@@ -23,7 +23,7 @@ def main [] {
     # Check if Nix is installed
     if (which nix | is-empty) {
         print "❌ Nix is not installed. Installing Nix first..."
-        install-nix
+        install_nix
     } else {
         print "✅ Nix is already installed"
     }
@@ -48,7 +48,7 @@ def main [] {
     print "3. Check out the documentation at https://github.com/your-username/nix-mox"
 }
 
-def install-nix [] {
+def install_nix [] {
     print "📥 Installing Nix..."
 
     # Download and run the Nix installer

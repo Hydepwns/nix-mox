@@ -63,4 +63,25 @@ coverage-ci: check-nushell
 
 coverage-local: check-nushell
 	@echo "📊 Setting up coverage for local development..."
-	$(NUSHELL) scripts/coverage.nu generate --output-dir ./coverage-report 
+	$(NUSHELL) scripts/coverage.nu generate --output-dir ./coverage-report
+
+# Hardware EMI Detection targets
+emi-check: check-nushell
+	@echo "🔍 Running EMI detection check..."
+	$(NUSHELL) scripts/testing/hardware/emi-detection.nu
+
+emi-report: check-nushell
+	@echo "📊 Generating comprehensive EMI detection report..."
+	$(NUSHELL) scripts/testing/hardware/emi-detection.nu --report
+
+emi-monitor: check-nushell
+	@echo "👁️ Monitoring for EMI patterns (5 min)..."
+	$(NUSHELL) scripts/testing/hardware/emi-detection.nu --monitor 5min
+
+emi-stress: check-nushell
+	@echo "⚡ Running EMI stress test..."
+	$(NUSHELL) scripts/testing/hardware/emi-detection.nu --stress-test
+
+emi-watch: check-nushell
+	@echo "📺 Starting EMI watch mode (Ctrl+C to stop)..."
+	$(NUSHELL) scripts/testing/hardware/emi-detection.nu --watch 10 

@@ -43,6 +43,11 @@ def main [
             script: "validate-network-config"
             critical: false
         }
+        {
+            name: "Hardware Health & EMI"
+            script: "validate-hardware-emi"
+            critical: false
+        }
     ]
     
     let results = ($validations | each {|validation|
@@ -121,6 +126,7 @@ def run_validation [script: string, verbose: bool] {
             "validate-storage-config" => { validate_storage_config_inline $verbose }
             "validate-gaming-setup" => { validate_gaming_setup_inline $verbose }
             "validate-network-config" => { validate_network_config_inline $verbose }
+            "validate-hardware-emi" => { validate_hardware_emi_inline $verbose }
             _ => {
                 {
                     success: false
@@ -365,6 +371,54 @@ def print_summary [results: list] {
         
         if (not $result.success and ($result.details | is-not-empty)) {
             info $"  → ($result.details)" --context $context
+        }
+    }
+}
+
+# Inline hardware EMI validation
+def validate_hardware_emi_inline [verbose: bool] {
+    try {
+        if $verbose { print "  Checking hardware health and EMI interference..." }
+        
+        # Run quick EMI detection check
+        let emi_result = (^nu scripts/testing/hardware/emi-detection.nu | complete)
+        
+        if ($emi_result.exit_code == 0) {
+            # Check for specific error indicators in output
+            let has_errors = ($emi_result.stdout | str contains "errors detected")
+            let has_warnings = ($emi_result.stdout | str contains "warnings")
+            
+            if $has_errors {
+                {
+                    success: false
+                    message: "Hardware EMI interference detected"
+                    details: "USB/I2C communication errors found - may indicate hardware interference"
+                }
+            } else if $has_warnings {
+                {
+                    success: true
+                    message: "Hardware health check completed with warnings"
+                    details: (if $verbose { $emi_result.stdout } else { "Minor hardware issues detected" })
+                }
+            } else {
+                {
+                    success: true
+                    message: "Hardware health check passed - no EMI interference"
+                    details: (if $verbose { "No USB/I2C errors or EMI patterns detected" } else { null })
+                }
+            }
+        } else {
+            {
+                success: false
+                message: "Hardware EMI check failed to run"
+                details: $emi_result.stderr
+            }
+        }
+    } catch {
+        {
+            success: true  # Non-critical - don't block rebuild
+            message: "Hardware EMI check skipped"
+            details: "EMI detection script not available"
         }
     }
 }

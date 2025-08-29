@@ -48,28 +48,28 @@ def main [] {
 
     print "📦 Package Analysis"
     print "------------------"
-    display-package-analysis $package_sizes
+    display_package_analysis $package_sizes
     print ""
 
     # Analyze devshells
     let devshells = (analyze_devshells $system)
     print "💻 Development Shell Analysis"
     print "----------------------------"
-    display-devshell-analysis $devshells
+    display_devshell_analysis $devshells
     print ""
 
     # Analyze templates
     let templates = (analyze_templates $system)
     print "🏗️ Template Analysis"
     print "-------------------"
-    display-template-analysis $templates
+    display_template_analysis $templates
     print ""
 
     # Generate summary report
-    let summary = (generate-summary $package_sizes $devshells $templates)
+    let summary = (generate_summary $package_sizes $devshells $templates)
     print "📈 Summary Report"
     print "----------------"
-    display-summary $summary
+    display_summary $summary
     print ""
 
     # Save detailed report
@@ -81,10 +81,10 @@ def main [] {
     # Performance recommendations
     print "💡 Performance Recommendations"
     print "----------------------------"
-    display-recommendations $summary
+    display_recommendations $summary
 }
 
-def analyze-packages [system: string] {
+def analyze_packages [system: string] {
     let package_names = ["proxmox-update", "vzdump-backup", "zfs-snapshot", "nixos-flake-update", "install", "uninstall"]
     mut results = []
 
@@ -255,7 +255,7 @@ def analyze_templates [system: string] {
     $results
 }
 
-def display-package-analysis [packages: list] {
+def display_package_analysis [packages: list] {
     let sorted_packages = ($packages | sort-by size -r)
     print "Package Sizes (closure size):"
     print ""
@@ -272,7 +272,7 @@ def display-package-analysis [packages: list] {
     print $"Total package size: ($total_mb) MB"
 }
 
-def display-devshell-analysis [devshells: list] {
+def display_devshell_analysis [devshells: list] {
     let available_shells = ($devshells | where available == true | sort-by closure_size -r)
     print "Development Shell Sizes (closure size):"
     print ""
@@ -302,7 +302,7 @@ def display-devshell-analysis [devshells: list] {
     print $"Total devshell size: ($total_mb) MB"
 }
 
-def display-template-analysis [templates: list] {
+def display_template_analysis [templates: list] {
     if ($templates | length) == 0 {
         print "No NixOS configurations found for this system."
         return
@@ -324,7 +324,7 @@ def display-template-analysis [templates: list] {
     print $"Total template size: ($total_mb) MB"
 }
 
-def generate-summary [packages: list, devshells: list, templates: list] {
+def generate_summary [packages: list, devshells: list, templates: list] {
     let total_package_size = if ($packages | length) > 0 {
         ($packages | get size | math sum)
     } else {
@@ -385,7 +385,7 @@ def generate-summary [packages: list, devshells: list, templates: list] {
     }
 }
 
-def display-summary [summary: record] {
+def display_summary [summary: record] {
     let total_mb = (($summary.totals.grand_total | into float) / 1024 / 1024 | into string | str substring 0..6)
     let packages_mb = (($summary.totals.packages | into float) / 1024 / 1024 | into string | str substring 0..6)
     let devshells_mb = (($summary.totals.devshells | into float) / 1024 / 1024 | into string | str substring 0..6)
@@ -436,7 +436,7 @@ def display-summary [summary: record] {
     }
 }
 
-def display-recommendations [summary: record] {
+def display_recommendations [summary: record] {
     let total_mb = (($summary.totals.grand_total | into float) / 1024 / 1024)
     print "Based on the size analysis:"
     print ""

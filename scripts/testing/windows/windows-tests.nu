@@ -23,14 +23,14 @@ def main [] {
     print $"Detected platform: ($platform)"
 
     # Test Windows/WSL-specific commands
-    test-windows-commands
-    test-nushell
-    test-nix
+    test_windows_commands
+    test_nushell
+    test_nix
 
     print "✅ Windows/WSL-specific tests completed successfully!"
 }
 
-def test-windows-commands [] {
+def test_windows_commands [] {
     print "🔧 Testing Windows/WSL-specific commands..."
     let commands = ["powershell", "cmd", "wsl", "python", "python3"]
 
@@ -43,13 +43,13 @@ def test-windows-commands [] {
     }
 }
 
-def test-nushell [] {
+def test_nushell [] {
     print "🐚 Testing Nushell..."
     print $"Nushell version: (version | get version)"
     print "✅ Nushell is working"
 }
 
-def test-nix [] {
+def test_nix [] {
     print "🧪 Testing Nix installation..."
 
     if (which nix | is-empty) {

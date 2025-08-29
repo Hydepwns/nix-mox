@@ -19,7 +19,7 @@ const SNAP_NAME_PREFIX = "auto-"
 const SNAP_DATE_FORMAT = "%Y-%m-%d-%H%M"
 const LOGFILE = "/var/log/zfs-snapshot.log"
 
-def update-state [field: string, value: any] {
+def update_state [field: string, value: any] {
     $env.STATE = ($env.STATE | upsert $field $value)
 }
 

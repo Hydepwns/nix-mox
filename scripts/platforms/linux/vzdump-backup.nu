@@ -2,7 +2,8 @@
 
 # Import unified libraries
 use ../../lib/validators.nu
-use ../../lib/logging.nu
+use ../../lib/logging.nu *
+use ../../lib/command-wrapper.nu *
 
 # vzdump-backup.nu - Backup Proxmox VMs using vzdump
 # Usage: sudo nu vzdump-backup.nu [--dry-run] [--storage <storage>] [--help]
@@ -11,13 +12,11 @@ use ../../lib/logging.nu
 # - Compresses backups using zstd
 # - Maintains a backup log
 # - Is idempotent and safe to re-run
-use logging.nu *
-use ../../lib/logging.nu *
 
 # --- Global Variables ---
 const LOGFILE = "/var/log/vzdump-backup.log"
 
-def update-state [field: string, value: any] {
+def update_state [field: string, value: any] {
     $env.STATE = ($env.STATE | upsert $field $value)
 }
 
@@ -113,7 +112,7 @@ def main [] {
 
 def backup_items [list_cmd: string, item_type: string] {
     # Get list of items to backup
-    let ids = (do { nu -c $list_cmd } | complete | get stdout | lines | skip 1 | split column " " | get column1)
+    let ids = (safe_command_with_fallback $"nu -c '($list_cmd)'" "" --context "proxmox-backup" | lines | skip 1 | split column " " | get column1)
 
     if ($ids | length) == 0 {
         info $"No ($item_type)s found to back up."

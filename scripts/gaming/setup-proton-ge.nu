@@ -86,7 +86,7 @@ def main [] {
 }
 
 # Helper function to check mount options
-def check-mount-exec [path: string] {
+def check_mount_exec [path: string] {
     let mount_info = (mount | lines | where ($it | str contains $path) | first)
     if ($mount_info | is-empty) {
         return false
@@ -95,7 +95,7 @@ def check-mount-exec [path: string] {
 }
 
 # Function to list available Proton versions
-def list-proton [] {
+def list_proton [] {
     print "📦 Available Proton versions:"
     
     # Check Steam's Proton versions
