@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Commit message validation hook for nix-mox repository
+# Enforces conventional commit message format
+
+set -e
+
+COMMIT_MSG_FILE=$1
+
+echo "📝 Validating commit message..."
+
+# Check if we're in a nix development environment, if not enter it
+if [[ -z "$IN_NIX_SHELL" ]]; then
+    exec nix --extra-experimental-features "nix-command flakes" develop --command bash "$0" "$@"
+fi
+
+# Validate commit message format
+if ! nu scripts/maintenance/ci/commit-msg-check.nu validate --file="$COMMIT_MSG_FILE"; then
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "❌ Commit message validation failed!"
+    echo ""
+    echo "Please follow conventional commit format:"
+    echo "  <type>(<scope>): <subject>"
+    echo ""
+    echo "Examples:"
+    echo "  feat: add user authentication"
+    echo "  fix(auth): resolve login timeout"
+    echo "  docs: update README"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    exit 1
+fi
+
+echo "✅ Commit message format is valid!"

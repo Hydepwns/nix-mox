@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# Comprehensive pre-commit hook for nix-mox repository
+# Runs multiple validation checks before allowing commits
+
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Check if we're in a nix development environment, if not enter it
+if [[ -z "$IN_NIX_SHELL" ]]; then
+    echo "⚡ Entering nix development environment..."
+    exec nix --extra-experimental-features "nix-command flakes" develop --command bash "$0" "$@"
+fi
+
+# Track if any checks fail
+FAILED=0
+
+# 1. Function naming consistency check
+echo ""
+echo "📝 [1/6] Checking function naming consistency..."
+if ! nu scripts/maintenance/ci/function-naming-check.nu check --staged-only=true; then
+    echo "❌ Function naming violations found!"
+    echo "Fix with: nu scripts/maintenance/ci/function-naming-check.nu fix --staged-only=true"
+    FAILED=1
+fi
+
+# 2. Nushell syntax validation
+echo ""
+echo "🐚 [2/6] Validating Nushell syntax..."
+if ! nu scripts/maintenance/ci/nushell-syntax-check.nu check --staged-only=true; then
+    echo "❌ Nushell syntax errors found!"
+    FAILED=1
+fi
+
+# 3. Secret detection
+echo ""
+echo "🔒 [3/6] Scanning for secrets..."
+if ! nu scripts/maintenance/ci/secret-detection.nu scan --staged-only=true; then
+    echo "❌ Potential secrets detected!"
+    FAILED=1
+fi
+
+# 4. Nix syntax validation
+echo ""
+echo "❄️  [4/6] Validating Nix syntax..."
+if ! nu scripts/maintenance/ci/nix-syntax-check.nu check --staged-only=true; then
+    echo "❌ Nix syntax errors found!"
+    FAILED=1
+fi
+
+# 5. Import validation
+echo ""
+echo "📦 [5/6] Validating imports..."
+if ! nu scripts/maintenance/ci/import-validation.nu check --staged-only=true; then
+    echo "❌ Import errors found!"
+    FAILED=1
+fi
+
+# 6. Large file detection
+echo ""
+echo "📊 [6/6] Checking for large files..."
+if ! nu scripts/maintenance/ci/large-file-check.nu check --staged-only=true; then
+    echo "❌ Large files detected!"
+    echo "Consider using Git LFS or adding them to .gitignore"
+    FAILED=1
+fi
+
+# Summary
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if [ $FAILED -eq 0 ]; then
+    echo "✅ All pre-commit checks passed!"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    exit 0
+else
+    echo "❌ Pre-commit checks failed!"
+    echo "Please fix the issues above before committing."
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    exit 1
+fi
