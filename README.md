@@ -117,6 +117,17 @@ For comprehensive command documentation:
 
 ## Development
 
+### Pre-commit Hooks
+The repository includes comprehensive pre-commit validation:
+- **Function naming**: Enforces snake_case convention
+- **Syntax validation**: Nushell and Nix files
+- **Secret detection**: Prevents committing credentials
+- **Import validation**: Verifies dependencies
+- **Large file detection**: 10MB limit
+- **Commit message format**: Conventional commits
+
+See [CI Documentation](scripts/maintenance/ci/README.md) for details.
+
 ```bash
 # Enter dev environment
 nix develop

@@ -45,6 +45,11 @@ help:
 	@echo "  integration - Run integration tests only"
 	@echo "  gaming-test - Test gaming setup"
 	@echo "  display-test - Test display configuration"
+	@echo "  emi-check   - Quick EMI/hardware interference check"
+	@echo "  emi-report  - Generate comprehensive EMI detection report"
+	@echo "  emi-monitor - Monitor for EMI patterns (5min)"
+	@echo "  emi-stress  - Run EMI stress test"
+	@echo "  emi-watch   - Real-time EMI monitoring"
 	@echo "  clean       - Clean up test artifacts"
 	@echo ""
 	@echo "🔧 Development:"
@@ -91,6 +96,8 @@ help:
 	@echo "🔄 CI/CD:"
 	@echo "  ci-test     - Run quick CI test locally"
 	@echo "  ci-local    - Run local CI pipeline"
+	@echo "  pre-commit  - Run all pre-commit checks"
+	@echo "  hooks-setup - Setup git hooks"
 	@echo ""
 	@echo "🛡️  Safety & Validation:"
 	@echo "  validate        - Run validation suite (default: basic)"
@@ -193,3 +200,23 @@ chezmoi-verify: ## Verify chezmoi configuration
 chezmoi-setup: ## Complete chezmoi setup and integration
 	@echo "🔗 Setting up chezmoi integration..."
 	@nu scripts/setup/chezmoi-integration.nu
+
+# CI/CD Hooks
+pre-commit: check-nushell ## Run all pre-commit checks
+	@echo "🔍 Running pre-commit checks..."
+	@.githooks/pre-commit
+
+hooks-setup: ## Setup git hooks
+	@echo "🪝 Setting up git hooks..."
+	@git config core.hooksPath .githooks
+	@chmod +x .githooks/*
+	@echo "✅ Git hooks configured!"
+
+hooks-test: check-nushell ## Test all hooks without committing
+	@echo "🧪 Testing pre-commit hooks..."
+	@nu scripts/maintenance/ci/function-naming-check.nu check
+	@nu scripts/maintenance/ci/nushell-syntax-check.nu check
+	@nu scripts/maintenance/ci/secret-detection.nu scan
+	@nu scripts/maintenance/ci/nix-syntax-check.nu check
+	@nu scripts/maintenance/ci/import-validation.nu check
+	@nu scripts/maintenance/ci/large-file-check.nu check
