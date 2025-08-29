@@ -148,7 +148,7 @@
       wayland.enable = false; # Use X11 for NVIDIA compatibility
     };
 
-    defaultSession = "plasma";
+    defaultSession = "plasmax11";
 
     # Auto-login configuration - DISABLED for security
     autoLogin = {
