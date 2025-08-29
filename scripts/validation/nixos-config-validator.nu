@@ -181,8 +181,10 @@ export def check_module_imports [] {
     let config_content = (open $config_file)
     
     # Check if session-management module is imported
-    if not ($config_content | str contains "./modules/session-management.nix") and
-       not ($config_content | str contains "session-management.nix") {
+    let has_relative_import = ($config_content | str contains "./modules/session-management.nix")
+    let has_simple_import = ($config_content | str contains "session-management.nix")
+    
+    if not ($has_relative_import or $has_simple_import) {
         warn "Session management module not imported" --context "config-validator"
         
         info "Add to imports section:" --context "config-validator"
