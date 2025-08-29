@@ -2,52 +2,48 @@
 # Functional command wrapper library for nix-mox
 # Eliminates duplication in command execution patterns
 # Uses functional composition and error handling
+# SECURITY: All command execution now uses secure patterns
 
 use logging.nu *
+use secure-command.nu *
 
+# DEPRECATED: Use secure_system instead
 # Simple safe command execution (commonly used pattern)
 export def safe_command [
     command: string,
     --context: string = "command",
     --quiet = false
 ] {
-    try {
-        let result = (^sh -c $command | complete)
-        if not $quiet and $result.exit_code != 0 {
-            warn $"Command failed: ($command)" --context $context
-        }
-        $result.stdout
-    } catch { |err|
-        if not $quiet {
-            error $"Command execution failed: ($err.msg)" --context $context
-        }
-        ""
+    warn "safe_command is deprecated, use secure_system instead" $context
+    let result = (secure_system $command --context $context)
+    if not $quiet and $result.exit_code != 0 {
+        warn $"Command failed: ($command)" --context $context
     }
+    $result.stdout
 }
 
-# Safe command with fallback value
+# Safe command with fallback value - SECURE VERSION
 export def safe_command_with_fallback [
     command: string,
     fallback: string,
     --context: string = "command",
     --quiet = false
 ] {
-    try {
-        let result = (^sh -c $command | complete)
-        if $result.exit_code == 0 {
-            $result.stdout
-        } else {
-            if not $quiet {
-                warn $"Command failed, using fallback: ($command)" --context $context
-            }
-            $fallback
-        }
-    } catch { |err|
+    let result = (secure_system $command --context $context)
+    if $result.exit_code == 0 {
+        $result.stdout
+    } else {
         if not $quiet {
-            warn $"Command execution failed, using fallback: ($err.msg)" --context $context
+            warn $"Command failed, using fallback: ($command)" --context $context
         }
         $fallback
     }
+}
+
+# Resilient command execution for tests (never fails) - SECURE VERSION
+export def test_safe_command [command: string, --context: string = "test"] {
+    let result = (secure_system $command --context $context)
+    { success: $result.success, output: $result.stdout, error: $result.stderr }
 }
 
 # Core command execution with functional error handling

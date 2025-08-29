@@ -5,12 +5,124 @@
 
 use logging.nu *
 use platform.nu *
+use error-handling.nu *
+use error-patterns.nu *
 
 # Core validation pipeline function
 export def validate_pipeline [...validators: closure] {
     |input|
     $validators | reduce --fold $input { |validator, acc|
         $acc | do $validator
+    }
+}
+
+# Higher-order function for optional validators (functional composition)
+export def optional_validator [validator: closure] {
+    try { 
+        let result = (null | do $validator)
+        if $result.success {
+            $result
+        } else {
+            validation_result true "Optional component missing (OK)"
+        }
+    } catch { 
+        validation_result true "Optional component missing (OK)" 
+    }
+}
+
+# Quiet command validator (no error logging for optional components)
+export def validate_command_quiet [cmd: string] {
+    |input|
+    # Input type validation
+    if ($cmd | is-empty) {
+        return (validation_result false "Command name cannot be empty")
+    }
+    if ($cmd | describe) != "string" {
+        return (validation_result false $"Command name must be a string, got ($cmd | describe)")
+    }
+    if ($cmd | str contains " ") {
+        return (validation_result false "Command name cannot contain spaces")
+    }
+    
+    let exists = (which $cmd | is-not-empty)
+    if $exists {
+        validation_result true $"Command ($cmd) found"
+    } else {
+        validation_result false $"Command ($cmd) missing"
+    }
+}
+
+# Quiet file validator (no error logging for optional components)  
+export def validate_file_quiet [path: string] {
+    |input|
+    # Input type validation
+    if ($path | is-empty) {
+        return (validation_result false "File path cannot be empty")
+    }
+    if ($path | describe) != "string" {
+        return (validation_result false $"File path must be a string, got ($path | describe)")
+    }
+    if ($path | str length) > 4096 {
+        return (validation_result false "File path too long (max 4096 characters)")
+    }
+    
+    let exists = ($path | path exists)
+    if $exists {
+        validation_result true $"File ($path) found"
+    } else {
+        validation_result false $"File ($path) missing"
+    }
+}
+
+# Quiet directory validator (no error logging for optional components)
+export def validate_directory_quiet [path: string] {
+    |input|
+    # Input type validation
+    if ($path | is-empty) {
+        return (validation_result false "Directory path cannot be empty")
+    }
+    if ($path | describe) != "string" {
+        return (validation_result false $"Directory path must be a string, got ($path | describe)")
+    }
+    if ($path | str length) > 4096 {
+        return (validation_result false "Directory path too long (max 4096 characters)")
+    }
+    
+    let exists = ($path | path exists) and (($path | path type) == "dir")
+    if $exists {
+        validation_result true $"Directory ($path) found"
+    } else {
+        validation_result false $"Directory ($path) missing"
+    }
+}
+
+# Resilient network validator with timeout handling
+export def validate_network_resilient [host: string = "8.8.8.8", timeout: int = 3] {
+    |input|
+    # Input type validation
+    if ($host | is-empty) {
+        return (validation_result false "Host cannot be empty")
+    }
+    if ($host | describe) != "string" {
+        return (validation_result false $"Host must be a string, got ($host | describe)")
+    }
+    if ($timeout | describe) != "int" {
+        return (validation_result false $"Timeout must be an integer, got ($timeout | describe)")
+    }
+    if $timeout < 1 or $timeout > 300 {
+        return (validation_result false "Timeout must be between 1 and 300 seconds")
+    }
+    
+    try {
+        # Use shorter timeout for faster failure
+        let result = (timeout ($timeout)s ping -c 1 -W ($timeout) $host | complete)
+        if $result.exit_code == 0 {
+            validation_result true $"Network connectivity OK"
+        } else {
+            validation_result false $"Network timeout"
+        }
+    } catch {
+        validation_result false "Network check failed"
     }
 }
 
@@ -27,6 +139,24 @@ export def validation_result [success: bool, message: string, details: record = 
 # Command existence validator
 export def validate_command [cmd: string] {
     |input|
+    # Input type validation
+    if ($cmd | is-empty) {
+        error "Command name cannot be empty" --context "validator"
+        return (validation_result false "Command name cannot be empty")
+    }
+    if ($cmd | describe) != "string" {
+        error $"Command name must be a string, got ($cmd | describe)" --context "validator"
+        return (validation_result false $"Command name must be a string, got ($cmd | describe)")
+    }
+    if ($cmd | str contains " ") {
+        error "Command name cannot contain spaces" --context "validator"
+        return (validation_result false "Command name cannot contain spaces")
+    }
+    if ($cmd | str length) > 255 {
+        error "Command name too long (max 255 characters)" --context "validator"
+        return (validation_result false "Command name too long (max 255 characters)")
+    }
+    
     let exists = (which $cmd | is-not-empty)
     if $exists {
         debug $"Command '($cmd)' is available" --context "validator"
@@ -40,6 +170,29 @@ export def validate_command [cmd: string] {
 # File existence validator
 export def validate_file [path: string, --required = true] {
     |input|
+    # Input type validation
+    if ($path | is-empty) {
+        let msg = "File path cannot be empty"
+        if $required {
+            error $msg --context "validator"
+        }
+        return (validation_result false $msg)
+    }
+    if ($path | describe) != "string" {
+        let msg = $"File path must be a string, got ($path | describe)"
+        if $required {
+            error $msg --context "validator"
+        }
+        return (validation_result false $msg)
+    }
+    if ($path | str length) > 4096 {
+        let msg = "File path too long (max 4096 characters)"
+        if $required {
+            error $msg --context "validator"
+        }
+        return (validation_result false $msg)
+    }
+    
     let exists = ($path | path exists)
     if $exists {
         debug $"File '($path)' exists" --context "validator"
@@ -56,6 +209,20 @@ export def validate_file [path: string, --required = true] {
 # Directory existence validator
 export def validate_directory [path: string] {
     |input|
+    # Input type validation
+    if ($path | is-empty) {
+        error "Directory path cannot be empty" --context "validator"
+        return (validation_result false "Directory path cannot be empty")
+    }
+    if ($path | describe) != "string" {
+        error $"Directory path must be a string, got ($path | describe)" --context "validator"
+        return (validation_result false $"Directory path must be a string, got ($path | describe)")
+    }
+    if ($path | str length) > 4096 {
+        error "Directory path too long (max 4096 characters)" --context "validator"
+        return (validation_result false "Directory path too long (max 4096 characters)")
+    }
+    
     let exists = ($path | path exists) and (($path | path type) == "dir")
     if $exists {
         debug $"Directory '($path)' exists" --context "validator"
@@ -69,6 +236,16 @@ export def validate_directory [path: string] {
 # Disk space validator
 export def validate_disk_space [threshold: int = 80] {
     |input|
+    # Input type validation
+    if ($threshold | describe) != "int" {
+        error $"Threshold must be an integer, got ($threshold | describe)" --context "validator"
+        return (validation_result false $"Threshold must be an integer, got ($threshold | describe)")
+    }
+    if $threshold < 1 or $threshold > 100 {
+        error "Threshold must be between 1 and 100" --context "validator"
+        return (validation_result false "Threshold must be between 1 and 100")
+    }
+    
     try {
         let df_output = (^df -h / | lines | skip 1 | get 0 | split row -r '\s+')
         let usage = ($df_output | get 4 | str replace "%" "" | into int)
@@ -90,6 +267,16 @@ export def validate_disk_space [threshold: int = 80] {
 # Memory usage validator
 export def validate_memory [threshold: int = 80] {
     |input|
+    # Input type validation
+    if ($threshold | describe) != "int" {
+        error $"Threshold must be an integer, got ($threshold | describe)" --context "validator"
+        return (validation_result false $"Threshold must be an integer, got ($threshold | describe)")
+    }
+    if $threshold < 1 or $threshold > 100 {
+        error "Threshold must be between 1 and 100" --context "validator"
+        return (validation_result false "Threshold must be between 1 and 100")
+    }
+    
     try {
         let mem_info = (sys mem)
         let usage_percent = (($mem_info.used / $mem_info.total) * 100 | math round)
@@ -112,6 +299,20 @@ export def validate_memory [threshold: int = 80] {
 # Network connectivity validator
 export def validate_network [host: string = "8.8.8.8"] {
     |input|
+    # Input type validation
+    if ($host | is-empty) {
+        error "Host cannot be empty" --context "validator"
+        return (validation_result false "Host cannot be empty")
+    }
+    if ($host | describe) != "string" {
+        error $"Host must be a string, got ($host | describe)" --context "validator"
+        return (validation_result false $"Host must be a string, got ($host | describe)")
+    }
+    if ($host | str length) > 253 {
+        error "Host name too long (max 253 characters)" --context "validator"
+        return (validation_result false "Host name too long (max 253 characters)")
+    }
+    
     try {
         let result = (ping -c 1 -W 5 $host | complete)
         if $result.exit_code == 0 {
@@ -131,7 +332,7 @@ export def validate_network [host: string = "8.8.8.8"] {
 export def validate_nix_store [] {
     |input|
     try {
-        let result = (nix store ping | complete)
+        let result = (nix --extra-experimental-features "nix-command" store ping | complete)
         if $result.exit_code == 0 {
             success "Nix store is accessible" --context "validator"
             validation_result true "Nix store OK"
@@ -148,8 +349,22 @@ export def validate_nix_store [] {
 # Flake syntax validator
 export def validate_flake_syntax [flake_path: string = "."] {
     |input|
+    # Input type validation
+    if ($flake_path | is-empty) {
+        error "Flake path cannot be empty" --context "validator"
+        return (validation_result false "Flake path cannot be empty")
+    }
+    if ($flake_path | describe) != "string" {
+        error $"Flake path must be a string, got ($flake_path | describe)" --context "validator"
+        return (validation_result false $"Flake path must be a string, got ($flake_path | describe)")
+    }
+    if ($flake_path | str length) > 4096 {
+        error "Flake path too long (max 4096 characters)" --context "validator"
+        return (validation_result false "Flake path too long (max 4096 characters)")
+    }
+    
     try {
-        let result = (nix flake check --no-build $flake_path | complete)
+        let result = (nix --extra-experimental-features "nix-command flakes" flake check --no-build $flake_path | complete)
         if $result.exit_code == 0 {
             success $"Flake syntax valid in ($flake_path)" --context "validator"
             validation_result true "Flake syntax OK"
@@ -166,6 +381,16 @@ export def validate_flake_syntax [flake_path: string = "."] {
 # Platform validator
 export def validate_platform [expected_platforms: list<string>] {
     |input|
+    # Input type validation
+    if ($expected_platforms | describe) != "list<string>" {
+        error $"Expected platforms must be a list of strings, got ($expected_platforms | describe)" --context "validator"
+        return (validation_result false $"Expected platforms must be a list of strings, got ($expected_platforms | describe)")
+    }
+    if ($expected_platforms | is-empty) {
+        error "Expected platforms list cannot be empty" --context "validator"
+        return (validation_result false "Expected platforms list cannot be empty")
+    }
+    
     let platform_info = (get_platform)
     let platform_name = $platform_info.normalized
     
@@ -194,6 +419,36 @@ export def validate_root_required [] {
 # Environment variable validator
 export def validate_env_var [var_name: string, --required = true] {
     |input|
+    # Input type validation
+    if ($var_name | is-empty) {
+        let msg = "Environment variable name cannot be empty"
+        if $required {
+            error $msg --context "validator"
+        }
+        return (validation_result false $msg)
+    }
+    if ($var_name | describe) != "string" {
+        let msg = $"Environment variable name must be a string, got ($var_name | describe)"
+        if $required {
+            error $msg --context "validator"
+        }
+        return (validation_result false $msg)
+    }
+    if ($var_name | str contains " ") {
+        let msg = "Environment variable name cannot contain spaces"
+        if $required {
+            error $msg --context "validator"
+        }
+        return (validation_result false $msg)
+    }
+    if ($var_name | str length) > 255 {
+        let msg = "Environment variable name too long (max 255 characters)"
+        if $required {
+            error $msg --context "validator"
+        }
+        return (validation_result false $msg)
+    }
+    
     let value = try { $env | get $var_name } catch { null }
     if ($value | is-not-empty) {
         success $"Environment variable ($var_name) is set" --context "validator"
@@ -213,6 +468,20 @@ export def run_validations [
     --fail-fast = false,
     --context: string = "validation"
 ] {
+    # Input type validation
+    if ($validations | describe) != "list<record>" {
+        error $"Validations must be a list of records, got ($validations | describe)" --context $context
+        return {success: false, error: "Invalid input type for validations"}
+    }
+    if ($validations | is-empty) {
+        warn "No validations provided" --context $context
+        return {success: true, total: 0, passed: 0, failed: 0, results: []}
+    }
+    if ($context | describe) != "string" {
+        error $"Context must be a string, got ($context | describe)" --context "validation"
+        return {success: false, error: "Invalid input type for context"}
+    }
+    
     info $"Running ($validations | length) validations..." --context $context
     
     let results = ($validations | each { |validation|
@@ -255,6 +524,288 @@ export def run_validations [
     $summary
 }
 
+# Input type validation helper for common patterns
+export def validate_string_input [value: any, name: string, --max-length: int = 4096, --allow-empty = false] {
+    if not $allow_empty and ($value | is-empty) {
+        return (validation_result false $"($name) cannot be empty")
+    }
+    if ($value | describe) != "string" {
+        return (validation_result false $"($name) must be a string, got ($value | describe)")
+    }
+    if ($value | str length) > $max_length {
+        return (validation_result false $"($name) too long (max ($max_length) characters)")
+    }
+    validation_result true $"($name) input validation passed"
+}
+
+export def validate_integer_input [value: any, name: string, --min: int = 0, --max: int = 2147483647] {
+    if ($value | describe) != "int" {
+        return (validation_result false $"($name) must be an integer, got ($value | describe)")
+    }
+    if $value < $min or $value > $max {
+        return (validation_result false $"($name) must be between ($min) and ($max)")
+    }
+    validation_result true $"($name) input validation passed"
+}
+
+# ──────────────────────────────────────────────────────────
+# ENHANCED VALIDATORS WITH ERROR HANDLING
+# ──────────────────────────────────────────────────────────
+
+# Enhanced command validator with comprehensive error handling
+export def validate_command_enhanced [cmd: string] {
+    safe_command_exec "which" [$cmd]
+    | map_result {|result|
+        if ($result.stdout | str trim | is-not-empty) {
+            {
+                command: $cmd,
+                path: ($result.stdout | str trim),
+                available: true
+            }
+        } else {
+            error $"Command not found: ($cmd)" --context "validator-enhanced"
+            null
+        }
+    }
+}
+
+# Enhanced file validator with detailed error reporting
+export def validate_file_enhanced [
+    path: string,
+    --required = true,
+    --must_be_readable = false,
+    --must_be_writable = false,
+    --max_size_mb: int = 1024
+] {
+    let validation_chain = validate_path $path $required true false
+    
+    if (is_error $validation_chain) {
+        return $validation_chain
+    }
+    
+    let additional_checks = []
+    
+    if $must_be_readable {
+        let additional_checks = ($additional_checks | append {|| validate_permissions $path ["read"]})
+    }
+    
+    if $must_be_writable {
+        let parent_dir = ($path | path dirname)
+        let additional_checks = ($additional_checks | append {|| validate_permissions $parent_dir ["write"]})
+    }
+    
+    if ($path | path exists) {
+        let additional_checks = ($additional_checks | append {||
+            try {
+                let size_bytes = ($path | path stat | get size)
+                let size_mb = ($size_bytes / 1024 / 1024)
+                
+                validate_with_error ($size_mb <= $max_size_mb)
+                    $"File size OK: ($size_mb)MB"
+                    $"File too large: ($size_mb)MB, max allowed ($max_size_mb)MB"
+                    "filesystem" "MEDIUM" "E_FILE_TOO_LARGE" {size_mb: $size_mb, max_size_mb: $max_size_mb}
+            } catch { |err|
+                create_error $"Failed to check file size: ($err.msg)" "filesystem" "LOW" "E_SIZE_CHECK_FAILED" {path: $path}
+            }
+        })
+    }
+    
+    if ($additional_checks | is-not-empty) {
+        validate_all $additional_checks
+    } else {
+        create_success $"File validation passed: ($path)" {path: $path}
+    }
+}
+
+# Enhanced directory validator with space checks
+export def validate_directory_enhanced [
+    path: string,
+    --must_be_writable = false,
+    --min_space_mb: int = 100
+] {
+    validate_path $path true false true
+    | chain_result {|_|
+        let validations = []
+        
+        if $must_be_writable {
+            let validations = ($validations | append {|| validate_permissions $path ["write"]})
+        }
+        
+        if $min_space_mb > 0 {
+            let validations = ($validations | append {||
+                try {
+                    let df_result = (^df $path | lines | skip 1 | get 0 | split row -r '\s+')
+                    let available_kb = ($df_result | get 3 | into int)
+                    let available_mb = $available_kb / 1024
+                    
+                    validate_with_error ($available_mb >= $min_space_mb)
+                        $"Directory has sufficient space: ($available_mb)MB available"
+                        $"Directory has insufficient space: ($available_mb)MB available, need ($min_space_mb)MB"
+                        "filesystem" "HIGH" "E_INSUFFICIENT_SPACE" {
+                            path: $path,
+                            available_mb: $available_mb,
+                            required_mb: $min_space_mb
+                        }
+                } catch { |err|
+                    create_error $"Failed to check directory space: ($err.msg)" "filesystem" "MEDIUM" "E_SPACE_CHECK_FAILED" {path: $path}
+                }
+            })
+        }
+        
+        if ($validations | is-not-empty) {
+            validate_all $validations
+        } else {
+            create_success $"Directory validation passed: ($path)" {path: $path}
+        }
+    }
+}
+
+# Enhanced network validator with retry and circuit breaker
+export def validate_network_enhanced [
+    host: string,
+    --timeout: int = 5,
+    --retry_attempts: int = 3,
+    --use_circuit_breaker = true
+] {
+    let network_check = {||
+        safe_network_check $host $timeout
+    }
+    
+    if $use_circuit_breaker {
+        with_circuit_breaker $network_check 3 60sec $"network_($host)"
+    } else {
+        retry_with_backoff $network_check $retry_attempts 1sec 10sec 2.0
+    }
+}
+
+# Enhanced system resource validator
+export def validate_system_enhanced [
+    --min_disk_gb: int = 1,
+    --min_memory_gb: int = 1,
+    --max_cpu_percent: int = 90,
+    --max_load_average: float = 5.0
+] {
+    validate_system_resources ($min_disk_gb * 1024) ($min_memory_gb * 1024) $max_cpu_percent
+    | chain_result {|_|
+        try {
+            let load_avg = (sys host | get load_average | first)
+            validate_with_error ($load_avg <= $max_load_average)
+                $"System load acceptable: ($load_avg)"
+                $"System load too high: ($load_avg), max allowed ($max_load_average)"
+                "system" "HIGH" "E_HIGH_SYSTEM_LOAD" {current_load: $load_avg, max_load: $max_load_average}
+        } catch { |err|
+            create_error $"Failed to check system load: ($err.msg)" "system" "MEDIUM" "E_LOAD_CHECK_FAILED"
+        }
+    }
+}
+
+# Batch validator with enhanced error reporting
+export def run_validations_enhanced [
+    validations: list<record>,
+    --fail_fast = false,
+    --context: string = "validation",
+    --retry_failed = false,
+    --max_retries: int = 2
+] {
+    # Input validation with enhanced error handling
+    let input_validation = validate_with_error (($validations | describe) == "list<record>")
+        "Validations input is valid"
+        $"Validations must be a list of records, got ($validations | describe)"
+        "validation" "HIGH" "E_INVALID_INPUT"
+    
+    if (is_error $input_validation) {
+        log_error $input_validation $context
+        return $input_validation
+    }
+    
+    if ($validations | is-empty) {
+        let empty_result = create_success "No validations to run" {
+            total: 0,
+            passed: 0,
+            failed: 0,
+            results: []
+        }
+        return $empty_result
+    }
+    
+    info $"Running ($validations | length) enhanced validations..." --context $context
+    
+    let results = ($validations | each { |validation|
+        let validator_name = ($validation | get name? | default "unnamed")
+        let validator_func = ($validation | get validator? | default null)
+        
+        if ($validator_func == null) {
+            create_error $"No validator function provided for ($validator_name)" "validation" "HIGH" "E_NO_VALIDATOR" {name: $validator_name}
+        } else {
+            let run_validator = {||
+                try {
+                    let result = (null | do $validator_func)
+                    
+                    # Convert old-style validation results to new error handling format
+                    if ($result | get success? | default false) {
+                        create_success ($result | get message? | default "Validation passed") $result
+                    } else {
+                        create_error ($result | get message? | default "Validation failed") "validation" "MEDIUM" "E_VALIDATION_FAILED" {
+                            validator: $validator_name,
+                            result: $result
+                        }
+                    }
+                } catch { |err|
+                    create_error $"Validator ($validator_name) threw exception: ($err.msg)" "validation" "HIGH" "E_VALIDATOR_EXCEPTION" {
+                        validator: $validator_name,
+                        error: $err.msg
+                    }
+                }
+            }
+            
+            let final_result = if $retry_failed {
+                retry_with_backoff $run_validator $max_retries 1sec 5sec 1.5
+            } else {
+                do $run_validator
+            }
+            
+            # Add validator name to result
+            if (is_success $final_result) {
+                $final_result | merge {validator_name: $validator_name}
+            } else {
+                let error_data = ($final_result | get error)
+                let enhanced_error = ($error_data | merge {validator_name: $validator_name})
+                $final_result | merge {error: $enhanced_error}
+            }
+        }
+    })
+    
+    let successes = ($results | where {|r| is_success $r})
+    let failures = ($results | where {|r| is_error $r})
+    let passed_count = ($successes | length)
+    let failed_count = ($failures | length)
+    let total_count = ($results | length)
+    
+    # Log all errors
+    $failures | each {|failure| log_error $failure $context}
+    
+    let summary = {
+        total: $total_count,
+        passed: $passed_count,
+        failed: $failed_count,
+        success_rate: (($passed_count * 100.0) / ($total_count * 1.0) | math round --precision 2),
+        results: $results
+    }
+    
+    if ($failed_count == 0) {
+        success $"All ($total_count) enhanced validations passed!" --context $context
+        create_success "All validations passed" $summary
+    } else {
+        let failure_summary = ($failures | each {|f| 
+            let err = ($f | get error)
+            $"($err.validator_name? | default 'unknown'): ($err.code? | default 'E_UNKNOWN') - ($err.message)"
+        } | str join "; ")
+        
+        error $"($failed_count) of ($total_count) validations failed" --context $context
+        create_error $"Validation batch failed: ($failure_summary)" "validation" "HIGH" "E_VALIDATION_BATCH_FAILED" $summary
+    }
+}
+
 # Predefined validation suites
 export def basic_system_validations [] {
     [
@@ -276,9 +827,141 @@ export def nix_environment_validations [] {
 
 export def gaming_setup_validations [] {
     [
-        { name: "steam", validator: {|| try { validate_command "steam" } catch { validation_result false "Steam not found (optional)" } } },
-        { name: "lutris", validator: {|| try { validate_command "lutris" } catch { validation_result false "Lutris not found (optional)" } } },
-        { name: "gamemode", validator: {|| try { validate_command "gamemoderun" } catch { validation_result false "GameMode not found (optional)" } } },
-        { name: "gaming_dir", validator: {|| try { validate_directory "flakes/gaming" } catch { validation_result false "Gaming directory not found (optional)" } } }
+        { name: "steam", validator: {|| optional_validator {|| validate_command_quiet "steam" } } },
+        { name: "lutris", validator: {|| optional_validator {|| validate_command_quiet "lutris" } } },
+        { name: "gamemode", validator: {|| optional_validator {|| validate_command_quiet "gamemoderun" } } },
+        { name: "gaming_dir", validator: {|| optional_validator {|| validate_directory_quiet "flakes/gaming" } } }
     ]
+}
+
+# Additional validators with enhanced input validation
+
+# Port validator
+export def validate_port [port: int] {
+    |input|
+    # Input type validation
+    if ($port | describe) != "int" {
+        error $"Port must be an integer, got ($port | describe)" --context "validator"
+        return (validation_result false $"Port must be an integer, got ($port | describe)")
+    }
+    if $port < 1 or $port > 65535 {
+        error "Port must be between 1 and 65535" --context "validator"
+        return (validation_result false "Port must be between 1 and 65535")
+    }
+    
+    validation_result true $"Port ($port) is valid"
+}
+
+# URL validator
+export def validate_url [url: string] {
+    |input|
+    # Input type validation
+    if ($url | is-empty) {
+        error "URL cannot be empty" --context "validator"
+        return (validation_result false "URL cannot be empty")
+    }
+    if ($url | describe) != "string" {
+        error $"URL must be a string, got ($url | describe)" --context "validator"
+        return (validation_result false $"URL must be a string, got ($url | describe)")
+    }
+    if ($url | str length) > 2048 {
+        error "URL too long (max 2048 characters)" --context "validator"
+        return (validation_result false "URL too long (max 2048 characters)")
+    }
+    if not (($url | str starts-with "http://") or ($url | str starts-with "https://") or ($url | str starts-with "ftp://")) {
+        error "URL must start with http://, https://, or ftp://" --context "validator"
+        return (validation_result false "URL must start with http://, https://, or ftp://")
+    }
+    
+    validation_result true $"URL ($url) is valid"
+}
+
+# Permission validator
+export def validate_permission [path: string, permission: string] {
+    |input|
+    # Input type validation
+    if ($path | is-empty) {
+        error "Path cannot be empty" --context "validator"
+        return (validation_result false "Path cannot be empty")
+    }
+    if ($path | describe) != "string" {
+        error $"Path must be a string, got ($path | describe)" --context "validator"
+        return (validation_result false $"Path must be a string, got ($path | describe)")
+    }
+    if ($permission | is-empty) {
+        error "Permission cannot be empty" --context "validator"
+        return (validation_result false "Permission cannot be empty")
+    }
+    if ($permission | describe) != "string" {
+        error $"Permission must be a string, got ($permission | describe)" --context "validator"
+        return (validation_result false $"Permission must be a string, got ($permission | describe)")
+    }
+    if not ($permission in ["read", "write", "execute"]) {
+        error "Permission must be one of: read, write, execute" --context "validator"
+        return (validation_result false "Permission must be one of: read, write, execute")
+    }
+    
+    try {
+        match $permission {
+            "read" => {
+                let readable = ($path | path exists)
+                if $readable {
+                    validation_result true $"($path) is readable"
+                } else {
+                    validation_result false $"($path) is not readable or does not exist"
+                }
+            }
+            "write" => {
+                # Test write permission by trying to create a temporary file
+                let test_file = ($path | path join ".permission_test")
+                try {
+                    "test" | save --force $test_file
+                    rm -f $test_file
+                    validation_result true $"($path) is writable"
+                } catch {
+                    validation_result false $"($path) is not writable"
+                }
+            }
+            "execute" => {
+                let executable = ($path | path exists)
+                if $executable {
+                    validation_result true $"($path) is executable"
+                } else {
+                    validation_result false $"($path) is not executable or does not exist"
+                }
+            }
+        }
+    } catch { |err|
+        error $"Failed to check permission: ($err.msg)" --context "validator"
+        validation_result false "Permission check failed"
+    }
+}
+
+# Compose validators function
+export def compose_validators [validators: list<closure>] {
+    # Input type validation
+    if ($validators | describe) != "list<closure>" {
+        error $"Validators must be a list of closures, got ($validators | describe)" --context "validator"
+        return {|| validation_result false "Invalid validator composition"}
+    }
+    if ($validators | is-empty) {
+        warn "Empty validator list provided" --context "validator"
+        return {|| validation_result true "No validators to run"}
+    }
+    
+    {|input|
+        let results = ($validators | each { |validator|
+            $input | do $validator
+        })
+        
+        let all_success = ($results | all { |result| $result.success })
+        let failed_results = ($results | where success == false)
+        
+        if $all_success {
+            validation_result true "All composed validators passed"
+        } else {
+            let first_failure = ($failed_results | first)
+            validation_result false $"Composed validation failed: ($first_failure.message)"
+        }
+    }
 }

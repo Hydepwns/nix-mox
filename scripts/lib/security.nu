@@ -1,7 +1,7 @@
 # Security module for nix-mox scripts
 # Validates scripts for dangerous patterns and provides security recommendations
 use logging.nu *
-use ./unified-error-handling.nu *
+use error-handling.nu *
 
 # Security threat levels
 export const THREAT_LEVELS = {

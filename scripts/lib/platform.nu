@@ -7,8 +7,8 @@ use logging.nu *
 
 # Platform information structure
 export def platform_info [] {
-    let host_info = (sys host)
-    let platform_name = ($host_info.name | str downcase)
+    let host_info = try { sys host } catch { { name: "unknown", kernel_version: "unknown" } }
+    let platform_name = try { $host_info.name | str downcase } catch { "unknown" }
     
     let normalized_platform = match $platform_name {
         "linux" => "linux",
@@ -49,6 +49,15 @@ export def platform_info [] {
 # Get current platform (cached)
 export def get_platform [] {
     platform_info
+}
+
+# Simple platform detection (for test compatibility)
+export def detect_platform [] {
+    try {
+        (get_platform).normalized
+    } catch {
+        "unknown"
+    }
 }
 
 # Platform-specific command execution
