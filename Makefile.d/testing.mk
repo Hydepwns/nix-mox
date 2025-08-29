@@ -22,26 +22,15 @@ test-gaming: check-nushell
 	@echo "🧪 Running gaming tests..."
 	$(NUSHELL) scripts/test.nu gaming --verbose
 
-# Display testing targets
+# Display testing targets - DRY pattern
 display-test: check-nushell
 	@echo "🧪 Testing display configuration..."
-	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; main"
+	$(NUSHELL) scripts/testing/display/display-tests.nu --verbose
 
-display-test-interactive: check-nushell
-	@echo "🧪 Interactive display testing..."
-	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; main"
-
-display-test-backup: check-nushell
-	@echo "🧪 Display testing with backup..."
-	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; main"
-
-display-test-verbose: check-nushell
-	@echo "🧪 Verbose display testing..."
-	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; main"
-
-display-test-all: check-nushell
-	@echo "🧪 Comprehensive display testing..."
-	$(NUSHELL) -c "source scripts/validation/validate-display-config.nu; main"
+# Parameterized display test runner
+display-test-%: check-nushell
+	@echo "🧪 Display testing ($*)..."
+	$(NUSHELL) scripts/testing/display/display-tests.nu --mode $* --verbose
 
 # Coverage targets (main coverage target is in development.mk)
 

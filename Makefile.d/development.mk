@@ -21,33 +21,25 @@ install-synthwave84-zed:
 		cd ~/.config/zed/themes/synthwave84 && git pull; \
 	fi
 
-# Consolidated script targets
+# DRY dashboard pattern
 dashboard: check-nushell
-	@echo "📊 Launching system dashboard..."
+	@echo "📊 Launching overview dashboard..."
 	$(NUSHELL) scripts/dashboard.nu overview
 
-dashboard-system: check-nushell  
-	@echo "🖥️  Launching system dashboard..."
-	$(NUSHELL) scripts/dashboard.nu system
+# Parameterized dashboard targets
+dashboard-%: check-nushell
+	@echo "📊 Launching $* dashboard..."
+	$(NUSHELL) scripts/dashboard.nu $*
 
-dashboard-performance: check-nushell
-	@echo "⚡ Launching performance dashboard..."
-	$(NUSHELL) scripts/dashboard.nu performance
-
-dashboard-gaming: check-nushell
-	@echo "🎮 Launching gaming dashboard..."
-	$(NUSHELL) scripts/dashboard.nu gaming
-
+# DRY validation pattern
 validate: check-nushell
 	@echo "✅ Running basic validation..."
 	$(NUSHELL) scripts/validate.nu basic
 
-validate-config: check-nushell
-	@echo "🔧 Running configuration validation..."
-	$(NUSHELL) scripts/validate.nu config
-
-validate-gaming: check-nushell
-	@echo "🎮 Running gaming validation..."
+# Parameterized validation targets
+validate-%: check-nushell
+	@echo "✅ Running $* validation..."
+	$(NUSHELL) scripts/validate.nu $*
 	$(NUSHELL) scripts/validate.nu gaming
 
 validate-storage: check-nushell
@@ -133,11 +125,11 @@ zfs-shell: check-nushell
 # Build targets
 build: check-nushell
 	@echo "🔨 Building default package..."
-	nix build
+	nix --extra-experimental-features "nix-command flakes" build
 
 build-all: check-nushell
 	@echo "🔨 Building all packages..."
-	nix build
+	nix --extra-experimental-features "nix-command flakes" build
 
 build-packages: check-nushell
 	@echo "📦 Building all packages..."
@@ -149,15 +141,15 @@ build-packages: check-nushell
 # Format and check targets
 format: check-nushell
 	@echo "🎨 Formatting all code..."
-	nix develop --command treefmt
+	nix --extra-experimental-features "nix-command flakes" develop --command treefmt
 
 fmt: check-nushell
 	@echo "🎨 Formatting all code..."
-	nix develop --command treefmt
+	nix --extra-experimental-features "nix-command flakes" develop --command treefmt
 
 check: check-nushell
 	@echo "🔍 Running nix flake check..."
-	nix flake check
+	nix --extra-experimental-features "nix-command flakes" flake check
 
 check-flake: check-nushell
 	@echo "🔍 Running flake check..."
