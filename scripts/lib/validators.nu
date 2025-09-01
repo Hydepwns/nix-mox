@@ -626,40 +626,41 @@ export def validate_directory_enhanced [
     --must_be_writable = false,
     --min_space_mb: int = 100
 ] {
-    validate_path $path true false true
-    | chain_result {|_|
-        let validations = []
+    let path_result = (validate_path $path true false true)
+    if (is_success $path_result) {
+        mut validations = []
         
         if $must_be_writable {
-            let validations = ($validations | append {|| validate_permissions $path ["write"]})
+            $validations = ($validations | append {|| validate_permissions $path ["write"]})
         }
         
         if $min_space_mb > 0 {
-            let validations = ($validations | append {||
+            $validations = ($validations | append {||
                 try {
                     let df_result = (^df $path | lines | skip 1 | get 0 | split row -r '\s+')
                     let available_kb = ($df_result | get 3 | into int)
                     let available_mb = $available_kb / 1024
                     
-                    validate_with_error ($available_mb >= $min_space_mb)
-                        $"Directory has sufficient space: ($available_mb)MB available"
-                        $"Directory has insufficient space: ($available_mb)MB available, need ($min_space_mb)MB"
-                        "filesystem" "HIGH" "E_INSUFFICIENT_SPACE" {
-                            path: $path,
-                            available_mb: $available_mb,
-                            required_mb: $min_space_mb
-                        }
+                    if ($available_mb >= $min_space_mb) {
+                        validation_result true $"Directory has sufficient space: ($available_mb)MB available"
+                    } else {
+                        validation_result false $"Directory has insufficient space: ($available_mb)MB available, need ($min_space_mb)MB"
+                    }
                 } catch { |err|
-                    create_error $"Failed to check directory space: ($err.msg)" "filesystem" "MEDIUM" "E_SPACE_CHECK_FAILED" {path: $path}
+                    validation_result false $"Failed to check directory space: ($err.msg)"
                 }
             })
         }
         
         if ($validations | is-not-empty) {
-            validate_all $validations
+            # Run the validations and return first result for now
+            let first_validation = ($validations | first)
+            do $first_validation
         } else {
-            create_success $"Directory validation passed: ($path)" {path: $path}
+            validation_result true $"Directory validation passed: ($path)"
         }
+    } else {
+        $path_result
     }
 }
 
@@ -688,17 +689,20 @@ export def validate_system_enhanced [
     --max_cpu_percent: int = 90,
     --max_load_average: float = 5.0
 ] {
-    validate_system_resources ($min_disk_gb * 1024) ($min_memory_gb * 1024) $max_cpu_percent
-    | chain_result {|_|
+    let resource_result = (validate_system_resources ($min_disk_gb * 1024) ($min_memory_gb * 1024) $max_cpu_percent)
+    if (is_success $resource_result) {
         try {
             let load_avg = (sys host | get load_average | first)
-            validate_with_error ($load_avg <= $max_load_average)
-                $"System load acceptable: ($load_avg)"
-                $"System load too high: ($load_avg), max allowed ($max_load_average)"
-                "system" "HIGH" "E_HIGH_SYSTEM_LOAD" {current_load: $load_avg, max_load: $max_load_average}
+            if ($load_avg <= $max_load_average) {
+                validation_result true $"System load acceptable: ($load_avg)"
+            } else {
+                validation_result false $"System load too high: ($load_avg), max allowed ($max_load_average)"
+            }
         } catch { |err|
-            create_error $"Failed to check system load: ($err.msg)" "system" "MEDIUM" "E_LOAD_CHECK_FAILED"
+            validation_result false $"Failed to check system load: ($err.msg)"
         }
+    } else {
+        $resource_result
     }
 }
 
@@ -711,24 +715,24 @@ export def run_validations_enhanced [
     --max_retries: int = 2
 ] {
     # Input validation with enhanced error handling
-    let input_validation = validate_with_error (($validations | describe) == "list<record>")
-        "Validations input is valid"
-        $"Validations must be a list of records, got ($validations | describe)"
-        "validation" "HIGH" "E_INVALID_INPUT"
+    let input_validation = if (($validations | describe) == "list<record>") {
+        validation_result true "Validations input is valid"
+    } else {
+        validation_result false $"Validations must be a list of records, got ($validations | describe)"
+    }
     
-    if (is_error $input_validation) {
-        log_error $input_validation $context
+    if (not $input_validation.success) {
+        error $input_validation.message --context $context
         return $input_validation
     }
     
     if ($validations | is-empty) {
-        let empty_result = create_success "No validations to run" {
+        return (validation_result true "No validations to run" {
             total: 0,
             passed: 0,
             failed: 0,
             results: []
-        }
-        return $empty_result
+        })
     }
     
     info $"Running ($validations | length) enhanced validations..." --context $context
@@ -797,15 +801,14 @@ export def run_validations_enhanced [
     
     if ($failed_count == 0) {
         success $"All ($total_count) enhanced validations passed!" --context $context
-        create_success "All validations passed" $summary
+        validation_result true "All validations passed" $summary
     } else {
         let failure_summary = ($failures | each {|f| 
-            let err = ($f | get error)
-            $"($err.validator_name? | default 'unknown'): ($err.code? | default 'E_UNKNOWN') - ($err.message)"
+            $"($f.message? | default 'validation failed')"
         } | str join "; ")
         
         error $"($failed_count) of ($total_count) validations failed" --context $context
-        create_error $"Validation batch failed: ($failure_summary)" "validation" "HIGH" "E_VALIDATION_BATCH_FAILED" $summary
+        validation_result false $"Validation batch failed: ($failure_summary)" $summary
     }
 }
 

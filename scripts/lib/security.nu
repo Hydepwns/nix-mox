@@ -318,10 +318,10 @@ export def generate_security_report [output_file: string = "logs/security-report
 
     try {
         $report | to json | save $output_file
-        info $"Security report generated: ($output_file)" "security"
+        info $"Security report generated: ($output_file)" --context "security"
         $report
     } catch { |err|
-        error $"Failed to generate security report: ($err)" "security"
+        error $"Failed to generate security report: ($err)" --context "security"
         null
     }
 }
@@ -367,13 +367,13 @@ export def log_security_event [event_type: string, script_path: string, details:
     try {
         $event_data | to json | save --append $security_log
     } catch { |err|
-        error $"Failed to log security event: ($err)" "security"
+        error $"Failed to log security event: ($err)" --context "security"
     }
     
     # Also log to console
-    warn $"Security event: ($event_type) in ($script_path)" "security"
+    warn $"Security event: ($event_type) in ($script_path)" --context "security"
     if ($details | columns | length) > 0 {
-        debug $"Event details: ($details | to json)" "security"
+        debug $"Event details: ($details | to json)" --context "security"
     }
 }
 
