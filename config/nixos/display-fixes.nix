@@ -8,20 +8,30 @@
   # NVIDIA DRIVER FIXES FOR PLASMA 6
   # ============================================================================
 
-  # Use latest NVIDIA driver for better Plasma 6 compatibility
+  # Enable NVIDIA proprietary drivers - CRITICAL
   hardware.nvidia = {
+    # Enable NVIDIA drivers
     modesetting.enable = true;
     powerManagement.enable = false;
     powerManagement.finegrained = false;
-    open = false; # Proprietary driver works better with Plasma 6
+    open = false; # Use proprietary driver for RTX 4070
     nvidiaSettings = true;
 
-    # Use beta driver for better Plasma 6 support
+    # Use beta driver for better Plasma 6 support with RTX 4070
     package = config.boot.kernelPackages.nvidiaPackages.beta;
 
     # Disable composition pipeline (causes issues with Plasma 6)
     forceFullCompositionPipeline = false;
   };
+
+  # Enable graphics support (required for NVIDIA)
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
+
+  # Enable NVIDIA in X11
+  services.xserver.videoDrivers = [ "nvidia" ];
 
   # ============================================================================
   # DISPLAY MANAGER CONFIGURATION - CRITICAL FIXES
@@ -70,90 +80,94 @@
   # X11 CONFIGURATION - NVIDIA SPECIFIC
   # ============================================================================
 
-  services.xserver = {
-    enable = true;
-    videoDrivers = [ "nvidia" ];
+  # Additional X11 config for NVIDIA stability
+  services.xserver.config = ''
+    Section "Device"
+      Identifier "nvidia"
+      Driver "nvidia"
+      VendorName "NVIDIA Corporation"
+      Option "NoLogo" "true"
+      Option "UseEDID" "false"
+      Option "ConnectedMonitor" "DFP"
+      Option "CustomEDID" "DFP-0:/etc/X11/edid.bin"
+      Option "IgnoreEDIDChecksum" "true"
+      Option "UseDisplayDevice" "none"
+    EndSection
+  '';
 
-    # X11 configuration for NVIDIA
-    xkb = {
-      layout = "us";
-      variant = "";
-    };
+  # Screen configuration
+  services.xserver.screenSection = ''
+    Option         "metamodes" "nvidia-auto-select +0+0 { ForceFullCompositionPipeline = Off }"
+    Option         "AllowIndirectGLXProtocol" "off"
+    Option         "TripleBuffer" "on"
+  '';
 
-    # Additional X11 config for NVIDIA stability
-    config = ''
-      Section "Device"
-        Identifier "nvidia"
-        Driver "nvidia"
-        VendorName "NVIDIA Corporation"
-        Option "NoLogo" "true"
-        Option "UseEDID" "false"
-        Option "ConnectedMonitor" "DFP"
-        Option "CustomEDID" "DFP-0:/etc/X11/edid.bin"
-        Option "IgnoreEDIDChecksum" "true"
-        Option "UseDisplayDevice" "none"
-      EndSection
-    '';
+  # ============================================================================
+  # BOOT CONFIGURATION - NVIDIA + INTEL OPTIMIZED
+  # ============================================================================
 
-    # Screen configuration
-    screenSection = ''
-      Option         "metamodes" "nvidia-auto-select +0+0 { ForceFullCompositionPipeline = Off }"
-      Option         "AllowIndirectGLXProtocol" "off"
-      Option         "TripleBuffer" "on"
-    '';
+  boot = {
+    # Blacklist conflicting drivers - CRITICAL for NVIDIA
+    blacklistedKernelModules = [ "nouveau" "nvidiafb" ];
+
+    # Kernel modules to load for NVIDIA
+    kernelModules = [ "nvidia" "nvidia-drm" "nvidia-uvm" "nvidia-modeset" ];
+
+    # Prevent nouveau from being included in initrd
+    initrd.availableKernelModules = lib.mkForce [
+      "xhci_pci"
+      "ehci_pci"
+      "ahci"
+      "usbhid"
+      "usb_storage"
+      "sd_mod"
+    ];
+
+    # Comprehensive kernel parameters for NVIDIA + Intel i7-13700K + RTX 4070
+    kernelParams = [
+      # NVIDIA settings - critical for Plasma 6
+      "nvidia-drm.modeset=1"
+      "nvidia-drm.fbdev=1"
+
+      # Force proprietary NVIDIA driver loading and block nouveau
+      "modprobe.blacklist=nouveau,nvidiafb"
+      "rd.driver.blacklist=nouveau,nvidiafb"
+      "rd.blacklist=nouveau,nvidiafb"
+
+      # Additional NVIDIA driver parameters for RTX 4070 (AD104)
+      "nvidia.NVreg_PreserveVideoMemoryAllocations=0"
+      "nvidia.NVreg_UsePageAttributeTable=1"
+      "nvidia.NVreg_EnableGpuFirmware=0"
+      "nvidia.NVreg_EnableResizableBar=1" # Enable ReBAR for RTX 4070
+
+      # Intel CPU optimizations for i7-13700K
+      "intel_idle.max_cstate=1"
+      "intel_pstate=performance"
+      "intel_iommu=on"
+
+      # Performance optimizations
+      "mitigations=off"
+      "nowatchdog"
+      "quiet"
+      "splash"
+
+      # Memory management
+      "transparent_hugepage=always"
+      "vm.swappiness=10"
+
+      # Power management for Intel
+      "processor.max_cstate=1"
+      "idle=poll"
+
+      # Intel specific performance
+      "tsc=reliable"
+      "clocksource=tsc"
+
+      # Additional fixes for display stability
+      "acpi_backlight=vendor"
+      "pci=nommconf"
+    ];
   };
-
-  # ============================================================================
-  # KERNEL MODULE BLACKLIST - PREVENT DRIVER CONFLICTS
-  # ============================================================================
-
-  # Blacklist nouveau to prevent conflicts with proprietary NVIDIA drivers
-  boot.blacklistedKernelModules = [ "nouveau" "nvidiafb" ];
-
-  # ============================================================================
-  # KERNEL PARAMETERS - UPDATED FOR PLASMA 6 + NVIDIA
-  # ============================================================================
-
-  boot.kernelParams = [
-    # NVIDIA settings - critical for Plasma 6
-    "nvidia-drm.modeset=1"
-    "nvidia-drm.fbdev=1"
-
-    # Force proprietary NVIDIA driver loading
-    "modprobe.blacklist=nouveau"
-    "rd.driver.blacklist=nouveau"
-
-    # Disable problematic features that conflict with Plasma 6
-    "nvidia.NVreg_PreserveVideoMemoryAllocations=0"
-    "nvidia.NVreg_UsePageAttributeTable=1"
-
-    # Intel CPU optimizations (your current settings)
-    "intel_idle.max_cstate=1"
-    "intel_pstate=performance"
-    "intel_iommu=on"
-
-    # Performance optimizations
-    "mitigations=off"
-    "nowatchdog"
-    "quiet"
-    "splash"
-
-    # Memory management
-    "transparent_hugepage=always"
-    "vm.swappiness=10"
-
-    # Power management for Intel
-    "processor.max_cstate=1"
-    "idle=poll"
-
-    # Intel specific performance
-    "tsc=reliable"
-    "clocksource=tsc"
-
-    # Additional fixes for display stability
-    "acpi_backlight=vendor"
-    "pci=nommconf"
-  ];
 
   # ============================================================================
   # ENVIRONMENT VARIABLES - PLASMA 6 + NVIDIA FIXES
@@ -169,11 +183,12 @@
     __GL_SYNC_TO_VBLANK = "1";
     __GL_YIELD = "USLEEP";
 
-    # KDE/Qt specific fixes
+    # KDE/Qt specific fixes for RTX 4070
     QT_XCB_GL_INTEGRATION = "none";
     QT_QUICK_BACKEND = "software";
-    KWIN_COMPOSE = "O2"; # Force OpenGL 2.0 for compatibility
+    KWIN_COMPOSE = "O3"; # Use OpenGL 3.1+ for RTX 4070 performance
     KWIN_DRM_USE_EGL_STREAMS = "1";
+    KWIN_TRIPLE_BUFFER = "1"; # Enable triple buffering for smoother experience
 
     # Disable Wayland for Qt applications
     QT_QPA_PLATFORM = "xcb";
@@ -299,4 +314,20 @@
 
   # Add user to video group for NVIDIA access
   users.users.hydepwns.extraGroups = [ "video" ];
+
+  # ============================================================================
+  # ADDITIONAL BLACKLIST CONFIGURATION
+  # ============================================================================
+
+  # Create modprobe configuration to permanently blacklist nouveau
+  environment.etc."modprobe.d/blacklist-nouveau.conf".text = ''
+    # Blacklist nouveau driver to use NVIDIA proprietary driver
+    blacklist nouveau
+    blacklist nvidiafb
+    options nouveau modeset=0
+    
+    # Ensure NVIDIA drivers are preferred
+    install nouveau /bin/false
+    install nvidiafb /bin/false
+  '';
 }

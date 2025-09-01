@@ -8,13 +8,13 @@ in
 {
   options.services.sessionManagement = {
     enable = mkEnableOption "Enhanced session management for preventing reboot issues";
-    
+
     ensureRebootCapability = mkOption {
       type = types.bool;
       default = true;
       description = "Ensure reboot/shutdown works from GUI after rebuilds";
     };
-    
+
     preventServiceRestartIssues = mkOption {
       type = types.bool;
       default = true;
@@ -25,7 +25,7 @@ in
   config = mkIf cfg.enable {
     # Ensure PolicyKit is properly configured
     security.polkit.enable = true;
-    
+
     # Add rules for wheel group to perform power actions without issues
     security.polkit.extraConfig = ''
       polkit.addRule(function(action, subject) {
@@ -58,30 +58,30 @@ in
         }
       });
     '';
-    
+
     # Prevent service restart issues during rebuilds
     systemd.services = mkIf cfg.preventServiceRestartIssues {
       # Don't restart these critical services during rebuild
       systemd-logind.restartIfChanged = false;
       systemd-logind.stopIfChanged = false;
-      systemd-logind.restartTriggers = [];
-      
+      systemd-logind.restartTriggers = [ ];
+
       polkit.restartIfChanged = false;
       polkit.stopIfChanged = false;
-      polkit.restartTriggers = [];
-      
+      polkit.restartTriggers = [ ];
+
       display-manager.restartIfChanged = false;
       display-manager.stopIfChanged = false;
     };
-    
+
     # Ensure D-Bus is properly configured
     services.dbus.enable = true;
-    services.dbus.packages = with pkgs; [ 
+    services.dbus.packages = with pkgs; [
       dconf
       gcr
       gnome-settings-daemon
     ];
-    
+
     # Add systemd user services for session management
     systemd.user.services = {
       # Ensure PolicyKit authentication agent is running for GUI (Plasma 6)
@@ -99,16 +99,16 @@ in
         };
       };
     };
-    
+
     # Add warning for common issues
-    warnings = 
+    warnings =
       (if config.services.desktopManager.plasma6.enable && !cfg.preventServiceRestartIssues then
         [ "Plasma 6 is enabled but service restart prevention is disabled. This may cause reboot issues after rebuilds." ]
-      else []) ++
+      else [ ]) ++
       (if !config.security.polkit.enable then
         [ "PolicyKit is disabled. This will cause issues with GUI reboot/shutdown functionality." ]
-      else []);
-    
+      else [ ]);
+
     # Add assertions for critical configuration
     assertions = [
       {

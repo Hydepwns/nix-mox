@@ -11,7 +11,7 @@
 
   boot.initrd.availableKernelModules = [ "vmd" "xhci_pci" "ahci" "nvme" "usb_storage" "usbhid" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-intel" "nvidia" "nvidia-drm" "nvidia-uvm" ];
+  boot.kernelModules = [ "kvm-intel" ]; # NVIDIA modules moved to display-fixes.nix
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =

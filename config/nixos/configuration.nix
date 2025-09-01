@@ -52,40 +52,8 @@
     # Use latest kernel for best gaming performance
     kernelPackages = pkgs.linuxPackages_zen;
 
-    # Kernel parameters optimized for Intel i7-13700K + NVIDIA RTX 4070
-    kernelParams = [
-      # NVIDIA settings
-      "nvidia-drm.modeset=1"
-
-      # Intel CPU optimizations
-      "intel_idle.max_cstate=1"
-      "intel_pstate=performance"
-      "intel_iommu=on"
-
-      # Performance optimizations
-      "mitigations=off"
-      "nowatchdog"
-      "quiet"
-      "splash"
-
-      # Memory management
-      "transparent_hugepage=always"
-      "vm.swappiness=10"
-
-      # Power management for Intel
-      "processor.max_cstate=1"
-      "idle=poll"
-
-      # Intel specific performance
-      "tsc=reliable"
-      "clocksource=tsc"
-    ];
-
-    # Blacklist conflicting drivers
-    blacklistedKernelModules = [ "nouveau" ];
-
-    # Kernel modules to load
-    kernelModules = [ "kvm-intel" "nvidia" "nvidia-drm" "nvidia-uvm" ];
+    # Kernel modules to load (NVIDIA params moved to display-fixes.nix)
+    kernelModules = [ "kvm-intel" ];
   };
 
   # ============================================================================
