@@ -115,7 +115,7 @@ export def validate_network_resilient [host: string = "8.8.8.8", timeout: int = 
     
     try {
         # Use shorter timeout for faster failure
-        let result = (timeout ($timeout)s ping -c 1 -W ($timeout) $host | complete)
+        let result = (timeout $"($timeout)s" ping -c 1 -W ($timeout) $host | complete)
         if $result.exit_code == 0 {
             validation_result true $"Network connectivity OK"
         } else {
@@ -554,17 +554,19 @@ export def validate_integer_input [value: any, name: string, --min: int = 0, --m
 
 # Enhanced command validator with comprehensive error handling
 export def validate_command_enhanced [cmd: string] {
-    safe_command_exec "which" [$cmd]
-    | map_result {|result|
-        if ($result.stdout | str trim | is-not-empty) {
-            {
-                command: $cmd,
-                path: ($result.stdout | str trim),
-                available: true
-            }
-        } else {
-            error $"Command not found: ($cmd)" --context "validator-enhanced"
-            null
+    let result = (safe_command_exec "which" [$cmd])
+    if ($result.stdout | str trim | is-not-empty) {
+        {
+            command: $cmd,
+            path: ($result.stdout | str trim),
+            available: true
+        }
+    } else {
+        error $"Command not found: ($cmd)"
+        {
+            command: $cmd,
+            path: "",
+            available: false
         }
     }
 }
@@ -597,13 +599,14 @@ export def validate_file_enhanced [
     if ($path | path exists) {
         let additional_checks = ($additional_checks | append {||
             try {
-                let size_bytes = ($path | path stat | get size)
+                let size_bytes = (ls $path | get size | first)
                 let size_mb = ($size_bytes / 1024 / 1024)
                 
-                validate_with_error ($size_mb <= $max_size_mb)
-                    $"File size OK: ($size_mb)MB"
-                    $"File too large: ($size_mb)MB, max allowed ($max_size_mb)MB"
-                    "filesystem" "MEDIUM" "E_FILE_TOO_LARGE" {size_mb: $size_mb, max_size_mb: $max_size_mb}
+                if ($size_mb <= $max_size_mb) {
+                    validation_result true $"File size OK: ($size_mb)MB"
+                } else {
+                    validation_result false $"File too large: ($size_mb)MB, max allowed ($max_size_mb)MB"
+                }
             } catch { |err|
                 create_error $"Failed to check file size: ($err.msg)" "filesystem" "LOW" "E_SIZE_CHECK_FAILED" {path: $path}
             }
