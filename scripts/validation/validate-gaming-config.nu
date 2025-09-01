@@ -3,6 +3,7 @@
 # Import unified libraries
 use ../lib/validators.nu *
 use ../lib/logging.nu *
+use ../lib/secure-command.nu *
 
 
 # Gaming Configuration Validator for nix-mox
@@ -34,7 +35,12 @@ def main [] {
 
 def safe_command [cmd: string] {
     try {
-        nu -c $cmd | str trim
+        let result = (secure_system $cmd --context "gaming-validation")
+        if $result.exit_code == 0 {
+            $result.stdout | str trim
+        } else {
+            ""
+        }
     } catch {
         ""
     }

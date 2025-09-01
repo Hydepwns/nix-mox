@@ -6,6 +6,7 @@
 use ../../lib/logging.nu *
 use ../../lib/validators.nu *
 use ../../lib/command-wrapper.nu *
+use ../../lib/secure-command.nu *
 
 def show_banner [] {
     banner "EMI Detection System" "Hardware interference and USB/I2C error monitoring" --context "emi-detection"
@@ -107,7 +108,8 @@ export def detect_emi_patterns [--duration: duration = 5min] {
     
     # Monitor journalctl for EMI-related patterns
     let monitoring_result = try {
-        safe_command $"timeout ($duration | into string) journalctl -f --no-pager | grep -E '(EMI|interference|disabled by hub|error \\-71|0xffff)' | head -20"
+        let result = (secure_system $"timeout ($duration | into string) journalctl -f --no-pager | grep -E '(EMI|interference|disabled by hub|error \\-71|0xffff)' | head -20" --context "emi-monitor")
+        $result.stdout
         | lines
         | where $it != ""
         | each { |line|
@@ -140,11 +142,13 @@ export def run_emi_stress_test [] {
     info "Simulating hardware activity..." --context "emi-detection"
     try {
         # USB activity simulation
-        safe_command "find /sys/bus/usb/devices -name authorized -exec cat {} \\; >/dev/null 2>&1" 
+        let result = (secure_system "find /sys/bus/usb/devices -name authorized -exec cat {} \\; >/dev/null 2>&1" --context "usb-auth-check")
+        $result.stdout 
         sleep 2sec
         
         # I2C bus scanning (if available)
-        safe_command "find /sys/class/i2c-dev -type l 2>/dev/null | head -5" 
+        let i2c_result = (secure_system "find /sys/class/i2c-dev -type l 2>/dev/null | head -5" --context "i2c-scan")
+        $i2c_result.stdout 
         sleep 2sec
     } catch { |err|
         warn $"Stress test partially failed: ($err)" --context "emi-detection"

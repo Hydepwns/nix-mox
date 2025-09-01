@@ -4,6 +4,7 @@
 use ../lib/logging.nu *
 use ../lib/command-wrapper.nu *
 use ../lib/validators.nu *
+use ../lib/secure-command.nu *
 
 # nix-mox Health Check Script
 # Comprehensive system health validation for nix-mox configurations
@@ -125,7 +126,8 @@ def validate_emi_status [] {
   |input|
   try {
     # Run quick EMI check using our detection system
-    let emi_result = (safe_command "nu scripts/testing/hardware/emi-detection.nu 2>/dev/null || echo 'EMI check skipped'" --context "emi-health-check")
+    let emi_cmd_result = (secure_system "nu scripts/testing/hardware/emi-detection.nu 2>/dev/null || echo 'EMI check skipped'" --context "emi-health-check")
+    let emi_result = $emi_cmd_result.stdout
     
     if not ($emi_result | str contains "errors detected") {
       validation_result true "No EMI interference detected"

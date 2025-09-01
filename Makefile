@@ -224,10 +224,7 @@ hooks-test: check-nushell ## Test all hooks without committing
 	@nu scripts/maintenance/ci/large-file-check.nu check
 	@nu scripts/maintenance/ci/nixos-config-check.nu check
 
-# Safe Rebuild Targets
-safe-rebuild: check-nushell ## Safe NixOS rebuild with full validation
-	@echo "🛡️  Running safe NixOS rebuild..."
-	@nu scripts/maintenance/safe-rebuild.nu
+# Safe Rebuild Targets (defined in Makefile.d/maintenance.mk)
 
 rebuild-test: check-nushell ## Test rebuild without making permanent
 	@echo "🧪 Testing NixOS configuration..."
