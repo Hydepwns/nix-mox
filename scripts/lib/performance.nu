@@ -1,7 +1,7 @@
 # performance.nu - Performance monitoring module for nix-mox scripts
 # Tracks execution times, resource usage, and provides performance analytics
 use logging.nu *
-use ./unified-error-handling.nu *
+use error-handling.nu *
 
 # Performance metrics storage
 export const PERFORMANCE_METRICS = {
@@ -40,14 +40,14 @@ export def start_performance_monitor [operation: string, context: record = {}] {
         context: $context
     }
 
-    logging::debug "Performance monitoring started" $debug_context
+    debug "Performance monitoring started" --context "performance"
     $monitor_id
 }
 
 # End performance monitoring and calculate metrics
 export def end_performance_monitor [monitor_id: string] {
     if ($env.PERFORMANCE_MONITOR | is-empty) {
-        log_warn "No performance monitor found to end"
+        warn "No performance monitor found to end" --context "performance"
         return null
     }
 
@@ -83,12 +83,7 @@ export def end_performance_monitor [monitor_id: string] {
     }
 
     # Log performance metrics
-    log_performance $monitor_data.operation $duration {
-        monitor_id: $monitor_id
-        memory_delta: $memory_delta
-        cpu_average: $cpu_avg
-        context: $monitor_data.context
-    }
+    info $"Operation ($monitor_data.operation) completed in ($duration_sec)s" --context "performance"
 
     # Check for performance issues
     check_performance_issues $metrics
@@ -108,18 +103,18 @@ export def check_performance_issues [metrics: record] {
 
     # Check for slow operations
     if $metrics.duration_seconds > $thresholds.slow_operation {
-        warn $"Slow operation detected: ($metrics.operation) took ($metrics.duration)" "performance"
+        warn $"Slow operation detected: ($metrics.operation) took ($metrics.duration)" --context "performance"
     }
 
     # Check for high memory usage
     let memory_percent = ($metrics.memory_end / (sys | get mem.total) * 100)
     if $memory_percent > $thresholds.high_memory {
-        warn $"High memory usage detected: ($metrics.operation) used ($memory_percent)%" "performance"
+        warn $"High memory usage detected: ($metrics.operation) used ($memory_percent)%" --context "performance"
     }
 
     # Check for high CPU usage
     if $metrics.cpu_average > $thresholds.high_cpu {
-        warn $"High CPU usage detected: ($metrics.operation) used ($metrics.cpu_average)%" "performance"
+        warn $"High CPU usage detected: ($metrics.operation) used ($metrics.cpu_average)%" --context "performance"
     }
 }
 
@@ -137,7 +132,7 @@ export def store_performance_metrics [metrics: record] {
     try {
         $metrics | to json | save --append $metrics_file
     } catch { |err|
-        error $"Failed to store performance metrics: ($err)" "performance"
+        error $"Failed to store performance metrics: ($err)" --context "performance"
     }
 }
 
@@ -183,7 +178,7 @@ export def get_performance_stats [metrics_file: string = "logs/performance.json"
             cpu_usage: { average: $cpu_average, peak: $cpu_peak }
         }
     } catch { |err|
-        error $"Failed to get performance stats: ($err)" "performance"
+        error $"Failed to get performance stats: ($err)" --context "performance"
         {
             total_operations: 0
             average_duration: 0
@@ -224,7 +219,7 @@ export def get_operation_performance [operation: string, metrics_file: string = 
             recent_runs: ($operation_metrics | last 5)
         }
     } catch { |err|
-        error $"Failed to get operation performance: ($err)" "performance"
+        error $"Failed to get operation performance: ($err)" --context "performance"
         null
     }
 }
@@ -247,9 +242,9 @@ export def clean_performance_metrics [days: int = 30, metrics_file: string = "lo
         $recent_metrics | each { |metric| $metric | to json } | save $metrics_file
 
         let removed_count = ($metrics | length) - ($recent_metrics | length)
-        info $"Cleaned performance metrics: ($removed_count) metrics removed" "performance"
+        info $"Cleaned performance metrics: ($removed_count) metrics removed" --context "performance"
     } catch { |err|
-        error $"Failed to clean performance metrics: ($err)" "performance"
+        error $"Failed to clean performance metrics: ($err)" --context "performance"
     }
 }
 
@@ -311,10 +306,10 @@ export def generate_performance_report [output_file: string = "logs/performance-
 
     try {
         $report | to json | save $output_file
-        info $"Performance report generated: ($output_file)" "performance"
+        info $"Performance report generated: ($output_file)" --context "performance"
         $report
     } catch { |err|
-        error $"Failed to generate performance report: ($err)" "performance"
+        error $"Failed to generate performance report: ($err)" --context "performance"
         null
     }
 }

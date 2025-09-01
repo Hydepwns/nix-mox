@@ -1,7 +1,7 @@
 # Configuration management module for nix-mox scripts
 # Handles loading, validating, and managing configuration files
 use logging.nu *
-use ./unified-error-handling.nu *
+use error-handling.nu *
 
 # Default configuration schema
 export const DEFAULT_CONFIG = {
@@ -105,8 +105,9 @@ export def merge_config [base: record, override: record] {
     for key in ($override | columns) {
         let value = $override | get $key
 
-        if ($result | get ?$key) != null {
-            let base_value = $result | get $key
+        let existing_value = try { $result | get $key } catch { null }
+        if $existing_value != null {
+            let base_value = $existing_value
 
             # Deep merge for nested objects
             if ($base_value | describe) == "record" and ($value | describe) == "record" {
@@ -164,7 +165,8 @@ export def validate_config [config: record] {
     # Check required top-level keys
     let required_keys = ["logging", "platform", "scripts", "security", "performance", "paths"]
     for key in $required_keys {
-        if ($config | get ?$key) == null {
+        let config_value = try { $config | get $key } catch { null }
+        if $config_value == null {
             $errors = ($errors | append $"Missing required key: ($key)")
         }
     }
@@ -256,7 +258,8 @@ export def get_config_value [config: record, path: string, default: any = null] 
     mut current = $config
 
     for key in $keys {
-        if ($current | get ?$key) != null {
+        let current_value = try { $current | get $key } catch { null }
+        if $current_value != null {
             $current = ($current | get $key)
         } else {
             return $default
@@ -274,7 +277,8 @@ export def set_config_value [config: record, path: string, value: any] {
     } else {
         let first = ($keys | get 0)
         let rest = ($keys | skip 1 | str join ".")
-        let sub = if ($config | get ?$first) == null {
+        let first_value = try { $config | get $first } catch { null }
+        let sub = if $first_value == null {
             {}
         } else {
             $config | get $first

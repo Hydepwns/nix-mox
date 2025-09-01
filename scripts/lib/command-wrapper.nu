@@ -14,7 +14,7 @@ export def safe_command [
     --context: string = "command",
     --quiet = false
 ] {
-    warn "safe_command is deprecated, use secure_system instead" $context
+    warn "safe_command is deprecated, use secure_system instead" --context $context
     let result = (secure_system $command --context $context)
     if not $quiet and $result.exit_code != 0 {
         warn $"Command failed: ($command)" --context $context

@@ -356,7 +356,7 @@ export def generate_overall_recommendations [scan_results: list] {
 # Log security event
 export def log_security_event [event_type: string, script_path: string, details: record = {}] {
     let event_data = {
-        timestamp: (timestamp),
+        timestamp: (date now),
         event_type: $event_type,
         script_path: $script_path,
         details: $details

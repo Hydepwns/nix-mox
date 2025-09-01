@@ -468,9 +468,10 @@ export def run_validations [
     --fail-fast = false,
     --context: string = "validation"
 ] {
-    # Input type validation
-    if ($validations | describe) != "list<record>" {
-        error $"Validations must be a list of records, got ($validations | describe)" --context $context
+    # Input type validation (flexible - accept both list<record> and table formats)
+    let validation_type = ($validations | describe)
+    if not (($validation_type | str starts-with "list") or ($validation_type | str starts-with "table")) {
+        error $"Validations must be a list or table, got ($validation_type)" --context $context
         return {success: false, error: "Invalid input type for validations"}
     }
     if ($validations | is-empty) {
