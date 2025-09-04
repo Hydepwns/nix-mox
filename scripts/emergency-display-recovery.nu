@@ -2,7 +2,9 @@
 # Emergency Display Recovery Script
 # Use this when you can't get past the lock screen after rebuild
 
-use lib/logging.nu *
+# Simple logging functions for emergency recovery
+def info [msg: string] { print $"[INFO] $msg" }
+def debug [msg: string] { print $"[DEBUG] $msg" }
 
 def main [
     --auto,                         # Run automatic recovery without prompts
@@ -10,7 +12,7 @@ def main [
     --full,                         # Full recovery with all fixes
     --dry-run                       # Show what would be done
 ] {
-    banner "🚨 Emergency Display Recovery" --context "recovery"
+    print "🚨 Emergency Display Recovery"
     
     if $minimal {
         minimal_recovery $dry_run
@@ -25,7 +27,7 @@ def main [
 
 # Minimal recovery - just get display working
 def minimal_recovery [dry_run: bool] {
-    section "Minimal Display Recovery" --context "recovery"
+    print "Minimal Display Recovery"
     
     let recovery_commands = [
         {
@@ -55,7 +57,7 @@ def minimal_recovery [dry_run: bool] {
 
 # Full recovery with all display fixes
 def full_recovery [dry_run: bool] {
-    section "Full Display Recovery" --context "recovery"
+    print "Full Display Recovery"
     
     let recovery_commands = [
         {
@@ -105,16 +107,16 @@ def full_recovery [dry_run: bool] {
 
 # Automatic recovery - smart recovery based on system state  
 def auto_recovery [dry_run: bool] {
-    section "Automatic Display Recovery" --context "recovery"
+    print "Automatic Display Recovery"
     
     # Analyze current state
     let display_running = (try { ^pgrep -f "sddm|X" | lines | length } catch { 0 }) > 0
     let nvidia_loaded = (try { ^lsmod | grep nvidia | lines | length } catch { 0 }) > 0
     let kde_running = (try { ^pgrep -f "plasma|kwin" | lines | length } catch { 0 }) > 0
     
-    info $"Display Manager Running: ($display_running)" --context "recovery"
-    info $"NVIDIA Modules Loaded: ($nvidia_loaded)" --context "recovery"  
-    info $"KDE Processes Running: ($kde_running)" --context "recovery"
+    print ("Display Manager Running: " + ($display_running | into string))
+    print ("NVIDIA Modules Loaded: " + ($nvidia_loaded | into string))
+    print ("KDE Processes Running: " + ($kde_running | into string))
     
     mut recovery_commands = []
     
@@ -167,19 +169,19 @@ def auto_recovery [dry_run: bool] {
 
 # Interactive recovery with user choices
 def interactive_recovery [dry_run: bool] {
-    section "Interactive Display Recovery" --context "recovery"
+    print "Interactive Display Recovery"
     
-    info "Select recovery actions (you can run this script with flags for automatic recovery):" --context "recovery"
-    info "" --context "recovery"
-    info "Available recovery options:" --context "recovery"
-    info "  --minimal    : Quick display recovery" --context "recovery"
-    info "  --full       : Complete display reset" --context "recovery"
-    info "  --auto       : Smart recovery based on system state" --context "recovery"
-    info "  --dry-run    : Show what would be done without executing" --context "recovery"
-    info "" --context "recovery"
+    print "Select recovery actions (you can run this script with flags for automatic recovery):"
+    print ""
+    print "Available recovery options:"
+    print "  --minimal    : Quick display recovery"
+    print "  --full       : Complete display reset"
+    print "  --auto       : Smart recovery based on system state"
+    print "  --dry-run    : Show what would be done without executing"
+    print ""
     
     # Run auto recovery by default in interactive mode
-    warn "Running automatic recovery in 5 seconds... (Ctrl+C to cancel)" --context "recovery"
+    print "Running automatic recovery in 5 seconds... (Ctrl+C to cancel)"
     sleep 5sec
     auto_recovery $dry_run
 }
@@ -188,28 +190,28 @@ def interactive_recovery [dry_run: bool] {
 def execute_recovery_commands [commands: list, dry_run: bool] {
     for cmd in $commands {
         if $dry_run {
-            info $"[DRY RUN] Would execute: ($cmd.name)" --context "recovery"
-            debug $"  Command: ($cmd.command)" --context "recovery"
-            debug $"  Description: ($cmd.description)" --context "recovery"
+            print ("Would execute: " + $cmd.name)
+            print ("Command: " + $cmd.command)
+            print ("Description: " + $cmd.description)
             continue
         }
         
-        info $"Executing: ($cmd.name)" --context "recovery"
-        debug $"Command: ($cmd.command)" --context "recovery"
+        print ("Executing: " + $cmd.name)
+        print ("Command: " + $cmd.command)
         
         try {
             let result = (^bash -c $cmd.command | complete)
             
             if $result.exit_code == 0 {
-                success $"✅ ($cmd.name) completed successfully" --context "recovery"
+                print ("(" + $cmd.name + ") completed successfully")
             } else {
-                warn $"⚠️  ($cmd.name) completed with warnings (exit code: ($result.exit_code))" --context "recovery"
+                print ("(" + $cmd.name + ") completed with warnings (exit code: " + ($result.exit_code | into string) + ")")
                 if not ($result.stderr | is-empty) {
-                    debug $"Error output: ($result.stderr)" --context "recovery"
+                    print ("Error output: " + $result.stderr)
                 }
             }
         } catch { |err|
-            error $"❌ ($cmd.name) failed: ($err.msg)" --context "recovery"
+            print ("(" + $cmd.name + ") failed: " + $err.msg)
         }
         
         # Small delay between commands
@@ -217,12 +219,12 @@ def execute_recovery_commands [commands: list, dry_run: bool] {
     }
     
     if not $dry_run {
-        info "" --context "recovery"
-        success "Recovery commands completed!" --context "recovery"
-        info "Please wait a few seconds for the display manager to start." --context "recovery"
-        info "If the lock screen still doesn't work, try:" --context "recovery"
-        info "  1. Switch to a TTY (Ctrl+Alt+F2)" --context "recovery"
-        info "  2. Log in and run: sudo systemctl restart sddm" --context "recovery"
-        info "  3. Switch back to GUI (Ctrl+Alt+F1)" --context "recovery"
+        print ""
+        print "Recovery commands completed!"
+        print "Please wait a few seconds for the display manager to start."
+        print "If the lock screen still doesn't work, try:"
+        print "  1. Switch to a TTY (Ctrl+Alt+F2)"
+        print "  2. Log in and run: sudo systemctl restart sddm"
+        print "  3. Switch back to GUI (Ctrl+Alt+F1)"
     }
 }

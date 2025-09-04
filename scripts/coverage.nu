@@ -3,11 +3,11 @@
 # Replaces generate-coverage.nu, generate-codecov.nu, generate-lcov.nu
 # Uses functional patterns for comprehensive coverage analysis
 
-use lib/logging.nu *
-use lib/platform.nu *
-use lib/testing.nu *
-use lib/command-wrapper.nu *
-use lib/script-template.nu *
+use ./lib/logging.nu
+use ./lib/platform.nu
+use ./lib/testing.nu
+use ./lib/command-wrapper.nu
+use ./lib/script-template.nu
 
 # Main coverage operations dispatcher
 def main [
@@ -576,8 +576,8 @@ def display_coverage_summary [coverage_data: record] {
     print $"Generated: ($coverage_data.timestamp)"
     print $"Files Analyzed: ($summary.files_analyzed)"
     print ""
-    print $"Line Coverage: ($summary.covered_lines) / ($summary.total_lines) (($summary.coverage_percentage)%)"
-    print $"Function Coverage: ($summary.covered_functions) / ($summary.total_functions) (($summary.function_coverage_percentage)%)"
+    print $"Line Coverage: ($summary.covered_lines) / ($summary.total_lines) ($summary.coverage_percentage)%"
+    print $"Function Coverage: ($summary.covered_functions) / ($summary.total_functions) ($summary.function_coverage_percentage)%"
     print ""
     
     # Show coverage bar

@@ -2,7 +2,7 @@
 # Simplified dashboard system for nix-mox
 # Basic dashboard functionality without complex module dependencies
 
-use lib/command-wrapper.nu *
+use ./lib/command-wrapper.nu
 
 # Simple logging functions
 def info [msg: string, --context: string = "dashboard"] {

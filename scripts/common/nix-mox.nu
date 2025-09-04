@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../../../../lib/validators.nu
-use ../../../../../lib/logging.nu
+use ../lib/validators.nu
+use ../lib/logging.nu
 
 
 # Main script for nix-mox
@@ -73,18 +73,6 @@ def error [error_msg: string, exit_code: int = 1] {
         error "Check the log file for more details: ($env.LOG_FILE)"
     }
     exit $exit_code
-}
-
-
-}
-
-
-}
-
-
-}
-
-
 }
 
 # --- Script Execution ---

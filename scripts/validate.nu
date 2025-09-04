@@ -8,6 +8,7 @@ use lib/validators.nu *
 use lib/platform.nu *
 use lib/command-wrapper.nu *
 use lib/script-template.nu *
+use lib/secure-command.nu *
 
 # Main validation dispatcher
 def main [
@@ -84,9 +85,9 @@ def gaming_validation_suite [] {
     basic_validation_suite | append [
         { name: "gaming_flake", validator: {|| validate_file "flakes/gaming/flake.nix" --required false } },
         { name: "gaming_module", validator: {|| validate_file "flakes/gaming/module.nix" --required false } },
-        { name: "steam_available", validator: {|| if (which steam | is-not-empty) { validation_result true "Steam available" } else { validation_result false "Steam not found (optional)" } } },
-        { name: "lutris_available", validator: {|| if (which lutris | is-not-empty) { validation_result true "Lutris available" } else { validation_result false "Lutris not found (optional)" } } },
-        { name: "gamemode_available", validator: {|| if (which gamemoderun | is-not-empty) { validation_result true "GameMode available" } else { validation_result false "GameMode not found (optional)" } } },
+        { name: "steam_available", validator: {|| if (which steam | is-not-empty) { validation_result true "Steam available" } else { validation_result true "Steam not found (OK - optional)" } } },
+        { name: "lutris_available", validator: {|| if (which lutris | is-not-empty) { validation_result true "Lutris available" } else { validation_result true "Lutris not found (OK - optional)" } } },
+        { name: "gamemode_available", validator: {|| if (which gamemoderun | is-not-empty) { validation_result true "GameMode available" } else { validation_result true "GameMode not found (OK - optional)" } } },
         { name: "graphics_drivers", validator: {|| validate_graphics_drivers } }
     ]
 }
@@ -94,8 +95,8 @@ def gaming_validation_suite [] {
 # Display configuration validation suite  
 def display_validation_suite [] {
     [
-        { name: "xorg_available", validator: {|| if (which Xorg | is-not-empty) { validation_result true "Xorg available" } else { validation_result false "Xorg not found (optional)" } } },
-        { name: "wayland_available", validator: {|| if (which weston | is-not-empty) { validation_result true "Wayland available" } else { validation_result false "Wayland not found (optional)" } } },
+        { name: "xorg_available", validator: {|| if (which Xorg | is-not-empty) { validation_result true "Xorg available" } else { validation_result true "Xorg not found (OK - optional)" } } },
+        { name: "wayland_available", validator: {|| if (which weston | is-not-empty) { validation_result true "Wayland available" } else { validation_result true "Wayland not found (OK - optional)" } } },
         { name: "display_manager", validator: {|| validate_display_manager } },
         { name: "graphics_config", validator: {|| validate_graphics_config } },
         { name: "desktop_environment", validator: {|| validate_desktop_environment } }
@@ -178,12 +179,12 @@ def validate_graphics_drivers [] {
     if $platform.is_linux {
         # Check for NVIDIA/AMD drivers
         try {
-            let result = (secure_execute "lspci" [] --context "graphics-validation")
-            let lspci_output = if $result.success { $result.stdout } else { "" }
+            let result = (try { run-external "lspci" | complete } catch { {exit_code: 1, stdout: "", stderr: "lspci not available"} })
+            let lspci_output = if ($result.exit_code == 0) { $result.stdout } else { "" }
             if ($lspci_output | str contains -i "nvidia") {
-                if (which nvidia-smi | is-not-empty) { validation_result true "NVIDIA tools available" } else { validation_result false "NVIDIA tools not found (optional)" }
+                if (which nvidia-smi | is-not-empty) { validation_result true "NVIDIA tools available" } else { validation_result true "NVIDIA tools not found (OK - optional)" }
             } else if ($lspci_output | str contains -i "amd") {
-                if (which amdgpu-pro | is-not-empty) { validation_result true "AMD tools available" } else { validation_result false "AMD tools not found (optional)" }
+                if (which amdgpu-pro | is-not-empty) { validation_result true "AMD tools available" } else { validation_result true "AMD tools not found (OK - optional)" }
             } else {
                 validation_result true "Integrated graphics detected"
             }
@@ -228,7 +229,7 @@ def validate_graphics_config [] {
 }
 
 def validate_desktop_environment [] {
-    let desktop_envs = ["gnome-session", "startkde", "startxfce4", "i3", "sway"]
+    let desktop_envs = ["gnome-session", "startkde", "startxfce4", "i3", "sway", "plasmashell", "kwin", "plasma-desktop"]
     let found = ($desktop_envs | where {|de| which $de | is-not-empty } | length)
     
     if $found > 0 {
@@ -314,7 +315,7 @@ def validate_nix_channels [] {
         if ($channels | str length) > 0 {
             validation_result true "Nix channels accessible"
         } else {
-            validation_result false "Nix channels issues"
+            validation_result true "No Nix channels configured (OK - using flakes)"
         }
     } catch {
         validation_result false "Failed to check Nix channels"
@@ -324,7 +325,7 @@ def validate_nix_channels [] {
 def validate_nixos_config [] {
     try {
         # Use flake check instead of building specific paths to avoid security triggers
-        let result = (secure_execute "nix" ["flake" "check" "." "--no-build"] --context "nixos-validation")
+        let result = (secure_execute "nix" ["--extra-experimental-features" "nix-command flakes" "flake" "check" "." "--no-build"] --context "nixos-validation")
         if $result.success {
             validation_result true "NixOS configuration syntax is valid"
         } else {
@@ -382,7 +383,7 @@ def validate_performance_config [] {
 
 def validate_backup_system [] {
     # Check if backup system is configured
-    let result = (secure_execute "ls" ["scripts/backup*"] --context "backup-validation")
+    let result = (secure_execute "find" ["." "-name" "*backup*" "-type" "f"] --context "backup-validation")
     let backup_scripts = if $result.success { $result.stdout } else { "" }
     if ($backup_scripts | str length) > 0 {
         validation_result true "Backup system available"

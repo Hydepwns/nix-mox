@@ -3,15 +3,15 @@
 # Replaces: chezmoi-apply.nu, chezmoi-status.nu, chezmoi-diff.nu, chezmoi-sync.nu
 # Uses functional patterns and command wrapper library
 
-use lib/logging.nu *
-use lib/command-wrapper.nu *
-use lib/validators.nu *
+use ./lib/logging.nu
+use ./lib/command-wrapper.nu
+use ./lib/validators.nu
 
 # Main chezmoi command dispatcher
 def main [
     ...args
 ] {
-    let command = ($args | get 0 -o | default "help")
+    let command = ($args | get 0 | default "help")
     let dry_run = ("--dry-run" in $args)
     let context = "chezmoi"
     info $"chezmoi ($command)" --context $context
@@ -19,13 +19,13 @@ def main [
     # Validate chezmoi is available
     let validation = (validate_command "chezmoi")
     if not $validation.success {
-        error "chezmoi command not found - please install chezmoi first" --context $context
+        print "chezmoi command not found - please install chezmoi first"
         return
     }
     
     # Dispatch to appropriate handler
     match $command {
-        "apply" => (chezmoi_apply --dry-run $dry_run --context $context),
+        "apply" => (if $dry_run { chezmoi_apply --dry-run --context $context } else { chezmoi_apply --context $context }),
         "status" => (chezmoi_status --context $context),
         "diff" => (chezmoi_diff --context $context),
         "sync" => (chezmoi_sync --context $context),
@@ -34,7 +34,7 @@ def main [
         "edit" => (chezmoi_edit --context $context),
         "help" => (show_help),
             _ => {
-                error $"Unknown command: ($command). Use 'help' to see available commands." --context $context
+                print $"Unknown command: ($command). Use 'help' to see available commands."
                 show_help
             }
         }
@@ -45,14 +45,14 @@ def chezmoi_apply [--dry-run, --context: string = "chezmoi"] {
     info "Applying chezmoi configuration..." --context $context
     
     if $dry_run {
-        dry_run "Would apply chezmoi configuration" --context $context
-        chezmoi_command "diff" --context $context --dry-run $dry_run
+        print "Would apply chezmoi configuration"
+        chezmoi_command "diff" --context $context --dry-run
     } else {
         let result = (chezmoi_command "apply" --context $context)
         if $result.exit_code == 0 {
-            success "Chezmoi configuration applied successfully" --context $context
+            print "Chezmoi configuration applied successfully"
         } else {
-            error "Failed to apply chezmoi configuration" --context $context
+            print "Failed to apply chezmoi configuration"
         }
         $result
     }
@@ -65,13 +65,13 @@ def chezmoi_status [--context: string = "chezmoi"] {
     let result = (chezmoi_command "status" --context $context)
     if $result.exit_code == 0 {
         if ($result.stdout | str length) == 0 {
-            success "Chezmoi configuration is up to date" --context $context
+            print "Chezmoi configuration is up to date"
         } else {
-            warn "Chezmoi has pending changes:" --context $context
+            print "Chezmoi has pending changes:"
             print $result.stdout
         }
     } else {
-        error "Failed to check chezmoi status" --context $context
+        print "Failed to check chezmoi status"
     }
     $result
 }
@@ -83,34 +83,34 @@ def chezmoi_diff [--context: string = "chezmoi"] {
     let result = (chezmoi_command "diff" --context $context)
     if $result.exit_code == 0 {
         if ($result.stdout | str length) == 0 {
-            success "No differences found" --context $context
+            print "No differences found"
         } else {
-            info "Configuration differences:" --context $context
+            print "Configuration differences:"
             print $result.stdout
         }
     } else {
-        error "Failed to show chezmoi differences" --context $context
+        print "Failed to show chezmoi differences"
     }
     $result
 }
 
 # Sync chezmoi with remote repository
-def chezmoi_sync [--context: string = "chezmoi"] {
+def chezmoi_sync [--dry-run, --context: string = "chezmoi"] {
     info "Syncing chezmoi with remote repository..." --context $context
     
     # First update from remote
     let update_result = (chezmoi_command "update" --context $context)
     if $update_result.exit_code != 0 {
-        error "Failed to update from remote repository" --context $context
+        print "Failed to update from remote repository"
         return $update_result
     }
     
     # Then apply any changes
-    let apply_result = (chezmoi_apply --context $context)
+    let apply_result = (if $dry_run { chezmoi_apply --dry-run --context $context } else { chezmoi_apply --context $context })
     if $apply_result.exit_code == 0 {
-        success "Chezmoi sync completed successfully" --context $context
+        print "Chezmoi sync completed successfully"
     } else {
-        error "Chezmoi sync failed during apply phase" --context $context
+        print "Chezmoi sync failed during apply phase"
     }
     $apply_result
 }
@@ -121,9 +121,9 @@ def chezmoi_verify [--context: string = "chezmoi"] {
     
     let result = (chezmoi_command "verify" --context $context)
     if $result.exit_code == 0 {
-        success "Chezmoi configuration verification passed" --context $context
+        print "Chezmoi configuration verification passed"
     } else {
-        error "Chezmoi configuration verification failed" --context $context
+        print "Chezmoi configuration verification failed"
     }
     $result
 }
@@ -134,9 +134,9 @@ def chezmoi_edit [--context: string = "chezmoi"] {
     
     let result = (chezmoi_command "edit" --context $context)
     if $result.exit_code == 0 {
-        success "Chezmoi edit session completed" --context $context
+        print "Chezmoi edit session completed"
     } else {
-        error "Failed to open chezmoi editor" --context $context
+        print "Failed to open chezmoi editor"
     }
     $result
 }
