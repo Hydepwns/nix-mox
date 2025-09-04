@@ -3,7 +3,6 @@
 # Ensures all critical systems are functioning after NixOS rebuild
 
 use ../lib/logging.nu *
-use ../lib/validators.nu *
 
 # Main post-rebuild validation
 export def validate_post_rebuild [

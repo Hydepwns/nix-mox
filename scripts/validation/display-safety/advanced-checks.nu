@@ -26,7 +26,7 @@ export def validate_wayland_config [] {
             {
                 name: "GDM Wayland"
                 success: true
-                message: if $enabled { "Wayland enabled for GDM" } else { "Wayland disabled for GDM" }
+                message: (if $enabled { "Wayland enabled for GDM" } else { "Wayland disabled for GDM" })
             }
         } else {
             {
@@ -87,7 +87,7 @@ export def validate_gpu_drivers [] {
                 name: "NVIDIA Configuration"
                 success: true
                 message: $"NVIDIA modesetting: ($modesetting), nouveau blacklisted: ($nouveau_blacklisted)"
-                warning: if (not $nouveau_blacklisted) { "nouveau not blacklisted - may conflict with nvidia" } else { null }
+                warning: (if (not $nouveau_blacklisted) { "nouveau not blacklisted - may conflict with nvidia" } else { null })
             }
         } else {
             {
@@ -118,7 +118,7 @@ export def validate_gpu_drivers [] {
             {
                 name: "Graphics Hardware"
                 success: $enabled
-                message: if $enabled { "Graphics hardware support enabled" } else { "WARNING: Graphics hardware support disabled!" }
+                message: (if $enabled { "Graphics hardware support enabled" } else { "WARNING: Graphics hardware support disabled!" })
             }
         } else {
             {
@@ -203,12 +203,12 @@ export def validate_config_syntax [] {
         {
             name: "Configuration Syntax"
             success: ($result.exit_code == 0)
-            message: if ($result.exit_code == 0) {
+            message: (if ($result.exit_code == 0) {
                 "Configuration syntax is valid"
             } else {
                 "Configuration has syntax errors!"
-            }
-            error: if ($result.exit_code != 0) { $result.stderr } else { null }
+            })
+            error: (if ($result.exit_code != 0) { $result.stderr } else { null })
         }
     } catch {
         {

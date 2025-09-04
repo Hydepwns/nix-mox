@@ -1,9 +1,7 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/validators.nu *
 use ../lib/logging.nu *
-
 
 # Pre-rebuild safety validation script
 # Validates critical system components before nixos-rebuild

@@ -4,7 +4,6 @@
 # Run this BEFORE any nixos-rebuild to prevent system breakage
 # Covers: boot, display, storage, and configuration validation
 
-use ../lib/validators.nu *
 use ../lib/logging.nu *
 use ../lib/platform.nu *
 

@@ -40,7 +40,7 @@ export def print_validation_report [results: record] {
         let component_name = ($component | str replace '_' ' ' | str capitalize)
         
         if $result.success { 
-            success $"($component_name) validation passed" --context $context
+                    success $"($component_name) validation passed" --context $context
         } else if $is_critical { 
             error $"($component_name) validation failed (CRITICAL)" --context $context
         } else { 

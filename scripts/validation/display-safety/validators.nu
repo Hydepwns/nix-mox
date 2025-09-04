@@ -183,16 +183,18 @@ export def validate_display_manager [] {
         let enabled_dms = if $gdm { ($enabled_dms | append "GDM") } else { $enabled_dms }
         let enabled_dms = if $lightdm { ($enabled_dms | append "LightDM") } else { $enabled_dms }
         
+        let dm_message = if (($enabled_dms | length) == 1) { 
+            $"($enabled_dms | first) is enabled" 
+        } else if (($enabled_dms | length) == 0) { 
+            "WARNING: No display manager enabled!" 
+        } else { 
+            $"ERROR: Multiple display managers enabled: ($enabled_dms | str join ', ')" 
+        }
+        
         {
             name: "Display Manager"
             success: (($enabled_dms | length) == 1)
-            message: if (($enabled_dms | length) == 1) {
-                $"($enabled_dms | first) is enabled"
-            } else if (($enabled_dms | length) == 0) {
-                "WARNING: No display manager enabled!"
-            } else {
-                $"ERROR: Multiple display managers enabled: ($enabled_dms | str join ', ')"
-            }
+            message: $dm_message
             display_managers: $enabled_dms
         }
     } catch {
@@ -217,7 +219,7 @@ export def validate_display_manager [] {
             {
                 name: "X Server"
                 success: true
-                message: if $enabled { "X11 is enabled" } else { "X11 is disabled (Wayland-only?)" }
+                message: (if $enabled { $"X11 is enabled" } else { $"X11 is disabled (Wayland-only?)" })
             }
         } else {
             {
@@ -273,11 +275,7 @@ export def validate_greeter_config [] {
         {
             name: "Desktop Manager"
             success: (($enabled_desktops | length) >= 1)
-            message: if (($enabled_desktops | length) >= 1) {
-                $"Desktop: ($enabled_desktops | str join ', ')"
-            } else {
-                "WARNING: No desktop manager enabled!"
-            }
+            message: (if (($enabled_desktops | length) >= 1) { $"Desktop: ($enabled_desktops | str join ', ')" } else { "WARNING: No desktop manager enabled!" })
             desktops: $enabled_desktops
         }
     } catch {
@@ -302,7 +300,7 @@ export def validate_greeter_config [] {
             {
                 name: "Auto-login"
                 success: true
-                message: if $enabled { "Auto-login is enabled (potential security risk)" } else { "Auto-login disabled (recommended)" }
+                message: (if $enabled { $"Auto-login is enabled (potential security risk)" } else { $"Auto-login disabled (recommended)" })
                 warning: $enabled
             }
         } else {
@@ -346,11 +344,7 @@ export def validate_xserver_config [] {
             {
                 name: "Video Drivers"
                 success: (($drivers | length) > 0)
-                message: if (($drivers | length) > 0) {
-                    $"Configured drivers: ($drivers | str join ', ')"
-                } else {
-                    "WARNING: No video drivers configured!"
-                }
+                message: (if (($drivers | length) > 0) { $"Configured drivers: ($drivers | str join ', ')" } else { "WARNING: No video drivers configured!" })
                 drivers: $drivers
             }
         } else {
@@ -385,11 +379,7 @@ export def validate_xserver_config [] {
             {
                 name: "Driver Conflicts"
                 success: (not ($has_nvidia and $has_nouveau))
-                message: if ($has_nvidia and $has_nouveau) {
-                    "ERROR: Both nvidia and nouveau drivers configured - WILL CAUSE CONFLICTS!"
-                } else {
-                    "No driver conflicts detected"
-                }
+                message: (if ($has_nvidia and $has_nouveau) { $"ERROR: Both nvidia and nouveau drivers configured - WILL CAUSE CONFLICTS!" } else { "No driver conflicts detected" })
             }
         } else {
             {

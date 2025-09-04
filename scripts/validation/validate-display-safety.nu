@@ -60,5 +60,5 @@ def main [] {
 # EXECUTION
 # ──────────────────────────────────────────────────────────
 
-# Run main if called directly
-main
+# Main function is exported and can be called by other scripts
+# Remove the direct call to avoid parse errors in module context
