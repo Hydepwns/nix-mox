@@ -19,9 +19,9 @@ def test_collect_system_info [] {
     assert_true ("cpu" in ($sys_info | columns)) "should have cpu info"
     
     # Verify data types
-    assert_true ($sys_info.hostname | describe) == "string" "hostname should be string"
-    assert_true ($sys_info.memory | describe) == "record" "memory should be record"
-    assert_true ($sys_info.disk | describe) == "record" "disk should be record"
+    assert_true (($sys_info.hostname | describe) == "string") "hostname should be string"
+    assert_true (($sys_info.memory | describe) == "record") "memory should be record"
+    assert_true (($sys_info.disk | describe) == "record") "disk should be record"
     
     { success: true, message: "collect_system_info tests passed" }
 }
@@ -34,7 +34,7 @@ def test_analyze_disk_usage [] {
     
     # Should return a list of disk info
     assert_true ($disk_analysis | describe | str starts-with "list") "should return list"
-    assert_true ($disk_analysis | length) > 0 "should have at least one disk"
+    assert_true (($disk_analysis | length) > 0) "should have at least one disk"
     
     # Check structure of first disk entry
     let first_disk = ($disk_analysis | first)
@@ -44,8 +44,8 @@ def test_analyze_disk_usage [] {
     assert_true ("usage_percent" in ($first_disk | columns)) "should have usage_percent"
     
     # Verify usage_percent is reasonable
-    assert_true $first_disk.usage_percent >= 0 "usage should be >= 0"
-    assert_true $first_disk.usage_percent <= 100 "usage should be <= 100"
+    assert_true ($first_disk.usage_percent >= 0) "usage should be >= 0"
+    assert_true ($first_disk.usage_percent <= 100) "usage should be <= 100"
     
     { success: true, message: "analyze_disk_usage tests passed" }
 }
@@ -63,14 +63,14 @@ def test_analyze_memory_usage [] {
     assert_true ("usage_percent" in ($mem_analysis | columns)) "should have usage_percent"
     
     # Verify reasonable values
-    assert_true $mem_analysis.total > 0 "total memory should be positive"
-    assert_true $mem_analysis.usage_percent >= 0 "usage should be >= 0"
-    assert_true $mem_analysis.usage_percent <= 100 "usage should be <= 100"
+    assert_true ($mem_analysis.total > 0) "total memory should be positive"
+    assert_true ($mem_analysis.usage_percent >= 0) "usage should be >= 0"
+    assert_true ($mem_analysis.usage_percent <= 100) "usage should be <= 100"
     
     # Basic math check
     let calculated_usage = ($mem_analysis.used / $mem_analysis.total * 100)
     let diff = ($calculated_usage - $mem_analysis.usage_percent | math abs)
-    assert_true $diff < 1.0 "calculated usage should match reported"
+    assert_true ($diff < 1.0) "calculated usage should match reported"
     
     { success: true, message: "analyze_memory_usage tests passed" }
 }
@@ -87,12 +87,12 @@ def test_analyze_cpu_usage [] {
     assert_true ("usage_percent" in ($cpu_analysis | columns)) "should have usage percent"
     
     # Verify reasonable values
-    assert_true $cpu_analysis.cores > 0 "should have at least 1 core"
-    assert_true $cpu_analysis.usage_percent >= 0 "usage should be >= 0"
-    assert_true $cpu_analysis.usage_percent <= 100 "usage should be <= 100"
+    assert_true ($cpu_analysis.cores > 0) "should have at least 1 core"
+    assert_true ($cpu_analysis.usage_percent >= 0) "usage should be >= 0"
+    assert_true ($cpu_analysis.usage_percent <= 100) "usage should be <= 100"
     
     # Load average should be array of 3 values
-    assert_equal ($cpu_analysis.load_avg | length) 3 "load_avg should have 3 values"
+    assert_equal (($cpu_analysis.load_avg | length) == 3) "load_avg should have 3 values"
     assert_true ($cpu_analysis.load_avg | all { |load| $load >= 0 }) "load values should be >= 0"
     
     { success: true, message: "analyze_cpu_usage tests passed" }
@@ -106,7 +106,7 @@ def test_analyze_network_interfaces [] {
     
     # Should return a list
     assert_true ($net_analysis | describe | str starts-with "list") "should return list"
-    assert_true ($net_analysis | length) > 0 "should have at least one interface"
+    assert_true (($net_analysis | length) > 0) "should have at least one interface"
     
     # Check structure of first interface
     let first_iface = ($net_analysis | first)
@@ -115,7 +115,7 @@ def test_analyze_network_interfaces [] {
     
     # Should have at least loopback interface
     let has_lo = ($net_analysis | any { |iface| $iface.name == "lo" })
-    assert_true $has_lo "should have loopback interface"
+    assert_true ($has_lo) "should have loopback interface"
     
     { success: true, message: "analyze_network_interfaces tests passed" }
 }
@@ -128,8 +128,8 @@ def test_analyze_processes [] {
     
     # Should return a list
     assert_true ($proc_analysis | describe | str starts-with "list") "should return list"
-    assert_true ($proc_analysis | length) > 0 "should have processes"
-    assert_true ($proc_analysis | length) <= 10 "should respect limit"
+    assert_true (($proc_analysis | length) > 0) "should have processes"
+    assert_true (($proc_analysis | length) <= 10) "should respect limit"
     
     # Check structure of first process
     let first_proc = ($proc_analysis | first)
@@ -139,8 +139,8 @@ def test_analyze_processes [] {
     assert_true ("memory_percent" in ($first_proc | columns)) "should have memory_percent"
     
     # Verify data types
-    assert_true ($first_proc.pid | describe) == "int" "pid should be integer"
-    assert_true ($first_proc.cpu_percent | describe) == "float" "cpu_percent should be float"
+    assert_true (($first_proc.pid | describe) == "int") "pid should be integer"
+    assert_true (($first_proc.cpu_percent | describe) == "float") "cpu_percent should be float"
     
     { success: true, message: "analyze_processes tests passed" }
 }
@@ -166,7 +166,7 @@ def test_generate_performance_report [] {
     
     # Check summary has health assessment
     assert_true ("overall_health" in ($report.summary | columns)) "should have overall health"
-    assert_true ($report.summary.overall_health in ["excellent", "good", "fair", "poor"]) "health should be valid category"
+    assert_true (($report.summary.overall_health in ["excellent", "good", "fair", "poor"])) "health should be valid category"
     
     { success: true, message: "generate_performance_report tests passed" }
 }
@@ -185,14 +185,14 @@ def test_analyze_storage_usage [] {
     assert_true ("filesystems" in ($storage_analysis | columns)) "should have filesystems list"
     
     # Verify reasonable values
-    assert_true $storage_analysis.total_size > 0 "total size should be positive"
-    assert_true $storage_analysis.usage_percent >= 0 "usage should be >= 0"
-    assert_true $storage_analysis.usage_percent <= 100 "usage should be <= 100"
+    assert_true ($storage_analysis.total_size > 0) "total size should be positive"
+    assert_true ($storage_analysis.usage_percent >= 0) "usage should be >= 0"
+    assert_true ($storage_analysis.usage_percent <= 100) "usage should be <= 100"
     
     # Basic math check
     let sum = ($storage_analysis.used_size + $storage_analysis.free_size)
     let diff = ($sum - $storage_analysis.total_size | math abs)
-    assert_true $diff < 1000000000 "used + free should approximately equal total" # Allow 1GB tolerance
+    assert_true ($diff < 1000000000) "used + free should approximately equal total" # Allow 1GB tolerance
     
     { success: true, message: "analyze_storage_usage tests passed" }
 }
@@ -210,8 +210,8 @@ def test_analyze_security_status [] {
     assert_true ("score" in ($security_analysis | columns)) "should have security score"
     
     # Verify security score is reasonable
-    assert_true $security_analysis.score >= 0 "score should be >= 0"
-    assert_true $security_analysis.score <= 100 "score should be <= 100"
+    assert_true ($security_analysis.score >= 0) "score should be >= 0"
+    assert_true ($security_analysis.score <= 100) "score should be <= 100"
     
     { success: true, message: "analyze_security_status tests passed" }
 }
@@ -231,12 +231,12 @@ def test_get_hardware_info [] {
     let cpu = $hw_info.cpu
     assert_true ("model" in ($cpu | columns)) "should have cpu model"
     assert_true ("cores" in ($cpu | columns)) "should have core count"
-    assert_true $cpu.cores > 0 "should have at least 1 core"
+    assert_true ($cpu.cores > 0) "should have at least 1 core"
     
     # Check memory info
     let memory = $hw_info.memory
     assert_true ("total" in ($memory | columns)) "should have total memory"
-    assert_true $memory.total > 0 "should have positive memory amount"
+    assert_true ($memory.total > 0) "should have positive memory amount"
     
     { success: true, message: "get_hardware_info tests passed" }
 }
@@ -284,14 +284,15 @@ def main [] {
     let total_count = ($test_results | length)
     
     if $all_passed {
-        success $"All analysis.nu tests passed! (($passed_count)/($total_count))" --context "test"
+        print $"All analysis.nu tests passed! ($passed_count) of ($total_count)"
     } else {
         let failed_tests = ($test_results | where success == false)
-        error $"Some tests failed: ($failed_tests | length)/($total_count)" --context "test"
+        print $"Some tests failed: ($failed_tests | length) of ($total_count)"
         for test in $failed_tests {
-            error $"  - ($test.message)" --context "test"
+            print $"  - ($test.message)"
         }
     }
     
     { success: $all_passed, passed: $passed_count, total: $total_count }
+    return $all_passed
 }

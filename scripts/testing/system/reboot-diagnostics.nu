@@ -124,7 +124,7 @@ def check_systemd_logind [] {
         $issues = ($issues | append "Cannot query login sessions")
     } else {
         let session_count = ($sessions.stdout | lines | length)
-        info $"  ✓ Found ($session_count) active sessions" --context "reboot-diag"
+        info ("  ✓ Found " + ($session_count | into string) + " active sessions") --context "reboot-diag"
         
         if $session_count == 0 {
             $warnings = ($warnings | append "No active login sessions found")
@@ -190,7 +190,7 @@ def check_dbus_session [] {
     
     # Check session bus
     if "DBUS_SESSION_BUS_ADDRESS" in $env {
-        info $"  ✓ DBus session address: ($env.DBUS_SESSION_BUS_ADDRESS | str substring 0..50)..." --context "reboot-diag"
+        info ("  ✓ DBus session address: " + ($env.DBUS_SESSION_BUS_ADDRESS | str substring 0..50) + "...") --context "reboot-diag"
     } else {
         $issues = ($issues | append "DBUS_SESSION_BUS_ADDRESS not set")
     }
@@ -201,7 +201,7 @@ def check_dbus_session [] {
         $issues = ($issues | append "Cannot communicate with DBus")
     } else {
         let services = ($dbus_test.stdout | lines | length)
-        info $"  ✓ DBus has ($services) services registered" --context "reboot-diag"
+        info ("  ✓ DBus has " + ($services | into string) + " services registered") --context "reboot-diag"
     }
     
     # Check for systemd on DBus
@@ -228,11 +228,11 @@ def check_session_permissions [] {
     
     # Get current user
     let username = (whoami)
-    info $"  ✓ Current user: ($username)" --context "reboot-diag"
+    info ("  ✓ Current user: " + $username) --context "reboot-diag"
     
     # Check groups
     let groups = (groups)
-    info $"  ✓ Groups: ($groups)" --context "reboot-diag"
+    info ("  ✓ Groups: " + $groups) --context "reboot-diag"
     
     if not ($groups | str contains "wheel") {
         $issues = ($issues | append "User not in wheel group (may affect sudo/reboot)")
@@ -256,7 +256,7 @@ def check_session_permissions [] {
         let type_lines = ($session_props | where ($it | str starts-with "Type="))
         if ($type_lines | length) > 0 {
             let type = ($type_lines | first | str replace "Type=" "")
-            info $"  ✓ Session type: ($type)" --context "reboot-diag"
+            info ("  ✓ Session type: " + $type) --context "reboot-diag"
         }
         
         # Check remote status
@@ -281,7 +281,7 @@ def check_kde_components [] {
     
     # Check KDE session
     if "KDE_SESSION_VERSION" in $env {
-        info $"  ✓ KDE Session version: ($env.KDE_SESSION_VERSION)" --context "reboot-diag"
+        info ("  ✓ KDE Session version: " + $env.KDE_SESSION_VERSION) --context "reboot-diag"
     } else {
         $issues = ($issues | append "Not running in KDE session")
     }
@@ -304,7 +304,7 @@ def check_kde_components [] {
         $issues = ($issues | append "KDE Shutdown service not available")
     } else {
         let methods = ($kde_shutdown.stdout | lines | where ($it | str contains "logout"))
-        info $"  ✓ KDE Shutdown has ($methods | length) logout methods" --context "reboot-diag"
+        info ("  ✓ KDE Shutdown has " + ($methods | length | into string) + " logout methods") --context "reboot-diag"
     }
     
     # Check ksmserver (KDE session manager)
@@ -396,7 +396,7 @@ def suggest_fixes [issues: list, warnings: list] {
     if ($fixes | length) > 0 {
         info "Suggested fixes:" --context "reboot-diag"
         for fix in ($fixes | uniq) {
-            info $"  → ($fix)" --context "reboot-diag"
+            info ("  → " + $fix) --context "reboot-diag"
         }
     }
     
@@ -449,7 +449,7 @@ export def monitor_reboot_capability [] {
             "❌"
         }
         
-        print $"[($timestamp)] ($status) Logind: ($logind_ok) | PolicyKit: ($polkit_ok) | DBus: ($dbus_ok)"
+        print ("[" + $timestamp + "] " + $status + " Logind: " + $logind_ok + " | PolicyKit: " + $polkit_ok + " | DBus: " + $dbus_ok)
         
         sleep 5sec
     }

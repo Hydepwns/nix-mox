@@ -62,8 +62,7 @@ export def test_testing_imports [] {
     
     # Test that all required dependencies can be imported
     try {
-        use ../../lib/logging.nu info success error
-        use ../../lib/validators.nu *
+        use ../../lib/logging.nu *
         
         success "Testing library imports work" --context "testing-test"
         return true
@@ -220,20 +219,20 @@ export def run_testing_tests [] {
         test_library_file_structure
     ]
     
-    mut passed = 0
-    mut failed = 0
+    let passed = 0
+    let failed = 0
     
     for test_func in $tests {
         try {
             let result = (do $test_func)
             if $result {
-                $passed += 1
+                let passed = $passed + 1
             } else {
-                $failed += 1
+                let failed = $failed + 1
             }
         } catch { |err|
             error $"Test failed with error: ($err.msg)" --context "testing-test"
-            $failed += 1
+            let failed = $failed + 1
         }
     }
     
@@ -249,7 +248,4 @@ export def run_testing_tests [] {
     return true
 }
 
-# If script is run directly, run tests
-if ($env.PWD | str contains "scripts/testing/unit") {
-    run_testing_tests
-}
+run_testing_tests

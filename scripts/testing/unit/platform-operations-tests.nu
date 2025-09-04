@@ -25,7 +25,7 @@ export def test_execute_platform_operation [] {
         success "execute_platform_operation function available" --context "platform-ops-test"
         return true
     } catch { |err|
-        error $"Platform operation dispatcher failed: ($err.msg)" --context "platform-ops-test"
+        error ("Platform operation dispatcher failed: " + $err.msg) --context "platform-ops-test"
         return false
     }
 }
@@ -41,7 +41,7 @@ export def test_install_pipeline_availability [] {
         success "install_pipeline function exported" --context "platform-ops-test"
         return true
     } catch { |err|
-        error $"Install pipeline not available: ($err.msg)" --context "platform-ops-test"
+        error ("Install pipeline not available: " + $err.msg) --context "platform-ops-test"
         return false
     }
 }
@@ -51,9 +51,9 @@ export def test_platform_operations_imports [] {
     
     # Test that all required dependencies can be imported
     try {
-        use ../../lib/platform.nu get_platform
+        use ../../lib/platform.nu *
         use ../../lib/validators.nu *
-        use ../../lib/logging.nu info success error
+        use ../../lib/logging.nu *
         
         # Test basic platform detection works
         let platform = (get_platform)
@@ -71,7 +71,7 @@ export def test_platform_operations_imports [] {
         success "Platform operations imports work" --context "platform-ops-test"
         return true
     } catch { |err|
-        error $"Import test failed: ($err.msg)" --context "platform-ops-test"
+        error ("Import test failed: " + $err.msg) --context "platform-ops-test"
         return false
     }
 }
@@ -91,7 +91,7 @@ export def test_operation_record_structure [] {
     let expected_platforms = ["linux", "macos", "windows", "default"]
     for platform in $expected_platforms {
         if not ($platform in $valid_operations) {
-            error $"Missing platform operation: ($platform)" --context "platform-ops-test"
+            error ("Missing platform operation: " + $platform) --context "platform-ops-test"
             return false
         }
     }
@@ -100,7 +100,7 @@ export def test_operation_record_structure [] {
     for platform in $expected_platforms {
         let op = ($valid_operations | get $platform)
         if ($op | describe) != "closure" {
-            error $"Operation for ($platform) should be closure" --context "platform-ops-test"
+            error ("Operation for " + $platform + " should be closure") --context "platform-ops-test"
             return false
         }
     }
@@ -120,7 +120,7 @@ export def test_platform_detection_integration [] {
         let required_fields = ["normalized", "variant", "kernel"]
         for field in $required_fields {
             if not ($field in $platform) {
-                error $"Platform missing required field: ($field)" --context "platform-ops-test"
+                error ("Platform missing required field: " + $field) --context "platform-ops-test"
                 return false
             }
         }
@@ -128,14 +128,14 @@ export def test_platform_detection_integration [] {
         # Check that normalized platform is one of expected values
         let valid_platforms = ["linux", "macos", "windows"]
         if not ($platform.normalized in $valid_platforms) {
-            warn $"Unexpected platform: ($platform.normalized)" --context "platform-ops-test"
+            warn ("Unexpected platform: " + $platform.normalized) --context "platform-ops-test"
             # Don't fail - might be running on other platform
         }
         
         success "Platform detection integration works" --context "platform-ops-test"
         return true
     } catch { |err|
-        error $"Platform detection integration failed: ($err.msg)" --context "platform-ops-test"
+        error ("Platform detection integration failed: " + $err.msg) --context "platform-ops-test"
         return false
     }
 }
@@ -188,7 +188,7 @@ export def test_pipeline_hooks_concept [] {
         success "Pipeline hooks concept validated" --context "platform-ops-test"
         return true
     } catch { |err|
-        error $"Hook execution test failed: ($err.msg)" --context "platform-ops-test"
+        error ("Hook execution test failed: " + $err.msg) --context "platform-ops-test"
         return false
     }
 }
@@ -224,7 +224,7 @@ export def test_library_file_structure [] {
         success "Library file structure is valid" --context "platform-ops-test"
         return true
     } catch { |err|
-        error $"File structure test failed: ($err.msg)" --context "platform-ops-test"
+        error ("File structure test failed: " + $err.msg) --context "platform-ops-test"
         return false
     }
 }
@@ -248,15 +248,16 @@ export def run_platform_operations_tests [] {
     mut failed = 0
     
     for test_func in $tests {
-        try {
+        let test_result = (try {
             let result = (do $test_func)
-            if $result {
-                $passed += 1
-            } else {
-                $failed += 1
-            }
+            if $result { "passed" } else { "failed" }
         } catch { |err|
-            error $"Test failed with error: ($err.msg)" --context "platform-ops-test"
+            error ("Test failed with error: " + $err.msg) --context "platform-ops-test"
+            "failed"
+        })
+        if $test_result == "passed" {
+            $passed += 1
+        } else {
             $failed += 1
         }
     }
@@ -265,7 +266,7 @@ export def run_platform_operations_tests [] {
     summary "Platform operations tests completed" $passed $total --context "platform-ops-test"
     
     if $failed > 0 {
-        error $"($failed) platform operations tests failed" --context "platform-ops-test"
+        error ("(" + ($failed | into string) + ") platform operations tests failed") --context "platform-ops-test"
         return false
     }
     
@@ -273,7 +274,4 @@ export def run_platform_operations_tests [] {
     return true
 }
 
-# If script is run directly, run tests
-if ($env.PWD | str contains "scripts/testing/unit") {
-    run_platform_operations_tests
-}
+run_platform_operations_tests

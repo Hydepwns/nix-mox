@@ -260,6 +260,4 @@ def test_malformed_data [] {
     }
 }
 
-# PWD is automatically set by Nushell and cannot be set manually
-
 main

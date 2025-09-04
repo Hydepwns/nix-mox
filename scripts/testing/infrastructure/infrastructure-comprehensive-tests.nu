@@ -2,11 +2,11 @@
 # Comprehensive tests for infrastructure and core system components
 # Tests bootstrap, core libraries, and system infrastructure scripts
 
-use ../../lib/logging.nu *
-use ../../lib/validators.nu *
-use ../../lib/command-wrapper.nu *
-use ../lib/test-utils.nu *
-use ../lib/test-coverage.nu *
+use ../../lib/logging.nu
+use ../../lib/validators.nu
+use ../../lib/command-wrapper.nu
+use ../lib/test-utils.nu
+use ../lib/test-coverage.nu
 
 # Test bootstrap system functionality
 export def test_bootstrap_system [] {
@@ -33,7 +33,7 @@ export def test_bootstrap_system [] {
             return false
         }
     } catch { |err|
-        error $"Bootstrap system test failed: ($err.msg)" --context "infrastructure-test"
+        error ("Bootstrap system test failed: " + $err.msg) --context "infrastructure-test"
         track_test "bootstrap_system" "infrastructure" "failed" 0.2
         return false
     }
@@ -70,22 +70,22 @@ export def test_core_library_infrastructure [] {
         
         if $library_score == ($core_libraries | length) {
             let lib_count = ($core_libraries | length)
-            success $"All core libraries are functional (($library_score)/($lib_count))" --context "infrastructure-test"
+            success ("All core libraries are functional " + ($library_score | into string) + "/" + ($lib_count | into string)) --context "infrastructure-test"
             track_test "core_library_infrastructure" "infrastructure" "passed" 0.3
             return true
         } else if $library_score >= 3 {
             let lib_count = ($core_libraries | length)
-            warning $"Most core libraries functional (($library_score)/($lib_count))" --context "infrastructure-test"
+            warning ("Most core libraries functional " + ($library_score | into string) + "/" + ($lib_count | into string)) --context "infrastructure-test"
             track_test "core_library_infrastructure" "infrastructure" "passed" 0.3
             return true
         } else {
             let lib_count = ($core_libraries | length)
-            error $"Critical core library failures (($library_score)/($lib_count))" --context "infrastructure-test"
+            error ("Critical core library failures " + ($library_score | into string) + "/" + ($lib_count | into string)) --context "infrastructure-test"
             track_test "core_library_infrastructure" "infrastructure" "failed" 0.3
             return false
         }
     } catch { |err|
-        error $"Core library infrastructure test failed: ($err.msg)" --context "infrastructure-test"
+        error ("Core library infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "core_library_infrastructure" "infrastructure" "failed" 0.3
         return false
     }
@@ -119,7 +119,7 @@ export def test_extension_infrastructure [] {
         
         if $extension_score > 0 {
             let ext_count = ($extensions | length)
-            success $"Extension infrastructure present ($extension_score)/($ext_count) extensions" --context "infrastructure-test"
+            success ("Extension infrastructure present " + ($extension_score | into string) + "/" + ($ext_count | into string) + " extensions") --context "infrastructure-test"
             track_test "extension_infrastructure" "infrastructure" "passed" 0.2
             return true
         } else {
@@ -128,7 +128,7 @@ export def test_extension_infrastructure [] {
             return true
         }
     } catch { |err|
-        error $"Extension infrastructure test failed: ($err.msg)" --context "infrastructure-test"
+        error ("Extension infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "extension_infrastructure" "infrastructure" "failed" 0.2
         return false
     }
@@ -163,11 +163,11 @@ export def test_flake_infrastructure [] {
             }
         }
         
-        success $"Flake infrastructure functional (main + ($subflake_score) subflakes)" --context "infrastructure-test"
+        success ("Flake infrastructure functional (main + " + ($subflake_score | into string) + " subflakes)") --context "infrastructure-test"
         track_test "flake_infrastructure" "infrastructure" "passed" 0.3
         return true
     } catch { |err|
-        error $"Flake infrastructure test failed: ($err.msg)" --context "infrastructure-test"
+        error ("Flake infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "flake_infrastructure" "infrastructure" "failed" 0.3
         return false
     }
@@ -206,17 +206,17 @@ export def test_makefile_infrastructure [] {
         
         if $target_score >= 3 {
             let target_count = ($essential_targets | length)
-            success $"Makefile has essential targets (($target_score)/($target_count))" --context "infrastructure-test"
+            success ("Makefile has essential targets " + ($target_score | into string) + "/" + ($target_count | into string)) --context "infrastructure-test"
             track_test "makefile_infrastructure" "infrastructure" "passed" 0.2
             return true
         } else {
             let target_count = ($essential_targets | length)
-            warning $"Makefile missing some essential targets (($target_score)/($target_count))" --context "infrastructure-test"
+            warning ("Makefile missing some essential targets " + ($target_score | into string) + "/" + ($target_count | into string)) --context "infrastructure-test"
             track_test "makefile_infrastructure" "infrastructure" "passed" 0.2
             return true
         }
     } catch { |err|
-        error $"Makefile infrastructure test failed: ($err.msg)" --context "infrastructure-test"
+        error ("Makefile infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "makefile_infrastructure" "infrastructure" "failed" 0.2
         return false
     }
@@ -247,7 +247,7 @@ export def test_quick_commands_infrastructure [] {
             return false
         }
     } catch { |err|
-        error $"Quick commands infrastructure test failed: ($err.msg)" --context "infrastructure-test"
+        error ("Quick commands infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "quick_commands_infrastructure" "infrastructure" "failed" 0.1
         return false
     }
@@ -278,17 +278,17 @@ export def test_configuration_infrastructure [] {
         
         if $config_score >= 2 {
             let dir_count = ($config_dirs | length)
-            success $"Configuration infrastructure present ($config_score)/($dir_count) directories" --context "infrastructure-test"
+            success ("Configuration infrastructure present " + ($config_score | into string) + "/" + ($dir_count | into string) + " directories") --context "infrastructure-test"
             track_test "configuration_infrastructure" "infrastructure" "passed" 0.2
             return true
         } else {
             let dir_count = ($config_dirs | length)
-            error $"Critical configuration directories missing (($config_score)/($dir_count))" --context "infrastructure-test"
+            error ("Critical configuration directories missing " + ($config_score | into string) + "/" + ($dir_count | into string)) --context "infrastructure-test"
             track_test "configuration_infrastructure" "infrastructure" "failed" 0.2
             return false
         }
     } catch { |err|
-        error $"Configuration infrastructure test failed: ($err.msg)" --context "infrastructure-test"
+        error ("Configuration infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "configuration_infrastructure" "infrastructure" "failed" 0.2
         return false
     }
@@ -319,17 +319,17 @@ export def test_documentation_infrastructure [] {
         
         if $doc_score >= 2 {
             let doc_count = ($docs | length)
-            success $"Documentation infrastructure adequate ($doc_score)/($doc_count) files" --context "infrastructure-test"
+            success ("Documentation infrastructure adequate " + ($doc_score | into string) + "/" + ($doc_count | into string) + " files") --context "infrastructure-test"
             track_test "documentation_infrastructure" "infrastructure" "passed" 0.1
             return true
         } else {
             let doc_count = ($docs | length)
-            warning $"Documentation infrastructure minimal ($doc_score)/($doc_count) files" --context "infrastructure-test"
+            warning ("Documentation infrastructure minimal " + ($doc_score | into string) + "/" + ($doc_count | into string) + " files") --context "infrastructure-test"
             track_test "documentation_infrastructure" "infrastructure" "passed" 0.1
             return true
         }
     } catch { |err|
-        error $"Documentation infrastructure test failed: ($err.msg)" --context "infrastructure-test"
+        error ("Documentation infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "documentation_infrastructure" "infrastructure" "failed" 0.1
         return false
     }
@@ -362,7 +362,7 @@ export def test_infrastructure_error_handling [] {
         
         if $error_handling_score > 0 or ($infrastructure_scripts | length) == 0 {
             let infra_count = ($infrastructure_scripts | length)
-            success $"Infrastructure error handling present ($error_handling_score)/($infra_count) scripts" --context "infrastructure-test"
+            success ("Infrastructure error handling present " + ($error_handling_score | into string) + "/" + ($infra_count | into string) + " scripts") --context "infrastructure-test"
             track_test "infrastructure_error_handling" "infrastructure" "passed" 0.1
             return true
         } else {
@@ -371,7 +371,7 @@ export def test_infrastructure_error_handling [] {
             return true
         }
     } catch { |err|
-        error $"Infrastructure error handling test failed: ($err.msg)" --context "infrastructure-test"
+        error ("Infrastructure error handling test failed: " + $err.msg) --context "infrastructure-test"
         track_test "infrastructure_error_handling" "infrastructure" "failed" 0.1
         return false
     }
@@ -384,7 +384,7 @@ export def run_infrastructure_tests [
     parallel: bool = true
     fail_fast: bool = false
 ] {
-    banner "Running Infrastructure Comprehensive Tests" --context "infrastructure-test"
+    print "Running Infrastructure Comprehensive Tests"
     
     # Setup test environment
     setup_test_env

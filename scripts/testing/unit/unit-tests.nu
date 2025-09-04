@@ -187,5 +187,4 @@ def main [] {
     print "Comprehensive unit tests completed successfully"
 }
 
-# Always run main when sourced
 main

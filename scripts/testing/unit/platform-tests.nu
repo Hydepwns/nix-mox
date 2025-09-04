@@ -239,6 +239,4 @@ def main [] {
     print "Platform module unit tests completed successfully"
 }
 
-if ($env | get NU_TEST? | default "false") == "true" {
-    main
-}
+main

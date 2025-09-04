@@ -4,7 +4,6 @@
 use ../../lib/validators.nu
 use ../../lib/logging.nu *
 use ../lib/test-utils.nu *
-use ../lib/testing.nu *
 
 # Display Testing Utilities for nix-mox
 # Helper functions for display configuration testing and validation

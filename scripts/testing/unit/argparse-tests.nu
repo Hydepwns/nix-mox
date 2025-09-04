@@ -1,7 +1,6 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/validators.nu
 use ../../lib/logging.nu *
 
 
@@ -148,6 +147,4 @@ def main [] {
     print "Argparse module unit tests completed successfully"
 }
 
-if ($env | get NU_TEST? | default "false") == "true" {
-    main
-}
+main

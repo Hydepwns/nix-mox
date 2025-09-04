@@ -2,7 +2,6 @@
 
 # Unit tests for logging.nu library using consolidated patterns
 use ../../lib/constants.nu *
-use ../../lib/test-patterns.nu *
 use ../../lib/logging.nu *
 use ../lib/test-utils.nu *
 
@@ -36,6 +35,4 @@ def main [] {
     print "Logging module unit tests completed successfully"
 }
 
-if ($env | get NU_TEST? | default "false") == "true" {
-    main
-}
+main

@@ -1,9 +1,7 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/validators.nu
 use ../../lib/logging.nu *
-
 
 # Windows/WSL-specific tests for nix-mox
 # These tests verify Windows/WSL-only functionality
@@ -20,7 +18,7 @@ def main [] {
             $sysinfo
         }
     )
-    print $"Detected platform: ($platform)"
+    print ("Detected platform: " + $platform)
 
     # Test Windows/WSL-specific commands
     test_windows_commands
@@ -36,16 +34,16 @@ def test_windows_commands [] {
 
     for cmd in $commands {
         if (which $cmd | is-empty) {
-            print $"❌ Command ($cmd) not found"
+            print ("❌ Command " + $cmd + " not found")
         } else {
-            print $"✅ Command ($cmd) available"
+            print ("✅ Command " + $cmd + " available")
         }
     }
 }
 
 def test_nushell [] {
     print "🐚 Testing Nushell..."
-    print $"Nushell version: (version | get version)"
+    print ("Nushell version: " + (version | get version))
     print "✅ Nushell is working"
 }
 

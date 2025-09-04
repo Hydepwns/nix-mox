@@ -164,8 +164,4 @@ def test_script_search [] {
     track_test "script_search_no_results" "unit" "passed" 0.1
 }
 
-if $env.PWD? == null {
-    $env.PWD = (pwd)
-}
-
 main

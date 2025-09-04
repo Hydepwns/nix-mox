@@ -19,13 +19,13 @@ export def benchmark_logging_performance [] {
     
     # Perform logging operations
     for i in 0..100 {
-        info $"Benchmark log message ($i)" --context "benchmark-test"
+        info ("Benchmark log message " + ($i | into string)) --context "benchmark-test"
     }
     
     let end_time = (date now)
     let duration = ($end_time - $start_time)
     
-    success $"Logging benchmark completed in ($duration)" --context "benchmark"
+    success ("Logging benchmark completed in " + ($duration | into string)) --context "benchmark"
     
     {
         success: true,
@@ -51,7 +51,7 @@ export def benchmark_validation_performance [] {
     let end_time = (date now)
     let duration = ($end_time - $start_time)
     
-    success $"Validation benchmark completed in ($duration)" --context "benchmark"
+    success ("Validation benchmark completed in " + ($duration | into string)) --context "benchmark"
     
     {
         success: true,
@@ -76,7 +76,7 @@ export def benchmark_platform_detection [] {
     let end_time = (date now)
     let duration = ($end_time - $start_time)
     
-    success $"Platform detection benchmark completed in ($duration)" --context "benchmark"
+    success ("Platform detection benchmark completed in " + ($duration | into string)) --context "benchmark"
     
     {
         success: true,
@@ -96,7 +96,7 @@ export def run_benchmark [
     iterations: int,
     operation: closure
 ] {
-    info $"Running benchmark: ($name) with ($iterations) iterations" --context "benchmark"
+    info ("Running benchmark: " + $name + " with " + ($iterations | into string) + " iterations") --context "benchmark"
     
     let start_time = (date now)
     
@@ -115,7 +115,7 @@ export def run_benchmark [
         ops_per_second: (($iterations * 1_000_000_000) / ($duration | into int))
     }
     
-    success $"Benchmark ($name) completed: ($result.ops_per_second) ops/sec" --context "benchmark"
+    success ("Benchmark " + $name + " completed: " + ($result.ops_per_second | into string) + " ops/sec") --context "benchmark"
     
     $result
 }
@@ -127,9 +127,9 @@ export def compare_benchmarks [
     let speedup = ($benchmark2.ops_per_second / $benchmark1.ops_per_second)
     
     if $speedup > 1.0 {
-        success $"($benchmark2.benchmark) is ($speedup)x faster than ($benchmark1.benchmark)" --context "benchmark"
+        success ($benchmark2.benchmark + " is " + ($speedup | into string) + "x faster than " + $benchmark1.benchmark) --context "benchmark"
     } else {
-        info $"($benchmark1.benchmark) is (1.0 / $speedup)x faster than ($benchmark2.benchmark)" --context "benchmark"
+        info ($benchmark1.benchmark + " is " + (1.0 / $speedup | into string) + "x faster than " + $benchmark2.benchmark) --context "benchmark"
     }
     
     {
@@ -220,11 +220,11 @@ export def analyze_performance_results [results: record] {
     let fastest = ($benchmarks | sort-by ops_per_second | last)
     let slowest = ($benchmarks | sort-by ops_per_second | first)
     
-    info $"Fastest operation: ($fastest.benchmark) at ($fastest.ops_per_second) ops/sec" --context "benchmark"
-    info $"Slowest operation: ($slowest.benchmark) at ($slowest.ops_per_second) ops/sec" --context "benchmark"
+    info ("Fastest operation: " + $fastest.benchmark + " at " + ($fastest.ops_per_second | into string) + " ops/sec") --context "benchmark"
+    info ("Slowest operation: " + $slowest.benchmark + " at " + ($slowest.ops_per_second | into string) + " ops/sec") --context "benchmark"
     
     let performance_ratio = ($fastest.ops_per_second / $slowest.ops_per_second)
-    info $"Performance ratio: ($performance_ratio):1" --context "benchmark"
+    info ("Performance ratio: " + ($performance_ratio | into string) + ":1") --context "benchmark"
     
     {
         fastest: $fastest,
@@ -239,15 +239,15 @@ export def generate_performance_report [results: record] {
     
     print "=== Performance Benchmark Report ==="
     print ""
-    print $"Total benchmarks: ($analysis.total_benchmarks)"
-    print $"Fastest: ($analysis.fastest.benchmark) - ($analysis.fastest.ops_per_second) ops/sec"
-    print $"Slowest: ($analysis.slowest.benchmark) - ($analysis.slowest.ops_per_second) ops/sec"
-    print $"Performance range: ($analysis.performance_ratio):1"
+    print ("Total benchmarks: " + ($analysis.total_benchmarks | into string))
+    print ("Fastest: " + $analysis.fastest.benchmark + " - " + ($analysis.fastest.ops_per_second | into string) + " ops/sec")
+    print ("Slowest: " + $analysis.slowest.benchmark + " - " + ($analysis.slowest.ops_per_second | into string) + " ops/sec")
+    print ("Performance range: " + ($analysis.performance_ratio | into string) + ":1")
     print ""
     print "Individual Results:"
     
     ($results | transpose name result | each { |row|
-        print $"  ($row.name): ($row.result.ops_per_second) ops/sec - ($row.result.duration) total"
+        print ("  " + $row.name + ": " + ($row.result.ops_per_second | into string) + " ops/sec - " + ($row.result.duration | into string) + " total")
     } | ignore)
     
     print ""

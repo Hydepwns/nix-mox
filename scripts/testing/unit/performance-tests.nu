@@ -1,9 +1,7 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/validators.nu
 use ../../lib/logging.nu *
-
 
 # Performance module tests
 # Tests for scripts/lib/performance.nu
@@ -151,7 +149,5 @@ def test_performance_recommendations [] {
         track_test "performance_recommendations_generation" "unit" "failed" 0.1
     }
 }
-
-# PWD is automatically set by Nushell and cannot be set manually
 
 main

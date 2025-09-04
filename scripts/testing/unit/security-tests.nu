@@ -198,6 +198,4 @@ def test_security_recommendations [] {
     track_test "security_recommendations_generation" "unit" "passed" 0.1
 }
 
-# PWD is automatically set by Nushell and cannot be set manually
-
 main

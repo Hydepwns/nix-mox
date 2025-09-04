@@ -250,7 +250,7 @@ def test_log_file_operations [] {
 
     # Test log file creation and writing
     try {
-        info "Test log message" $log_file
+        info "Test log message" --context "filesystem-test"
         assert_true ($log_file | path exists) "Log file should be created"
         track_test "filesystem_log_file_creation" "unit" "passed" 0.1
     } catch {
@@ -268,7 +268,7 @@ def test_log_file_operations [] {
 
     # Test log file appending
     try {
-        warn "Warning message" $log_file
+        warn "Warning message" --context "filesystem-test"
         let updated_content = (open $log_file)
         assert_true ($updated_content | str contains "Warning message") "Log should append new messages"
         track_test "filesystem_log_file_appending" "unit" "passed" 0.1
@@ -327,7 +327,5 @@ def test_cleanup_operations [] {
         track_test "filesystem_bulk_cleanup" "unit" "failed" 0.1
     }
 }
-
-# PWD is automatically set by Nushell and cannot be set manually
 
 main

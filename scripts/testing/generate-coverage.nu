@@ -123,9 +123,9 @@ export def run [args: list<string> = []] {
     }
     
     # Call main with parsed arguments
-    let output_val = ($parsed_args | get output -o | default "coverage-tmp/lcov.info")
-    let approach_val = ($parsed_args | get approach -o | default "lcov")
-    let verbose_val = ($parsed_args | get verbose -o | default false)
+    let output_val = ($parsed_args | get output | default "coverage-tmp/lcov.info")
+    let approach_val = ($parsed_args | get approach | default "lcov")
+    let verbose_val = ($parsed_args | get verbose | default false)
     
     if $verbose_val {
         main --output $output_val --approach $approach_val --verbose

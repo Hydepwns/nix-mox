@@ -11,20 +11,20 @@ use ../../lib/logging.nu *
 # --- Environment Setup ---
 export def setup_test_env [] {
     # Set up test environment variables
-    $env.TEST_TEMP_DIR = ($env | get TEMP? | default "coverage-tmp") + "/nix-mox-tests"
-    $env.TEST_LOG_FILE = $env.TEST_TEMP_DIR + "/test.log"
-
-    # Ensure test directory exists
-    if not ($env.TEST_TEMP_DIR | path exists) {
-        mkdir $env.TEST_TEMP_DIR
+    export-env {
+        $env.TEST_TEMP_DIR = "/tmp/nix-mox-tests"
+        $env.TEST_LOG_FILE = "/tmp/nix-mox-tests/test.log"
+        $env.GREEN = (ansi green)
+        $env.RED = (ansi red)
+        $env.YELLOW = (ansi yellow)
+        $env.BLUE = (ansi blue)
+        $env.NC = (ansi reset)  # No Color
     }
 
-    # Set up color codes for output
-    $env.GREEN = (ansi green)
-    $env.RED = (ansi red)
-    $env.YELLOW = (ansi yellow)
-    $env.BLUE = (ansi blue)
-    $env.NC = (ansi reset)  # No Color
+    # Ensure test directory exists
+    if not ("/tmp/nix-mox-tests" | path exists) {
+        mkdir "/tmp/nix-mox-tests"
+    }
 }
 
 # Enhanced test isolation setup

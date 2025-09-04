@@ -31,12 +31,12 @@ export def test_pre_rebuild_safety_check [] {
                 track_test "pre_rebuild_dry_run_output" "validation" "failed" 0.1
             }
         } else {
-            error $"Pre-rebuild safety check dry-run failed: ($result.stderr)" --context "validation-test"
+            error ("Pre-rebuild safety check dry-run failed: " + $result.stderr) --context "validation-test"
             track_test "pre_rebuild_dry_run" "validation" "failed" 0.3
             return false
         }
     } catch { |err|
-        error $"Error running pre-rebuild safety check: ($err.msg)" --context "validation-test"
+        error ("Error running pre-rebuild safety check: " + $err.msg) --context "validation-test"
         track_test "pre_rebuild_dry_run" "validation" "failed" 0.3
         return false
     }
@@ -50,7 +50,7 @@ export def test_pre_rebuild_safety_check [] {
         track_test "pre_rebuild_invalid_flake" "validation" "passed" 0.2
         success "Invalid flake handling test completed" --context "validation-test"
     } catch { |err|
-        warn $"Invalid flake test encountered error (may be expected): ($err.msg)" --context "validation-test"
+        warn ("Invalid flake test encountered error (may be expected): " + $err.msg) --context "validation-test"
         track_test "pre_rebuild_invalid_flake" "validation" "passed" 0.2
     }
     
@@ -102,7 +102,7 @@ export def test_storage_validator [] {
             success "Storage validator executed successfully with test config" --context "validation-test"
             track_test "storage_validator_basic" "validation" "passed" 0.4
         } else {
-            warn $"Storage validator returned non-zero exit code (may be expected for test config): ($result.exit_code)" --context "validation-test"
+            warn ("Storage validator returned non-zero exit code (may be expected for test config): " + $result.exit_code) --context "validation-test"
             track_test "storage_validator_basic" "validation" "passed" 0.4
         }
         
@@ -115,7 +115,7 @@ export def test_storage_validator [] {
             track_test "storage_validator_summary" "validation" "failed" 0.1
         }
     } catch { |err|
-        error $"Error running storage validator: ($err.msg)" --context "validation-test"
+        error ("Error running storage validator: " + $err.msg) --context "validation-test"
         track_test "storage_validator_basic" "validation" "failed" 0.4
         return false
     }
@@ -141,7 +141,7 @@ export def test_storage_validator [] {
     try {
         rm -rf $test_config_dir
     } catch { |err|
-        warn $"Could not clean up test config directory: ($err.msg)" --context "validation-test"
+        warn ("Could not clean up test config directory: " + $err.msg) --context "validation-test"
     }
     
     return true
@@ -168,7 +168,7 @@ export def test_config_validator [] {
             track_test "config_validator_process" "validation" "failed" 0.1
         }
     } catch { |err|
-        error $"Error running configuration validator: ($err.msg)" --context "validation-test"
+        error ("Error running configuration validator: " + $err.msg) --context "validation-test"
         track_test "config_validator_basic" "validation" "failed" 0.3
         return false
     }
@@ -188,7 +188,7 @@ export def test_display_config_validator [] {
         track_test "display_config_validator" "validation" "passed" 0.3
         
     } catch { |err|
-        warn $"Display configuration validator encountered issue (may be expected in test environment): ($err.msg)" --context "validation-test"
+        warn ("Display configuration validator encountered issue (may be expected in test environment): " + $err.msg) --context "validation-test"
         track_test "display_config_validator" "validation" "passed" 0.3
     }
     
@@ -207,7 +207,7 @@ export def test_gaming_config_validator [] {
         track_test "gaming_config_validator" "validation" "passed" 0.3
         
     } catch { |err|
-        warn $"Gaming configuration validator encountered issue (may be expected in test environment): ($err.msg)" --context "validation-test"
+        warn ("Gaming configuration validator encountered issue (may be expected in test environment): " + $err.msg) --context "validation-test"
         track_test "gaming_config_validator" "validation" "passed" 0.3
     }
     
@@ -226,7 +226,7 @@ export def test_safe_flake_test [] {
         track_test "safe_flake_test_basic" "validation" "passed" 0.4
         
     } catch { |err|
-        warn $"Safe flake test encountered issue (may be expected in test environment): ($err.msg)" --context "validation-test"
+        warn ("Safe flake test encountered issue (may be expected in test environment): " + $err.msg) --context "validation-test"
         track_test "safe_flake_test_basic" "validation" "passed" 0.4
     }
     
@@ -250,9 +250,9 @@ export def test_validation_workflow [] {
         try {
             let script_parts = ($script | split row " ")
             let result = (execute_command $script_parts --timeout 15sec --context "validation")
-            info $"Workflow step completed: ($script_parts | first)" --context "validation-test"
+            info ("Workflow step completed: " + ($script_parts | first)) --context "validation-test"
         } catch { |err|
-            warn $"Workflow step had issues: ($script | split row ' ' | first) - ($err.msg)" --context "validation-test"
+            warn ("Workflow step had issues: " + ($script | split row ' ' | first) + " - " + $err.msg) --context "validation-test"
             # Don't fail workflow for individual step issues in test environment
         }
     }
@@ -291,19 +291,19 @@ export def run_validation_safety_tests [] {
                 { success: false }
             }
         } catch { |err|
-            error $"Test failed with error: ($err.msg)" --context "validation-test"
+            error ("Test failed with error: " + $err.msg) --context "validation-test"
             { success: false }
         }
     })
     
     let passed = ($results | where success == true | length)
     let failed = ($results | where success == false | length)
-    let total = $passed + $failed
+    let total = ($passed + $failed)
     
     summary "Validation Safety Tests completed" $passed $total --context "validation-test"
     
     if $failed > 0 {
-        error $"($failed) validation tests failed" --context "validation-test"
+        error ("(" + ($failed | into string) + ") validation tests failed") --context "validation-test"
         return false
     }
     
@@ -311,7 +311,4 @@ export def run_validation_safety_tests [] {
     return true
 }
 
-# If script is run directly, run tests
-if ($env.PWD | str contains "scripts/testing/validation") {
-    run_validation_safety_tests
-}
+run_validation_safety_tests

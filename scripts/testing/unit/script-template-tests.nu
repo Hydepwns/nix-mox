@@ -149,20 +149,20 @@ export def run_script_template_tests [] {
         test_environment_defaults
     ]
     
-    mut passed = 0
-    mut failed = 0
+    let passed = 0
+    let failed = 0
     
     for test_func in $tests {
         try {
             let result = (do $test_func)
             if $result {
-                $passed += 1
+                let passed = $passed + 1
             } else {
-                $failed += 1
+                let failed = $failed + 1
             }
         } catch { |err|
             error $"Test failed with error: ($err.msg)" --context "script-template-test"
-            $failed += 1
+            let failed = $failed + 1
         }
     }
     
@@ -178,7 +178,4 @@ export def run_script_template_tests [] {
     return true
 }
 
-# If script is run directly, run tests
-if ($env.PWD | str contains "scripts/testing/unit") {
-    run_script_template_tests
-}
+run_script_template_tests

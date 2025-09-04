@@ -18,12 +18,12 @@ def test_execute_command [] {
     # Test command with arguments
     let result = (execute_command ["ls", "-la", "/tmp"])
     assert_equal $result.exit_code 0 "ls should succeed"
-    assert_true ($result.stdout | str length) > 0 "should have output"
+    assert_true (($result.stdout | str length) > 0) "should have output"
     
     # Test failing command
     let result = (execute_command ["ls", "/nonexistent/path"])
-    assert_true $result.exit_code != 0 "should fail with non-zero exit code"
-    assert_true ($result.stderr | str length) > 0 "should have error output"
+    assert_true ($result.exit_code != 0) "should fail with non-zero exit code"
+    assert_true (($result.stderr | str length) > 0) "should have error output"
     
     { success: true, message: "execute_command tests passed" }
 }
@@ -43,7 +43,7 @@ def test_execute_with_retry [] {
     
     # Test with persistently failing command
     let result = (execute_with_retry ["ls", "/nonexistent"] --max-attempts 2 --retry-delay 10ms)
-    assert_true $result.exit_code != 0 "should fail after retries"
+    assert_true ($result.exit_code != 0) "should fail after retries"
     assert_equal $result.attempts 2 "should attempt max times"
     
     { success: true, message: "execute_with_retry tests passed" }
@@ -61,7 +61,7 @@ def test_execute_with_timeout [] {
     # Test command that would timeout (sleep)
     let result = (execute_with_timeout ["sleep", "10"] --timeout 100ms)
     assert_true $result.timed_out "should timeout"
-    assert_true $result.exit_code != 0 "should have non-zero exit code"
+    assert_true ($result.exit_code != 0) "should have non-zero exit code"
     
     { success: true, message: "execute_with_timeout tests passed" }
 }
@@ -104,7 +104,7 @@ def test_execute_pipeline [] {
         ["grep", "notfound"]
     ]
     let result = (execute_pipeline $failing_commands)
-    assert_true $result.exit_code != 0 "pipeline should fail"
+    assert_true ($result.exit_code != 0) "pipeline should fail"
     
     { success: true, message: "execute_pipeline tests passed" }
 }
@@ -120,7 +120,7 @@ def test_nix_eval [] {
     
     # Test invalid expression
     let result = (nix_eval "invalid expression")
-    assert_true $result.exit_code != 0 "invalid expression should fail"
+    assert_true ($result.exit_code != 0) "invalid expression should fail"
     
     # Test with builtins
     let result = (nix_eval "builtins.toString 42")
@@ -153,11 +153,11 @@ def test_git_command [] {
     # Test git branch
     let result = (git_command ["branch", "--show-current"])
     assert_equal $result.exit_code 0 "git branch should succeed"
-    assert_true ($result.stdout | str length) > 0 "should show current branch"
+    assert_true (($result.stdout | str length) > 0) "should show current branch"
     
     # Test invalid git command
     let result = (git_command ["invalidcommand"])
-    assert_true $result.exit_code != 0 "invalid command should fail"
+    assert_true ($result.exit_code != 0) "invalid command should fail"
     
     { success: true, message: "git_command tests passed" }
 }
@@ -215,10 +215,10 @@ def test_safe_rm [] {
     
     # Test protection against dangerous paths
     let result = (safe_rm "/")
-    assert_true $result.exit_code != 0 "should refuse to remove root"
+    assert_true ($result.exit_code != 0) "should refuse to remove root"
     
     let result = (safe_rm "/etc")
-    assert_true $result.exit_code != 0 "should refuse to remove /etc"
+    assert_true ($result.exit_code != 0) "should refuse to remove /etc"
     
     { success: true, message: "safe_rm tests passed" }
 }
@@ -247,8 +247,8 @@ def test_parallel_execute [] {
     
     let results = (parallel_execute $mixed_commands)
     assert_equal ($results | length) 3 "should have 3 results"
-    assert_true ($results | where exit_code == 0 | length) >= 2 "at least 2 should succeed"
-    assert_true ($results | where exit_code != 0 | length) >= 1 "at least 1 should fail"
+    assert_true (($results | where exit_code == 0 | length) >= 2) "at least 2 should succeed"
+    assert_true (($results | where exit_code != 0 | length) >= 1) "at least 1 should fail"
     
     { success: true, message: "parallel_execute tests passed" }
 }
@@ -277,14 +277,15 @@ def main [] {
     let total_count = ($test_results | length)
     
     if $all_passed {
-        success $"All command-wrapper.nu tests passed! (($passed_count)/($total_count))" --context "test"
+        print $"All command-wrapper.nu tests passed! ($passed_count) of ($total_count)"
     } else {
         let failed_tests = ($test_results | where success == false)
-        error $"Some tests failed: ($failed_tests | length)/($total_count)" --context "test"
+        print $"Some tests failed: ($failed_tests | length) of ($total_count)"
         for test in $failed_tests {
-            error $"  - ($test.message)" --context "test"
+            print $"  - ($test.message)"
         }
     }
     
     { success: $all_passed, passed: $passed_count, total: $total_count }
+    return $all_passed
 }

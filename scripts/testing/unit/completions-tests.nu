@@ -3,7 +3,6 @@
 # Tests shell completion system functionality
 
 use ../../lib/completions.nu *
-use ../../lib/validators.nu *
 use ../../lib/logging.nu *
 
 # Test completion initialization
@@ -230,24 +229,24 @@ export def run_completions_tests [] {
         test_platform_list_content
     ]
     
-    mut passed = 0
-    mut failed = 0
+    let passed = 0
+    let failed = 0
     
     for test_func in $tests {
         try {
             let result = (do $test_func)
             if $result {
-                $passed += 1
+                let passed = $passed + 1
             } else {
-                $failed += 1
+                let failed = $failed + 1
             }
         } catch { |err|
             error $"Test failed with error: ($err.msg)" --context "completions-test"
-            $failed += 1
+            let failed = $failed + 1
         }
     }
     
-    let total = $passed + $failed
+    let total = ($passed + $failed)
     summary "Completions tests completed" $passed $total --context "completions-test"
     
     if $failed > 0 {
@@ -257,9 +256,4 @@ export def run_completions_tests [] {
     
     success "All completions tests passed!" --context "completions-test"
     return true
-}
-
-# If script is run directly, run tests
-if ($env.PWD | str contains "scripts/testing/unit") {
-    run_completions_tests
 }
