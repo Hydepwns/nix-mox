@@ -2,7 +2,7 @@
 # Secret detection pre-commit hook
 # Scans for API keys, passwords, tokens, and other sensitive data
 
-use ../../lib/logging.nu *
+use ../../lib/logging.nu
 
 # Main secret detection function
 export def detect_secrets [
@@ -14,12 +14,12 @@ export def detect_secrets [
         try {
             let staged_files = (git diff --cached --name-only --diff-filter=ACMR | lines)
             if ($staged_files | length) == 0 {
-                success "No files in staging area" --context "secrets"
+                success "No files in staging area"
                 return 0
             }
             $staged_files
         } catch {
-            warn "Could not get staged files, checking all files" --context "secrets"
+            warn "Could not get staged files, checking all files"
             (glob "**/*" | where { |f| ($f | path type) == "file" })
         }
     } else {
@@ -39,7 +39,7 @@ export def detect_secrets [
         }
         
         if $verbose {
-            info $"Scanning ($file)..." --context "secrets"
+            info $"Scanning ($file)..."
         }
         
         let content = try { open $file } catch { continue }
@@ -52,20 +52,20 @@ export def detect_secrets [
     
     # Report results
     if ($found_secrets | length) == 0 {
-        success "No secrets detected! ✅" --context "secrets"
+        success "No secrets detected! ✅"
         return 0
     }
     
-    error $"⚠️  Found ($found_secrets | length) potential secrets:" --context "secrets"
+    error $"⚠️  Found ($found_secrets | length) potential secrets:"
     for secret in $found_secrets {
-        error $"  📁 ($secret.file):($secret.line)" --context "secrets"
-        error $"    Type: ($secret.type)" --context "secrets"
+        error $"  📁 ($secret.file):($secret.line)"
+        error $"    Type: ($secret.type)"
         error $"    Pattern: ($secret.pattern)" --context "secrets"
     }
     
-    error "" --context "secrets"
-    error "Please remove these secrets before committing!" --context "secrets"
-    error "Consider using environment variables or a secrets manager." --context "secrets"
+    error ""
+    error "Please remove these secrets before committing!"
+    error "Consider using environment variables or a secrets manager."
     
     return 1
 }
@@ -145,11 +145,11 @@ def main [
     if $action == "scan" {
         detect_secrets --staged-only=$staged_only --verbose=$verbose
     } else if $action == "report" {
-        banner "Secret Detection Report" --context "secrets"
-        info "Scanning repository for potential secrets..." --context "secrets"
+        print "Secret Detection Report"
+        info "Scanning repository for potential secrets..."
         detect_secrets --verbose=$verbose
     } else {
-        error $"Unknown action: ($action). Use: scan or report" --context "secrets"
+        error $"Unknown action: ($action). Use: scan or report"
         exit 1
     }
 }

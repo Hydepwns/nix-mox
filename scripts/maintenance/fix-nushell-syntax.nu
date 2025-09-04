@@ -3,14 +3,14 @@
 # Custom Nushell syntax fixer for common legacy syntax issues
 # Based on the patterns we've encountered in the codebase
 
-use ../lib/logging.nu *
+use ../lib/logging.nu
 
 def main [
     --target-dir: string = "scripts/lib"    # Directory to process
     --dry-run = false                       # Show what would be changed  
     --backup = true                         # Create backups before changing
 ] {
-    banner "Nushell Syntax Fixer"
+    print "Nushell Syntax Fixer"
     
     if not ($target_dir | path exists) {
         error $"Target directory does not exist: ($target_dir)"
@@ -19,11 +19,11 @@ def main [
     
     let nu_files = (glob $"($target_dir)/**/*.nu")
     if ($nu_files | is-empty) {
-        warn "No .nu files found in target directory"
+        print "No .nu files found in target directory"
         return
     }
     
-    info $"Found ($nu_files | length) Nushell files to process"
+    print $"Found ($nu_files | length) Nushell files to process"
     
     let fixes_applied = ($nu_files | each { |file|
         process_file $file $dry_run $backup
@@ -33,7 +33,7 @@ def main [
 }
 
 def process_file [file: string, dry_run: bool, backup: bool] {
-    info $"Processing ($file)..."
+    print $"Processing ($file)..."
     
     let content = (open $file)
     mut fixed_content = $content
@@ -44,7 +44,7 @@ def process_file [file: string, dry_run: bool, backup: bool] {
     if $return_type_fixes != $fixed_content {
         $fixes_count = $fixes_count + 1
         $fixed_content = $return_type_fixes
-        debug "Fixed return type syntax"
+        print "Fixed return type syntax"
     }
     
     # Fix 2: Logging function calls without --context flag
@@ -63,7 +63,7 @@ def process_file [file: string, dry_run: bool, backup: bool] {
         if $new_content != $fixed_content {
             $fixes_count = $fixes_count + 1
             $fixed_content = $new_content
-            debug $"Fixed ($func_name) function calls"
+            print $"Fixed ($func_name) function calls"
         }
     }
     
@@ -72,7 +72,7 @@ def process_file [file: string, dry_run: bool, backup: bool] {
     if $env_fixes != $fixed_content {
         $fixes_count = $fixes_count + 1
         $fixed_content = $env_fixes
-        debug "Fixed let-env syntax"
+        print "Fixed let-env syntax"
     }
     
     # Fix 4: mut keyword issues (let mut -> mut)
@@ -80,7 +80,7 @@ def process_file [file: string, dry_run: bool, backup: bool] {
     if $mut_fixes != $fixed_content {
         $fixes_count = $fixes_count + 1
         $fixed_content = $mut_fixes  
-        debug "Fixed mut keyword syntax"
+        print "Fixed mut keyword syntax"
     }
     
     # Fix 5: Datetime arithmetic (add duration units)
@@ -88,25 +88,25 @@ def process_file [file: string, dry_run: bool, backup: bool] {
     if $datetime_fixes != $fixed_content {
         $fixes_count = $fixes_count + 1
         $fixed_content = $datetime_fixes
-        debug "Fixed datetime arithmetic"
+        print "Fixed datetime arithmetic"
     }
     
     # Apply changes
     if $fixes_count > 0 {
         if $dry_run {
-            info $"[DRY-RUN] Would apply ($fixes_count) fixes to ($file)"
+            print $"[DRY-RUN] Would apply ($fixes_count) fixes to ($file)"
         } else {
             if $backup {
                 let backup_file = $"($file).backup"
                 $content | save $backup_file
-                debug $"Created backup: ($backup_file)"
+                print $"Created backup: ($backup_file)"
             }
             
             $fixed_content | save --force $file
-            success $"Applied ($fixes_count) fixes to ($file)"
+            print $"Applied ($fixes_count) fixes to ($file)"
         }
     } else {
-        info $"No fixes needed for ($file)"
+        print $"No fixes needed for ($file)"
     }
     
     $fixes_count
@@ -116,10 +116,10 @@ def process_file [file: string, dry_run: bool, backup: bool] {
 def check_syntax [file: string] {
     let result = (nu --check $file | complete)
     if $result.exit_code == 0 {
-        success $"Syntax OK: ($file)"
+        print $"Syntax OK: ($file)"
         true
     } else {
-        error $"Syntax errors in ($file):"
+        print $"Syntax errors in ($file):"
         print $result.stderr
         false
     }
@@ -127,7 +127,7 @@ def check_syntax [file: string] {
 
 # Batch syntax check function
 def check_all_syntax [target_dir: string = "scripts/lib"] {
-    banner "Checking Syntax"
+    print "Checking Syntax"
     
     let nu_files = (glob $"($target_dir)/**/*.nu")
     let results = ($nu_files | each { |file| 
