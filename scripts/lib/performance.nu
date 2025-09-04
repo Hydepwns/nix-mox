@@ -1,7 +1,6 @@
 # performance.nu - Performance monitoring module for nix-mox scripts
 # Tracks execution times, resource usage, and provides performance analytics
 use logging.nu *
-use error-handling.nu *
 
 # Performance metrics storage
 export const PERFORMANCE_METRICS = {

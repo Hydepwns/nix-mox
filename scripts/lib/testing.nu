@@ -4,7 +4,6 @@
 # Uses functional composition and Nushell pipelines
 
 use logging.nu *
-use validators.nu *
 
 # Test result record structure
 export def test_result [
@@ -175,7 +174,7 @@ export def mock_command [command: string, output: string, exit_code: int = 0] {
 
 export def run_mocked [command: string, ...args: string] {
     let mock_key = $"MOCK_($command | str upcase)"
-    let mock_data = ($env | get $mock_key -o)
+            let mock_data = ($env | get $mock_key)
     
     if ($mock_data | is-not-empty) {
         {
