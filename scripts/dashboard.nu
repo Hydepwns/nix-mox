@@ -92,7 +92,7 @@ def main [
 # Overview dashboard - high-level system status
 def overview_dashboard [refresh: int, watch: bool, output: string, format: string] {
     let data = (collect_basic_data)
-    display_basic_info $data $format
+    display_basic_info $data $format $output
     
     if not ($output | is-empty) {
         save_data $data $output
@@ -162,15 +162,26 @@ def collect_system_data [] {
 }
 
 # Display functions
-def display_basic_info [data: record, format: string] {
+def display_basic_info [data: record, format: string, output: string = ""] {
     info $"Platform: ($data.platform)"
     info $"Hostname: ($data.hostname)"  
     info $"Uptime: ($data.uptime)"
     info $"Timestamp: ($data.timestamp)"
+    
+    # Handle output if specified
+    if $output != "" {
+        if $format == "json" {
+            $data | to json | save $output
+            info $"Data saved to ($output)"
+        } else {
+            $data | to yaml | save $output
+            info $"Data saved to ($output)"
+        }
+    }
 }
 
-def display_system_info [data: record, format: string] {
-    display_basic_info $data $format
+def display_system_info [data: record, format: string, output: string = ""] {
+    display_basic_info $data $format $output
     
     if "disk" in $data {
         info $"Disk Usage: ($data.disk.use% // 'unknown')"
@@ -201,19 +212,19 @@ def display_system_info [data: record, format: string] {
 def performance_dashboard [refresh: int, watch: bool, output: string, format: string] {
     info "Performance dashboard - collecting performance metrics..."
     let data = (collect_basic_data)
-    display_basic_info $data $format
+    display_basic_info $data $format $output
 }
 
 def testing_dashboard [refresh: int, watch: bool, output: string, format: string] {
     info "Testing dashboard - collecting test results..."
     let data = (collect_basic_data)
-    display_basic_info $data $format
+    display_basic_info $data $format $output
 }
 
 def coverage_dashboard [refresh: int, watch: bool, output: string, format: string] {
     info "Coverage dashboard - collecting coverage data..."
     let data = (collect_basic_data)
-    display_basic_info $data $format
+    display_basic_info $data $format $output
 }
 
 def security_dashboard [refresh: int, watch: bool, output: string, format: string] {
@@ -234,19 +245,19 @@ def security_dashboard [refresh: int, watch: bool, output: string, format: strin
 def gaming_dashboard [refresh: int, watch: bool, output: string, format: string] {
     info "Gaming dashboard - collecting gaming system status..."
     let data = (collect_basic_data)
-    display_basic_info $data $format
+    display_basic_info $data $format $output
 }
 
 def analysis_dashboard [refresh: int, watch: bool, output: string, format: string] {
     info "Analysis dashboard - collecting system analysis..."
     let data = (collect_basic_data)
-    display_basic_info $data $format
+    display_basic_info $data $format $output
 }
 
 def quick_status_dashboard [] {
     banner "Quick Status"
     let data = (collect_basic_data)
-    display_basic_info $data "table"
+    display_basic_info $data "table" ""
 }
 
 # Security-specific data collection
@@ -282,8 +293,8 @@ def collect_security_data [] {
 }
 
 # Security display functions
-def display_security_info [data: record, format: string] {
-    display_basic_info $data $format
+def display_security_info [data: record, format: string, output: string = ""] {
+    display_basic_info $data $format $output
     
     if "security" in $data {
         info $"Nix Store: ($data.security.nix_store_permissions)"
