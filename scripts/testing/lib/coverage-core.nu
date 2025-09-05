@@ -29,7 +29,7 @@ export def track_test [name: string, category: string, status: string, duration:
 
 export def aggregate_coverage [] {
     let test_temp_dir = ($env | get TEST_TEMP_DIR? | default "coverage-tmp/nix-mox-tests")
-    let result_files = (ls $test_temp_dir | where { |it| ($it.name | path basename) | str starts-with 'test_result_' } | get name)
+    let result_files = (ls $test_temp_dir | where { | it| ($it.name | path basename) | str starts-with 'test_result_' } | get name)
 
     mut test_results = []
 
@@ -42,23 +42,23 @@ export def aggregate_coverage [] {
     print $"DEBUG: Found ($test_results | length) test results"
 
     let total_tests = ($test_results | length)
-    let passed_tests = ($test_results | where { |it| $it.status == "passed" } | length)
-    let failed_tests = ($test_results | where { |it| $it.status == "failed" } | length)
-    let skipped_tests = ($test_results | where { |it| $it.status == "skipped" } | length)
+    let passed_tests = ($test_results | where { | it| $it.status == "passed" } | length)
+    let failed_tests = ($test_results | where { | it| $it.status == "failed" } | length)
+    let skipped_tests = ($test_results | where { | it| $it.status == "skipped" } | length)
 
-    let durations = ($test_results | where { |it| $it.duration != null } | get duration)
+    let durations = ($test_results | where { | it| $it.duration != null } | get duration)
     let total_duration = if ($durations | length) > 0 {
         $durations | math sum
     } else {
         0
     }
 
-    let grouped = ($test_results | group-by category | transpose category tests | each { |row|
+    let grouped = ($test_results | group-by category | transpose category tests | each { | row|
         { ($row.category): ($row.tests | length) }
     })
 
     let categories = if ($grouped | length) > 0 {
-        $grouped | reduce { |acc, item| $acc | merge $item }
+        $grouped | reduce { | acc, item| $acc | merge $item }
     } else {
         {}
     }

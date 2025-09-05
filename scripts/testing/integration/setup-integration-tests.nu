@@ -106,7 +106,7 @@ def main [] {
         (test_setup_invalid_command)
     ]
     
-    let all_passed = ($test_results | all { |r| $r.success })
+    let all_passed = ($test_results | all { | r| $r.success })
     let passed_count = ($test_results | where success == true | length)
     let total_count = ($test_results | length)
     

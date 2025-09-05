@@ -65,7 +65,7 @@ def run_health_checks [] {
 def generate_health_report [results: list<record>] {
   section "Health Check Summary" --context "health-check"
   
-  let status_items = ($results | each { |category|
+  let status_items = ($results | each { | category|
     let passed = $category.results.passed
     let total = $category.results.total
     let success = ($category.results.success)
@@ -87,7 +87,7 @@ def generate_health_report [results: list<record>] {
   
   # Return overall status
   { 
-    success: ($results | all { |r| $r.results.success }),
+    success: ($results | all { | r| $r.results.success }),
     total_passed: $total_passed,
     total_checks: $total_checks
   }
@@ -123,7 +123,7 @@ def check_hardware_health [] {
 
 # EMI validation function (quiet version for optional use)
 def validate_emi_status [] {
-  |input|
+  | input|
   try {
     # Run quick EMI check using our detection system
     let emi_cmd_result = (secure_system "nu scripts/testing/hardware/emi-detection.nu 2>/dev/null || echo 'EMI check skipped'" --context "emi-health-check")
@@ -141,9 +141,9 @@ def validate_emi_status [] {
 
 # USB device health validation (quiet version for optional use)
 def validate_usb_health [] {
-  |input|
+  | input|
   try {
-    let usb_errors = (safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager 2>/dev/null | grep -E 'error.*USB|can.*t set config' | wc -l || echo '0'" "0")
+    let usb_errors = (safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager 2>/dev/null | grep -E 'error.*USB| can.*t set config' | wc -l || echo '0'" "0")
     let error_count = ($usb_errors | into int)
     
     if $error_count == 0 {
@@ -158,7 +158,7 @@ def validate_usb_health [] {
 
 # I2C communication validation (quiet version for optional use)
 def validate_i2c_health [] {
-  |input|
+  | input|
   try {
     let i2c_errors = (safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager 2>/dev/null | grep -E 'i2c.*Invalid|0xffff' | wc -l || echo '0'" "0")
     let error_count = ($i2c_errors | into int)

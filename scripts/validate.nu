@@ -201,7 +201,7 @@ def validate_display_manager [] {
     
     if $platform.is_linux {
         let display_managers = ["gdm", "sddm", "lightdm", "xdm"]
-        let found = ($display_managers | where {|dm| which $dm | is-not-empty } | length)
+        let found = ($display_managers | where {| dm| which $dm | is-not-empty } | length)
         
         if $found > 0 {
             validation_result true "Display manager found"
@@ -220,7 +220,7 @@ def validate_graphics_config [] {
         "/usr/share/X11/xorg.conf.d"
     ]
     
-    let configs_exist = ($config_files | where {|file| $file | path exists } | length)
+    let configs_exist = ($config_files | where {| file| $file | path exists } | length)
     if $configs_exist > 0 {
         validation_result true "Graphics configuration found"
     } else {
@@ -230,7 +230,7 @@ def validate_graphics_config [] {
 
 def validate_desktop_environment [] {
     let desktop_envs = ["gnome-session", "startkde", "startxfce4", "i3", "sway", "plasmashell", "kwin", "plasma-desktop"]
-    let found = ($desktop_envs | where {|de| which $de | is-not-empty } | length)
+    let found = ($desktop_envs | where {| de| which $de | is-not-empty } | length)
     
     if $found > 0 {
         validation_result true "Desktop environment found"
@@ -331,7 +331,7 @@ def validate_nixos_config [] {
         } else {
             validation_result false $"NixOS configuration has syntax errors: ($result.stderr)"
         }
-    } catch { |err|
+    } catch { | err|
         validation_result false $"NixOS configuration validation failed: ($err.msg)"
     }
 }
@@ -343,7 +343,7 @@ def validate_critical_nixos_config [] {
         "config/hardware/hardware-configuration.nix"
     ]
     
-    let missing = ($critical_files | where {|file| not ($file | path exists) })
+    let missing = ($critical_files | where {| file| not ($file | path exists) })
     if ($missing | length) == 0 {
         validation_result true "Critical configuration files present"
     } else {
@@ -399,7 +399,7 @@ def validate_extended_platform_support [] {
 
 def validate_development_environment [] {
     let dev_tools = ["make", "git", "nix", "nu"]
-    let missing = ($dev_tools | where {|tool| not (which $tool | is-not-empty) })
+    let missing = ($dev_tools | where {| tool| not (which $tool | is-not-empty) })
     
     if ($missing | length) == 0 {
         validation_result true "Development environment complete"
@@ -447,7 +447,7 @@ def validate_usb_device_health [] {
     try {
         let result = (secure_execute "journalctl" ["--since" "1 hour ago" "--no-pager"] --context "usb-validation")
         let error_count = if $result.success {
-            ($result.stdout | lines | where {|line| ($line | str contains -i "error") and (($line | str contains -i "USB") or ($line | str contains "can't set config"))} | length)
+            ($result.stdout | lines | where {| line| ($line | str contains -i "error") and (($line | str contains -i "USB") or ($line | str contains "can't set config"))} | length)
         } else { 0 }
         
         if $error_count == 0 {
@@ -464,7 +464,7 @@ def validate_i2c_communication [] {
     try {
         let result = (secure_execute "journalctl" ["--since" "1 hour ago" "--no-pager"] --context "i2c-validation")
         let error_count = if $result.success {
-            ($result.stdout | lines | where {|line| ($line | str contains -i "i2c") and (($line | str contains "Invalid") or ($line | str contains "0xffff"))} | length)
+            ($result.stdout | lines | where {| line| ($line | str contains -i "i2c") and (($line | str contains "Invalid") or ($line | str contains "0xffff"))} | length)
         } else { 0 }
         
         if $error_count == 0 {
@@ -481,7 +481,7 @@ def validate_hardware_error_rate [] {
     try {
         let result = (secure_execute "journalctl" ["--since" "6 hours ago" "--no-pager"] --context "hardware-validation")
         let error_count = if $result.success {
-            ($result.stdout | lines | where {|line| ($line | str contains -i "error") and (($line | str contains -i "hardware") or ($line | str contains "EMI") or ($line | str contains "disabled by hub"))} | length)
+            ($result.stdout | lines | where {| line| ($line | str contains -i "error") and (($line | str contains -i "hardware") or ($line | str contains "EMI") or ($line | str contains "disabled by hub"))} | length)
         } else { 0 }
         
         if $error_count == 0 {

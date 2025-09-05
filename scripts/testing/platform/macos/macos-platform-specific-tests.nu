@@ -48,7 +48,7 @@ export def test_macos_homebrew_setup [] {
             track_test "macos_homebrew_setup" "macos-platform" "passed" 0.3
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"MacOS Homebrew setup test failed: ($err.msg)" --context "macos-platform-test"
         track_test "macos_homebrew_setup" "macos-platform" "failed" 0.3
         return false
@@ -95,7 +95,7 @@ export def test_macos_maintenance [] {
             track_test "macos_maintenance" "macos-platform" "passed" 0.3
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"MacOS maintenance test failed: ($err.msg)" --context "macos-platform-test"
         track_test "macos_maintenance" "macos-platform" "failed" 0.3
         return false
@@ -142,7 +142,7 @@ export def test_macos_security_audit [] {
             track_test "macos_security_audit" "macos-platform" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"MacOS security audit test failed: ($err.msg)" --context "macos-platform-test"
         track_test "macos_security_audit" "macos-platform" "failed" 0.2
         return false
@@ -189,7 +189,7 @@ export def test_macos_xcode_setup [] {
             track_test "macos_xcode_setup" "macos-platform" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"MacOS Xcode setup test failed: ($err.msg)" --context "macos-platform-test"
         track_test "macos_xcode_setup" "macos-platform" "failed" 0.2
         return false
@@ -237,7 +237,7 @@ export def test_macos_platform_integration [] {
             track_test "macos_platform_integration" "macos-platform" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"MacOS platform integration test failed: ($err.msg)" --context "macos-platform-test"
         track_test "macos_platform_integration" "macos-platform" "failed" 0.2
         return false
@@ -276,7 +276,7 @@ export def test_macos_platform_safety [] {
             track_test "macos_platform_safety" "macos-platform" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"MacOS platform safety test failed: ($err.msg)" --context "macos-platform-test"
         track_test "macos_platform_safety" "macos-platform" "failed" 0.2
         return false
@@ -322,7 +322,7 @@ export def test_macos_nix_mox_compatibility [] {
             track_test "macos_nix_mox_compatibility" "macos-platform" "passed" 0.1
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"MacOS nix-mox compatibility test failed: ($err.msg)" --context "macos-platform-test"
         track_test "macos_nix_mox_compatibility" "macos-platform" "failed" 0.1
         return false
@@ -352,11 +352,11 @@ export def run_macos_platform_specific_tests [
     ]
     
     # Execute tests
-    let results = ($tests | each { |test_func|
+    let results = ($tests | each { | test_func|
         try {
             let result = (do $test_func)
             if $result { { success: true } } else { { success: false } }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "macos-platform-test"
             { success: false }
         }

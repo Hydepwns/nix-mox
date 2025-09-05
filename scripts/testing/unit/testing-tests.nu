@@ -30,7 +30,7 @@ export def test_setup_test_environment [] {
         
         success "setup_test_environment works correctly" --context "testing-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error $"setup_test_environment test failed: ($err.msg)" --context "testing-test"
         return false
     }
@@ -51,7 +51,7 @@ export def test_test_suite_function [] {
         info "test_suite function is available" --context "testing-test"
         success "test_suite function exported" --context "testing-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error $"test_suite function test failed: ($err.msg)" --context "testing-test"
         return false
     }
@@ -66,7 +66,7 @@ export def test_testing_imports [] {
         
         success "Testing library imports work" --context "testing-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error $"Testing imports failed: ($err.msg)" --context "testing-test"
         return false
     }
@@ -182,13 +182,13 @@ export def test_library_file_structure [] {
         let file_content = (open "../../lib/testing.nu" | lines)
         
         # Check for expected patterns
-        let has_exports = ($file_content | any { |line| $line | str contains "export def" })
+        let has_exports = ($file_content | any { | line| $line | str contains "export def" })
         if not $has_exports {
             error "Testing library should have exported functions" --context "testing-test"
             return false
         }
         
-        let has_test_logic = ($file_content | any { |line| 
+        let has_test_logic = ($file_content | any { | line| 
             ($line | str contains "test") or ($line | str contains "TEST")
         })
         if not $has_test_logic {
@@ -198,7 +198,7 @@ export def test_library_file_structure [] {
         
         success "Testing library file structure is valid" --context "testing-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error $"File structure test failed: ($err.msg)" --context "testing-test"
         return false
     }
@@ -230,7 +230,7 @@ export def run_testing_tests [] {
             } else {
                 let failed = $failed + 1
             }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "testing-test"
             let failed = $failed + 1
         }

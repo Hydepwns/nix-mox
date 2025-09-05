@@ -37,7 +37,7 @@ def minimal_recovery [dry_run: bool] {
         },
         {
             name: "Kill KDE Processes",
-            command: "pkill -f 'plasma|kwin|sddm'",
+            command: "pkill -f 'plasma| kwin| sddm'",
             description: "Kill any stuck KDE/SDDM processes"
         },
         {
@@ -67,7 +67,7 @@ def full_recovery [dry_run: bool] {
         },
         {
             name: "Kill Display Processes",
-            command: "sudo pkill -9 -f 'X|sddm|plasma|kwin'",
+            command: "sudo pkill -9 -f 'X| sddm| plasma| kwin'",
             description: "Force kill all display processes"
         },
         {
@@ -110,9 +110,9 @@ def auto_recovery [dry_run: bool] {
     print "Automatic Display Recovery"
     
     # Analyze current state
-    let display_running = (try { ^pgrep -f "sddm|X" | lines | length } catch { 0 }) > 0
+    let display_running = (try { ^pgrep -f "sddm| X" | lines | length } catch { 0 }) > 0
     let nvidia_loaded = (try { ^lsmod | grep nvidia | lines | length } catch { 0 }) > 0
-    let kde_running = (try { ^pgrep -f "plasma|kwin" | lines | length } catch { 0 }) > 0
+    let kde_running = (try { ^pgrep -f "plasma| kwin" | lines | length } catch { 0 }) > 0
     
     print ("Display Manager Running: " + ($display_running | into string))
     print ("NVIDIA Modules Loaded: " + ($nvidia_loaded | into string))
@@ -132,7 +132,7 @@ def auto_recovery [dry_run: bool] {
     if $kde_running {
         $recovery_commands = ($recovery_commands | append {
             name: "Kill KDE Processes",
-            command: "pkill -f 'plasma|kwin'",
+            command: "pkill -f 'plasma| kwin'",
             description: "Kill running KDE processes"
         })
     }
@@ -210,7 +210,7 @@ def execute_recovery_commands [commands: list, dry_run: bool] {
                     print ("Error output: " + $result.stderr)
                 }
             }
-        } catch { |err|
+        } catch { | err|
             print ("(" + $cmd.name + ") failed: " + $err.msg)
         }
         

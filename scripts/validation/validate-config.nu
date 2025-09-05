@@ -19,7 +19,7 @@ def main [] {
     
     # Check for syntax errors
     print "📝 Checking Nix syntax..."
-    let syntax_check = (try { nix eval --file config/nixos/configuration.nix --raw } catch { |err| $err.msg })
+    let syntax_check = (try { nix eval --file config/nixos/configuration.nix --raw } catch { | err| $err.msg })
     if ($syntax_check | str contains "error:") {
         error make {msg: $"Syntax error found: ($syntax_check)"}
     } else {
@@ -28,7 +28,7 @@ def main [] {
     
     # Check for evaluation errors
     print "🔧 Checking configuration evaluation..."
-    let eval_check = (try { nixos-rebuild dry-activate --flake .#nixos } catch { |err| $err.msg })
+    let eval_check = (try { nixos-rebuild dry-activate --flake .#nixos } catch { | err| $err.msg })
     if ($eval_check | str contains "error:") {
         error make {msg: $"Configuration evaluation error: ($eval_check)"}
     } else {
@@ -56,7 +56,7 @@ def main [] {
     }
     
     # Check for X11 tools in Wayland setup
-    let x11_tools = (grep -c "glxinfo\|xrandr\|xset" config/nixos/configuration.nix | into int)
+    let x11_tools = (grep -c "glxinfo\| xrandr\| xset" config/nixos/configuration.nix | into int)
     if $x11_tools > 0 {
         print "⚠️  Warning: X11 tools detected in Wayland configuration"
     }

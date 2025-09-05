@@ -32,7 +32,7 @@ export def test_bootstrap_system [] {
             track_test "bootstrap_system" "infrastructure" "failed" 0.2
             return false
         }
-    } catch { |err|
+    } catch { | err|
         error ("Bootstrap system test failed: " + $err.msg) --context "infrastructure-test"
         track_test "bootstrap_system" "infrastructure" "failed" 0.2
         return false
@@ -84,7 +84,7 @@ export def test_core_library_infrastructure [] {
             track_test "core_library_infrastructure" "infrastructure" "failed" 0.3
             return false
         }
-    } catch { |err|
+    } catch { | err|
         error ("Core library infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "core_library_infrastructure" "infrastructure" "failed" 0.3
         return false
@@ -127,7 +127,7 @@ export def test_extension_infrastructure [] {
             track_test "extension_infrastructure" "infrastructure" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error ("Extension infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "extension_infrastructure" "infrastructure" "failed" 0.2
         return false
@@ -166,7 +166,7 @@ export def test_flake_infrastructure [] {
         success ("Flake infrastructure functional (main + " + ($subflake_score | into string) + " subflakes)") --context "infrastructure-test"
         track_test "flake_infrastructure" "infrastructure" "passed" 0.3
         return true
-    } catch { |err|
+    } catch { | err|
         error ("Flake infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "flake_infrastructure" "infrastructure" "failed" 0.3
         return false
@@ -215,7 +215,7 @@ export def test_makefile_infrastructure [] {
             track_test "makefile_infrastructure" "infrastructure" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error ("Makefile infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "makefile_infrastructure" "infrastructure" "failed" 0.2
         return false
@@ -246,7 +246,7 @@ export def test_quick_commands_infrastructure [] {
             track_test "quick_commands_infrastructure" "infrastructure" "failed" 0.1
             return false
         }
-    } catch { |err|
+    } catch { | err|
         error ("Quick commands infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "quick_commands_infrastructure" "infrastructure" "failed" 0.1
         return false
@@ -287,7 +287,7 @@ export def test_configuration_infrastructure [] {
             track_test "configuration_infrastructure" "infrastructure" "failed" 0.2
             return false
         }
-    } catch { |err|
+    } catch { | err|
         error ("Configuration infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "configuration_infrastructure" "infrastructure" "failed" 0.2
         return false
@@ -328,7 +328,7 @@ export def test_documentation_infrastructure [] {
             track_test "documentation_infrastructure" "infrastructure" "passed" 0.1
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error ("Documentation infrastructure test failed: " + $err.msg) --context "infrastructure-test"
         track_test "documentation_infrastructure" "infrastructure" "failed" 0.1
         return false
@@ -344,7 +344,7 @@ export def test_infrastructure_error_handling [] {
         let infrastructure_scripts = [
             "bootstrap-check.sh",
             "quick-commands.sh"
-        ] | where { |script| $script | path exists }
+        ] | where { | script| $script | path exists }
         
         mut error_handling_score = 0
         for script in $infrastructure_scripts {
@@ -370,7 +370,7 @@ export def test_infrastructure_error_handling [] {
             track_test "infrastructure_error_handling" "infrastructure" "passed" 0.1
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error ("Infrastructure error handling test failed: " + $err.msg) --context "infrastructure-test"
         track_test "infrastructure_error_handling" "infrastructure" "failed" 0.1
         return false
@@ -402,11 +402,11 @@ export def run_infrastructure_tests [
     ]
     
     # Execute tests
-    let results = ($tests | each { |test_func|
+    let results = ($tests | each { | test_func|
         try {
             let result = (do $test_func)
             if $result { { success: true } } else { { success: false } }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "infrastructure-test"
             { success: false }
         }

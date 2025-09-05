@@ -22,7 +22,7 @@ def main [] {
     
     print_validation_report $results
     
-    let all_passed = ($results | values | all {|r| $r.success})
+    let all_passed = ($results | values | all {| r| $r.success})
     if $all_passed {
         print_success "✅ Gaming setup validation passed!"
         exit 0
@@ -41,7 +41,7 @@ def validate_gpu_config [] {
     
     # Check for GPU detection
     let gpu_check = if (which lspci | is-not-empty) {
-        let gpus = (^lspci | grep -i "vga\|3d\|display" | lines)
+        let gpus = (^lspci | grep -i "vga\|3d\| display" | lines)
         let gpu_count = ($gpus | length)
         let has_gpu = ($gpu_count | into int) > 0
         let gpu_message = if $has_gpu { $"Found ($gpu_count) GPU(s)" } else { "No GPU detected" }
@@ -110,7 +110,7 @@ def validate_gpu_config [] {
     let checks = ($checks | append $config_check)
     
     {
-        success: ($checks | all {|c| $c.success})
+        success: ($checks | all {| c| $c.success})
         checks: $checks
     }
 }
@@ -226,7 +226,7 @@ def validate_audio_config [] {
     let checks = ($checks | append $config_check)
     
     {
-        success: ($checks | any {|c| $c.success})
+        success: ($checks | any {| c| $c.success})
         checks: $checks
     }
 }
@@ -399,7 +399,7 @@ def validate_gaming_platforms [] {
     let checks = ($checks | append $protontricks_check)
     
     {
-        success: ($checks | where name in ["Steam" "Wine"] | all {|c| $c.success})
+        success: ($checks | where name in ["Steam" "Wine"] | all {| c| $c.success})
         checks: $checks
     }
 }
@@ -456,7 +456,7 @@ def validate_storage_performance [] {
     # Check for SSD
     let ssd_check = if (which lsblk | is-not-empty) {
         let disks = (try { ^lsblk -d -o NAME,ROTA | lines | skip 1 } catch { [] })
-        let has_ssd = ($disks | any {|d| 
+        let has_ssd = ($disks | any {| d| 
             let parts = ($d | split row " ")
             if ($parts | length) >= 2 {
                 ($parts | last) == "0"
@@ -501,7 +501,7 @@ def print_validation_report [results: record] {
     print "\n📊 Validation Report"
     print "==================="
     
-    $results | transpose key value | each {|row|
+    $results | transpose key value | each {| row|
         let component = $row.key
         let result = $row.value
         let status = if $result.success { "✅" } else { "❌" }
@@ -509,7 +509,7 @@ def print_validation_report [results: record] {
         print $"\n($status) ($component | str capitalize)"
         
         if ($result | get checks? | is-not-empty) {
-            $result.checks | each {|check|
+            $result.checks | each {| check|
                 let check_status = if $check.success { "  ✓" } else { "  ✗" }
                 print $"($check_status) ($check.name): ($check.message)"
                 

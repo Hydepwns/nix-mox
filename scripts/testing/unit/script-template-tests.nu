@@ -17,7 +17,7 @@ export def test_script_main_function [] {
         info "script_main function is available" --context "script-template-test"
         success "script_main function exported" --context "script-template-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error $"script_main function test failed: ($err.msg)" --context "script-template-test"
         return false
     }
@@ -49,7 +49,7 @@ export def test_parse_standard_args [] {
         
         success "parse_standard_args works correctly" --context "script-template-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error $"parse_standard_args test failed: ($err.msg)" --context "script-template-test"
         return false
     }
@@ -78,7 +78,7 @@ export def test_setup_script_environment [] {
         
         success "setup_script_environment works correctly" --context "script-template-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error $"setup_script_environment test failed: ($err.msg)" --context "script-template-test"
         return false
     }
@@ -111,7 +111,7 @@ export def test_standard_args_structure [] {
         
         success "Standard args structure is correct" --context "script-template-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error $"Standard args structure test failed: ($err.msg)" --context "script-template-test"
         return false
     }
@@ -131,7 +131,7 @@ export def test_environment_defaults [] {
         
         success "Environment defaults work correctly" --context "script-template-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error $"Environment defaults test failed: ($err.msg)" --context "script-template-test"
         return false
     }
@@ -160,7 +160,7 @@ export def run_script_template_tests [] {
             } else {
                 let failed = $failed + 1
             }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "script-template-test"
             let failed = $failed + 1
         }

@@ -39,7 +39,7 @@ def get_package_info [system: string, package_name: string] {
         }
 
         # Get package size using nix path-info
-        let size_info = (nix path-info --closure-size $out_path --json | from json | values | get 0)
+        let size_info = (nix path-info --closure-size $out_path --json | from json | values | first)
         let raw_size = ($size_info | get closureSize | default 0)
         let dependencies_count = ($size_info | get references | length)
 
@@ -73,7 +73,7 @@ def get_package_info [system: string, package_name: string] {
             hash: $hash
             build_inputs: $dependencies_count  # Use dependencies as build inputs for simplicity
         }
-    } catch { |err|
+    } catch { | err|
         warn $"Could not get info for package ($package_name) on ($system): ($err)"
         {
             system: $system
@@ -106,7 +106,7 @@ def generate_spdx_sbom [packages: list] {
         documentComment: "Generated automatically by nix-mox SBOM generator"
     }
 
-    let package_elements = ($packages | each { |pkg|
+    let package_elements = ($packages | each { | pkg|
         let pkg_id = $"SPDXRef-Package-($pkg.name | str replace "-" "_")"
         {
             SPDXID: $pkg_id
@@ -156,7 +156,7 @@ def generate_cyclonedx_sbom [packages: list] {
         }
     }
 
-    let components = ($packages | each { |pkg|
+    let components = ($packages | each { | pkg|
         {
             type: "library"
             name: $pkg.name
@@ -196,7 +196,7 @@ def generate_cyclonedx_sbom [packages: list] {
 
 def generate_csv_report [packages: list] {
     let headers = "Name,Version,Description,License,Size,Dependencies,Build Inputs,Source"
-    let rows = ($packages | each { |pkg|
+    let rows = ($packages | each { | pkg|
         $"($pkg.name),($pkg.version),($pkg.description),($pkg.license),($pkg.size),($pkg.dependencies | into string),($pkg.build_inputs | into string),($pkg.source)"
     })
 
@@ -207,8 +207,8 @@ def main [] {
     info "Generating Software Bill of Materials for nix-mox..."
     info "Collecting package information..."
 
-    let packages = ($supported_systems | each { |system|
-        $available_packages | each { |pkg| get_package_info $system $pkg }
+    let packages = ($supported_systems | each { | system|
+        $available_packages | each { | pkg| get_package_info $system $pkg }
     } | flatten)
 
     mkdir sbom

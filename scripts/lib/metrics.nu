@@ -82,7 +82,7 @@ export def collect_system_metrics [] {
         set_gauge "nix_mox_cpu_usage_percent" $cpu_usage
         
         debug "Collected system metrics" --context "metrics"
-    } catch { |err|
+    } catch { | err|
         warn $"Failed to collect system metrics: ($err.msg)" --context "metrics"
     }
 }

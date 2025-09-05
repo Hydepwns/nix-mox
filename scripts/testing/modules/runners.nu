@@ -64,7 +64,7 @@ export def run_all_tests [coverage: bool, output: string, parallel: bool, fail_f
     }
     
     let total_suites = ($suite_results | length)
-    let passed_suites = ($suite_results | where { |r| $r.result.success } | length)
+    let passed_suites = ($suite_results | where { | r| $r.result.success } | length)
     let failed_suites = ($total_suites - $passed_suites)
     
     if $failed_suites == 0 {
@@ -299,13 +299,13 @@ export def run_performance_tests [coverage: bool, output: string, parallel: bool
         { name: "platform_detection_performance", func: { benchmark_platform_detection } }
     ]
     
-    let benchmark_results = ($performance_tests | each { |test|
+    let benchmark_results = ($performance_tests | each { | test|
         match $test.func {
             _ => {
                 info ("Running benchmark: " + $test.name) --context "performance"
                 try {
                     do $test.func
-                } catch { |err|
+                } catch { | err|
                     error ("Benchmark " + $test.name + " failed: " + $err.msg) --context "performance"
                     { success: false, error: $err.msg, benchmark: $test.name }
                 }

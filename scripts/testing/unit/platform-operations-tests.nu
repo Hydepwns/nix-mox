@@ -24,7 +24,7 @@ export def test_execute_platform_operation [] {
         info "Platform operations dispatcher is available" --context "platform-ops-test"
         success "execute_platform_operation function available" --context "platform-ops-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error ("Platform operation dispatcher failed: " + $err.msg) --context "platform-ops-test"
         return false
     }
@@ -40,7 +40,7 @@ export def test_install_pipeline_availability [] {
         info "Install pipeline function is available" --context "platform-ops-test"
         success "install_pipeline function exported" --context "platform-ops-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error ("Install pipeline not available: " + $err.msg) --context "platform-ops-test"
         return false
     }
@@ -70,7 +70,7 @@ export def test_platform_operations_imports [] {
         
         success "Platform operations imports work" --context "platform-ops-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error ("Import test failed: " + $err.msg) --context "platform-ops-test"
         return false
     }
@@ -134,7 +134,7 @@ export def test_platform_detection_integration [] {
         
         success "Platform detection integration works" --context "platform-ops-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error ("Platform detection integration failed: " + $err.msg) --context "platform-ops-test"
         return false
     }
@@ -187,7 +187,7 @@ export def test_pipeline_hooks_concept [] {
         # Hook execution should not fail
         success "Pipeline hooks concept validated" --context "platform-ops-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error ("Hook execution test failed: " + $err.msg) --context "platform-ops-test"
         return false
     }
@@ -201,19 +201,19 @@ export def test_library_file_structure [] {
         let file_content = (open "../../lib/platform-operations.nu" | lines)
         
         # Check for expected patterns
-        let has_imports = ($file_content | any { |line| $line | str contains "use " })
+        let has_imports = ($file_content | any { | line| $line | str contains "use " })
         if not $has_imports {
             error "Library should have import statements" --context "platform-ops-test"
             return false
         }
         
-        let has_exports = ($file_content | any { |line| $line | str contains "export def" })
+        let has_exports = ($file_content | any { | line| $line | str contains "export def" })
         if not $has_exports {
             error "Library should have exported functions" --context "platform-ops-test"
             return false
         }
         
-        let has_platform_logic = ($file_content | any { |line| 
+        let has_platform_logic = ($file_content | any { | line| 
             ($line | str contains "platform") or ($line | str contains "get_platform")
         })
         if not $has_platform_logic {
@@ -223,7 +223,7 @@ export def test_library_file_structure [] {
         
         success "Library file structure is valid" --context "platform-ops-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error ("File structure test failed: " + $err.msg) --context "platform-ops-test"
         return false
     }
@@ -251,7 +251,7 @@ export def run_platform_operations_tests [] {
         let test_result = (try {
             let result = (do $test_func)
             if $result { "passed" } else { "failed" }
-        } catch { |err|
+        } catch { | err|
             error ("Test failed with error: " + $err.msg) --context "platform-ops-test"
             "failed"
         })

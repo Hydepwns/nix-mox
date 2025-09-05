@@ -51,7 +51,7 @@ export def detect_gpu_hardware [] {
                 detected: false
             }
         }
-    } catch { |err|
+    } catch { | err|
         {
             type: "error"
             name: "Detection failed"

@@ -34,7 +34,7 @@ export def test_dashboard_system [] {
             warn $"Dashboard help had non-zero exit code: ($result.exit_code)" --context "analysis-test"
             track_test "dashboard_help_system" "analysis" "passed" 0.2
         }
-    } catch { |err|
+    } catch { | err|
         warn $"Dashboard help test encountered issue: ($err.msg)" --context "analysis-test"
         track_test "dashboard_help_system" "analysis" "passed" 0.2
     }
@@ -61,7 +61,7 @@ export def test_dashboard_system [] {
             track_test "dashboard_output_file" "analysis" "passed" 0.1
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Dashboard overview test encountered issue: ($err.msg)" --context "analysis-test"
         track_test "dashboard_overview" "analysis" "passed" 0.3
     }
@@ -98,7 +98,7 @@ export def test_project_dashboard [] {
             track_test "project_dashboard_indicators" "analysis" "failed" 0.2
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Project dashboard test encountered issue: ($err.msg)" --context "analysis-test"
         track_test "project_dashboard_execution" "analysis" "passed" 0.4
     }
@@ -123,7 +123,7 @@ export def test_quality_analysis [] {
             track_test "code_quality_syntax" "analysis" "failed" 0.3
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Code quality analysis test encountered issue: ($err.msg)" --context "analysis-test"
         track_test "code_quality_syntax" "analysis" "passed" 0.3
     }
@@ -136,7 +136,7 @@ export def test_quality_analysis [] {
         success "Performance optimization script accessible" --context "analysis-test"
         track_test "performance_optimize_access" "analysis" "passed" 0.2
         
-    } catch { |err|
+    } catch { | err|
         warn $"Performance optimization test encountered issue: ($err.msg)" --context "analysis-test"
         track_test "performance_optimize_access" "analysis" "passed" 0.2
     }
@@ -161,7 +161,7 @@ export def test_performance_benchmarks [] {
             track_test "gaming_benchmark_syntax" "analysis" "failed" 0.3
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Gaming benchmark test encountered issue: ($err.msg)" --context "analysis-test"
         track_test "gaming_benchmark_syntax" "analysis" "passed" 0.3
     }
@@ -184,7 +184,7 @@ export def test_performance_benchmarks [] {
             track_test "benchmark_system_info" "analysis" "failed" 0.2
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Benchmark environment test encountered issue: ($err.msg)" --context "analysis-test"
         track_test "benchmark_system_info" "analysis" "passed" 0.2
     }
@@ -213,7 +213,7 @@ export def test_data_analysis_systems [] {
             track_test "size_analysis_help" "analysis" "failed" 0.1
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Size analysis test encountered issue: ($err.msg)" --context "analysis-test"
         track_test "size_analysis_access" "analysis" "passed" 0.2
     }
@@ -231,7 +231,7 @@ export def test_data_analysis_systems [] {
             track_test "sbom_generation_syntax" "analysis" "failed" 0.2
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"SBOM generation test encountered issue: ($err.msg)" --context "analysis-test"
         track_test "sbom_generation_syntax" "analysis" "passed" 0.2
     }
@@ -244,7 +244,7 @@ export def test_data_analysis_systems [] {
         success "Documentation generation script accessible" --context "analysis-test"
         track_test "docs_generation_access" "analysis" "passed" 0.2
         
-    } catch { |err|
+    } catch { | err|
         warn $"Documentation generation test encountered issue: ($err.msg)" --context "analysis-test"
         track_test "docs_generation_access" "analysis" "passed" 0.2
     }
@@ -269,7 +269,7 @@ export def test_analysis_modules [] {
             track_test "display_module_syntax" "analysis" "failed" 0.2
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Display analysis module test encountered issue: ($err.msg)" --context "analysis-test"
         track_test "display_module_syntax" "analysis" "passed" 0.2
     }
@@ -287,7 +287,7 @@ export def test_analysis_modules [] {
             track_test "system_module_syntax" "analysis" "failed" 0.2
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"System analysis module test encountered issue: ($err.msg)" --context "analysis-test"
         track_test "system_module_syntax" "analysis" "passed" 0.2
     }
@@ -362,7 +362,7 @@ export def test_dashboard_workflow_integration [] {
             track_test "dashboard_workflow_integration" "analysis" "failed" 0.3
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Dashboard workflow integration test encountered error: ($err.msg)" --context "analysis-test"
         track_test "dashboard_workflow_integration" "analysis" "passed" 0.3
     }
@@ -385,7 +385,7 @@ export def test_analysis_error_handling [] {
             warn "Dashboard should reject invalid views" --context "analysis-test"
             track_test "dashboard_invalid_view_handling" "analysis" "failed" 0.2
         }
-    } catch { |err|
+    } catch { | err|
         success "Dashboard correctly handles invalid view (via exception)" --context "analysis-test"
         track_test "dashboard_invalid_view_handling" "analysis" "passed" 0.2
     }
@@ -412,7 +412,7 @@ export def test_analysis_error_handling [] {
             track_test "analysis_dependency_validation" "analysis" "passed" 0.3
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Dependency validation test encountered issue: ($err.msg)" --context "analysis-test"
         track_test "analysis_dependency_validation" "analysis" "passed" 0.3
     }
@@ -461,7 +461,7 @@ export def test_analysis_data_output [] {
             track_test "analysis_output_generation" "analysis" "failed" 0.3
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Analysis output test encountered error: ($err.msg)" --context "analysis-test"
         track_test "analysis_output_generation" "analysis" "failed" 0.3
     }
@@ -469,7 +469,7 @@ export def test_analysis_data_output [] {
     # Clean up test directory
     try {
         rm -rf $test_output_dir
-    } catch { |err|
+    } catch { | err|
         warn $"Could not clean up analysis output test directory: ($err.msg)" --context "analysis-test"
     }
     
@@ -492,7 +492,7 @@ export def run_analysis_comprehensive_tests [] {
         test_analysis_data_output
     ]
     
-    let results = ($tests | each { |test_func|
+    let results = ($tests | each { | test_func|
         try {
             let result = (do $test_func)
             if $result {
@@ -500,7 +500,7 @@ export def run_analysis_comprehensive_tests [] {
             } else {
                 { success: false }
             }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "analysis-test"
             { success: false }
         }

@@ -15,7 +15,7 @@ def test_detect_platform [] {
     track_test "detect_platform_basic" "unit" "passed" 0.1
     let detected_platform = (detect_platform)
     let valid_platforms = ["linux", "windows", "darwin", "unknown"]
-    assert_true ($valid_platforms | any { |p| $p == $detected_platform }) "Platform detection returns valid value"
+    assert_true ($valid_platforms | any { | p| $p == $detected_platform }) "Platform detection returns valid value"
 
     track_test "detect_platform_not_empty" "unit" "passed" 0.1
     assert_true (not ($detected_platform | is-empty)) "Platform detection returns non-empty value"
@@ -203,7 +203,7 @@ def main [] {
 
     # Test detect_platform returns a known value
     let detected = detect_platform
-    assert_true (["linux", "windows", "darwin", "unknown"] | any { |p| $p == $detected }) "detect_platform returns known value"
+    assert_true (["linux", "windows", "darwin", "unknown"] | any { | p| $p == $detected }) "detect_platform returns known value"
     track_test "detect_platform_basic" "unit" "passed" 0.1
 
     # Test validate_platform

@@ -282,7 +282,7 @@ export def run_isolated_test [test_func: closure, test_name: string, category: s
         print $"($env.GREEN)✓ Isolated test passed: ($test_name) - ($duration)s($env.NC)"
         track_test $test_name $category "passed" $duration
         {success: true, duration: $duration, error: null}
-    } catch { |err|
+    } catch { | err|
         let end_time = (date now | into int)
         let duration = (($end_time - $start_time) | into float) / 1000000000
         
@@ -299,14 +299,14 @@ export def run_isolated_test [test_func: closure, test_name: string, category: s
 }
 
 export def run_tests [test_dir: string, category: string = "unit"] {
-    let test_files = (ls $test_dir | where { |it| $it.name | str ends-with '.nu' } | get name)
+    let test_files = (ls $test_dir | where { | it| $it.name | str ends-with '.nu' } | get name)
 
     if ($test_files | length) == 0 {
         print $"($env.YELLOW)No test files found in ($test_dir)($env.NC)"
         return true
     }
 
-    let results = ($test_files | each { |file|
+    let results = ($test_files | each { | file|
         let test_name = ($file | path basename)
         let start_time = (date now | into int)
 
@@ -329,7 +329,7 @@ export def run_tests [test_dir: string, category: string = "unit"] {
         }
     })
 
-    $results | all { |result| $result }
+    $results | all { | result| $result }
 }
 
 export def run_unit_tests [] {
@@ -441,7 +441,7 @@ export def test_config_validation [config_value: string, error_message: string] 
 # --- Main Test Runner ---
 export def main [] {
     let args = $env._args
-    let test_type = ($args | get 0 | default "all")
+    let test_type = ($args | first | default "all")
 
     match $test_type {
         "unit" => { run_unit_tests },

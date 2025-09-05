@@ -1,9 +1,7 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../../lib/validators.nu
 use ../../lib/logging.nu
-use logging.nu *
 
 # nix-mox Performance Optimization Script
 # Analyze and optimize various aspects of the codebase
@@ -47,7 +45,7 @@ def measure_duration [command: closure] {
 }
 
 def analyze_test_performance [] {
-    info "Analyzing test performance..." "performance-optimize"
+    info "Analyzing test performance..." --context "performance-optimize"
 
     # Check if test script exists
     if not ("scripts/testing/run-tests.nu" | path exists) {
@@ -72,7 +70,7 @@ def analyze_test_performance [] {
 }
 
 def analyze_build_performance [] {
-    info "Analyzing build performance..." "performance-optimize"
+    info "Analyzing build performance..." --context "performance-optimize"
 
     # Check if we're in a Nix flake
     if not ("flake.nix" | path exists) {
@@ -97,7 +95,7 @@ def analyze_build_performance [] {
 }
 
 def analyze_flake_evaluation [] {
-    info "Analyzing flake evaluation performance..."
+    info "Analyzing flake evaluation performance..." --context "performance-optimize"
 
     # Check if we're in a Nix flake
     if not ("flake.nix" | path exists) {
@@ -122,7 +120,7 @@ def analyze_flake_evaluation [] {
 }
 
 def analyze_system_resources [] {
-    info "Analyzing system resources..." "performance-optimize"
+    info "Analyzing system resources..." --context "performance-optimize"
 
     let cpu_count = ("nproc" | into int | default 0)
     let mem_gb = ("free -g | grep Mem | awk '{print $2}'" | into int | default 0)
@@ -152,55 +150,55 @@ def generate_performance_report [test_perf: record, build_perf: record, eval_per
         recommendations: []
     }
 
-    mut recommendations = []
+    let recommendations = []
 
     # System resource recommendations
     if $system_resources.memory_gb < 8 {
         let mem_msg = "Low memory " + ($system_resources.memory_gb | into string) + "GB - consider increasing RAM for better performance"
-        $recommendations = ($recommendations | append $mem_msg)
+        let recommendations = ($recommendations | append $mem_msg)
     }
 
     if $system_resources.disk_free_gb < 10 {
         let disk_msg = "Low disk space " + ($system_resources.disk_free_gb | into string) + "GB - free up space for builds"
-        $recommendations = ($recommendations | append $disk_msg)
+        let recommendations = ($recommendations | append $disk_msg)
     }
 
     # Test performance recommendations
     if $test_perf.duration > $PERFORMANCE_THRESHOLDS.test_slow {
         let test_duration = ($test_perf.duration | into string | str substring 0..6)
         let test_msg = $"Test suite is slow ($test_duration)s) - consider parallelization"
-        $recommendations = ($recommendations | append $test_msg)
+        let recommendations = ($recommendations | append $test_msg)
     }
 
     if not $test_perf.success {
-        $recommendations = ($recommendations | append "Test suite has failures - investigate and fix")
+        let recommendations = ($recommendations | append "Test suite has failures - investigate and fix")
     }
 
     # Build performance recommendations
     if $build_perf.duration > $PERFORMANCE_THRESHOLDS.build_slow {
         let build_duration = ($build_perf.duration | into string | str substring 0..6)
         let build_msg = $"Build is slow ($build_duration)s) - consider caching optimization"
-        $recommendations = ($recommendations | append $build_msg)
+        let recommendations = ($recommendations | append $build_msg)
     }
 
     if not $build_perf.success {
-        $recommendations = ($recommendations | append "Build has failures - investigate dependencies")
+        let recommendations = ($recommendations | append "Build has failures - investigate dependencies")
     }
 
     # Flake evaluation recommendations
     if $eval_perf.duration > $PERFORMANCE_THRESHOLDS.eval_slow {
         let eval_duration = ($eval_perf.duration | into string | str substring 0..6)
         let eval_msg = $"Flake evaluation is slow ($eval_duration)s) - consider simplifying structure"
-        $recommendations = ($recommendations | append $eval_msg)
+        let recommendations = ($recommendations | append $eval_msg)
     }
 
     if not $eval_perf.success {
-        $recommendations = ($recommendations | append "Flake evaluation has errors - check flake.nix syntax")
+        let recommendations = ($recommendations | append "Flake evaluation has errors - check flake.nix syntax")
     }
 
     # Cache optimization recommendations
-    $recommendations = ($recommendations | append "Consider running 'make cache-warm' to optimize build caching")
-    $recommendations = ($recommendations | append "Consider running 'make cache-optimize' for advanced cache optimization")
+    let recommendations = ($recommendations | append "Consider running 'make cache-warm' to optimize build caching")
+    let recommendations = ($recommendations | append "Consider running 'make cache-optimize' for advanced cache optimization")
 
     ($report | upsert recommendations $recommendations)
 }
@@ -254,7 +252,7 @@ def display_performance_report [report: record] {
 }
 
 def optimize_test_parallelization [system_resources: record] {
-    info "Optimizing test parallelization..." "performance-optimize"
+    info "Optimizing test parallelization..." --context "performance-optimize"
 
     let recommended_jobs = $system_resources.recommended_parallel_jobs
     print $"CPU cores: ($system_resources.cpu_cores)"
@@ -275,7 +273,7 @@ def optimize_test_parallelization [system_resources: record] {
 }
 
 def optimize_build_caching [] {
-    info "Optimizing build caching..." "performance-optimize"
+    info "Optimizing build caching..." --context "performance-optimize"
 
     # Use advanced cache optimization
     try {
@@ -315,7 +313,7 @@ def optimize_build_caching [] {
 }
 
 def optimize_nix_config [] {
-    info "Optimizing Nix configuration..." "performance-optimize"
+    info "Optimizing Nix configuration..." --context "performance-optimize"
 
     let nix_config = {
         experimental_features: ["nix-command" "flakes"]
@@ -331,7 +329,7 @@ def optimize_nix_config [] {
 }
 
 def main [] {
-    info "Starting nix-mox performance optimization..." "performance-optimize"
+    info "Starting nix-mox performance optimization..." --context "performance-optimize"
 
     # Analyze system resources first
     let system_resources = (analyze_system_resources)
@@ -362,8 +360,8 @@ def main [] {
     })
 
     $final_report | to json --indent 2 | save performance-report.json
-    success "Performance optimization completed!" "performance-optimize"
-    info "Report saved to performance-report.json" "performance-optimize"
+    success "Performance optimization completed!" --context "performance-optimize"
+    info "Report saved to performance-report.json" --context "performance-optimize"
     $final_report
 }
 
@@ -392,7 +390,7 @@ export def optimize [] {
     }
 }
 
-export def report [] {
+export def report_performance [] {
     let system_resources = (analyze_system_resources)
     let test_perf = (analyze_test_performance)
     let build_perf = (analyze_build_performance)
@@ -402,8 +400,8 @@ export def report [] {
     $report
 }
 
-export def quick_check [] {
-    info "Running quick performance check..." "performance-optimize"
+export def quick_check_performance [] {
+    info "Running quick performance check..." --context "performance-optimize"
 
     let system_resources = (analyze_system_resources)
     let eval_perf = (analyze_flake_evaluation)

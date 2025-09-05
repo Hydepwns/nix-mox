@@ -422,7 +422,7 @@ export def test_file_permissions [] {
     
     # Check that script files have reasonable permissions
     for file in $script_files {
-        let file_info = (ls -la $file | get 0)
+        let file_info = (ls -la $file | first)
         let perms = $file_info.mode
         let has_world_write = ($perms | str contains "w")
         let has_other_write = ($perms | str contains "o")

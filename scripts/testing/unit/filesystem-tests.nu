@@ -299,7 +299,7 @@ def test_cleanup_operations [] {
 
     # Test that files were created
     try {
-        let created_files = ($test_files | where {|f| $f | path exists})
+        let created_files = ($test_files | where {| f| $f | path exists})
         assert_equal ($created_files | length) 3 "All test files should be created"
         track_test "filesystem_cleanup_setup" "unit" "passed" 0.1
     } catch {

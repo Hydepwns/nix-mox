@@ -19,7 +19,7 @@ def validate_configuration_file [config_path: string] {
         print "✅ Configuration file is valid"
         true
     } catch {
-        |err| print $"❌ Configuration file not found: ($config_path)"
+        | err| print $"❌ Configuration file not found: ($config_path)"
         false
     }
 }
@@ -41,7 +41,7 @@ def create_safety_backup [config_path: string] {
             timestamp: $timestamp
         }
     } catch {
-        |err| print $"❌ Backup failed: ($err)"
+        | err| print $"❌ Backup failed: ($err)"
         {
             success: false
             error: $err

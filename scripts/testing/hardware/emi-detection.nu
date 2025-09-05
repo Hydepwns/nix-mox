@@ -17,10 +17,10 @@ export def detect_usb_errors [] {
     info "Scanning for USB configuration errors..." --context "emi-detection"
     
     let usb_errors = try {
-        safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager | grep -E '(can\\'t set config|error \\-71|Invalid.*I2C|disabled by hub|EMI)'" ""
+        safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager | grep -E '(can\\'t set config| error \\-71| Invalid.*I2C| disabled by hub| EMI)'" ""
         | lines
         | where $it != ""
-        | each { |line|
+        | each { | line|
             {
                 timestamp: ($line | str substring 0..15),
                 message: $line,
@@ -40,10 +40,10 @@ export def detect_i2c_errors [] {
     info "Scanning for I2C communication errors..." --context "emi-detection"
     
     let i2c_errors = try {
-        safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager | grep -E '(i2c.*Invalid|0xffff|I2C.*error)'" ""
+        safe_command_with_fallback "journalctl --since '1 hour ago' --no-pager | grep -E '(i2c.*Invalid|0xffff| I2C.*error)'" ""
         | lines
         | where $it != ""
-        | each { |line|
+        | each { | line|
             {
                 timestamp: ($line | str substring 0..15),
                 message: $line,
@@ -65,7 +65,7 @@ export def check_usb_device_health [] {
     
     let usb_devices = try {
         glob "/sys/devices/pci*/*/usb*/*/product"
-        | each { |product_file|
+        | each { | product_file|
             let device_path = ($product_file | path dirname)
             try {
                 let product = (open $product_file | str trim)
@@ -89,7 +89,7 @@ export def check_usb_device_health [] {
             }
         }
         | where $it != null
-        | each { |device|
+        | each { | device|
             $device | upsert health_status (assess_device_health $device)
         }
     } catch {
@@ -108,11 +108,11 @@ export def detect_emi_patterns [--duration: duration = 5min] {
     
     # Monitor journalctl for EMI-related patterns
     let monitoring_result = try {
-        let result = (secure_system $"timeout ($duration | into string) journalctl -f --no-pager | grep -E '(EMI|interference|disabled by hub|error \\-71|0xffff)' | head -20" --context "emi-monitor")
+        let result = (secure_system $"timeout ($duration | into string) journalctl -f --no-pager | grep -E '(EMI| interference| disabled by hub| error \\-71|0xffff)' | head -20" --context "emi-monitor")
         $result.stdout
         | lines
         | where $it != ""
-        | each { |line|
+        | each { | line|
             {
                 detected_at: (date now | date format "%Y-%m-%d %H:%M:%S"),
                 pattern: $line,
@@ -150,7 +150,7 @@ export def run_emi_stress_test [] {
         let i2c_result = (secure_system "find /sys/class/i2c-dev -type l 2>/dev/null | head -5" --context "i2c-scan")
         $i2c_result.stdout 
         sleep 2sec
-    } catch { |err|
+    } catch { | err|
         warn $"Stress test partially failed: ($err)" --context "emi-detection"
     }
     

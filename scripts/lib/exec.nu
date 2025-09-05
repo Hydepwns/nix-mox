@@ -65,7 +65,7 @@ export def run_script [script_path: string] {
         try {
             let args = $cmd_args
             ^$handler $args | timeout $env.TIMEOUT
-        } catch {|e|
+        } catch {| e|
             $env.LAST_ERROR = $e
             print $"ERROR: Script execution timed out after ($env.TIMEOUT)s"
             print "Consider increasing the timeout or optimizing the script"
@@ -75,7 +75,7 @@ export def run_script [script_path: string] {
         try {
             let args = $cmd_args
             ^$handler $args
-        } catch {|e|
+        } catch {| e|
             $env.LAST_ERROR = $e
             print $"ERROR: Script execution failed: ($env.LAST_ERROR)"
         }

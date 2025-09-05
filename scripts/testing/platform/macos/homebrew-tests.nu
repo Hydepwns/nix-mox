@@ -63,7 +63,7 @@ export def test_homebrew_installation [] {
             warn "Homebrew version check failed" --context "macos-test"
             return true
         }
-    } catch { |err|
+    } catch { | err|
         warn $"Homebrew test failed: ($err.msg)" --context "macos-test"
         return true
     }
@@ -104,7 +104,7 @@ export def test_homebrew_operations [] {
         
         success "Homebrew operations functional" --context "macos-test"
         return true
-    } catch { |err|
+    } catch { | err|
         warn $"Homebrew operations test failed: ($err.msg)" --context "macos-test"
         return true
     }
@@ -143,7 +143,7 @@ export def test_macos_system_integration [] {
         
         success "macOS system integration functional" --context "macos-test"
         return true
-    } catch { |err|
+    } catch { | err|
         warn $"macOS system integration test failed: ($err.msg)" --context "macos-test"
         return true
     }
@@ -194,7 +194,7 @@ export def test_launchd_services [] {
             warn "launchctl list command failed" --context "macos-test"
             return true
         }
-    } catch { |err|
+    } catch { | err|
         warn $"launchd test failed: ($err.msg)" --context "macos-test"
         return true
     }
@@ -221,7 +221,7 @@ export def test_mac_app_store [] {
             warn "mas version check failed" --context "macos-test"
             return true
         }
-    } catch { |err|
+    } catch { | err|
         warn $"Mac App Store test failed: ($err.msg)" --context "macos-test"
         return true
     }
@@ -252,7 +252,7 @@ export def run_homebrew_tests [] {
             } else {
                 $failed += 1
             }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "macos-test"
             $failed += 1
         }

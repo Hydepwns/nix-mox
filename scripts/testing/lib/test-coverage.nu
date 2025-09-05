@@ -43,13 +43,13 @@ export def analyze_coverage [test_results: list] {
     }
 
     # Test distribution by speed
-    let fast_tests = ($durations | where { |d| $d < 0.1 } | length)
-    let medium_tests = ($durations | where { |d| $d >= 0.1 and $d < 1.0 } | length)
-    let slow_tests = ($durations | where { |d| $d >= 1.0 } | length)
+    let fast_tests = ($durations | where { | d| $d < 0.1 } | length)
+    let medium_tests = ($durations | where { | d| $d >= 0.1 and $d < 1.0 } | length)
+    let slow_tests = ($durations | where { | d| $d >= 1.0 } | length)
 
     # Category analysis
     let categories = ($test_results | group-by category | transpose category data)
-    let category_stats = ($categories | each { |cat|
+    let category_stats = ($categories | each { | cat|
         let data = $cat.data
         let total = ($data | length)
         let passed = ($data | where status == "passed" | length)
@@ -141,9 +141,9 @@ export def export_coverage_report [format: string = "json"] {
             slowest_test: (if ($raw.test_results | length) > 0 { ($raw.test_results | get duration | math max) } else { 0 }),
             fastest_test: (if ($raw.test_results | length) > 0 { ($raw.test_results | get duration | math min) } else { 0 }),
             test_distribution: {
-                fast: ($raw.test_results | where { |t| $t.duration < 0.1 } | length),
-                medium: ($raw.test_results | where { |t| $t.duration >= 0.1 and $t.duration < 1.0 } | length),
-                slow: ($raw.test_results | where { |t| $t.duration >= 1.0 } | length)
+                fast: ($raw.test_results | where { | t| $t.duration < 0.1 } | length),
+                medium: ($raw.test_results | where { | t| $t.duration >= 0.1 and $t.duration < 1.0 } | length),
+                slow: ($raw.test_results | where { | t| $t.duration >= 1.0 } | length)
             }
         },
         test_categories: $raw.test_categories,
@@ -236,7 +236,7 @@ def generate_html_report [report: record] {
 
         <h2>Recommendations</h2>
         <ul>
-        ($report.recommendations | each { |rec| "<li>($rec)</li>" } | str join "\n")
+        ($report.recommendations | each { | rec| "<li>($rec)</li>" } | str join "\n")
         </ul>
     </body>
     </html>

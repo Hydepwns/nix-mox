@@ -51,10 +51,10 @@ def extract_all_functions [] {
     
     for file in $lib_files {
         let content = (open $file)
-        let functions = ($content | lines | where { |line| $line | str starts-with "export def " } | each { |line|
+        let functions = ($content | lines | where { | line| $line | str starts-with "export def " } | each { | line|
             let parts = ($line | split row " ")
             if ($parts | length) >= 3 {
-                let func_name = ($parts | get 2 | split row " " | get 0)
+                let func_name = ($parts | get 2 | split row " " | first)
                 {
                     name: $func_name,
                     module: ($file | path basename),
@@ -124,7 +124,7 @@ def complete_script_names [] {
         init_completions
     }
     
-    $COMPLETION_STATE.scripts | each { |script|
+    $COMPLETION_STATE.scripts | each { | script|
         {
             value: $script.name,
             description: ($script.description | default "nix-mox script")
@@ -138,7 +138,7 @@ def complete_config_paths [] {
         init_completions
     }
     
-    $COMPLETION_STATE.configs | each { |key|
+    $COMPLETION_STATE.configs | each { | key|
         {value: $key, description: "Configuration key"}
     }
 }
@@ -149,7 +149,7 @@ export def complete_functions [context: string] {
         init_completions
     }
     
-    $COMPLETION_STATE.functions | each { |func|
+    $COMPLETION_STATE.functions | each { | func|
         {
             value: $func.name,
             description: $"Function from ($func.module)"
@@ -162,7 +162,7 @@ export def complete_files [context: string, extension: string = ""] {
     let current_dir = (pwd)
     let pattern = if ($extension | is-empty) { "*" } else { $"*($extension)" }
     
-    let files = (glob $pattern | each { |file|
+    let files = (glob $pattern | each { | file|
         let relative_path = ($file | str replace $current_dir "." | str replace "//" "/")
         {
             value: $relative_path,
@@ -261,7 +261,7 @@ export def generate_zsh_completions [] {
         "_nix_mox_scripts() {"
         "    local scripts"
         "    if command -v nu >/dev/null; then"
-        "        scripts=($(nu -c 'use scripts/lib/completions.nu; complete_script_names | each {|s| $\"$s.value:$s.description\"} | str join \" \"' 2>/dev/null))"
+        "        scripts=($(nu -c 'use scripts/lib/completions.nu; complete_script_names | each {| s| $\"$s.value:$s.description\"} | str join \" \"' 2>/dev/null))"
         "        _describe 'nix-mox scripts' scripts"
         "    fi"
         "}"

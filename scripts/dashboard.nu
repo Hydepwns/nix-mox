@@ -126,7 +126,7 @@ def collect_system_data [] {
     let basic = (collect_basic_data)
     let disk = (try {
         let df_result = (^df -h | from ssv -a)
-        ($df_result | where filesystem =~ "/" | get 0)
+        ($df_result | where filesystem =~ "/" | first)
     } catch { { use%: "unknown", avail: "unknown" } })
     
     let memory = (try {
@@ -140,7 +140,7 @@ def collect_system_data [] {
     
     let hardware = (try {
         let emi_status = (^nu scripts/testing/hardware/emi-detection.nu | complete)
-        let usb_errors = (^journalctl --since "1 hour ago" --no-pager | grep -E "error.*USB|can.*t set config" | wc -l | str trim | into int)
+        let usb_errors = (^journalctl --since "1 hour ago" --no-pager | grep -E "error.*USB| can.*t set config" | wc -l | str trim | into int)
         let i2c_errors = (^journalctl --since "1 hour ago" --no-pager | grep -E "i2c.*Invalid|0xffff" | wc -l | str trim | into int)
         
         {
@@ -314,7 +314,7 @@ def save_data [data: record, output: string] {
     try {
         $data | to json | save $output
         success $"Dashboard data saved to: ($output)"
-    } catch { |err|
+    } catch { | err|
         warn $"Failed to save dashboard data: ($err.msg)"
     }
 }

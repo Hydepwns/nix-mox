@@ -56,8 +56,8 @@ export def render_performance_metrics [system_info: record] {
     # Load average
     let load_avg = $system_info.load_average
     if ($load_avg | length) >= 3 {
-        let load_color = if ($load_avg | get 0) > 2.0 { "red" } else if ($load_avg | get 0) > 1.0 { "yellow" } else { "green" }
-        print $"Load Average: (ansi $load_color)($load_avg | get 0 | into string -d 2), ($load_avg | get 1 | into string -d 2), ($load_avg | get 2 | into string -d 2)(ansi reset)"
+        let load_color = if ($load_avg | first) > 2.0 { "red" } else if ($load_avg | first) > 1.0 { "yellow" } else { "green" }
+        print $"Load Average: (ansi $load_color)($load_avg | first | into string -d 2), ($load_avg | get 1 | into string -d 2), ($load_avg | get 2 | into string -d 2)(ansi reset)"
     }
     
     print ""
@@ -72,14 +72,14 @@ export def render_health_status [health_status: record] {
     
     if ($health_status.issues | length) > 0 {
         print $"(ansi red)🚨 Issues:(ansi reset)"
-        $health_status.issues | each { |issue|
+        $health_status.issues | each { | issue|
             print $"  • $issue"
         }
     }
     
     if ($health_status.warnings | length) > 0 {
         print $"(ansi yellow)⚠️  Warnings:(ansi reset)"
-        $health_status.warnings | each { |warning|
+        $health_status.warnings | each { | warning|
             print $"  • $warning"
         }
     }
@@ -92,7 +92,7 @@ export def render_service_status [service_info: record] {
     print $"(ansi cyan)==========(ansi reset)"
     print $"Active: (ansi green)($service_info.active_count)/($service_info.total_count)(ansi reset)"
     
-    $service_info.services | each { |service|
+    $service_info.services | each { | service|
         let status_color = if $service.active { "green" } else { "red" }
         let status_icon = if $service.active { "✅" } else { "❌" }
         print $"  $status_icon ($service.name): (ansi $status_color)($service.status)(ansi reset)"
@@ -106,7 +106,7 @@ export def render_process_info [process_info: record] {
     print $"(ansi cyan)===============(ansi reset)"
     
     if ($process_info.top_processes | length) > 0 {
-        $process_info.top_processes | take 5 | each { |process|
+        $process_info.top_processes | take 5 | each { | process|
             let cpu_color = if $process.cpu > 50.0 { "red" } else if $process.cpu > 20.0 { "yellow" } else { "green" }
             let mem_color = if $process.mem > 10.0 { "red" } else if $process.mem > 5.0 { "yellow" } else { "green" }
             

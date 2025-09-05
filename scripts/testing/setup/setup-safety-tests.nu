@@ -35,7 +35,7 @@ export def test_main_setup_script [] {
             track_test "setup_help_mode" "setup" "failed" 0.2
             return false
         }
-    } catch { |err|
+    } catch { | err|
         error $"Error testing setup help: ($err.msg)" --context "setup-test"
         track_test "setup_help_mode" "setup" "failed" 0.2
         return false
@@ -59,7 +59,7 @@ export def test_main_setup_script [] {
             track_test "setup_dry_run_indicators" "setup" "failed" 0.1
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Automated setup test encountered issue (may be expected): ($err.msg)" --context "setup-test"
         track_test "setup_automated_dry_run" "setup" "passed" 0.4
     }
@@ -92,7 +92,7 @@ export def test_installation_scripts [] {
             warn $"Install script help had non-zero exit code: ($result.exit_code)" --context "setup-test"
             track_test "install_help" "setup" "passed" 0.3
         }
-    } catch { |err|
+    } catch { | err|
         warn $"Install script test encountered issue: ($err.msg)" --context "setup-test"
         track_test "install_help" "setup" "passed" 0.3
     }
@@ -107,7 +107,7 @@ export def test_installation_scripts [] {
         track_test "install_component_validation" "setup" "passed" 0.2
         success "Component installation validation test completed" --context "setup-test"
         
-    } catch { |err|
+    } catch { | err|
         info $"Component validation test completed (error expected): ($err.msg)" --context "setup-test"
         track_test "install_component_validation" "setup" "passed" 0.2
     }
@@ -127,7 +127,7 @@ export def test_platform_setup [] {
         success "Linux platform setup script accessible" --context "setup-test"
         track_test "linux_platform_setup" "setup" "passed" 0.3
         
-    } catch { |err|
+    } catch { | err|
         warn $"Linux platform setup test encountered issue: ($err.msg)" --context "setup-test"
         track_test "linux_platform_setup" "setup" "passed" 0.3
     }
@@ -146,7 +146,7 @@ export def test_platform_setup [] {
                 track_test "interactive_setup_syntax" "setup" "failed" 0.2
             }
             
-        } catch { |err|
+        } catch { | err|
             warn $"Interactive setup test encountered issue: ($err.msg)" --context "setup-test"
             track_test "interactive_setup_syntax" "setup" "passed" 0.2
         }
@@ -182,7 +182,7 @@ export def test_environment_setup [] {
             track_test "dev_env_prerequisites" "setup" "passed" 0.3
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Environment setup test encountered issue: ($err.msg)" --context "setup-test"
         track_test "dev_env_prerequisites" "setup" "passed" 0.3
     }
@@ -199,7 +199,7 @@ export def test_environment_setup [] {
             track_test "gaming_env_config" "setup" "passed" 0.2
         }
         
-    } catch { |err|
+    } catch { | err|
         info $"Gaming environment test completed: ($err.msg)" --context "setup-test"
         track_test "gaming_env_config" "setup" "passed" 0.2
     }
@@ -207,7 +207,7 @@ export def test_environment_setup [] {
     # Clean up test directory
     try {
         rm -rf $test_setup_dir
-    } catch { |err|
+    } catch { | err|
         warn $"Could not clean up test setup directory: ($err.msg)" --context "setup-test"
     }
     
@@ -241,7 +241,7 @@ export def test_configuration_generation [] {
             track_test "enhanced_setup_config_help" "setup" "failed" 0.1
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Enhanced setup test encountered issue: ($err.msg)" --context "setup-test"
         track_test "enhanced_setup_access" "setup" "passed" 0.3
     }
@@ -267,7 +267,7 @@ export def test_configuration_generation [] {
             track_test "config_dir_structure" "setup" "failed" 0.2
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Configuration structure test encountered issue: ($err.msg)" --context "setup-test"
         track_test "config_dir_structure" "setup" "passed" 0.2
     }
@@ -275,7 +275,7 @@ export def test_configuration_generation [] {
     # Clean up test directory
     try {
         rm -rf $test_config_dir
-    } catch { |err|
+    } catch { | err|
         warn $"Could not clean up test config directory: ($err.msg)" --context "setup-test"
     }
     
@@ -297,7 +297,7 @@ export def test_setup_error_handling [] {
             warn "Setup should reject invalid modes" --context "setup-test"
             track_test "setup_invalid_mode_handling" "setup" "failed" 0.3
         }
-    } catch { |err|
+    } catch { | err|
         success "Setup correctly handles invalid mode (via exception)" --context "setup-test"
         track_test "setup_invalid_mode_handling" "setup" "passed" 0.3
     }
@@ -324,7 +324,7 @@ export def test_setup_error_handling [] {
             track_test "setup_dependency_validation" "setup" "passed" 0.2
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Dependency validation test encountered issue: ($err.msg)" --context "setup-test"
         track_test "setup_dependency_validation" "setup" "passed" 0.2
     }
@@ -348,7 +348,7 @@ export def test_setup_workflow [] {
         try {
             let result = (execute_command $step.cmd --timeout 10sec --context "setup")
             info $"Workflow step completed: ($step.desc)" --context "setup-test"
-        } catch { |err|
+        } catch { | err|
             warn $"Workflow step had issues: ($step.desc) - ($err.msg)" --context "setup-test"
             # Don't fail workflow for individual step issues in test environment
         }
@@ -398,11 +398,11 @@ export def test_setup_safety_mechanisms [] {
         # Clean up
         try {
             rm -rf $test_safety_dir
-        } catch { |err|
+        } catch { | err|
             warn $"Could not clean up safety test directory: ($err.msg)" --context "setup-test"
         }
         
-    } catch { |err|
+    } catch { | err|
         info $"Safety mechanisms test completed with restrictions: ($err.msg)" --context "setup-test"
         track_test "setup_dry_run_safety" "setup" "passed" 0.4
     }
@@ -425,7 +425,7 @@ export def run_setup_safety_tests [] {
         test_setup_safety_mechanisms
     ]
     
-    let results = ($tests | each { |test_func|
+    let results = ($tests | each { | test_func|
         try {
             let result = (do $test_func)
             if $result {
@@ -433,7 +433,7 @@ export def run_setup_safety_tests [] {
             } else {
                 { success: false }
             }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "setup-test"
             { success: false }
         }

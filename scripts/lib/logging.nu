@@ -58,7 +58,7 @@ export def log [
         if not ($file | is-empty) {
             try {
                 $log_message | save --append $file
-            } catch { |err|
+            } catch { | err|
                 print $"(ansi red)Log file error: ($err)(ansi reset)"
             }
         }
@@ -75,7 +75,7 @@ export def with_logging [
     --context: string = "main",
     --level: string = "info"
 ] {
-    |action: closure|
+    | action: closure|
     
     log $level $"Starting: ($operation)" --context $context
     let start_time = (date now)
@@ -85,7 +85,7 @@ export def with_logging [
         let duration = ((date now) - $start_time)
         log "SUCCESS" $"Completed: ($operation) in ($duration)" --context $context
         $result
-    } catch { |err|
+    } catch { | err|
         log "ERROR" $"Failed: ($operation) - ($err.msg)" --context $context
         $err
     }
@@ -93,7 +93,7 @@ export def with_logging [
 
 # Functional pipeline for conditional logging
 export def log_if [condition: bool] {
-    |level: string, message: string, context: string = ""|
+    | level: string, message: string, context: string = ""|
     if $condition {
         log $level $message --context $context
     }
@@ -157,7 +157,7 @@ export def log_trace [message: string, log_file: string = ""] {
 export def save_to_log [file_path: string] {
     try {
         $in | save --append $file_path
-    } catch { |err|
+    } catch { | err|
         error $"Failed to write to log file ($file_path): ($err.msg)"
     }
 }
@@ -169,7 +169,7 @@ export def dry_run [message: string, --context: string = ""] {
 
 # Batch logging for multiple messages
 export def log_batch [messages: list<record>] {
-    $messages | each { |msg|
+    $messages | each { | msg|
         log $msg.level $msg.message --context ($msg | get context? | default "") --file ($msg | get file? | default "")
     }
 }
@@ -199,7 +199,7 @@ export def progress [current: int, total: int, message: string, --context: strin
 # Status report with formatted items
 export def status_report [items: list<record>, --context: string = ""] {
     info "Status Report:" --context $context
-    $items | each { |item|
+    $items | each { | item|
         let status_icon = if $item.success { "✅" } else { "❌" }
         let status_msg = $"  ($status_icon) ($item.name): ($item.message)"
         if $item.success {

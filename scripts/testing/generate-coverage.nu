@@ -17,7 +17,7 @@ def main [
     let output_dir = ($output | path dirname)
     try {
         mkdir $output_dir
-    } catch { |err|
+    } catch { | err|
         debug $"Directory already exists: ($output_dir)"
     }
     
@@ -69,7 +69,7 @@ def generate_basic_coverage [] {
             $lcov_content = $lcov_content + $"LH:($covered_lines)\n"  # Lines hit
             $lcov_content = $lcov_content + "end_of_record\n"
             
-        } catch { |err|
+        } catch { | err|
             debug $"Skipping file ($file): ($err.msg)"
         }
     }

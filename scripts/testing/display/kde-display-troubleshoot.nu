@@ -52,7 +52,7 @@ def pre_rebuild_display_check [dry_run: bool] {
                 details: ($result | get details -o)
             })
             success $"✅ ($check.name): ($result.message)" --context "display"
-        } catch { |err|
+        } catch { | err|
             $results = ($results | append {
                 name: $check.name,
                 status: "failed", 
@@ -158,7 +158,7 @@ def post_rebuild_recovery [apply_fixes: bool, dry_run: bool] {
             try {
                 execute_command_safe $step.command --context "recovery"
                 success $"✅ ($step.name) completed" --context "display"
-            } catch { |err|
+            } catch { | err|
                 error $"❌ ($step.name) failed: ($err.msg)" --context "display"
             }
         }
@@ -172,13 +172,13 @@ def post_rebuild_recovery [apply_fixes: bool, dry_run: bool] {
 
 # Check NVIDIA driver status
 def check_nvidia_driver [] {
-    let nvidia_info = (^lsmod | lines | where { |line| $line | str contains "nvidia" })
+    let nvidia_info = (^lsmod | lines | where { | line| $line | str contains "nvidia" })
     
     if ($nvidia_info | length) == 0 {
         error make { msg: "No NVIDIA modules loaded" }
     }
     
-    let driver_version = (try { ^nvidia-smi --query-gpu=driver_version --format=csv,noheader,nounits | lines | get 0 } catch { "unknown" })
+    let driver_version = (try { ^nvidia-smi --query-gpu=driver_version --format=csv,noheader,nounits | lines | first } catch { "unknown" })
     
     {
         message: $"NVIDIA driver loaded, version: ($driver_version)",
@@ -189,7 +189,7 @@ def check_nvidia_driver [] {
 # Check KDE Plasma version compatibility
 def check_kde_plasma_version [] {
     let plasma_version = (try {
-        ^plasmashell --version | lines | get 0 | str replace "plasmashell " ""
+        ^plasmashell --version | lines | first | str replace "plasmashell " ""
     } catch {
         error make { msg: "KDE Plasma not found or not running" }
     })
@@ -212,7 +212,7 @@ def check_kde_plasma_version [] {
 
 # Check X11 configuration
 def check_x11_configuration [] {
-    let x11_running = (try { ^pgrep -f "X|Xorg" | lines | length } catch { 0 }) > 0
+    let x11_running = (try { ^pgrep -f "X| Xorg" | lines | length } catch { 0 }) > 0
     
     if not $x11_running {
         error make { msg: "X11 server not running - may be using Wayland which has NVIDIA issues" }
@@ -304,7 +304,7 @@ def collect_system_display_info [] {
 # Collect NVIDIA-specific information
 def collect_nvidia_info [] {
     {
-        modules: (^lsmod | lines | where { |line| $line | str contains "nvidia" }),
+        modules: (^lsmod | lines | where { | line| $line | str contains "nvidia" }),
         driver_info: (try { ^nvidia-smi -L } catch { "nvidia-smi not available" }),
         modeset_status: (try { ^cat /sys/module/nvidia_drm/parameters/modeset } catch { "unknown" }),
         card_info: (try { ls /dev/nvidia* | get name } catch { [] })
@@ -316,7 +316,7 @@ def collect_kde_info [] {
     {
         plasma_version: (try { ^plasmashell --version } catch { "not_available" }),
         kwin_version: (try { ^kwin_x11 --version } catch { "not_available" }),
-        kde_processes: (try { ^pgrep -f "plasma|kwin" | lines } catch { [] }),
+        kde_processes: (try { ^pgrep -f "plasma| kwin" | lines } catch { [] }),
         compositor: (try { ^qdbus org.kde.KWin /Compositor org.kde.kwin.Compositing.compositingType } catch { "unknown" })
     }
 }
@@ -324,7 +324,7 @@ def collect_kde_info [] {
 # Collect X11-specific information
 def collect_x11_info [] {
     {
-        x11_processes: (try { ^pgrep -f "X|Xorg" | lines } catch { [] }),
+        x11_processes: (try { ^pgrep -f "X| Xorg" | lines } catch { [] }),
         display_info: (try { ^xrandr --listmonitors } catch { "xrandr not available" }),
         x11_config: (try { ls /etc/X11/xorg.conf* | get name } catch { [] }),
         glx_info: (try { ^glxinfo | head -10 } catch { "glxinfo not available" })
@@ -431,7 +431,7 @@ def apply_display_fixes [issues: list] {
             try {
                 execute_command_safe $issue.fix_command --context "fix"
                 success $"✅ Fixed: ($issue.category)" --context "display"
-            } catch { |err|
+            } catch { | err|
                 error $"❌ Failed to fix ($issue.category): ($err.msg)" --context "display"
             }
         }

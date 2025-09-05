@@ -12,7 +12,7 @@ def main [] {
     # Robust platform detection
     let sysinfo = sys
     let platform = (
-        if ($sysinfo | describe) == 'record' and ($sysinfo | columns | any {|c| $c == 'host'}) {
+        if ($sysinfo | describe) == 'record' and ($sysinfo | columns | any {| c| $c == 'host'}) {
             $sysinfo.hostname
         } else {
             $sysinfo

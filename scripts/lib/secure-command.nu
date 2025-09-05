@@ -64,7 +64,7 @@ export def secure_system [
             warn $"Command completed with non-zero exit code: ($command)" --context $context
         }
         { success: ($result.exit_code == 0), stdout: $result.stdout, stderr: $result.stderr, exit_code: $result.exit_code }
-    } catch { |err|
+    } catch { | err|
         error $"Command execution failed: ($command) - ($err.msg)" --context $context
         { success: false, stdout: "", stderr: $err.msg, exit_code: 1 }
     }
@@ -94,7 +94,7 @@ export def secure_execute [
             warn $"Command completed with non-zero exit code: ($command)" --context $context
         }
         { success: ($result.exit_code == 0), stdout: $result.stdout, stderr: $result.stderr, exit_code: $result.exit_code }
-    } catch { |err|
+    } catch { | err|
         error $"Command execution failed: ($command) - ($err.msg)" --context $context
         { success: false, stdout: "", stderr: $err.msg, exit_code: 1 }
     }
@@ -132,7 +132,7 @@ export def secure_sudo [
             warn $"Sudo command completed with non-zero exit code: ($command)" --context $context
         }
         { success: ($result.exit_code == 0), stdout: $result.stdout, stderr: $result.stderr, exit_code: $result.exit_code }
-    } catch { |err|
+    } catch { | err|
         error $"Sudo command execution failed: ($command) - ($err.msg)" --context $context
         { success: false, stdout: "", stderr: $err.msg, exit_code: 1 }
     }
@@ -154,7 +154,7 @@ export def secure_file_operation [
     
     # Check for dangerous operations
     let dangerous_ops = ["delete", "remove", "format", "overwrite"]
-    if ($dangerous_ops | any { |op| $operation | str contains $op }) {
+    if ($dangerous_ops | any { | op| $operation | str contains $op }) {
         warn $"Potentially dangerous file operation: ($operation) on ($path)" --context $context
         if $backup {
             info "Creating backup before dangerous operation" --context $context
@@ -196,7 +196,7 @@ export def secure_execute_with_timeout [
         }
         
         { success: ($result.exit_code == 0), stdout: $result.stdout, stderr: $result.stderr, exit_code: $result.exit_code }
-    } catch { |err|
+    } catch { | err|
         error $"Command execution failed: ($command) - ($err.msg)" --context $context
         { success: false, stdout: "", stderr: $err.msg, exit_code: 1 }
     }

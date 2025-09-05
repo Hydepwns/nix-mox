@@ -1,8 +1,6 @@
 #!/usr/bin/env nu
 # Comprehensive tests for command-wrapper.nu library
 
-use ../../lib/command-wrapper.nu *
-use ../../lib/logging.nu *
 use ../lib/test-utils.nu *
 
 # Test execute_command
@@ -236,7 +234,7 @@ def test_parallel_execute [] {
     
     let results = (parallel_execute $commands)
     assert_equal ($results | length) 3 "should have 3 results"
-    assert_true ($results | all { |r| $r.exit_code == 0 }) "all should succeed"
+    assert_true ($results | all { | r| $r.exit_code == 0 }) "all should succeed"
     
     # Test with mixed success/failure
     let mixed_commands = [
@@ -272,7 +270,7 @@ def main [] {
         (test_parallel_execute)
     ]
     
-    let all_passed = ($test_results | all { |r| $r.success })
+    let all_passed = ($test_results | all { | r| $r.success })
     let passed_count = ($test_results | where success == true | length)
     let total_count = ($test_results | length)
     

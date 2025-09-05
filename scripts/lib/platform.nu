@@ -62,7 +62,7 @@ export def detect_platform [] {
 
 # Platform-specific command execution
 export def run_on_platform [platforms: list<string>] {
-    |command: closure|
+    | command: closure|
     
     let current = (get_platform)
     if $current.normalized in $platforms {
@@ -254,7 +254,7 @@ export def get_shell_info [] {
     
     {
         current: $current_shell,
-        available: ($shells | where {|shell| which $shell | is-not-empty }),
+        available: ($shells | where {| shell| which $shell | is-not-empty }),
         is_nushell: ($current_shell == "nu"),
         is_posix: ($current_shell in ["bash", "zsh", "fish"])
     }

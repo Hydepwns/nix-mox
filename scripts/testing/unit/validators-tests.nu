@@ -305,7 +305,7 @@ def main [input?] {
         "test_input_validation_helpers"
     ]
     
-    let test_results = ($test_functions | each { |test_func_name|
+    let test_results = ($test_functions | each { | test_func_name|
         print $"Running ($test_func_name)..."
         try {
             let result = match $test_func_name {
@@ -329,7 +329,7 @@ def main [input?] {
             } else {
                 {success: true, message: $"($test_func_name) completed", test_name: $test_func_name}
             }
-        } catch { |err|
+        } catch { | err|
             {success: false, message: $"($test_func_name) failed: ($err.msg)", test_name: $test_func_name}
         }
     })
@@ -337,7 +337,7 @@ def main [input?] {
     let end_time = (date now)
     let total_duration = $end_time - $start_time
     
-    let all_passed = ($test_results | all { |r| $r.success })
+    let all_passed = ($test_results | all { | r| $r.success })
     let passed_count = ($test_results | where success == true | length)
     let total_count = ($test_results | length)
     let failed_count = ($test_results | where success == false | length)
@@ -373,7 +373,7 @@ def main [input?] {
         let temp_dir = ($env | get TEST_TEMP_DIR? | default null)
         if ($temp_dir != null) and (($temp_dir | into string) | path exists) {
             # Clean up any remaining temporary files/directories
-            ls ($temp_dir | into string) | where name =~ "nix-mox-.*test.*" | each { |item|
+            ls ($temp_dir | into string) | where name =~ "nix-mox-.*test.*" | each { | item|
                 try {
                     if ($item.type == "dir") {
                         rm -rf ($item.name | into string)

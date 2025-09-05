@@ -148,7 +148,7 @@ print "  nu scripts/maintenance/cleanup.nu --help  # Show help"
 }
 
 # Check for help flag
-if ($env | get --ignore-errors ARGS | default [] | any { |arg| $arg == "--help" or $arg == "-h" }) {
+if ($env | get --ignore-errors ARGS | default [] | any { | arg| $arg == "--help" or $arg == "-h" }) {
     show_help
     exit 0
 }

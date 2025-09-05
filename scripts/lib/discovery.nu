@@ -124,7 +124,7 @@ export def extract_script_metadata [script_path: string] {
             size: (ls $script_path | get size.0)
             modified: (ls $script_path | get modified.0)
         }
-    } catch { |err|
+    } catch { | err|
         print $"Warning: Failed to extract metadata from script ($script_path): ($err)"
         null
     }
@@ -204,7 +204,7 @@ export def extract_dependencies_from_content [content: string] {
             let deps_str = ($trimmed | str replace "dependencies:" "" | str trim)
             if ($deps_str | str starts-with "[") and ($deps_str | str ends-with "]") {
                 # Parse array format
-                $dependencies = ($deps_str | str substring 1..-1 | split row "," | each { |it| $it | str trim })
+                $dependencies = ($deps_str | str substring 1..-1 | split row "," | each { | it| $it | str trim })
             }
         }
     }
@@ -293,6 +293,6 @@ export def generate_script_summary [scripts: list] {
         categories: $categories
         platforms: $platforms
         root_scripts: $root_scripts
-        category_breakdown: ($scripts | group-by category | each { |it| { category: $it.0, count: ($it.1 | length) } })
+        category_breakdown: ($scripts | group-by category | each { | it| { category: $it.0, count: ($it.1 | length) } })
     }
 }

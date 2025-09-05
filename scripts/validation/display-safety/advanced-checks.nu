@@ -138,7 +138,7 @@ export def validate_gpu_drivers [] {
     let checks = ($checks | append $graphics_check)
     
     {
-        success: ($checks | all {|c| $c.success})
+        success: ($checks | all {| c| $c.success})
         checks: $checks
         critical: true  # GPU driver issues are critical
     }
@@ -181,7 +181,7 @@ export def validate_display_dependencies [] {
     let checks = ($checks | append $packages_check)
     
     {
-        success: ($checks | all {|c| $c.success})
+        success: ($checks | all {| c| $c.success})
         checks: $checks
     }
 }
@@ -221,7 +221,7 @@ export def validate_config_syntax [] {
     let checks = ($checks | append $syntax_check)
     
     {
-        success: ($checks | all {|c| $c.success})
+        success: ($checks | all {| c| $c.success})
         checks: $checks
         critical: true  # Syntax errors are critical
     }

@@ -45,7 +45,7 @@ def validate_nix_syntax [config_path: string] {
                 error: "Empty result from nix-instantiate"
             }
         }
-    } catch { |err|
+    } catch { | err|
         {
             valid: false
             error: $err
@@ -60,7 +60,7 @@ def validate_nixos_config [config_path: string] {
             valid: true
             error: ""
         }
-    } catch { |err|
+    } catch { | err|
         {
             valid: false
             error: $err
@@ -84,7 +84,7 @@ def check_configuration_changes [old_config: string, new_config: string] {
                 change_count: 0
             }
         }
-    } catch { |err|
+    } catch { | err|
         {
             has_changes: false
             changes: ""
@@ -116,7 +116,7 @@ def create_backup [source_path: string, backup_dir: string, prefix: string = "ba
             timestamp: $timestamp
             original_path: $source_path
         }
-    } catch { |err|
+    } catch { | err|
         {
             success: false
             error: $err
@@ -133,7 +133,7 @@ def restore_backup [backup_path: string, target_path: string] {
             restored_path: $target_path
             backup_path: $backup_path
         }
-    } catch { |err|
+    } catch { | err|
         {
             success: false
             error: $err
@@ -247,7 +247,7 @@ def test_opengl [] {
                 error: "OpenGL not available"
             }
         }
-    } catch { |err|
+    } catch { | err|
         {
             available: false
             version: ""
@@ -272,7 +272,7 @@ def test_vulkan [] {
                 error: "Vulkan not available"
             }
         }
-    } catch { |err|
+    } catch { | err|
         {
             available: false
             gpu: ""
@@ -297,7 +297,7 @@ def test_graphics_performance [] {
                 error: "glmark2 not available or failed"
             }
         }
-    } catch { |err|
+    } catch { | err|
         {
             available: false
             score: ""

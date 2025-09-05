@@ -23,7 +23,7 @@ export def test_gaming_setup_validation [] {
             track_test "gaming_setup_validation" "gaming" "failed" 0.2
             return false
         }
-    } catch { |err|
+    } catch { | err|
         error $"Gaming setup validation test failed: ($err.msg)" --context "gaming-test"
         track_test "gaming_setup_validation" "gaming" "failed" 0.2
         return false
@@ -45,7 +45,7 @@ export def test_gaming_config_validation [] {
             track_test "gaming_config_validation" "gaming" "failed" 0.2
             return false
         }
-    } catch { |err|
+    } catch { | err|
         error $"Gaming config validation test failed: ($err.msg)" --context "gaming-test"
         track_test "gaming_config_validation" "gaming" "failed" 0.2
         return false
@@ -84,7 +84,7 @@ export def test_gaming_flake_config [] {
             track_test "gaming_flake_config" "gaming" "passed" 0.3
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Gaming flake config test failed: ($err.msg)" --context "gaming-test"
         track_test "gaming_flake_config" "gaming" "failed" 0.3
         return false
@@ -127,7 +127,7 @@ export def test_gaming_module_options [] {
             track_test "gaming_module_options" "gaming" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Gaming module options test failed: ($err.msg)" --context "gaming-test"
         track_test "gaming_module_options" "gaming" "failed" 0.2
         return false
@@ -161,7 +161,7 @@ export def test_gaming_platform_support [] {
         }
         
         return true
-    } catch { |err|
+    } catch { | err|
         error $"Gaming platform support test failed: ($err.msg)" --context "gaming-test"
         track_test "gaming_platform_support" "gaming" "failed" 0.2
         return false
@@ -203,7 +203,7 @@ export def test_gaming_performance_optimizations [] {
             track_test "gaming_performance_optimizations" "gaming" "passed" 0.3
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Gaming performance optimizations test failed: ($err.msg)" --context "gaming-test"
         track_test "gaming_performance_optimizations" "gaming" "failed" 0.3
         return false
@@ -245,7 +245,7 @@ export def test_gaming_validation_workflow [] {
             track_test "gaming_validation_workflow" "gaming" "failed" 0.2
             return false
         }
-    } catch { |err|
+    } catch { | err|
         error $"Gaming validation workflow test failed: ($err.msg)" --context "gaming-test"
         track_test "gaming_validation_workflow" "gaming" "failed" 0.2
         return false
@@ -284,7 +284,7 @@ export def test_gaming_error_handling [] {
             track_test "gaming_error_handling" "gaming" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Gaming error handling test failed: ($err.msg)" --context "gaming-test"
         track_test "gaming_error_handling" "gaming" "failed" 0.2
         return false
@@ -327,7 +327,7 @@ export def test_gaming_hardware_compatibility [] {
             track_test "gaming_hardware_compatibility" "gaming" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Gaming hardware compatibility test failed: ($err.msg)" --context "gaming-test"
         track_test "gaming_hardware_compatibility" "gaming" "failed" 0.2
         return false
@@ -359,11 +359,11 @@ export def run_gaming_tests [
     ]
     
     # Execute tests
-    let results = ($tests | each { |test_func|
+    let results = ($tests | each { | test_func|
         try {
             let result = (do $test_func)
             if $result { { success: true } } else { { success: false } }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "gaming-test"
             { success: false }
         }

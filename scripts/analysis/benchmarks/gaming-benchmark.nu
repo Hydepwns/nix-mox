@@ -8,7 +8,7 @@ use ../../lib/logging.nu
 # Gaming Performance Benchmark for nix-mox
 # Tests graphics, audio, and system performance
 
-def main [] {
+def main_gaming_benchmark [] {
     print "(ansi green)🎮 nix-mox Gaming Performance Benchmark(ansi reset)"
     print "(ansi yellow)==========================================(ansi reset)\n"
 
@@ -222,4 +222,4 @@ def generate_report [results: record] {
 }
 
 # Run the benchmark
-main
+main_gaming_benchmark

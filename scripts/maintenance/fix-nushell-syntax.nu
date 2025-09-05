@@ -25,11 +25,11 @@ def main [
     
     print $"Found ($nu_files | length) Nushell files to process"
     
-    let fixes_applied = ($nu_files | each { |file|
+    let fixes_applied = ($nu_files | each { | file|
         process_file $file $dry_run $backup
     } | math sum)
     
-    success $"Applied ($fixes_applied) fixes total"
+    print $"Applied ($fixes_applied) fixes total"
 }
 
 def process_file [file: string, dry_run: bool, backup: bool] {
@@ -39,7 +39,7 @@ def process_file [file: string, dry_run: bool, backup: bool] {
     mut fixed_content = $content
     mut fixes_count = 0
     
-    # Fix 1: Function return type syntax (] -> type { -> ] {)
+    # Fix 1: Function return type syntax (] { -> ] {)
     let return_type_fixes = ($fixed_content | str replace --all --regex '\] -> [a-zA-Z_<>]+\s*\{' '] {')
     if $return_type_fixes != $fixed_content {
         $fixes_count = $fixes_count + 1
@@ -75,8 +75,8 @@ def process_file [file: string, dry_run: bool, backup: bool] {
         print "Fixed let-env syntax"
     }
     
-    # Fix 4: mut keyword issues (let mut -> mut)
-    let mut_fixes = ($fixed_content | str replace --all 'let mut ' 'mut ')
+    # Fix 4: mut keyword issues (mut -> mut)
+    let mut_fixes = ($fixed_content | str replace --all 'mut ' 'mut ')
     if $mut_fixes != $fixed_content {
         $fixes_count = $fixes_count + 1
         $fixed_content = $mut_fixes  
@@ -84,7 +84,7 @@ def process_file [file: string, dry_run: bool, backup: bool] {
     }
     
     # Fix 5: Datetime arithmetic (add duration units)
-    let datetime_fixes = ($fixed_content | str replace --all --regex '\(date now\) - \(([^)]+)\)' '(date now) - (($1) * 1ms)')
+    let datetime_fixes = ($fixed_content | str replace --all --regex '\(date now\) - \(([^)]+)\)' '(date now) - ((((($1) * 1ms) * 1ms) * 1ms) * 1ms)')
     if $datetime_fixes != $fixed_content {
         $fixes_count = $fixes_count + 1
         $fixed_content = $datetime_fixes
@@ -130,7 +130,7 @@ def check_all_syntax [target_dir: string = "scripts/lib"] {
     print "Checking Syntax"
     
     let nu_files = (glob $"($target_dir)/**/*.nu")
-    let results = ($nu_files | each { |file| 
+    let results = ($nu_files | each { | file| 
         {
             file: $file,
             valid: (check_syntax $file)
@@ -141,12 +141,12 @@ def check_all_syntax [target_dir: string = "scripts/lib"] {
     let total_files = ($results | length)
     
     if $valid_files == $total_files {
-        success $"All ($total_files) files have valid syntax!"
+        print $"All ($total_files) files have valid syntax!"
     } else {
         let invalid_files = ($total_files - $valid_files)
         error $"($invalid_files) of ($total_files) files have syntax errors"
         
-        $results | where valid == false | each { |result|
+        $results | where valid == false | each { | result|
             print $"❌ ($result.file)"
         }
     }

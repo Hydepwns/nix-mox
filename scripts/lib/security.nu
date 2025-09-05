@@ -169,7 +169,7 @@ export def check_file_permissions [file_path: string] {
         }
 
         $threats
-    } catch { |err|
+    } catch { | err|
         [{
             level: "MEDIUM"
             message: $"Could not check file permissions: ($err)"
@@ -298,7 +298,7 @@ export def generate_security_report [output_file: string = "logs/security-report
     let secure_scripts = ($scan_results | where secure == true | length)
     let insecure_scripts = ($scan_results | where secure == false | length)
 
-    let total_threats = ($scan_results | get threat_summary | each { |summary|
+    let total_threats = ($scan_results | get threat_summary | each { | summary|
         $summary.critical + $summary.high + $summary.medium + $summary.low
     } | math sum)
 
@@ -319,7 +319,7 @@ export def generate_security_report [output_file: string = "logs/security-report
         $report | to json | save $output_file
         info $"Security report generated: ($output_file)" --context "security"
         $report
-    } catch { |err|
+    } catch { | err|
         error $"Failed to generate security report: ($err)" --context "security"
         null
     }
@@ -330,8 +330,8 @@ export def generate_overall_recommendations [scan_results: list] {
     mut recommendations = []
 
     let insecure_count = ($scan_results | where secure == false | length)
-    let critical_threats = ($scan_results | get threat_summary | each { |summary| $summary.critical } | math sum)
-    let high_threats = ($scan_results | get threat_summary | each { |summary| $summary.high } | math sum)
+    let critical_threats = ($scan_results | get threat_summary | each { | summary| $summary.critical } | math sum)
+    let high_threats = ($scan_results | get threat_summary | each { | summary| $summary.high } | math sum)
 
     if $insecure_count > 0 {
         $recommendations = ($recommendations | append $"Address security issues in ($insecure_count) scripts")
@@ -365,7 +365,7 @@ export def log_security_event [event_type: string, script_path: string, details:
     let security_log = "logs/security.log"
     try {
         $event_data | to json | save --append $security_log
-    } catch { |err|
+    } catch { | err|
         error $"Failed to log security event: ($err)" --context "security"
     }
     

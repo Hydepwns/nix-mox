@@ -134,7 +134,7 @@ def check_display_manager_conflicts [] {
                 new_dm_count: $new_dm_count
             }
         }
-    } catch { |e|
+    } catch { | e|
         {
             status: "ERROR",
             issues: [$"Failed to check display manager conflicts: ($e.msg)"],
@@ -191,7 +191,7 @@ def check_security_session_conflicts [] {
                 security_config_exists: ($security_config | path exists)
             }
         }
-    } catch { |e|
+    } catch { | e|
         {
             status: "ERROR", 
             issues: [$"Failed to check security conflicts: ($e.msg)"],
@@ -226,7 +226,7 @@ def check_systemd_user_restrictions [] {
             issues: $issues,
             details: {}
         }
-    } catch { |e|
+    } catch { | e|
         {
             status: "ERROR",
             issues: [$"Failed to check systemd restrictions: ($e.msg)"],
@@ -265,7 +265,7 @@ def check_pam_conflicts [] {
             issues: $issues,
             details: {}
         }
-    } catch { |e|
+    } catch { | e|
         {
             status: "ERROR",
             issues: [$"Failed to check PAM conflicts: ($e.msg)"],
@@ -313,7 +313,7 @@ def check_build_phase_issues [] {
             issues: $issues,
             details: {}
         }
-    } catch { |e|
+    } catch { | e|
         {
             status: "ERROR",
             issues: [$"Failed to check build phase issues: ($e.msg)"],
@@ -378,7 +378,7 @@ def check_session_services [] {
                 wayland_count: $wayland_count
             }
         }
-    } catch { |e|
+    } catch { | e|
         {
             status: "ERROR",
             issues: [$"Failed to check session services: ($e.msg)"],
@@ -388,7 +388,7 @@ def check_session_services [] {
 }
 
 def generate_fixes [results] {
-    let critical_categories = ($results | columns | where {|col| ($results | get $col).status == "CRITICAL"})
+    let critical_categories = ($results | columns | where {| col| ($results | get $col).status == "CRITICAL"})
     
     for category in $critical_categories {
         match $category {

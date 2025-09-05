@@ -49,7 +49,7 @@ def main [
     # Show details for problems
     if not ($warnings | is-empty) {
         print "⚠️  Warnings:"
-        $warnings | each { |w|
+        $warnings | each { | w|
             print $"  • ($w.type)/($w.value): ($w.message)"
         }
         print ""
@@ -57,7 +57,7 @@ def main [
     
     if not ($errors | is-empty) {
         print "❌ Errors:"
-        $errors | each { |e|
+        $errors | each { | e|
             print $"  • ($e.type)/($e.value): ($e.message)"
             if not ($e.suggestion | is-empty) {
                 print $"    → Suggestion: ($e.suggestion)"
@@ -129,7 +129,7 @@ def parse_storage_references [config_path: path, verbose: bool] {
     
     if $verbose {
         print $"Found ($references | length) storage references:"
-        $references | each { |ref|
+        $references | each { | ref|
             print $"  • ($ref.type): ($ref.value)"
         }
         print ""
@@ -186,7 +186,7 @@ def validate_single_reference [ref: record, verbose: bool] {
         let check = (do { blkid -t $"PARTUUID=($ref.value)" } | complete)
         
         if $check.exit_code == 0 {
-            let device = ($check.stdout | str trim | split row ":" | get 0)
+            let device = ($check.stdout | str trim | split row ":" | first)
             return {
                 ...$ref
                 status: "valid"
@@ -227,7 +227,7 @@ def validate_single_reference [ref: record, verbose: bool] {
         # Check if device exists
         if ($ref.value | path exists) {
             # Check if it's a block device
-            let is_block = (ls -la $ref.value | get 0.type | str contains "block")
+            let is_block = (ls -la $ref.value | first.type | str contains "block")
             
             if $is_block {
                 return {
@@ -273,7 +273,7 @@ def find_similar_uuid [target: string, uuids: list] {
             let matches = (
                 $target_chars 
                 | enumerate 
-                | where { |it| $it.item == ($uuid_chars | get $it.index) }
+                | where { | it| $it.item == ($uuid_chars | get $it.index) }
                 | length
             )
             

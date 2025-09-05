@@ -62,7 +62,7 @@ export def main [
         # Show summary
         show_generation_summary $result
         exit 0
-    } catch { |err|
+    } catch { | err|
         error $"Documentation generation failed: ($err)" --context "generate-docs"
         exit 1
     }
@@ -70,10 +70,10 @@ export def main [
 
 # Parse documentation generation arguments
 export def parse_doc_args [args: list] {
-    let help = ($args | any { |it| $it == "--help" or $it == "-h" })
-    let verbose = ($args | any { |it| $it == "--verbose" or $it == "-v" })
-    let force = ($args | any { |it| $it == "--force" or $it == "-f" })
-    let include_examples = ($args | any { |it| $it == "--examples" })
+    let help = ($args | any { | it| $it == "--help" or $it == "-h" })
+    let verbose = ($args | any { | it| $it == "--verbose" or $it == "-v" })
+    let force = ($args | any { | it| $it == "--force" or $it == "-f" })
+    let include_examples = ($args | any { | it| $it == "--examples" })
     let format = (get_flag_value $args "--format" "markdown")
     let output_dir = (get_flag_value $args "--output" "docs/generated")
 

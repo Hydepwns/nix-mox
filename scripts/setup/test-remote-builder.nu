@@ -62,7 +62,7 @@ def test_ssh_connection [] {
     # Extract remote host from nix.conf
     let nix_conf = ($env.HOME + "/.config/nix/nix.conf")
     let config_content = (open $nix_conf)
-    let builder_line = ($config_content | lines | where ($it | str contains "builders = ssh-ng://") | get 0)
+    let builder_line = ($config_content | lines | where ($it | str contains "builders = ssh-ng://") | first)
 
     if ($builder_line | is-empty) {
         print_error "Could not find builder configuration line"
@@ -70,9 +70,9 @@ def test_ssh_connection [] {
     }
 
     # Extract components using regex
-    let remote_user = ($builder_line | parse -r 'ssh-ng://(?P<user>[^@]+)@' | get 0.user)
-    let remote_host = ($builder_line | parse -r '@(?P<host>[^:]+)' | get 0.host)
-    let ssh_port = ($builder_line | parse -r ':(?P<port>[0-9]+)' | get 0.port | default "22")
+    let remote_user = ($builder_line | parse -r 'ssh-ng://(?P<user>[^@]+)@' | first.user)
+    let remote_host = ($builder_line | parse -r '@(?P<host>[^:]+)' | first.host)
+    let ssh_port = ($builder_line | parse -r ':(?P<port>[0-9]+)' | first.port | default "22")
 
     if ($remote_host | is-empty) {
         print_error "Could not extract remote host from nix.conf"

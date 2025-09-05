@@ -16,7 +16,7 @@ export def script_main [
     --prereqs: list<string> = [],
     --platform: list<string> = ["linux", "macos", "windows"]
 ] {
-    |operation: closure|
+    | operation: closure|
     
     info $"($name): ($description)" --context $context
     
@@ -164,7 +164,7 @@ export def load_script_config [
             let config = (open $config_file | from json)
             debug $"Loaded configuration from ($config_file)" --context "config"
             $config
-        } catch { |err|
+        } catch { | err|
             if $required {
                 handle_script_error $"Failed to load required config file ($config_file): ($err.msg)"
             } else {
@@ -184,7 +184,7 @@ export def load_script_config [
 
 # Performance measurement wrapper
 export def measure_performance [operation_name: string] {
-    |operation: closure|
+    | operation: closure|
     let start_time = (date now)
     let start_memory = (sys mem | get used)
     
@@ -199,7 +199,7 @@ export def measure_performance [operation_name: string] {
         
         info $"Performance: ($operation_name) completed in ($duration), memory delta: ($memory_delta)" --context "perf"
         $result
-    } catch { |err|
+    } catch { | err|
         let end_time = (date now)
         let duration = ($end_time - $start_time)
         warn $"Performance: ($operation_name) failed after ($duration): ($err.msg)" --context "perf"
@@ -218,7 +218,7 @@ export def safe_write_file [file_path: string, content: string, --backup = true]
     try {
         $content | save --force $file_path
         success $"File written successfully: ($file_path)" --context "file-ops"
-    } catch { |err|
+    } catch { | err|
         handle_script_error $"Failed to write file ($file_path): ($err.msg)"
     }
 }
@@ -254,7 +254,7 @@ export def cleanup_on_exit [] {
         try {
             let files = (glob $pattern)
             if ($files | length) > 0 {
-                $files | each { |file| rm -f $file }
+                $files | each { | file| rm -f $file }
                 debug $"Cleaned up temporary files: ($pattern)" --context "cleanup"
             }
         } catch {

@@ -2,9 +2,6 @@
 # Unit tests for completions.nu library
 # Tests shell completion system functionality
 
-use ../../lib/completions.nu *
-use ../../lib/logging.nu *
-
 # Test completion initialization
 export def test_init_completions [] {
     info "Testing init_completions function" --context "completions-test"
@@ -217,7 +214,7 @@ export def test_platform_list_content [] {
 
 # Main test runner
 export def run_completions_tests [] {
-    banner "Running completions.nu unit tests" --context "completions-test"
+    info "Running completions.nu unit tests" --context "completions-test"
     
     let tests = [
         test_init_completions,
@@ -240,7 +237,7 @@ export def run_completions_tests [] {
             } else {
                 let failed = $failed + 1
             }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "completions-test"
             let failed = $failed + 1
         }

@@ -10,14 +10,14 @@ use command-wrapper.nu *
 
 # Analysis data pipeline framework
 export def analysis_pipeline [...analyzers: closure] {
-    $analyzers | par-each { |analyzer|
+    $analyzers | par-each { | analyzer|
         try {
             do $analyzer
-        } catch { |err|
+        } catch { | err|
             warn $"Analysis step failed: ($err.msg)" --context "analysis"
             {}
         }
-    } | reduce { |item, acc| $acc | merge $item }
+    } | reduce { | item, acc| $acc | merge $item }
 }
 
 # Package size analysis
@@ -161,7 +161,7 @@ def benchmark_disk_performance [iterations: int] {
             duration: $duration,
             avg_per_operation: ($duration / $iterations)
         }
-    } catch { |err|
+    } catch { | err|
         {
             test: "disk_io_operations", 
             error: $err.msg,
@@ -187,7 +187,7 @@ def benchmark_nix_operations [iterations: int] {
             duration: $duration,
             avg_per_operation: ($duration / $iterations)
         }
-    } catch { |err|
+    } catch { | err|
         {
             test: "nix_store_ping",
             error: $err.msg,
@@ -219,7 +219,7 @@ def analyze_file_metrics [path: string] {
         let sh_files = (glob $"($path)/**/*.sh" | default [])
         let all_files = ($nu_files | append $sh_files)
         
-        let total_lines = ($all_files | each { |file|
+        let total_lines = ($all_files | each { | file|
             try { (open $file | lines | length) } catch { 0 }
         } | math sum)
         
@@ -232,7 +232,7 @@ def analyze_file_metrics [path: string] {
                 ($total_lines / ($all_files | length) | math round)
             } else { 0 })
         }
-    } catch { |err|
+    } catch { | err|
         { error: $"Failed to analyze file metrics: ($err.msg)" }
     }
 }
@@ -241,13 +241,13 @@ def analyze_code_complexity [path: string] {
     try {
         let nu_files = (glob $"($path)/**/*.nu" | default [])
         
-        let function_count = ($nu_files | each { |file|
+        let function_count = ($nu_files | each { | file|
             try {
                 open $file | lines | where ($it =~ "^def ") | length
             } catch { 0 }
         } | math sum)
         
-        let export_count = ($nu_files | each { |file|
+        let export_count = ($nu_files | each { | file|
             try {
                 open $file | lines | where ($it =~ "^export def ") | length  
             } catch { 0 }
@@ -261,7 +261,7 @@ def analyze_code_complexity [path: string] {
             },
             complexity_score: "not implemented"
         }
-    } catch { |err|
+    } catch { | err|
         { error: $"Failed to analyze complexity: ($err.msg)" }
     }
 }
@@ -292,8 +292,8 @@ export def analyze_security_posture [] {
 
 def analyze_file_permissions [] {
     try {
-        let executable_files = (glob "scripts/**/*.nu" | each { |file|
-            let perms = (ls -la $file | get mode | get 0)
+        let executable_files = (glob "scripts/**/*.nu" | each { | file|
+            let perms = (ls -la $file | get mode | first)
             {
                 file: $file,
                 permissions: $perms,
@@ -306,7 +306,7 @@ def analyze_file_permissions [] {
             executable_count: ($executable_files | where executable == true | length),
             files: $executable_files
         }
-    } catch { |err|
+    } catch { | err|
         { error: $"Failed to analyze file permissions: ($err.msg)" }
     }
 }
@@ -322,7 +322,7 @@ def scan_for_dangerous_patterns [] {
     ]
     
     try {
-        let findings = ($dangerous_patterns | each { |pattern|
+        let findings = ($dangerous_patterns | each { | pattern|
             let matches = (grep -r $pattern scripts | complete)
             {
                 pattern: $pattern,
@@ -337,7 +337,7 @@ def scan_for_dangerous_patterns [] {
             findings: $findings,
             total_issues: ($findings | get matches | math sum)
         }
-    } catch { |err|
+    } catch { | err|
         { error: $"Failed to scan for dangerous patterns: ($err.msg)" }
     }
 }
@@ -353,7 +353,7 @@ def check_for_exposed_secrets [] {
     ]
     
     try {
-        let secret_files = ($secret_patterns | each { |pattern|
+        let secret_files = ($secret_patterns | each { | pattern|
             let matches = (grep -r $pattern scripts | complete)
             {
                 pattern: $pattern,
@@ -369,7 +369,7 @@ def check_for_exposed_secrets [] {
             potential_secrets: ($secret_files | where found == true | length),
             details: $secret_files
         }
-    } catch { |err|
+    } catch { | err|
         { error: $"Failed to check for exposed secrets: ($err.msg)" }
     }
 }
@@ -417,7 +417,7 @@ def collect_system_info [] {
         platform: $platform_info,
         detailed_info: $platform_report,
         nix_info: {
-            version: (try { (nix --version | lines | get 0) } catch { "unknown" }),
+            version: (try { (nix --version | lines | first) } catch { "unknown" }),
             store_health: (try { 
                 let check = (nix store ping | complete)
                 if $check.exit_code == 0 { "healthy" } else { "unhealthy" }

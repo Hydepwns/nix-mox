@@ -94,7 +94,7 @@ def save_test_report [result: record, output: string] {
     try {
         $result | to json | save $report_file
         success $"Test report saved: ($report_file)" --context "test-report"
-    } catch { |err|
+    } catch { | err|
         warn $"Failed to save test report: ($err.msg)" --context "test-report"
     }
 }

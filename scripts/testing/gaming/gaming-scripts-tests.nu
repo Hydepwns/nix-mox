@@ -48,7 +48,7 @@ export def test_proton_ge_setup [] {
             track_test "proton_ge_setup" "gaming-scripts" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Proton GE setup test failed: ($err.msg)" --context "gaming-scripts-test"
         track_test "proton_ge_setup" "gaming-scripts" "failed" 0.2
         return false
@@ -95,7 +95,7 @@ export def test_steam_eac_setup [] {
             track_test "steam_eac_setup" "gaming-scripts" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Steam EAC setup test failed: ($err.msg)" --context "gaming-scripts-test"
         track_test "steam_eac_setup" "gaming-scripts" "failed" 0.2
         return false
@@ -137,7 +137,7 @@ export def test_gaming_script_integration [] {
             track_test "gaming_script_integration" "gaming-scripts" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Gaming script integration test failed: ($err.msg)" --context "gaming-scripts-test"
         track_test "gaming_script_integration" "gaming-scripts" "failed" 0.2
         return false
@@ -159,7 +159,7 @@ export def test_gaming_script_compatibility [] {
             
             for platform in $platforms {
                 # Check if any gaming script mentions this platform
-                let platform_support = ($gaming_files | any { |file|
+                let platform_support = ($gaming_files | any { | file|
                     let content = (open $file)
                     $content | str contains $platform
                 })
@@ -179,7 +179,7 @@ export def test_gaming_script_compatibility [] {
             track_test "gaming_script_compatibility" "gaming-scripts" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Gaming script compatibility test failed: ($err.msg)" --context "gaming-scripts-test"
         track_test "gaming_script_compatibility" "gaming-scripts" "failed" 0.2
         return false
@@ -218,7 +218,7 @@ export def test_gaming_script_safety [] {
             track_test "gaming_script_safety" "gaming-scripts" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Gaming script safety test failed: ($err.msg)" --context "gaming-scripts-test"
         track_test "gaming_script_safety" "gaming-scripts" "failed" 0.2
         return false
@@ -246,11 +246,11 @@ export def run_gaming_scripts_tests [
     ]
     
     # Execute tests
-    let results = ($tests | each { |test_func|
+    let results = ($tests | each { | test_func|
         try {
             let result = (do $test_func)
             if $result { { success: true } } else { { success: false } }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "gaming-scripts-test"
             { success: false }
         }

@@ -28,7 +28,7 @@ export def fix_storage_config [backup: bool, dry_run: bool] {
         { name: "boot_configuration", fixer: "fix_boot_configuration" }
     ]
     
-    let results = ($fixes | each { |fix|
+    let results = ($fixes | each { | fix|
         try {
             let result = match $fix.fixer {
                 "fix_uuid_consistency" => (fix_uuid_consistency $dry_run),
@@ -43,7 +43,7 @@ export def fix_storage_config [backup: bool, dry_run: bool] {
                 message: ($result | get message? | default "completed"),
                 dry_run: $dry_run
             }
-        } catch { |err|
+        } catch { | err|
             {
                 name: $fix.name,
                 success: false,
@@ -53,7 +53,7 @@ export def fix_storage_config [backup: bool, dry_run: bool] {
         }
     })
     
-    let overall_success = ($results | all {|r| $r.success })
+    let overall_success = ($results | all {| r| $r.success })
     
     if $overall_success {
         success $"Storage fixes completed successfully (dry_run: ($dry_run))" --context "storage-fix"
@@ -85,7 +85,7 @@ export def fix_uuid_consistency [dry_run: bool] {
         # For now, just log what would be done
         info "UUID consistency fix not yet implemented" --context "storage-fix"
         { success: true, message: "UUID fix placeholder" }
-    } catch { |err|
+    } catch { | err|
         { success: false, message: $err.msg }
     }
 }
@@ -99,7 +99,7 @@ export def fix_mount_points [dry_run: bool] {
     try {
         info "Mount point fix not yet implemented" --context "storage-fix"
         { success: true, message: "Mount point fix placeholder" }
-    } catch { |err|
+    } catch { | err|
         { success: false, message: $err.msg }
     }
 }
@@ -113,7 +113,7 @@ export def fix_filesystem_table [dry_run: bool] {
     try {
         info "Filesystem table fix not yet implemented" --context "storage-fix"
         { success: true, message: "Filesystem table fix placeholder" }
-    } catch { |err|
+    } catch { | err|
         { success: false, message: $err.msg }
     }
 }
@@ -127,7 +127,7 @@ export def fix_boot_configuration [dry_run: bool] {
     try {
         info "Boot configuration fix not yet implemented" --context "storage-fix"
         { success: true, message: "Boot configuration fix placeholder" }
-    } catch { |err|
+    } catch { | err|
         { success: false, message: $err.msg }
     }
 }

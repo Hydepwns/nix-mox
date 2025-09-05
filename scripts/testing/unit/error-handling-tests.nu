@@ -12,7 +12,7 @@ use ../../lib/logging.nu *
 #         use ../../lib/error-handling.nu
 #         success "Error handling library imported successfully" --context "error-handling-test"
 #         return true
-#     } catch { |err|
+#     } catch { | err|
 #         error $"Error handling library import failed: ($err.msg)" --context "error-handling-test"
 #         return false
 #     }
@@ -31,7 +31,7 @@ use ../../lib/logging.nu *
 #             error "Safe execution failed" --context "error-handling-test"
 #             return false
 #         }
-#     } catch { |err|
+#     } catch { | err|
 #         error $"Safe execution test failed: ($err.msg)" --context "error-handling-test"
 #         return false
 #     }
@@ -45,7 +45,7 @@ export def test_compatibility_wrapper_structure [] {
         let file_content = (open "../../lib/enhanced-error-handling.nu" | lines)
         
         # Check for expected compatibility wrapper content
-        let has_deprecation_comment = ($file_content | any { |line| 
+        let has_deprecation_comment = ($file_content | any { | line| 
             ($line | str contains "DEPRECATED") or ($line | str contains "compatibility")
         })
         
@@ -53,7 +53,7 @@ export def test_compatibility_wrapper_structure [] {
             warn "File doesn't appear to have deprecation notices" --context "error-handling-test"
         }
         
-        let has_export_use = ($file_content | any { |line| 
+        let has_export_use = ($file_content | any { | line| 
             ($line | str contains "export use") or ($line | str contains "re-export")
         })
         
@@ -63,7 +63,7 @@ export def test_compatibility_wrapper_structure [] {
         
         success "Compatibility wrapper structure verified" --context "error-handling-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error $"Cannot read wrapper file: ($err.msg)" --context "error-handling-test"
         return false
     }
@@ -89,7 +89,7 @@ export def test_error_handling_concepts [] {
         
         success "Basic error handling concepts work" --context "error-handling-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error $"Error handling concepts test failed: ($err.msg)" --context "error-handling-test"
         return false
     }
@@ -104,7 +104,7 @@ export def test_try_catch_functionality [] {
     try {
         # This should throw an error
         error make { msg: "intentional test error", code: 999 }
-    } catch { |err|
+    } catch { | err|
         let error_caught = true
         if $err.msg != "intentional test error" {
             error $"Wrong error message: ($err.msg)" --context "error-handling-test"
@@ -132,7 +132,7 @@ export def test_error_propagation [] {
     def outer_function [] {
         try {
             inner_function
-        } catch { |err|
+        } catch { | err|
             # Re-throw with additional context
             error make { 
                 msg: $"outer context: ($err.msg)", 
@@ -145,7 +145,7 @@ export def test_error_propagation [] {
     let outer_error_caught = false
     try {
         outer_function
-    } catch { |err|
+    } catch { | err|
         let outer_error_caught = true
         if not ($err.msg | str contains "outer context") {
             error $"Error propagation failed: ($err.msg)" --context "error-handling-test"
@@ -179,7 +179,7 @@ export def test_library_deprecation_status [] {
             warn "Library deprecation status unclear" --context "error-handling-test"
             return true  # Don't fail test, just warn
         }
-    } catch { |err|
+    } catch { | err|
         error $"Cannot check deprecation status: ($err.msg)" --context "error-handling-test"
         return false
     }
@@ -206,7 +206,7 @@ export def run_enhanced_error_handling_tests [] {
             } else {
                 let failed = $failed + 1
             }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "error-handling-test"
             let failed = $failed + 1
         }

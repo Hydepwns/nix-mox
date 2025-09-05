@@ -194,7 +194,7 @@ def test_security_recommendations [] {
 
     let recommendations = generate_security_recommendations $threats
     assert_true (($recommendations | length) > 0) "Should generate recommendations for threats"
-    assert_true ($recommendations | any {|r| $r.priority == "high"}) "Should have high priority recommendations"
+    assert_true ($recommendations | any {| r| $r.priority == "high"}) "Should have high priority recommendations"
     track_test "security_recommendations_generation" "unit" "passed" 0.1
 }
 

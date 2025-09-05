@@ -89,7 +89,7 @@ export def restore_storage_config [] {
         return { success: false, message: "no backups found" }
     }
     
-    let latest_backup = ($backups | get 0)
+    let latest_backup = ($backups | first)
     let backup_path = $latest_backup.name
     
     info $"Restoring from backup: ($backup_path)" --context "storage-restore"
@@ -111,7 +111,7 @@ export def restore_storage_config [] {
             restored_from: $backup_path,
             timestamp: $latest_backup.modified
         }
-    } catch { |err|
+    } catch { | err|
         error $"Failed to restore configuration: ($err.msg)" --context "storage-restore"
         { success: false, message: $err.msg }
     }

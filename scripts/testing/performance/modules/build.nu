@@ -35,7 +35,7 @@ export def test_build_performance [] {
     let duration = (($end_time - $start_time) | into float) / 1000000000
 
     {
-        success: ($results | values | all {|r| $r.success}),
+        success: ($results | values | all {| r| $r.success}),
         duration: $duration,
         results: $results
     }
@@ -48,7 +48,7 @@ def benchmark_nix_evaluation [] {
     let nix_test = (try {
         # Evaluate a simple Nix expression
         let iterations = 10
-        let results = (seq 1 $iterations | each {|i|
+        let results = (seq 1 $iterations | each {| i|
             try {
                 nix eval --extra-experimental-features nix-command --impure --expr 'builtins.currentTime' | str trim
             } catch {

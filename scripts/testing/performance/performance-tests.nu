@@ -33,7 +33,7 @@ def main [] {
     }
     
     # Track individual performance test results
-    $results | transpose key value | each { |row|
+    $results | transpose key value | each { | row|
         let test_name = $row.key
         let test_result = $row.value
         track_test $"performance_($test_name)" "performance" (if $test_result.success { "passed" } else { "failed" }) $test_result.duration
@@ -43,7 +43,7 @@ def main [] {
     generate_performance_report $results
 
     # Return overall success status
-    let all_passed = ($results | values | all {|r| $r.success})
+    let all_passed = ($results | values | all {| r| $r.success})
     if $all_passed {
         print "(ansi green)✅ All performance tests passed!(ansi reset)"
     } else {
@@ -93,7 +93,7 @@ def test_disk_performance [] {
     let disk_test = (try {
         # Test file I/O performance
         let test_file = "/tmp/nix-mox-disk-test"
-        let data = (seq 1 10000 | each {|i| $"Line ($i)"} | str join "\n")
+        let data = (seq 1 10000 | each {| i| $"Line ($i)"} | str join "\n")
         
         # Write test
         $data | save $test_file
@@ -132,7 +132,7 @@ def test_memory_performance [] {
     # Simple memory performance test
     let memory_test = (try {
         # Test memory allocation
-        let large_array = (seq 1 100000 | each {|i| $i * 2})
+        let large_array = (seq 1 100000 | each {| i| $i * 2})
         let array_sum = ($large_array | math sum)
         
         let end_time = (date now | into int)
@@ -190,14 +190,14 @@ def generate_performance_report [results: record] {
     print "\n(ansi blue)📊 Performance Test Report(ansi reset)"
     print "(ansi blue)========================(ansi reset)\n"
     
-    $results | transpose key value | each { |row|
+    $results | transpose key value | each { | row|
         let test_name = $row.key
         let test_result = $row.value
         let status = (if $test_result.success { "(ansi green)✅" } else { "(ansi red)❌" })
         print $"($status) ($test_name): ($test_result.duration | into string -d 3)s"
         
         if ($test_result | get results? | is-not-empty) {
-            $test_result.results | transpose key value | each { |subrow|
+            $test_result.results | transpose key value | each { | subrow|
                 let subtest_name = $subrow.key
                 let subtest_result = $subrow.value
                 let sub_status = (if $subtest_result.success { "(ansi green)  ✓" } else { "(ansi red)  ✗" })

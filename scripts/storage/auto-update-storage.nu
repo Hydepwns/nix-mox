@@ -38,7 +38,7 @@ def main [
         } else {
             exit 1
         }
-    } catch { |err|
+    } catch { | err|
         if $verbose {
             error $"Storage update failed: ($err.msg)" --context "auto-update-storage"
         }

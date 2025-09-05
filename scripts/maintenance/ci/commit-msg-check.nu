@@ -201,7 +201,7 @@ export def validate_commit_file [
     let message = (open $file)
     
     # Filter out comments (lines starting with #)
-    let filtered_lines = ($message | lines | where { |line| not ($line | str starts-with "#") })
+    let filtered_lines = ($message | lines | where { | line| not ($line | str starts-with "#") })
     let filtered_message = ($filtered_lines | str join "\n")
     
     validate_commit_msg $filtered_message --verbose=$verbose

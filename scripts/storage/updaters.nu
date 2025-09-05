@@ -75,7 +75,7 @@ export def update_hardware_configuration [dry_run: bool] {
         } else {
             { success: true, message: "hardware update not required on this platform" }
         }
-    } catch { |err|
+    } catch { | err|
         { success: false, message: $err.msg }
     }
 }
@@ -89,7 +89,7 @@ export def update_filesystem_configuration [dry_run: bool] {
     try {
         info "Filesystem configuration update not yet implemented" --context "storage-update"
         { success: true, message: "filesystem configuration update placeholder" }
-    } catch { |err|
+    } catch { | err|
         { success: false, message: $err.msg }
     }
 }

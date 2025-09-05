@@ -56,7 +56,7 @@ export def parse_args [] {
                 _ => { print $"Unknown option: ($arg)"; exit 1 }
             }
         )
-        let config = ($result | get 0)
+        let config = ($result | first)
         let i = ($result | get 1)
     }
     $config

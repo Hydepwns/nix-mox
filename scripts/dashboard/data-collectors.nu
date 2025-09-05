@@ -124,7 +124,7 @@ export def collect_nix_status [] {
     try {
         let generations = (nix-env --list-generations | lines | length)
         let profile_version = (try { 
-            nix-env --version | parse "nix-env (Nix) {version}" | get version | get 0
+            nix-env --version | parse "nix-env (Nix) {version}" | get version | first
         } catch { 
             "unknown" 
         })
@@ -175,7 +175,7 @@ export def collect_disk_usage [] {
 
 export def collect_memory_usage [] {
     try {
-        let mem_info = (free -m | from ssv -a | where "Mem:" != null | get 0)
+        let mem_info = (free -m | from ssv -a | where "Mem:" != null | first)
         
         {
             memory_usage: {
@@ -236,7 +236,7 @@ export def collect_cpu_metrics [] {
 
 export def collect_load_average [] {
     try {
-        let load = (uptime | parse "{uptime} load average: {one}, {five}, {fifteen}" | get 0)
+        let load = (uptime | parse "{uptime} load average: {one}, {five}, {fifteen}" | first)
         {
             load_average: {
                 one_minute: ($load.one | into float),

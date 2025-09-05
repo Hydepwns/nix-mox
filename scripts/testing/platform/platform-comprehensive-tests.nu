@@ -41,7 +41,7 @@ export def test_linux_platform_scripts [] {
             warn $"NixOS flake update script help had non-zero exit code: ($result.exit_code)" --context "platform-test"
             track_test "nixos_flake_update_help" "platform" "passed" 0.2
         }
-    } catch { |err|
+    } catch { | err|
         warn $"NixOS flake update test encountered issue: ($err.msg)" --context "platform-test"
         track_test "nixos_flake_update_help" "platform" "passed" 0.2
     }
@@ -63,7 +63,7 @@ export def test_linux_platform_scripts [] {
             track_test "linux_interactive_content" "platform" "failed" 0.1
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Linux interactive setup test encountered issue: ($err.msg)" --context "platform-test"
         track_test "linux_interactive_setup" "platform" "passed" 0.3
     }
@@ -82,7 +82,7 @@ export def test_linux_platform_scripts [] {
                 track_test "zfs_snapshot_syntax" "platform" "failed" 0.2
             }
             
-        } catch { |err|
+        } catch { | err|
             warn $"ZFS snapshot test encountered issue: ($err.msg)" --context "platform-test"
             track_test "zfs_snapshot_syntax" "platform" "passed" 0.2
         }
@@ -115,7 +115,7 @@ export def test_macos_platform_scripts [] {
             track_test "homebrew_setup_syntax" "platform" "failed" 0.3
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Homebrew setup test encountered issue: ($err.msg)" --context "platform-test"
         track_test "homebrew_setup_syntax" "platform" "passed" 0.3
     }
@@ -128,7 +128,7 @@ export def test_macos_platform_scripts [] {
         success "macOS install script accessible" --context "platform-test"
         track_test "macos_install_script" "platform" "passed" 0.2
         
-    } catch { |err|
+    } catch { | err|
         warn $"macOS install test encountered issue: ($err.msg)" --context "platform-test"
         track_test "macos_install_script" "platform" "passed" 0.2
     }
@@ -147,7 +147,7 @@ export def test_macos_platform_scripts [] {
                 track_test "xcode_setup_syntax" "platform" "failed" 0.2
             }
             
-        } catch { |err|
+        } catch { | err|
             warn $"Xcode setup test encountered issue: ($err.msg)" --context "platform-test"
             track_test "xcode_setup_syntax" "platform" "passed" 0.2
         }
@@ -184,7 +184,7 @@ export def test_windows_platform_scripts [] {
             track_test "steam_rust_help_content" "platform" "failed" 0.2
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Steam-Rust install test encountered issue: ($err.msg)" --context "platform-test"
         track_test "steam_rust_install_help" "platform" "passed" 0.4
     }
@@ -313,7 +313,7 @@ export def test_platform_script_validation [] {
                     track_test "linux_dry_run_indicators" "platform" "failed" 0.1
                 }
                 
-            } catch { |err|
+            } catch { | err|
                 warn $"Linux dry-run test encountered issue: ($err.msg)" --context "platform-test"
                 track_test "linux_dry_run_mode" "platform" "passed" 0.3
             }
@@ -341,7 +341,7 @@ export def test_platform_script_validation [] {
                 if $result.exit_code == 0 {
                     $syntax_valid_count += 1
                 }
-            } catch { |err|
+            } catch { | err|
                 # Syntax errors are expected to be caught
             }
         }
@@ -358,7 +358,7 @@ export def test_platform_script_validation [] {
     # Clean up test directory
     try {
         rm -rf $test_platform_dir
-    } catch { |err|
+    } catch { | err|
         warn $"Could not clean up platform test directory: ($err.msg)" --context "platform-test"
     }
     
@@ -404,7 +404,7 @@ export def test_platform_environment_validation [] {
             track_test "platform_fs_permissions" "platform" "failed" 0.2
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"File system permissions test encountered error: ($err.msg)" --context "platform-test"
         track_test "platform_fs_permissions" "platform" "failed" 0.2
     }
@@ -485,7 +485,7 @@ export def test_platform_workflow_integration [] {
             track_test "platform_workflow_integration" "platform" "failed" 0.4
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Platform workflow integration test encountered error: ($err.msg)" --context "platform-test"
         track_test "platform_workflow_integration" "platform" "passed" 0.4
     }
@@ -515,7 +515,7 @@ export def test_platform_safety_mechanisms [] {
                     warn "Linux platform script should reject invalid options" --context "platform-test"
                     track_test "linux_error_handling" "platform" "failed" 0.3
                 }
-            } catch { |err|
+            } catch { | err|
                 success "Linux platform script correctly handles errors (via exception)" --context "platform-test"
                 track_test "linux_error_handling" "platform" "passed" 0.3
             }
@@ -563,7 +563,7 @@ export def test_platform_safety_mechanisms [] {
         
         cd -
         
-    } catch { |err|
+    } catch { | err|
         info $"Platform safety test completed with restrictions: ($err.msg)" --context "platform-test"
         track_test "platform_safety_dry_run" "platform" "passed" 0.4
     }
@@ -571,7 +571,7 @@ export def test_platform_safety_mechanisms [] {
     # Clean up
     try {
         rm -rf $safety_test_dir
-    } catch { |err|
+    } catch { | err|
         warn $"Could not clean up platform safety test directory: ($err.msg)" --context "platform-test"
     }
     
@@ -593,7 +593,7 @@ export def run_platform_comprehensive_tests [] {
         test_platform_safety_mechanisms
     ]
     
-    let results = ($tests | each { |test_func|
+    let results = ($tests | each { | test_func|
         try {
             let result = (do $test_func)
             if $result {
@@ -601,7 +601,7 @@ export def run_platform_comprehensive_tests [] {
             } else {
                 { success: false }
             }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "platform-test"
             { success: false }
         }

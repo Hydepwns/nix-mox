@@ -77,7 +77,7 @@ def main [] {
         print "⚠️  No /mnt drives found with 'exec' option"
         print "   Add your gaming drives to storage.gamingDrives in configuration.nix"
     } else {
-        $mounts | each { |mount| print $"   ($mount)" }
+        $mounts | each { | mount| print $"   ($mount)" }
     }
     
     print ""
@@ -104,7 +104,7 @@ def list_proton [] {
         let proton_dirs = (ls $"($steam_dir)/compatibilitytools.d" 2>/dev/null | get name)
         if not ($proton_dirs | is-empty) {
             print "  Custom Proton versions:"
-            $proton_dirs | each { |dir| print $"    - ($dir | path basename)" }
+            $proton_dirs | each { | dir| print $"    - ($dir | path basename)" }
         }
     }
     

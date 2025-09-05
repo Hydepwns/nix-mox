@@ -31,7 +31,7 @@ def main [
     
     if not $platform_check.compatible {
         error "Platform not compatible:" --context $context
-        $platform_check.issues | each { |issue| error $"  - ($issue.issue)" --context $context }
+        $platform_check.issues | each { | issue| error $"  - ($issue.issue)" --context $context }
         return
     }
     
@@ -391,7 +391,7 @@ def validate_graphics_capability [] {
     let platform = (get_platform)
     if $platform.is_linux {
         try {
-            let gpu_info = (lspci | grep -i "vga\|3d\|display" | complete)
+            let gpu_info = (lspci | grep -i "vga\|3d\| display" | complete)
             if $gpu_info.exit_code == 0 {
                 validation_result true "Graphics hardware detected"
             } else {

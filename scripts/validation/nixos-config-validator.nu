@@ -153,7 +153,7 @@ def apply_fixes [config_file: string, fixes: list] {
     info $"Created backup: ($backup_file)" --context "config-validator"
     
     # Apply fixes by adding them before the final closing brace
-    let fix_block = ($fixes | each { |fix| $"  # Auto-added by validator\n  ($fix.fix)" } | str join "\n\n")
+    let fix_block = ($fixes | each { | fix| $"  # Auto-added by validator\n  ($fix.fix)" } | str join "\n\n")
     
     # Find the last closing brace and insert fixes before it
     if ($content | str contains "}\n") {

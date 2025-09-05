@@ -168,7 +168,7 @@ def test_concurrent_operations [] {
 
     # Test multiple log operations
     try {
-        [1 2 3 4 5] | par-each {|i| log "INFO" $"Concurrent log message ($i)"}
+        [1 2 3 4 5] | par-each {| i| log "INFO" $"Concurrent log message ($i)"}
         track_test "edge_case_concurrent_logging" "unit" "passed" 0.2
     } catch {
         track_test "edge_case_concurrent_logging" "unit" "failed" 0.2
@@ -178,8 +178,8 @@ def test_concurrent_operations [] {
     let test_config = {shared: "value", counter: 0}
 
     try {
-        let results = ([1 2 3] | par-each {|i| get_config_value $test_config "shared"})
-        assert_true ($results | all {|r| $r == "value"}) "Concurrent config access should be consistent"
+        let results = ([1 2 3] | par-each {| i| get_config_value $test_config "shared"})
+        assert_true ($results | all {| r| $r == "value"}) "Concurrent config access should be consistent"
         track_test "edge_case_concurrent_config_access" "unit" "passed" 0.2
     } catch {
         track_test "edge_case_concurrent_config_access" "unit" "failed" 0.2
@@ -191,7 +191,7 @@ def test_resource_exhaustion [] {
 
     # Test many rapid operations
     try {
-        seq 1 100 | each {|i|
+        seq 1 100 | each {| i|
             log "DEBUG" $"Rapid operation ($i)"
         }
         track_test "edge_case_rapid_operations" "unit" "passed" 0.3

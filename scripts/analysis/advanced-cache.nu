@@ -1,10 +1,7 @@
 #!/usr/bin/env nu
 
 # Import unified libraries
-use ../lib/validators.nu *
 use ../lib/logging.nu
-use logging.nu *
-use ../lib/logging.nu *
 
 # nix-mox Advanced Caching Strategy
 # Implements sophisticated build caching with multiple layers and optimization
@@ -82,12 +79,12 @@ def check_cache_health [cache_url: string] {
 
 # Optimize cache configuration based on health checks
 def optimize_cache_config [] {
-    info "Analyzing cache health and performance..." "advanced-cache"
+    info "Analyzing cache health and performance..." --context "advanced-cache"
     let config = (get_cache_config)
     let all_caches = ($config.primary_caches | append $config.secondary_caches)
 
     # Check health of all caches
-    let health_results = ($all_caches | each { |cache| check_cache_health $cache })
+    let health_results = ($all_caches | each { | cache| check_cache_health $cache })
 
     # Sort by performance and availability
     let optimized_caches = ($health_results | where available == true | sort-by response_time | get url)
@@ -108,7 +105,7 @@ def warm_cache [packages: list] {
     let all_packages = ($warm_packages | append $packages | uniq)
 
     # Warm cache in parallel with limited concurrency
-    let warm_results = ($all_packages | each { |pkg|
+    let warm_results = ($all_packages | each { | pkg|
         try {
             common info $"Warming cache for ($pkg)..."
             nix build nixpkgs#($pkg) --no-link --accept-flake-config
@@ -138,7 +135,7 @@ def schedule_builds [packages: list] {
     common info "Scheduling builds with cache optimization..."
 
     # Analyze package dependencies and sizes
-    let package_analysis = ($packages | each { |pkg|
+    let package_analysis = ($packages | each { | pkg|
         try {
             let closure_size = (nix path-info --closure-size .#"($pkg)" 2>/dev/null | lines | length)
             let build_time = (if $pkg in ["vzdump-backup", "zfs-snapshot"] { "heavy" } else { "light" })
@@ -162,8 +159,8 @@ def schedule_builds [packages: list] {
     # Sort by priority (heavy builds first, then light builds)
     let scheduled_builds = ($package_analysis | sort-by priority)
 
-    common info "Build schedule:"
-    $scheduled_builds | each { |pkg|
+    info "Build schedule:" --context "advanced-cache"
+    $scheduled_builds | each { | pkg|
         print $"  - ($pkg.name) ($pkg.build_time) build, priority: ($pkg.priority)"
     }
     $scheduled_builds
@@ -171,11 +168,11 @@ def schedule_builds [packages: list] {
 
 # Implement cache-aware parallel builds
 def parallel_build [packages: list, max_jobs: int = 4] {
-    common info $"Starting parallel builds with max ($max_jobs) jobs..."
+    info $"Starting parallel builds with max ($max_jobs) jobs..." --context "advanced-cache"
     let scheduled = (schedule_builds $packages)
     let total_packages = ($scheduled | length)
-    mut completed = 0
-    mut failed = []
+    let completed = 0
+    let failed = []
     mut results = []
 
     # Process packages in batches
@@ -183,10 +180,10 @@ def parallel_build [packages: list, max_jobs: int = 4] {
         let batch_end = ([$batch_start + $max_jobs - 1, $total_packages - 1] | math min)
         let batch_packages = ($scheduled | range $batch_start..$batch_end | get name)
 
-        common info $"Building batch: ($batch_packages | str join ', ')"
+        info $"Building batch: ($batch_packages | str join ', ')" --context "advanced-cache"
 
         # Build batch in parallel
-        let batch_results = ($batch_packages | each { |pkg|
+        let batch_results = ($batch_packages | each { | pkg|
             try {
                 let start_time = (date now)
                 nix build .#"($pkg)" --accept-flake-config
@@ -211,51 +208,51 @@ def parallel_build [packages: list, max_jobs: int = 4] {
         })
 
         $results = ($results | append $batch_results)
-        $completed = ($completed + ($batch_results | length))
+        let completed = ($completed + ($batch_results | length))
 
         # Update progress
         let progress = (($completed | into float) / ($total_packages | into float) * 100 | into int)
-        common info $"Progress: ($completed)/($total_packages) packages completed ($progress)%"
+        info $"Progress: ($completed)/($total_packages) packages completed ($progress)%" --context "advanced-cache"
     }
 
     # Summary
     let success_count = ($results | where status == "success" | length)
     let failed_count = ($results | where status == "failed" | length)
-    common success $"Parallel build completed: ($success_count) successful, ($failed_count) failed"
+    success $"Parallel build completed: ($success_count) successful, ($failed_count) failed" --context "advanced-cache"
 
     if ($failed_count > 0) {
-        common warning "Failed packages:"
-        $results | where status == "failed" | each { |r| print $"  - ($r.package): ($r.error)" }
+        warning "Failed packages:" --context "advanced-cache"
+        $results | where status == "failed" | each { | r| print $"  - ($r.package): ($r.error)" }
     }
     $results
 }
 
 # Cache cleanup and maintenance
 def maintain_cache [] {
-    common info "Performing cache maintenance..."
+    info "Performing cache maintenance..." --context "advanced-cache"
 
     # Clean old build artifacts
     try {
         nix store gc --print-dead
-        common success "Cache garbage collection completed"
+        success "Cache garbage collection completed" --context "advanced-cache"
     } catch {
-        common warning "Cache garbage collection failed"
+        warning "Cache garbage collection failed" --context "advanced-cache"
     }
 
     # Optimize store
     try {
         nix store optimise
-        common success "Store optimization completed"
+        success "Store optimization completed" --context "advanced-cache"
     } catch {
-        common warning "Store optimization failed"
+        warning "Store optimization failed" --context "advanced-cache"
     }
 
     # Check cache health
     let config = (get_cache_config)
-    let health_results = ($config.primary_caches | each { |cache| check_cache_health $cache })
+    let health_results = ($config.primary_caches | each { | cache| check_cache_health $cache })
 
-    common info "Cache health status:"
-    $health_results | each { |cache|
+    info "Cache health status:" --context "advanced-cache"
+    $health_results | each { | cache|
         let status_icon = (if $cache.available { "✅" } else { "❌" })
         print $"($status_icon) ($cache.url): ($cache.status)"
     }
@@ -263,7 +260,7 @@ def maintain_cache [] {
 
 # Main function for advanced caching
 def main [packages: list = []] {
-    common info "Starting advanced caching strategy..."
+    info "Starting advanced caching strategy..." --context "advanced-cache"
 
     # Optimize cache configuration
     let optimized_config = (optimize_cache_config)
@@ -293,8 +290,8 @@ def main [packages: list = []] {
 
     # Save report
     $report | to json --indent 2 | save cache-report.json
-    common success "Advanced caching strategy completed!"
-    common info "Report saved to cache-report.json"
+    success $"Advanced caching strategy completed!" --context "advanced-cache"
+    info "Report saved to cache-report.json" --context "advanced-cache"
     $report
 }
 

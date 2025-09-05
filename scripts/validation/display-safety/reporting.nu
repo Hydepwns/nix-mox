@@ -12,7 +12,7 @@ use ../../lib/logging.nu *
 export def check_critical_failures [results: record] {
     let critical_components = ["stage1" "display_manager" "gpu_driver" "config_syntax"]
     
-    let has_critical_failure = ($critical_components | any {|component|
+    let has_critical_failure = ($critical_components | any {| component|
         if ($results | get $component | is-not-empty) {
             let result = ($results | get $component)
             if ($result | get critical? | default false) {
@@ -33,7 +33,7 @@ export def print_validation_report [results: record] {
     let context = "display-safety"
     banner "Display Safety Validation Report" --context $context
     
-    $results | transpose key value | each {|row|
+    $results | transpose key value | each {| row|
         let component = $row.key
         let result = $row.value
         let is_critical = ($result | get critical? | default false)
@@ -48,7 +48,7 @@ export def print_validation_report [results: record] {
         }
         
         if ($result | get checks? | is-not-empty) {
-            $result.checks | each {|check|
+            $result.checks | each {| check|
                 let check_message = $"($check.name): ($check.message)"
                 if $check.success {
                     info $"  ✓ ($check_message)" --context $context

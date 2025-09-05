@@ -41,8 +41,8 @@ def test_script_discovery [] {
     try {
         let scripts = discover_scripts "scripts"
         assert_true (($scripts | length) > 0) "Should discover scripts"
-        assert_true ($scripts | all {|s| $s.path != null}) "All scripts should have paths"
-        assert_true ($scripts | all {|s| $s.name != null}) "All scripts should have names"
+        assert_true ($scripts | all {| s| $s.path != null}) "All scripts should have paths"
+        assert_true ($scripts | all {| s| $s.name != null}) "All scripts should have names"
         track_test "script_discovery_basic" "unit" "passed" 0.2
     } catch {
         track_test "script_discovery_basic" "unit" "failed" 0.2
@@ -67,7 +67,7 @@ print 'Test script'" | save $test_script
         assert_equal $metadata.description "Test script for discovery" "Should extract description"
         assert_equal $metadata.platform "linux" "Should extract platform"
         assert_equal $metadata.requires_root true "Should extract root requirement"
-        assert_true ($metadata.dependencies | any {|d| $d == "git"}) "Should extract dependencies"
+        assert_true ($metadata.dependencies | any {| d| $d == "git"}) "Should extract dependencies"
         track_test "metadata_extraction_complete" "unit" "passed" 0.2
     } catch {
         track_test "metadata_extraction_complete" "unit" "failed" 0.2
@@ -89,7 +89,7 @@ def test_script_filtering [] {
     # Test platform filtering
     let linux_scripts = get_scripts_by_platform $test_scripts "linux"
     assert_equal ($linux_scripts | length) 1 "Should filter by platform"
-    assert_equal ($linux_scripts | get 0 | get name) "linux-script" "Should return correct script"
+    assert_equal ($linux_scripts | first | get name) "linux-script" "Should return correct script"
     track_test "script_filtering_platform" "unit" "passed" 0.1
     
     # Test category filtering
@@ -100,7 +100,7 @@ def test_script_filtering [] {
     # Test root requirement filtering
     let root_scripts = get_root_scripts $test_scripts
     assert_equal ($root_scripts | length) 1 "Should filter by root requirement"
-    assert_equal ($root_scripts | get 0 | get name) "linux-script" "Should return root-required script"
+    assert_equal ($root_scripts | first | get name) "linux-script" "Should return root-required script"
     track_test "script_filtering_root" "unit" "passed" 0.1
 }
 
@@ -149,13 +149,13 @@ def test_script_search [] {
     # Test search by name
     let name_results = search_scripts $test_scripts "install"
     assert_equal ($name_results | length) 1 "Should find script by name"
-    assert_equal ($name_results | get 0 | get name) "install-linux" "Should return correct script"
+    assert_equal ($name_results | first | get name) "install-linux" "Should return correct script"
     track_test "script_search_name" "unit" "passed" 0.1
     
     # Test search by description
     let desc_results = search_scripts $test_scripts "backup"
     assert_equal ($desc_results | length) 1 "Should find script by description"
-    assert_equal ($desc_results | get 0 | get name) "backup-files" "Should return correct script"
+    assert_equal ($desc_results | first | get name) "backup-files" "Should return correct script"
     track_test "script_search_description" "unit" "passed" 0.1
     
     # Test search with no results

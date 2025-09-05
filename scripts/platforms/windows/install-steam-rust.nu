@@ -23,16 +23,16 @@ let help = ($in | get help | default false)
 mut errors = []
 
 # Standardized logging function for NuShell
-let log = {|level, msg|
+let log = {| level, msg|
     let ts = (date now | format date "%Y-%m-%d %H:%M:%S")
     print $"[$ts] [$level] $msg"
 }
 
-let info = {|msg| log "INFO" $msg }
-let warn = {|msg| log "WARN" $msg }
-let error = {|msg| log "ERROR" $msg }
-let success = {|msg| log "SUCCESS" $msg }
-let log_dryrun = {|msg| log "DRY RUN" $msg }
+let info = {| msg| log "INFO" $msg }
+let warn = {| msg| log "WARN" $msg }
+let error = {| msg| log "ERROR" $msg }
+let success = {| msg| log "SUCCESS" $msg }
+let log_dryrun = {| msg| log "DRY RUN" $msg }
 
 if $help {
     info "Usage: nu install-steam-rust.nu [--dry-run] [--help]\n\nOptions:\n  --dry-run         Show what would be done, but make no changes\n  --help            Show this help message\n\nInstall Steam and prompt for Rust (Facepunch) installation.\nTarget OS: Windows (NuShell)\n"

@@ -45,7 +45,7 @@ def main [] {
         exit 1
     }
     
-    let all_passed = ($results | values | all {|r| $r.success})
+    let all_passed = ($results | values | all {| r| $r.success})
     if $all_passed {
         success "✅ Display configuration validated - safe to rebuild" --context $context
         exit 0

@@ -36,7 +36,7 @@ export def display_overview [data: record, format: string] {
         
         if "disk" in $data.performance {
             if ($data.performance.disk.disk_usage | length) > 0 {
-                let root_disk = ($data.performance.disk.disk_usage | where mount == "/" | get 0)
+                let root_disk = ($data.performance.disk.disk_usage | where mount == "/" | first)
                 info $"Root Disk: ($root_disk.usage_percent)% used" --context "performance"
             }
         }
@@ -59,7 +59,7 @@ export def display_system [data: record, format: string] {
     # Display each system component
     if "basic_system" in $data {
         subsection "Basic System" --context "system"
-        $data.basic_system | transpose key value | each { |row|
+        $data.basic_system | transpose key value | each { | row|
             info $"($row.key): ($row.value)" --context "system"
         } | ignore
     }
@@ -101,7 +101,7 @@ export def display_performance [data: record, format: string] {
     # Disk metrics
     if "disk" in $data {
         subsection "Disk Usage" --context "performance"
-        $data.disk.disk_usage | each { |disk|
+        $data.disk.disk_usage | each { | disk|
             info $"($disk.mount): ($disk.usage_percent)% used (($disk.used)/($disk.size))" --context "performance"
         } | ignore
     }
@@ -159,7 +159,7 @@ export def display_coverage [data: record, format: string] {
     if "files" in $data.coverage {
         section "File Coverage Details" --context "coverage"
         
-        let low_coverage = ($data.coverage.files | where { |file|
+        let low_coverage = ($data.coverage.files | where { | file|
             ("error" not-in $file) and ($file.lines.coverage_percentage < 60)
         })
         
@@ -170,7 +170,7 @@ export def display_coverage [data: record, format: string] {
             }
         }
         
-        let good_coverage = ($data.coverage.files | where { |file|
+        let good_coverage = ($data.coverage.files | where { | file|
             ("error" not-in $file) and ($file.lines.coverage_percentage >= 80)
         })
         
@@ -279,7 +279,7 @@ export def save_dashboard_data [data: record, output_path: string] {
     try {
         $data | to json | save $output_path
         info $"Dashboard data saved: ($output_path)" --context "dashboard"
-    } catch { |err|
+    } catch { | err|
         error $"Failed to save dashboard data: ($err.msg)" --context "dashboard"
     }
 }
@@ -297,7 +297,7 @@ export def quick_status_dashboard [] {
     print $"Uptime: ($system_info.uptime)"
     print $"Nix Generations: ($nix_status.nix_status.generations)"
     let disk_info = if ($disk_usage.disk_usage | length) > 0 {
-        ($disk_usage.disk_usage | each { |d| $"($d.mount): ($d.usage_percent)%" } | str join ', ')
+        ($disk_usage.disk_usage | each { | d| $"($d.mount): ($d.usage_percent)%" } | str join ', ')
     } else {
         'unknown'
     }

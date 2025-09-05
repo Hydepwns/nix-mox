@@ -97,7 +97,7 @@ export def run_platform_tests [
                     reason: "file_not_found"
                 })
             }
-        } catch { |err|
+        } catch { | err|
             error $"❌ ($test_name) crashed: ($err.msg)" --context "platform-tests"
             $total_failed += 1
             $results = ($results | append {

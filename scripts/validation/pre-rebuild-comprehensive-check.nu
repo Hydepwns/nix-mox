@@ -49,7 +49,7 @@ def main [
         }
     ]
     
-    let results = ($validations | each {|validation|
+    let results = ($validations | each {| validation|
         print $"\n(ansi blue)▶ Running ($validation.name) validation...(ansi reset)"
         
         let result = (run_validation $validation.script $verbose)
@@ -76,7 +76,7 @@ def main [
         error "DO NOT PROCEED WITH REBUILD!" --context $context
         print ""
         print "Critical issues:"
-        $critical_failures | each {|failure|
+        $critical_failures | each {| failure|
             print $"  • ($failure.name): ($failure.message)"
         }
         print ""
@@ -85,7 +85,7 @@ def main [
     } else if ((($warnings | length) > 0) and (not $force)) {
         print ""
         warn "⚠️  Non-critical warnings detected:" --context $context
-        $warnings | each {|warning|
+        $warnings | each {| warning|
             print $"  • ($warning.name): ($warning.message)"
         }
         print ""
@@ -359,7 +359,7 @@ def print_summary [results: list] {
     let context = "pre-rebuild-check"
     banner "VALIDATION SUMMARY" --context $context
     
-    $results | each {|result|
+    $results | each {| result|
         if $result.success {
             success $"✅ ($result.name)" --context $context
         } else if $result.critical {

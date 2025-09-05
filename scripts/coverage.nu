@@ -253,7 +253,7 @@ def watch_coverage [include_pattern: string, exclude_pattern: string] {
 
 # Core coverage collection function
 def collect_coverage_data [include_pattern: string, exclude_pattern: string] {
-    let files = (glob $include_pattern | where {|file| 
+    let files = (glob $include_pattern | where {| file| 
         not ($file | str contains $exclude_pattern)
     })
     
@@ -310,7 +310,7 @@ def analyze_file_coverage [file_path: string] {
         let total_lines = ($lines | length)
         
         # Count executable lines (simplified heuristic)
-        let executable_lines = ($lines | where {|line| 
+        let executable_lines = ($lines | where {| line| 
             let trimmed = ($line | str trim)
             if ($trimmed | str length) == 0 { false }
             else if ($trimmed | str starts-with "#") { false }
@@ -320,7 +320,7 @@ def analyze_file_coverage [file_path: string] {
         } | length)
         
         # Count functions
-        let functions = ($lines | where {|line| 
+        let functions = ($lines | where {| line| 
             let trimmed = ($line | str trim)
             if ($trimmed | str starts-with "def ") { true }
             else if ($trimmed | str starts-with "export def ") { true }
@@ -353,7 +353,7 @@ def analyze_file_coverage [file_path: string] {
                 } | math round --precision 2)
             }
         }
-    } catch { |err|
+    } catch { | err|
         {
             file: $file_path,
             error: $err.msg,
@@ -586,7 +586,7 @@ def display_coverage_summary [coverage_data: record] {
     print ""
     
     # Show files with low coverage
-    let low_coverage_files = ($coverage_data.files | where {|file| 
+    let low_coverage_files = ($coverage_data.files | where {| file| 
         (not ("error" in $file)) and ($file.lines.coverage_percentage < 60)
     })
     

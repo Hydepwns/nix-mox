@@ -188,14 +188,14 @@ export def benchmark_data_processing [] {
     # Benchmark data processing operations
     info "Benchmarking data processing" --context "benchmark"
     
-    let test_data = (0..100 | each { |i| { id: $i, name: $"item_($i)" } })
+    let test_data = (0..100 | each { | i| { id: $i, name: $"item_($i)" } })
     
     let filter_benchmark = (run_benchmark "data_filter" 50 {
         let _ = ($test_data | where id < 50)
     })
     
     let map_benchmark = (run_benchmark "data_map" 50 {
-        let _ = ($test_data | each { |item| $item.name })
+        let _ = ($test_data | each { | item| $item.name })
     })
     
     let sort_benchmark = (run_benchmark "data_sort" 50 {
@@ -246,7 +246,7 @@ export def generate_performance_report [results: record] {
     print ""
     print "Individual Results:"
     
-    ($results | transpose name result | each { |row|
+    ($results | transpose name result | each { | row|
         print ("  " + $row.name + ": " + ($row.result.ops_per_second | into string) + " ops/sec - " + ($row.result.duration | into string) + " total")
     } | ignore)
     

@@ -48,7 +48,7 @@ export def test_windows_steam_rust_install [] {
             track_test "windows_steam_rust_install" "windows-platform" "passed" 0.4
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Windows Steam-Rust install test failed: ($err.msg)" --context "windows-platform-test"
         track_test "windows_steam_rust_install" "windows-platform" "failed" 0.4
         return false
@@ -96,7 +96,7 @@ export def test_windows_platform_integration [] {
             track_test "windows_platform_integration" "windows-platform" "passed" 0.3
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Windows platform integration test failed: ($err.msg)" --context "windows-platform-test"
         track_test "windows_platform_integration" "windows-platform" "failed" 0.3
         return false
@@ -142,7 +142,7 @@ export def test_windows_gaming_integration [] {
             track_test "windows_gaming_integration" "windows-platform" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Windows gaming integration test failed: ($err.msg)" --context "windows-platform-test"
         track_test "windows_gaming_integration" "windows-platform" "failed" 0.2
         return false
@@ -188,7 +188,7 @@ export def test_windows_platform_safety [] {
             track_test "windows_platform_safety" "windows-platform" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Windows platform safety test failed: ($err.msg)" --context "windows-platform-test"
         track_test "windows_platform_safety" "windows-platform" "failed" 0.2
         return false
@@ -234,7 +234,7 @@ export def test_windows_nix_mox_compatibility [] {
             track_test "windows_nix_mox_compatibility" "windows-platform" "passed" 0.1
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Windows nix-mox compatibility test failed: ($err.msg)" --context "windows-platform-test"
         track_test "windows_nix_mox_compatibility" "windows-platform" "failed" 0.1
         return false
@@ -280,7 +280,7 @@ export def test_windows_script_structure [] {
             track_test "windows_script_structure" "windows-platform" "passed" 0.1
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Windows script structure test failed: ($err.msg)" --context "windows-platform-test"
         track_test "windows_script_structure" "windows-platform" "failed" 0.1
         return false
@@ -312,7 +312,7 @@ export def test_windows_cross_platform [] {
             track_test "windows_cross_platform" "windows-platform" "passed" 0.1
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Windows cross-platform test failed: ($err.msg)" --context "windows-platform-test"
         track_test "windows_cross_platform" "windows-platform" "failed" 0.1
         return false
@@ -342,11 +342,11 @@ export def run_windows_platform_specific_tests [
     ]
     
     # Execute tests
-    let results = ($tests | each { |test_func|
+    let results = ($tests | each { | test_func|
         try {
             let result = (do $test_func)
             if $result { { success: true } } else { { success: false } }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "windows-platform-test"
             { success: false }
         }

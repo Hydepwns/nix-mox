@@ -35,7 +35,7 @@ export def test_pre_rebuild_safety_check [] {
             track_test "pre_rebuild_dry_run" "validation" "failed" 0.3
             return false
         }
-    } catch { |err|
+    } catch { | err|
         error ("Error running pre-rebuild safety check: " + $err.msg) --context "validation-test"
         track_test "pre_rebuild_dry_run" "validation" "failed" 0.3
         return false
@@ -49,7 +49,7 @@ export def test_pre_rebuild_safety_check [] {
         # Should handle gracefully (either success with warning or controlled failure)
         track_test "pre_rebuild_invalid_flake" "validation" "passed" 0.2
         success "Invalid flake handling test completed" --context "validation-test"
-    } catch { |err|
+    } catch { | err|
         warn ("Invalid flake test encountered error (may be expected): " + $err.msg) --context "validation-test"
         track_test "pre_rebuild_invalid_flake" "validation" "passed" 0.2
     }
@@ -114,7 +114,7 @@ export def test_storage_validator [] {
             warn "Storage validator summary not found in output" --context "validation-test"
             track_test "storage_validator_summary" "validation" "failed" 0.1
         }
-    } catch { |err|
+    } catch { | err|
         error ("Error running storage validator: " + $err.msg) --context "validation-test"
         track_test "storage_validator_basic" "validation" "failed" 0.4
         return false
@@ -132,7 +132,7 @@ export def test_storage_validator [] {
             warn "Storage validator should fail for non-existent config file" --context "validation-test"
             track_test "storage_validator_nonexistent" "validation" "failed" 0.2
         }
-    } catch { |err|
+    } catch { | err|
         success "Storage validator correctly rejects non-existent config (via exception)" --context "validation-test"
         track_test "storage_validator_nonexistent" "validation" "passed" 0.2
     }
@@ -140,7 +140,7 @@ export def test_storage_validator [] {
     # Clean up test config
     try {
         rm -rf $test_config_dir
-    } catch { |err|
+    } catch { | err|
         warn ("Could not clean up test config directory: " + $err.msg) --context "validation-test"
     }
     
@@ -167,7 +167,7 @@ export def test_config_validator [] {
             warn "Configuration validator process indicators not found" --context "validation-test"
             track_test "config_validator_process" "validation" "failed" 0.1
         }
-    } catch { |err|
+    } catch { | err|
         error ("Error running configuration validator: " + $err.msg) --context "validation-test"
         track_test "config_validator_basic" "validation" "failed" 0.3
         return false
@@ -187,7 +187,7 @@ export def test_display_config_validator [] {
         success "Display configuration validator executed successfully" --context "validation-test"
         track_test "display_config_validator" "validation" "passed" 0.3
         
-    } catch { |err|
+    } catch { | err|
         warn ("Display configuration validator encountered issue (may be expected in test environment): " + $err.msg) --context "validation-test"
         track_test "display_config_validator" "validation" "passed" 0.3
     }
@@ -206,7 +206,7 @@ export def test_gaming_config_validator [] {
         success "Gaming configuration validator executed successfully" --context "validation-test"
         track_test "gaming_config_validator" "validation" "passed" 0.3
         
-    } catch { |err|
+    } catch { | err|
         warn ("Gaming configuration validator encountered issue (may be expected in test environment): " + $err.msg) --context "validation-test"
         track_test "gaming_config_validator" "validation" "passed" 0.3
     }
@@ -225,7 +225,7 @@ export def test_safe_flake_test [] {
         success "Safe flake test executed without crashing" --context "validation-test"
         track_test "safe_flake_test_basic" "validation" "passed" 0.4
         
-    } catch { |err|
+    } catch { | err|
         warn ("Safe flake test encountered issue (may be expected in test environment): " + $err.msg) --context "validation-test"
         track_test "safe_flake_test_basic" "validation" "passed" 0.4
     }
@@ -251,7 +251,7 @@ export def test_validation_workflow [] {
             let script_parts = ($script | split row " ")
             let result = (execute_command $script_parts --timeout 15sec --context "validation")
             info ("Workflow step completed: " + ($script_parts | first)) --context "validation-test"
-        } catch { |err|
+        } catch { | err|
             warn ("Workflow step had issues: " + ($script | split row ' ' | first) + " - " + $err.msg) --context "validation-test"
             # Don't fail workflow for individual step issues in test environment
         }
@@ -282,7 +282,7 @@ export def run_validation_safety_tests [] {
         test_validation_workflow
     ]
     
-    let results = ($tests | each { |test_func|
+    let results = ($tests | each { | test_func|
         try {
             let result = (do $test_func)
             if $result {
@@ -290,7 +290,7 @@ export def run_validation_safety_tests [] {
             } else {
                 { success: false }
             }
-        } catch { |err|
+        } catch { | err|
             error ("Test failed with error: " + $err.msg) --context "validation-test"
             { success: false }
         }

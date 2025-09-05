@@ -28,7 +28,7 @@ export def check_large_files [
             return 0
         }
     } else {
-        (glob "**/*" | where { |f| ($f | path type) == "file" })
+        (glob "**/*" | where { | f| ($f | path type) == "file" })
     }
     
     mut large_files = []
@@ -112,7 +112,7 @@ export def size_report [] {
     banner "Repository Size Report" --context "large-files"
     
     # Get all files
-    let all_files = (glob "**/*" | where { |f| ($f | path type) == "file" and not ($f | str contains ".git/") })
+    let all_files = (glob "**/*" | where { | f| ($f | path type) == "file" and not ($f | str contains ".git/") })
     
     mut size_by_extension = {}
     mut largest_files = []

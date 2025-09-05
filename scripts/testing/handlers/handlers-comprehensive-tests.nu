@@ -48,7 +48,7 @@ export def test_handlers_system [] {
             track_test "handlers_system" "handlers" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Handlers system test failed: ($err.msg)" --context "handlers-test"
         track_test "handlers_system" "handlers" "failed" 0.2
         return false
@@ -95,7 +95,7 @@ export def test_common_nix_mox [] {
             track_test "common_nix_mox" "handlers" "passed" 0.3
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Common nix-mox test failed: ($err.msg)" --context "handlers-test"
         track_test "common_nix_mox" "handlers" "failed" 0.3
         return false
@@ -142,7 +142,7 @@ export def test_chezmoi_aliases [] {
             track_test "chezmoi_aliases" "handlers" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Chezmoi aliases test failed: ($err.msg)" --context "handlers-test"
         track_test "chezmoi_aliases" "handlers" "failed" 0.2
         return false
@@ -186,7 +186,7 @@ export def test_handlers_integration [] {
             track_test "handlers_integration" "handlers" "passed" 0.2
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Handlers integration test failed: ($err.msg)" --context "handlers-test"
         track_test "handlers_integration" "handlers" "failed" 0.2
         return false
@@ -202,7 +202,7 @@ export def test_handlers_error_handling [] {
             "scripts/handlers/handlers.nu",
             "scripts/common/nix-mox.nu",
             "scripts/chezmoi-aliases.nu"
-        ] | where { |file| $file | path exists }
+        ] | where { | file| $file | path exists }
         
         mut error_handling_score = 0
         for file in $handler_files {
@@ -229,7 +229,7 @@ export def test_handlers_error_handling [] {
             track_test "handlers_error_handling" "handlers" "passed" 0.1
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Handlers error handling test failed: ($err.msg)" --context "handlers-test"
         track_test "handlers_error_handling" "handlers" "failed" 0.1
         return false
@@ -245,14 +245,14 @@ export def test_handlers_performance [] {
         let handler_files = [
             "scripts/handlers/handlers.nu",
             "scripts/common/nix-mox.nu"
-        ] | where { |file| $file | path exists }
+        ] | where { | file| $file | path exists }
         
         mut performance_score = 0
         for file in $handler_files {
             let content = (open $file)
             
             # Check for performance considerations
-            let avoids_recursion = not ($content | str contains "| each { |item|" and $content | str contains "do $0")
+            let avoids_recursion = not ($content | str contains "| each { | item|" and $content | str contains "do $0")
             let uses_pipelines = ($content | str contains "|") and ($content | str contains "where" or $content | str contains "select")
             let minimal_loops = not ($content | str contains "for" and $content | str contains "for")
             
@@ -270,7 +270,7 @@ export def test_handlers_performance [] {
             track_test "handlers_performance" "handlers" "passed" 0.1
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Handlers performance test failed: ($err.msg)" --context "handlers-test"
         track_test "handlers_performance" "handlers" "failed" 0.1
         return false
@@ -286,7 +286,7 @@ export def test_handlers_modularity [] {
         let handler_files = [
             "scripts/handlers/handlers.nu",
             "scripts/common/nix-mox.nu"
-        ] | where { |file| $file | path exists }
+        ] | where { | file| $file | path exists }
         
         mut modularity_score = 0
         for file in $handler_files {
@@ -313,7 +313,7 @@ export def test_handlers_modularity [] {
             track_test "handlers_modularity" "handlers" "passed" 0.1
             return true
         }
-    } catch { |err|
+    } catch { | err|
         error $"Handlers modularity test failed: ($err.msg)" --context "handlers-test"
         track_test "handlers_modularity" "handlers" "failed" 0.1
         return false
@@ -343,11 +343,11 @@ export def run_handlers_tests [
     ]
     
     # Execute tests
-    let results = ($tests | each { |test_func|
+    let results = ($tests | each { | test_func|
         try {
             let result = (do $test_func)
             if $result { { success: true } } else { { success: false } }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "handlers-test"
             { success: false }
         }

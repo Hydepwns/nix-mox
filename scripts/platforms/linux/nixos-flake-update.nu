@@ -23,7 +23,7 @@ def main [] {
                 $env.DRY_RUN = true
             }
             "--flake-path" => {
-                let idx = ($args | find $arg | get 0)
+                let idx = ($args | find $arg | first)
                 $env.FLAKE_PATH = ($args | get ($idx + 1))
             }
             "--help" | "-h" => {

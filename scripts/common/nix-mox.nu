@@ -26,9 +26,9 @@ def get_flag_value [args: list, flag: string, default: any] {
 }
 
 def parse_args [args: list] {
-    let help = ($args | any { |it| $it == "--help" or $it == "-h" })
-    let dry_run = ($args | any { |it| $it == "--dry-run" })
-    let debug = ($args | any { |it| $it == "--debug" })
+    let help = ($args | any { | it| $it == "--help" or $it == "-h" })
+    let dry_run = ($args | any { | it| $it == "--dry-run" })
+    let debug = ($args | any { | it| $it == "--debug" })
     let platform = (get_flag_value $args "--platform" "auto")
     let script = (get_flag_value $args "--script" "")
     let log_file = (get_flag_value $args "--log" "")
@@ -84,7 +84,7 @@ def run_script [script: string, dry_run: bool] {
 
     # Check if script is supported
     let supported_scripts = ["install", "update", "zfs-snapshot", "setup-interactive"]
-    if not ($supported_scripts | any { |s| $s == $script }) {
+    if not ($supported_scripts | any { | s| $s == $script }) {
         $"Unsupported script: ($script). Supported scripts: ($supported_scripts | str join ', ')"
     }
 
@@ -100,7 +100,7 @@ def run_script [script: string, dry_run: bool] {
                 try {
                     nu $setup_script
                     info "Interactive setup completed successfully"
-                } catch { |err|
+                } catch { | err|
                     $"Interactive setup failed: ($err)"
                 }
             }
@@ -128,7 +128,7 @@ def run_script [script: string, dry_run: bool] {
                 try {
                     nu $install_script
                     info "Installation completed successfully"
-                } catch { |err|
+                } catch { | err|
                     $"Installation failed: ($err)"
                 }
             }
@@ -152,7 +152,7 @@ def run_script [script: string, dry_run: bool] {
                             nix-channel --update
                             nix-env -u '*'
                             info "Nix packages updated successfully"
-                        } catch { |err|
+                        } catch { | err|
                             $"Failed to update Nix packages: ($err)"
                         }
                     }
@@ -164,7 +164,7 @@ def run_script [script: string, dry_run: bool] {
                         try {
                             nu $win_update_script
                             info "Steam and Rust updated successfully"
-                        } catch { |err|
+                        } catch { | err|
                             $"Failed to update Steam and Rust: ($err)"
                         }
                     }
@@ -194,7 +194,7 @@ def run_script [script: string, dry_run: bool] {
                     }
 
                     # Create snapshots for each pool
-                    let failed_snapshots = ($pools | each { |pool|
+                    let failed_snapshots = ($pools | each { | pool|
                         let timestamp = (date now | format date '%Y%m%d-%H%M%S')
                         let snapshot_name = $"($pool)@($timestamp)"
                         info $"Creating snapshot: ($snapshot_name)"
@@ -202,11 +202,11 @@ def run_script [script: string, dry_run: bool] {
                             zfs snapshot $snapshot_name
                             info $"Created snapshot: ($snapshot_name)"
                             null
-                        } catch { |err|
+                        } catch { | err|
                             error $"Failed to create snapshot ($snapshot_name): ($err)"
                             $snapshot_name
                         }
-                    } | where { |it| $it != null })
+                    } | where { | it| $it != null })
 
                     # Report any failed snapshots
                     if ($failed_snapshots | length) > 0 {
@@ -216,7 +216,7 @@ def run_script [script: string, dry_run: bool] {
                         }
                         error "Some snapshots failed to create" 0  # Exit with warning
                     }
-                } catch { |err|
+                } catch { | err|
                     error $"Failed to list ZFS pools: ($err)"
                 }
             }
@@ -229,7 +229,7 @@ def run_script [script: string, dry_run: bool] {
 def log_to_file [message: string, log_file: string] {
     try {
         $message | save --append $log_file
-    } catch { |err|
+    } catch { | err|
         print $"Failed to write to log file ($log_file): ($err)"
         print $message
     }
@@ -278,10 +278,10 @@ def setup_file_logging [log_file: string] {
                 print $log_message
                 log_to_file $log_message $log_file
             }
-        } catch { |err|
+        } catch { | err|
             $"Failed to setup logging to ($log_file): ($err)"
         }
-    } catch { |err|
+    } catch { | err|
         $"Failed to create log directory ($log_dir): ($err)"
     }
 }
@@ -289,7 +289,7 @@ def setup_file_logging [log_file: string] {
 # --- Main Function ---
 def main [args: list] {
     # Early help check
-    if ($args | any { |it| $it == "--help" or $it == "-h" }) {
+    if ($args | any { | it| $it == "--help" or $it == "-h" }) {
         show_help
         exit 0
     }

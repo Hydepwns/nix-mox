@@ -1,8 +1,6 @@
 #!/usr/bin/env nu
 # Comprehensive tests for analysis.nu library
 
-use ../../lib/analysis.nu *
-use ../../lib/logging.nu *
 use ../lib/test-utils.nu *
 
 # Test collect_system_info
@@ -93,7 +91,7 @@ def test_analyze_cpu_usage [] {
     
     # Load average should be array of 3 values
     assert_equal (($cpu_analysis.load_avg | length) == 3) "load_avg should have 3 values"
-    assert_true ($cpu_analysis.load_avg | all { |load| $load >= 0 }) "load values should be >= 0"
+    assert_true ($cpu_analysis.load_avg | all { | load| $load >= 0 }) "load values should be >= 0"
     
     { success: true, message: "analyze_cpu_usage tests passed" }
 }
@@ -114,7 +112,7 @@ def test_analyze_network_interfaces [] {
     assert_true ("status" in ($first_iface | columns)) "should have status"
     
     # Should have at least loopback interface
-    let has_lo = ($net_analysis | any { |iface| $iface.name == "lo" })
+    let has_lo = ($net_analysis | any { | iface| $iface.name == "lo" })
     assert_true ($has_lo) "should have loopback interface"
     
     { success: true, message: "analyze_network_interfaces tests passed" }
@@ -256,7 +254,7 @@ def test_format_bytes [] {
     
     # Test large values
     let result = (format_bytes 1099511627776)  # 1TB
-    assert_contains $result "TiB" "large values should show in TiB"
+    assert_true ($result | str contains "TiB") "large values should show in TiB"
     
     { success: true, message: "format_bytes tests passed" }
 }
@@ -279,7 +277,7 @@ def main [] {
         (test_format_bytes)
     ]
     
-    let all_passed = ($test_results | all { |r| $r.success })
+    let all_passed = ($test_results | all { | r| $r.success })
     let passed_count = ($test_results | where success == true | length)
     let total_count = ($test_results | length)
     
@@ -289,7 +287,7 @@ def main [] {
         let failed_tests = ($test_results | where success == false)
         print $"Some tests failed: ($failed_tests | length) of ($total_count)"
         for test in $failed_tests {
-            print $"  - ($test.message)"
+            print $"$test.message"
         }
     }
     

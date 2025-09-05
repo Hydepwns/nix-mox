@@ -87,7 +87,7 @@ export def test_flake_operations [] {
         
         success "Flake operations functional" --context "nixos-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error $"Flake test failed: ($err.msg)" --context "nixos-test"
         return false
     }
@@ -141,7 +141,7 @@ export def test_systemd_integration [] {
         debug $"systemd status: ($systemd_status.stdout)" --context "nixos-test"
         success "systemd integration functional" --context "nixos-test"
         return true
-    } catch { |err|
+    } catch { | err|
         error $"systemd integration test failed: ($err.msg)" --context "nixos-test"
         return false
     }
@@ -170,7 +170,7 @@ export def test_nix_store [] {
         
         success "Nix store accessible" --context "nixos-test"
         return true
-    } catch { |err|
+    } catch { | err|
         warn $"Nix store query failed: ($err.msg)" --context "nixos-test"
         return true  # Don't fail test, store exists even if query fails
     }
@@ -192,7 +192,7 @@ export def test_nixos_generations [] {
             warn "Could not list NixOS generations" --context "nixos-test"
             return true  # Don't fail - generations might not be available
         }
-    } catch { |err|
+    } catch { | err|
         warn $"Generation test failed: ($err.msg)" --context "nixos-test"
         return true  # Don't fail test
     }
@@ -223,7 +223,7 @@ export def run_nixos_tests [] {
             } else {
                 $failed += 1
             }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "nixos-test"
             $failed += 1
         }

@@ -34,7 +34,7 @@ export def test_system_performance [] {
     let duration = (($end_time - $start_time) | into float) / 1000000000
 
     {
-        success: ($results | values | all {|r| $r.success}),
+        success: ($results | values | all {| r| $r.success}),
         duration: $duration,
         results: $results
     }
@@ -47,7 +47,7 @@ def benchmark_cpu [] {
     let cpu_test = (try {
         # Simple CPU benchmark
         let iterations = 1000000
-        let result = (seq 1 $iterations | each {|i| $i * 2} | math sum)
+        let result = (seq 1 $iterations | each {| i| $i * 2} | math sum)
         
         let end_time = (date now | into int)
         let duration = (($end_time - $start_time) | into float) / 1000000000
@@ -102,7 +102,7 @@ def benchmark_process_creation [] {
     # Test process creation speed
     let process_test = (try {
         let iterations = 100
-        let processes = (seq 1 $iterations | each {|i|
+        let processes = (seq 1 $iterations | each {| i|
             try {
                 nu -c $"echo ($i)" | str trim
             } catch {

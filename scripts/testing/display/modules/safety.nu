@@ -43,7 +43,7 @@ export def setup_safety_backups [backup_dir: string] {
         }
 
         $backup_config | upsert backup_successful true
-    } catch { |err|
+    } catch { | err|
         $backup_config | upsert error $err
     }
 

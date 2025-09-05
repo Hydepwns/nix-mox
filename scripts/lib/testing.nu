@@ -47,7 +47,7 @@ export def run_test [test_name: string, test_func: closure, --timeout: duration 
         }
         
         test_result $test_name $success "" $duration { result: $result }
-    } catch { |err|
+    } catch { | err|
         let duration = ((date now) - $start_time)
         error $"Test error: ($test_name) - ($err.msg)" --context "test"
         test_result $test_name false $err.msg $duration { error: $err }
@@ -126,12 +126,12 @@ export def test_suite [
     
     let results = if $parallel {
         # Run tests in parallel
-        $tests | par-each { |test|
+        $tests | par-each { | test|
             run_test $test.name $test.func --timeout ($test | get timeout? | default $timeout)
         }
     } else {
         # Run tests sequentially
-        $tests | reduce --fold [] { |test, acc|
+        $tests | reduce --fold [] { | test, acc|
             let result = (run_test $test.name $test.func --timeout ($test | get timeout? | default $timeout))
             let new_acc = ($acc | append $result)
             
@@ -226,7 +226,7 @@ export def property_test [
 ] {
     info $"Running property test: ($property_name) with ($iterations) iterations" --context "property-test"
     
-    let failures = (0..$iterations | each { |i|
+    let failures = (0..$iterations | each { | i|
         let test_data = (do $generator)
         try {
             let result = ($test_data | do $property_check)
@@ -235,7 +235,7 @@ export def property_test [
             } else {
                 null
             }
-        } catch { |err|
+        } catch { | err|
             { iteration: $i, data: $test_data, error: $err.msg }
         }
     } | where $it != null)
@@ -256,7 +256,7 @@ export def benchmark_test [
     --iterations: int = 10,
     --warmup: int = 3
 ] {
-    |benchmark_func: closure|
+    | benchmark_func: closure|
     
     info $"Running benchmark: ($test_name)" --context "benchmark"
     
@@ -294,7 +294,7 @@ export def integration_test [
     --setup: closure,
     --teardown: closure
 ] {
-    |test_func: closure|
+    | test_func: closure|
     
     try {
         # Setup
@@ -305,13 +305,13 @@ export def integration_test [
         
         # Always run teardown
         if ($teardown | is-not-empty) {
-            try { do $teardown } catch { |err|
+            try { do $teardown } catch { | err|
                 warn $"Teardown failed: ($err.msg)" --context "integration"
             }
         }
         
         $result
-    } catch { |err|
+    } catch { | err|
         # Ensure teardown runs even if setup fails
         if ($teardown | is-not-empty) {
             try { do $teardown } catch { |_| null }
@@ -356,7 +356,7 @@ export def generate_test_report [
 
 # Helper to convert results to JUnit XML (simplified)
 def test_results_to_junit_xml [summary: record] {
-    let tests = ($summary.results | each { |test|
+    let tests = ($summary.results | each { | test|
         if $test.success {
             $"    <testcase name=\"($test.name)\" time=\"($test.duration | into int)\" />"
         } else {

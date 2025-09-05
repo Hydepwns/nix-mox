@@ -57,7 +57,7 @@ export def validate_stage1_boot [] {
         
         if $config_eval.exit_code == 0 {
             let modules = ($config_eval.stdout | from json)
-            let has_gpu_module = ($required_modules | any {|m| $m in $modules})
+            let has_gpu_module = ($required_modules | any {| m| $m in $modules})
             
             {
                 name: "GPU Boot Modules"
@@ -142,7 +142,7 @@ export def validate_stage1_boot [] {
     let checks = ($checks | append $stage1_build_check)
     
     {
-        success: ($checks | all {|c| $c.success})
+        success: ($checks | all {| c| $c.success})
         checks: $checks
         critical: true  # Stage-1 failures are critical
     }
@@ -321,7 +321,7 @@ export def validate_greeter_config [] {
     let checks = ($checks | append $autologin_check)
     
     {
-        success: ($checks | all {|c| $c.success})
+        success: ($checks | all {| c| $c.success})
         checks: $checks
     }
 }
@@ -399,7 +399,7 @@ export def validate_xserver_config [] {
     let checks = ($checks | append $conflict_check)
     
     {
-        success: ($checks | all {|c| $c.success})
+        success: ($checks | all {| c| $c.success})
         checks: $checks
     }
 }

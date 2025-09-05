@@ -46,7 +46,7 @@ def main [
 
 try {
     main
-} catch { |err|
+} catch { | err|
     print $"❌ Component browser failed: ($err)"
     exit 1
 }

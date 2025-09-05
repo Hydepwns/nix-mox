@@ -36,7 +36,7 @@ def main [] {
                 $env.STATE = ($env.STATE | upsert dry_run true)
             }
             "--storage" => {
-                let idx = ($args | find $arg | get 0)
+                let idx = ($args | find $arg | first)
                 let new_storage = ($args | get ($idx + 1))
                 if ($new_storage | is-empty) {
                     error "Storage name must be provided after --storage"
@@ -120,7 +120,7 @@ def backup_items [list_cmd: string, item_type: string] {
     }
 
     # Process each item and collect results
-    let results = ($ids | each { |id|
+    let results = ($ids | each { | id|
         info $"Processing backup for ($item_type) ($id)..."
 
         if $env.STATE.dry_run {
@@ -139,7 +139,7 @@ def backup_items [list_cmd: string, item_type: string] {
     })
 
     # Return true if any backup failed
-    $results | any { |result| $result == true }
+    $results | any { | result| $result == true }
 }
 
 def usage [] {

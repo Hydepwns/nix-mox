@@ -84,7 +84,7 @@ export def test_winget_package_manager [] {
             warn "winget version check failed" --context "windows-test"
             return true
         }
-    } catch { |err|
+    } catch { | err|
         warn $"winget test failed: ($err.msg)" --context "windows-test"
         return true
     }
@@ -121,7 +121,7 @@ export def test_chocolatey_package_manager [] {
             warn "Chocolatey version check failed" --context "windows-test"
             return true
         }
-    } catch { |err|
+    } catch { | err|
         warn $"Chocolatey test failed: ($err.msg)" --context "windows-test"
         return true
     }
@@ -149,7 +149,7 @@ export def test_windows_services [] {
             warn "Service query failed" --context "windows-test"
             return true
         }
-    } catch { |err|
+    } catch { | err|
         warn $"Windows Services test failed: ($err.msg)" --context "windows-test"
         return true
     }
@@ -183,7 +183,7 @@ export def test_windows_registry [] {
             warn "Registry query failed" --context "windows-test"
             return true
         }
-    } catch { |err|
+    } catch { | err|
         warn $"Registry test failed: ($err.msg)" --context "windows-test"
         return true
     }
@@ -219,7 +219,7 @@ export def test_wsl_availability [] {
             warn "WSL version check failed" --context "windows-test"
             return true
         }
-    } catch { |err|
+    } catch { | err|
         warn $"WSL test failed: ($err.msg)" --context "windows-test"
         return true
     }
@@ -275,7 +275,7 @@ export def run_powershell_tests [] {
             } else {
                 $failed += 1
             }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "windows-test"
             $failed += 1
         }

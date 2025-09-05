@@ -48,7 +48,7 @@ def main [] {
     # Report results
     if ($failed_checks | length) > 0 {
         print $"\n❌ Pre-commit checks failed in ($duration | into string | str substring 0..8):"
-        $failed_checks | each { |check|
+        $failed_checks | each { | check|
             print $"  - ($check)"
         }
         print "\n💡 Fix the issues above before committing"
@@ -63,7 +63,7 @@ def main [] {
 def check_todos [] {
     print "  Checking for TODOs/FIXMEs..."
     let todo_patterns = ["TODO", "FIXME", "XXX", "HACK", "BUG"]
-    let issues = ($todo_patterns | each { |pattern|
+    let issues = ($todo_patterns | each { | pattern|
         let matches = (try {
             do { grep -r -n -i $pattern . --exclude-dir=.git --exclude-dir=coverage-tmp --exclude-dir=tmp } | complete | get stdout | lines | length
         } catch {
@@ -85,7 +85,7 @@ def check_syntax [] {
     print "  Checking Nix syntax..."
     let nix_files = (ls **/*.nix | get name)
 
-    let syntax_errors = ($nix_files | each { |file|
+    let syntax_errors = ($nix_files | each { | file|
         try {
             let result = (do { nix eval --file $file --impure --extra-experimental-features "flakes nix-command" } | complete)
             if $result.exit_code != 0 {
@@ -134,7 +134,7 @@ def check_security [] {
         "private_key.*=.*\"[^\"]*\""
     ]
 
-    let security_issues = ($security_patterns | each { |pattern|
+    let security_issues = ($security_patterns | each { | pattern|
         try {
             do { grep -r -n -i $pattern . --exclude-dir=.git --exclude-dir=coverage-tmp --exclude-dir=tmp --exclude="*.md" } | complete | get stdout | lines | length
         } catch {
@@ -165,7 +165,7 @@ def check_banned_names [] {
         {term: "sanity", suggest: "consistency, validity"}
     ]
     
-    let issues_found = ($banned_terms | each { |term_info|
+    let issues_found = ($banned_terms | each { | term_info|
         let pattern = $term_info.term
         let files_with_term = (try {
             do { grep -r -l -i $pattern . --exclude-dir=.git --exclude-dir=coverage-tmp --exclude-dir=tmp --exclude-dir=result --exclude-dir=.direnv --exclude-dir=node_modules --exclude="*.md" --exclude="CLAUDE.md" --exclude="*.log" --exclude="*.lock" --exclude="pre-commit.nu" } | complete

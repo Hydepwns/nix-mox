@@ -432,7 +432,7 @@ def usage [] {
 # --- Execution ---
 try {
     main
-} catch { |err|
+} catch { | err|
     error $"Setup failed: ($err.msg)"
     exit 1
 }

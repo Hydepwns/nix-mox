@@ -24,7 +24,7 @@ export def test_safe_rebuild_validation [] {
             
             info $"Action '($action)' parameter accepted" --context "maintenance-test"
             track_test $"safe_rebuild_action_($action)" "maintenance" "passed" 0.1
-        } catch { |err|
+        } catch { | err|
             warn $"Action '($action)' test had issues (may be expected): ($err.msg)" --context "maintenance-test"
             track_test $"safe_rebuild_action_($action)" "maintenance" "passed" 0.1
         }
@@ -42,7 +42,7 @@ export def test_safe_rebuild_validation [] {
             warn "Safe-rebuild should reject invalid actions" --context "maintenance-test"
             track_test "safe_rebuild_invalid_action" "maintenance" "failed" 0.2
         }
-    } catch { |err|
+    } catch { | err|
         success "Safe-rebuild correctly handles invalid actions (via exception)" --context "maintenance-test"
         track_test "safe_rebuild_invalid_action" "maintenance" "passed" 0.2
     }
@@ -69,7 +69,7 @@ echo "wrong_confirmation" | nu scripts/maintenance/safe-rebuild.nu --force --act
         
         # Clean up
         rm $test_script_path
-    } catch { |err|
+    } catch { | err|
         warn $"Force mode test encountered issue: ($err.msg)" --context "maintenance-test"
         track_test "safe_rebuild_force_confirmation" "maintenance" "passed" 0.3
     }
@@ -105,7 +105,7 @@ export def test_health_check [] {
             track_test "health_check_indicators" "maintenance" "failed" 0.2
         }
         
-    } catch { |err|
+    } catch { | err|
         error $"Error running health check: ($err.msg)" --context "maintenance-test"
         track_test "health_check_basic" "maintenance" "failed" 0.4
         return false
@@ -134,7 +134,7 @@ export def test_cleanup_functionality [] {
             track_test "cleanup_dry_run_mode" "maintenance" "failed" 0.1
         }
         
-    } catch { |err|
+    } catch { | err|
         warn $"Cleanup test encountered issue (may be expected): ($err.msg)" --context "maintenance-test"
         track_test "cleanup_dry_run" "maintenance" "passed" 0.3
     }
@@ -153,7 +153,7 @@ export def test_ci_integration [] {
         success "CI test script executed without crashing" --context "maintenance-test"
         track_test "ci_test_basic" "maintenance" "passed" 0.4
         
-    } catch { |err|
+    } catch { | err|
         warn $"CI test encountered issue (may be expected in non-CI environment): ($err.msg)" --context "maintenance-test"
         track_test "ci_test_basic" "maintenance" "passed" 0.4
     }
@@ -165,7 +165,7 @@ export def test_ci_integration [] {
         success "Pre-commit hook executed without crashing" --context "maintenance-test"
         track_test "pre_commit_hook" "maintenance" "passed" 0.3
         
-    } catch { |err|
+    } catch { | err|
         warn $"Pre-commit hook test encountered issue: ($err.msg)" --context "maintenance-test"
         track_test "pre_commit_hook" "maintenance" "passed" 0.3
     }
@@ -185,7 +185,7 @@ export def test_maintenance_error_handling [] {
         track_test "maintenance_error_handling_flake" "maintenance" "passed" 0.3
         info "Invalid flake error handling test completed" --context "maintenance-test"
         
-    } catch { |err|
+    } catch { | err|
         info $"Error handling test completed (error expected): ($err.msg)" --context "maintenance-test"
         track_test "maintenance_error_handling_flake" "maintenance" "passed" 0.3
     }
@@ -222,7 +222,7 @@ export def test_maintenance_workflow [] {
         try {
             let result = (execute_command $step.cmd --timeout 15sec --context "maintenance")
             info $"Workflow step completed: ($step.desc)" --context "maintenance-test"
-        } catch { |err|
+        } catch { | err|
             warn $"Workflow step had issues: ($step.desc) - ($err.msg)" --context "maintenance-test"
             # Don't fail workflow for individual step issues in test environment
         }
@@ -261,7 +261,7 @@ export def test_maintenance_safety_mechanisms [] {
         track_test "maintenance_safety_mechanisms" "maintenance" "passed" 0.4
         success "Safety mechanisms test completed" --context "maintenance-test"
         
-    } catch { |err|
+    } catch { | err|
         info $"Safety mechanisms encountered expected restrictions: ($err.msg)" --context "maintenance-test"
         track_test "maintenance_safety_mechanisms" "maintenance" "passed" 0.4
     }
@@ -269,7 +269,7 @@ export def test_maintenance_safety_mechanisms [] {
     # Clean up
     try {
         rm -rf $safety_test_dir
-    } catch { |err|
+    } catch { | err|
         warn $"Could not clean up safety test directory: ($err.msg)" --context "maintenance-test"
     }
     
@@ -290,7 +290,7 @@ export def run_maintenance_safety_tests [] {
         test_maintenance_safety_mechanisms
     ]
     
-    let results = ($tests | each { |test_func|
+    let results = ($tests | each { | test_func|
         try {
             let result = (do $test_func)
             if $result {
@@ -298,7 +298,7 @@ export def run_maintenance_safety_tests [] {
             } else {
                 { success: false }
             }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "maintenance-test"
             { success: false }
         }

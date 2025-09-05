@@ -146,7 +146,7 @@ def display_results [report: record] {
     # Display issues if any
     if ($report.configuration.details.issues | length) > 0 {
         print "\n(ansi red)🚨 Critical Issues:(ansi reset)"
-        $report.configuration.details.issues | each { |issue|
+        $report.configuration.details.issues | each { | issue|
             print $"  • $issue"
         }
     }
@@ -154,7 +154,7 @@ def display_results [report: record] {
     # Display warnings if any
     if ($report.configuration.details.warnings | length) > 0 {
         print "\n(ansi yellow)⚠️  Warnings:(ansi reset)"
-        $report.configuration.details.warnings | each { |warning|
+        $report.configuration.details.warnings | each { | warning|
             print $"  • $warning"
         }
     }
@@ -162,7 +162,7 @@ def display_results [report: record] {
     # Display recommendations
     if ($report.configuration.suggestions | length) > 0 {
         print "\n(ansi blue)💡 Recommendations:(ansi reset)"
-        $report.configuration.suggestions | each { |suggestion|
+        $report.configuration.suggestions | each { | suggestion|
             print $"  • $suggestion"
         }
     }
@@ -173,7 +173,7 @@ def display_results [report: record] {
         print $"Backup Location: ($report.safety.recovery_plan.backup_location)"
         print $"Risk Level: ($report.safety.recovery_plan.risk_level)"
         print "Recovery Steps:"
-        $report.safety.recovery_plan.recovery_steps | each { |step|
+        $report.safety.recovery_plan.recovery_steps | each { | step|
             print $"  $step"
         }
     }

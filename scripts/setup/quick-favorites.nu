@@ -596,7 +596,7 @@ def usage [] {
 # --- Execution ---
 try {
     main
-} catch { |err|
+} catch { | err|
     print $"❌ Quick favorites setup failed: ($err)"
     exit 1
 } 

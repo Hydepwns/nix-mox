@@ -3,13 +3,10 @@
 # nix-mox Code Quality Analysis Script
 # Analyzes code quality and suggests improvements
 
-use ../../lib/validators.nu *
-use ../../lib/logging.nu *
-
 def check_nix_syntax [] {
     info "Checking Nix syntax..." --context "code-quality"
     let nix_files = (ls **/*.nix | get name)
-    mut results = []
+    let results = []
     for file in $nix_files {
         let result = (try {
             nix eval --file $file --impure --json
@@ -17,7 +14,7 @@ def check_nix_syntax [] {
         } catch {
             {file: $file, status: "invalid", error: "Syntax error"}
         })
-        $results = ($results | append $result)
+        let results = ($results | append $result)
     }
     $results
 }
@@ -25,7 +22,7 @@ def check_nix_syntax [] {
 def check_nushell_syntax [] {
     info "Checking Nushell syntax..." --context "code-quality"
     let nu_files = (ls **/*.nu | get name)
-    mut results = []
+    let results = []
     for file in $nu_files {
         let result = (try {
             nu -c $"source ($file)"
@@ -33,14 +30,14 @@ def check_nushell_syntax [] {
         } catch {
             {file: $file, status: "invalid", error: "Syntax error"}
         })
-        $results = ($results | append $result)
+        let results = ($results | append $result)
     }
     $results
 }
 
 def validate_file_consistency [] {
     info "Checking file consistency..." --context "code-quality"
-    mut issues = []
+    let issues = []
 
     # Check for consistent line endings (simplified check)
     let all_files = ((ls **/*.nix | get name) | append (ls **/*.nu | get name) | append (ls **/*.sh | get name))
@@ -49,7 +46,7 @@ def validate_file_consistency [] {
     for file in $all_files {
         let content = (open --raw $file)
         if ($content | str ends-with " ") {
-            $issues = ($issues | append $"File ($file) has trailing whitespace")
+            let issues = ($issues | append $"File ($file) has trailing whitespace")
         }
     }
 
@@ -58,7 +55,7 @@ def validate_file_consistency [] {
     for file in $script_files {
         let first_line = (open --raw $file | lines | first | str trim)
         if not ($first_line | str starts-with "#!") {
-            $issues = ($issues | append $"Script file ($file) missing shebang")
+            let issues = ($issues | append $"Script file ($file) missing shebang")
         }
     }
     $issues
@@ -66,12 +63,12 @@ def validate_file_consistency [] {
 
 def check_documentation_coverage [] {
     info "Checking documentation coverage..." --context "code-quality"
-    mut issues = []
+    let issues = []
 
     # Check for README files
     let readme_files = (ls **/README* | get name)
     if ($readme_files | length) < 3 {
-        $issues = ($issues | append "Limited README coverage - consider adding more documentation")
+        let issues = ($issues | append "Limited README coverage - consider adding more documentation")
     }
 
     # Check for inline documentation
@@ -79,7 +76,7 @@ def check_documentation_coverage [] {
     for file in $nu_files {
         let content = (open --raw $file)
         if not ($content | str contains "#") {
-            $issues = ($issues | append $"File ($file) has no comments")
+            let issues = ($issues | append $"File ($file) has no comments")
         }
     }
     $issues
@@ -87,14 +84,14 @@ def check_documentation_coverage [] {
 
 def check_security_issues [] {
     info "Checking for security issues..." --context "code-quality"
-    mut issues = []
+    let issues = []
 
     # Check for hardcoded secrets (simplified)
     let all_files = ((ls **/*.nix | get name) | append (ls **/*.nu | get name) | append (ls **/*.sh | get name))
     for file in $all_files {
         let content = (open --raw $file)
         if ($content | str contains "password =") or ($content | str contains "secret =") {
-            $issues = ($issues | append $"Potential hardcoded secret in ($file)")
+            let issues = ($issues | append $"Potential hardcoded secret in ($file)")
         }
     }
     $issues
@@ -102,7 +99,7 @@ def check_security_issues [] {
 
 def check_performance_issues [] {
     info "Checking for performance issues..." --context "code-quality"
-    mut issues = []
+    let issues = []
 
     # Check for large files
     let all_files = (ls **/* | get name)
@@ -111,7 +108,7 @@ def check_performance_issues [] {
         if not ($file_info | is-empty) {
             let size = ($file_info | get size | first | into int)
             if $size > 1048576 {  # 1MB
-                $issues = ($issues | append $"Large file ($file) - consider if it should be in version control")
+                let issues = ($issues | append $"Large file ($file) - consider if it should be in version control")
             }
         }
     }
@@ -151,34 +148,34 @@ def generate_quality_report [nix_results: list, nu_results: list, consistency_is
 }
 
 def generate_recommendations [invalid_files: int, total_issues: int, quality_score: float] {
-    mut recommendations = []
+    let recommendations = []
 
     if $invalid_files > 0 {
-        $recommendations = ($recommendations | append "Fix syntax errors in files")
+        let recommendations = ($recommendations | append "Fix syntax errors in files")
     }
 
     if $total_issues > 10 {
-        $recommendations = ($recommendations | append "Address code quality issues")
+        let recommendations = ($recommendations | append "Address code quality issues")
     }
 
     if $quality_score < 80 {
-        $recommendations = ($recommendations | append "Improve overall code quality")
+        let recommendations = ($recommendations | append "Improve overall code quality")
     }
 
     if ($recommendations | is-empty) {
-        $recommendations = ($recommendations | append "Code quality is good - maintain current standards")
+        let recommendations = ($recommendations | append "Code quality is good - maintain current standards")
     }
 
     $recommendations
 }
 
 def display_quality_report [report: record] {
-    print $"($env.GREEN)=== nix-mox Code Quality Report === ($env.NC)"
+    print $"(ansi green)=== nix-mox Code Quality Report === (ansi reset)"
     print $"Generated: ($report.timestamp)"
     print ""
 
     let summary = $report.summary
-    print $"($env.BLUE)Summary:($env.NC)"
+    print $"(ansi blue)Summary:(ansi reset)"
     print $"  Total Files: ($summary.total_files)"
     print $"  Invalid Files: ($summary.invalid_files)"
     print $"  Quality Score: ($summary.quality_score | into int)%"
@@ -190,7 +187,7 @@ def display_quality_report [report: record] {
     let nu_errors = ($report.syntax_check.nushell_files | where status == "invalid")
 
     if not ($nix_errors | is-empty) {
-        print $"($env.RED)Nix Syntax Errors:($env.NC)"
+        print $"(ansi red)Nix Syntax Errors:(ansi reset)"
         for error in $nix_errors {
             print $"  ($error.file): ($error.error)"
         }
@@ -198,7 +195,7 @@ def display_quality_report [report: record] {
     }
 
     if not ($nu_errors | is-empty) {
-        print $"($env.RED)Nushell Syntax Errors:($env.NC)"
+        print $"(ansi red)Nushell Syntax Errors:(ansi reset)"
         for error in $nu_errors {
             print $"  ($error.file): ($error.error)"
         }
@@ -209,7 +206,7 @@ def display_quality_report [report: record] {
     let issues = $report.issues
 
     if not ($issues.consistency | is-empty) {
-        print $"($env.YELLOW)Consistency Issues:($env.NC)"
+        print $"(ansi yellow)Consistency Issues:(ansi reset)"
         for issue in $issues.consistency {
             print $"  • ($issue)"
         }
@@ -217,7 +214,7 @@ def display_quality_report [report: record] {
     }
 
     if not ($issues.documentation | is-empty) {
-        print $"($env.YELLOW)Documentation Issues:($env.NC)"
+        print $"(ansi yellow)Documentation Issues:(ansi reset)"
         for issue in $issues.documentation {
             print $"  • ($issue)"
         }
@@ -225,7 +222,7 @@ def display_quality_report [report: record] {
     }
 
     if not ($issues.security | is-empty) {
-        print $"($env.RED)Security Issues:($env.NC)"
+        print $"(ansi red)Security Issues:(ansi reset)"
         for issue in $issues.security {
             print $"  • ($issue)"
         }
@@ -233,22 +230,22 @@ def display_quality_report [report: record] {
     }
 
     if not ($issues.performance | is-empty) {
-        print $"($env.YELLOW)Performance Issues:($env.NC)"
+        print $"(ansi yellow)Performance Issues:(ansi reset)"
         for issue in $issues.performance {
             print $"  • ($issue)"
         }
         print ""
     }
 
-    print $"($env.GREEN)Recommendations:($env.NC)"
+    print $"(ansi green)Recommendations:(ansi reset)"
     for rec in $report.recommendations {
         print $"  • ($rec)"
     }
     print ""
 }
 
-def main [] {
-    print "🔍 nix-mox Code Quality Analysis"
+def main_code_quality [] {
+    print $"(ansi blue)🔍 nix-mox Code Quality Analysis(ansi reset)"
     print "================================"
 
     let start_time = (date now)
@@ -268,19 +265,19 @@ def main [] {
     let end_time = (date now)
     let duration = ($end_time - $start_time)
 
-    print $"\n✅ Code quality analysis completed in ($duration | into string | str substring 0..8)"
+    print $"\n(ansi green)✅ Code quality analysis completed in ($duration | into string | str substring 0..8)(ansi reset)"
     print "\n📋 Summary:"
-    print "- Run 'make format' to fix formatting issues"
-    print "- Address TODOs and FIXMEs before production"
-    print "- Review security findings"
-    print "- Update documentation as needed"
+    print $"- Run 'make format' to fix formatting issues"
+    print $"- Address TODOs and FIXMEs before production"
+    print $"- Review security findings"
+    print $"- Update documentation as needed"
 }
 
-def check_todos [] {
-    print "\n🔍 Checking for TODOs, FIXMEs, and HACKs..."
+def check_todos_issues [] {
+    print $"\n(ansi blue)🔍 Checking for TODOs, FIXMEs, and HACKs...(ansi reset)"
     let todo_patterns = ["TODO", "FIXME", "XXX", "HACK", "BUG", "NOTE:"]
-    let issues = ($todo_patterns | each { |pattern|
-        let matches = (grep -r -n -i $pattern . --exclude-dir=.git --exclude-dir=coverage-tmp --exclude-dir=tmp out+err> /dev/null | lines | each { |line|
+    let issues = ($todo_patterns | each { | pattern|
+        let matches = (grep -r -n -i $pattern . --exclude-dir=.git --exclude-dir=coverage-tmp --exclude-dir=tmp out+err> /dev/null | lines | each { | line|
             let parts = ($line | split row ":")
             if ($parts | length) >= 3 {
                 {
@@ -295,19 +292,19 @@ def check_todos [] {
     } | flatten)
 
     if ($issues | length) > 0 {
-        print $"\n⚠️  Found ($issues | length) TODO/FIXME items:"
-        $issues | each { |issue|
+        print $"\n(ansi yellow)⚠️  Found ($issues | length) TODO/FIXME items:(ansi reset)"
+        $issues | each { | issue|
             print $"  ($issue.file):($issue.line) - ($issue.pattern) ($issue.context)"
         }
     } else {
-        print "✅ No TODOs or FIXMEs found"
+        print $"(ansi green)✅ No TODOs or FIXMEs found(ansi reset)"
     }
 }
 
-def check_syntax [] {
-    print "\n🔍 Checking Nix syntax..."
+def check_syntax_issues [] {
+    print $"\n(ansi blue)🔍 Checking Nix syntax...(ansi reset)"
     let nix_files = (ls **/*.nix | where name !~ '.git' and name !~ 'coverage-tmp' and name !~ 'tmp' | get name)
-    let syntax_errors = ($nix_files | each { |file|
+    let syntax_errors = ($nix_files | each { | file|
         try {
             nix eval --file $file --impure out+err> /dev/null | lines | where ($it | str contains "error:")
         } catch {
@@ -316,28 +313,28 @@ def check_syntax [] {
     } | flatten)
 
     if ($syntax_errors | length) > 0 {
-        print $"\n❌ Found ($syntax_errors | length) syntax errors:"
-        $syntax_errors | each { |error|
+        print $"\n(ansi red)❌ Found ($syntax_errors | length) syntax errors:(ansi reset)"
+        $syntax_errors | each { | error|
             print $"  $error"
         }
     } else {
-        print "✅ All Nix files have valid syntax"
+        print $"(ansi green)✅ All Nix files have valid syntax(ansi reset)"
     }
 }
 
-def check_formatting [] {
-    print "\n🔍 Checking code formatting..."
+def check_formatting_issues [] {
+    print $"\n(ansi blue)🔍 Checking code formatting...(ansi reset)"
 
     # Check if nixpkgs-fmt is available
     let nixpkgs_fmt_available = (which nixpkgs-fmt | length) > 0
     if not $nixpkgs_fmt_available {
-        print "⚠️  nixpkgs-fmt not found - skipping formatting check"
+        print $"(ansi yellow)⚠️  nixpkgs-fmt not found - skipping formatting check(ansi reset)"
         print "💡 Install nixpkgs-fmt: nix profile install nixpkgs#nixpkgs-fmt"
         return
     }
 
     let nix_files = (ls **/*.nix | where name !~ '.git' and name !~ 'coverage-tmp' and name !~ 'tmp' | get name)
-    let unformatted = ($nix_files | each { |file|
+    let unformatted = ($nix_files | each { | file|
         let formatted = (nixpkgs-fmt $file out+err> /dev/null)
         let original = (open $file)
         if $formatted != $original {
@@ -347,17 +344,17 @@ def check_formatting [] {
 
     if ($unformatted | length) > 0 {
         print $"\n⚠️  Found ($unformatted | length) unformatted files:"
-        $unformatted | each { |unformatted_file|
+        $unformatted | each { | unformatted_file|
             print $"  $unformatted_file"
         }
-        print "\n💡 Run 'make format' to fix formatting"
+        print $"\n(ansi yellow)💡 Run 'make format' to fix formatting(ansi reset)"
     } else {
-        print "✅ All files are properly formatted"
+        print $"(ansi green)✅ All files are properly formatted(ansi reset)"
     }
 }
 
-def check_security [] {
-    print "\n🔍 Checking for security issues..."
+def check_security_issues_code_quality [] {
+    print $"\n(ansi blue)🔍 Checking for security issues...(ansi reset)"
     let security_patterns = [
         "password.*=.*\"[^\"]*\"",
         "secret.*=.*\"[^\"]*\"",
@@ -365,8 +362,8 @@ def check_security [] {
         "api_key.*=.*\"[^\"]*\"",
         "private_key.*=.*\"[^\"]*\""
     ]
-    let security_issues = ($security_patterns | each { |pattern|
-        let matches = (grep -r -n -i $pattern . --exclude-dir=.git --exclude-dir=coverage-tmp --exclude-dir=tmp --exclude="*.md" out+err> /dev/null | lines | each { |line|
+    let security_issues = ($security_patterns | each { | pattern|
+        let matches = (grep -r -n -i $pattern . --exclude-dir=.git --exclude-dir=coverage-tmp --exclude-dir=tmp --exclude="*.md" out+err> /dev/null | lines | each { | line|
             let parts = ($line | split row ":")
             if ($parts | length) >= 3 {
                 {
@@ -381,23 +378,23 @@ def check_security [] {
     } | flatten)
 
     if ($security_issues | length) > 0 {
-        print $"\n⚠️  Found ($security_issues | length) potential security issues:"
-        $security_issues | each { |issue|
+        print $"\n(ansi yellow)⚠️  Found ($security_issues | length) potential security issues:(ansi reset)"
+        $security_issues | each { | issue|
             print $"  ($issue.file):($issue.line) - Potential hardcoded secret"
         }
-        print "\n💡 Consider using environment variables or secrets management"
+        print $"\n(ansi yellow)💡 Consider using environment variables or secrets management(ansi reset)"
     } else {
-        print "✅ No obvious security issues found"
+        print $"(ansi green)✅ No obvious security issues found(ansi reset)"
     }
 }
 
-def check_documentation [] {
-    print "\n🔍 Checking documentation..."
+def check_documentation_issues_code_quality [] {
+    print $"\n(ansi blue)🔍 Checking documentation...(ansi reset)"
     let doc_files = (ls docs/**/*.md | get name)
     let readme_files = (ls **/README.md | where name !~ '.git' | get name)
     let all_docs = ($doc_files | append $readme_files)
 
-    let outdated_docs = ($all_docs | each { |file|
+    let outdated_docs = ($all_docs | each { | file|
         let content = (open $file)
         let outdated_patterns = [
             "setup-wizard",
@@ -406,7 +403,7 @@ def check_documentation [] {
             "setup-gaming-workstation"
         ]
 
-        let has_outdated = ($outdated_patterns | any { |pattern|
+        let has_outdated = ($outdated_patterns | any { | pattern|
             $content | str contains $pattern
         })
 
@@ -416,23 +413,23 @@ def check_documentation [] {
     } | where ($it != null))
 
     if ($outdated_docs | length) > 0 {
-        print $"\n⚠️  Found ($outdated_docs | length) potentially outdated documentation files:"
-        $outdated_docs | each { |f| print $"  ($f)" }
-        print "\n💡 Update documentation to reference new unified setup script"
+        print $"\n(ansi yellow)⚠️  Found ($outdated_docs | length) potentially outdated documentation files:(ansi reset)"
+        $outdated_docs | each { | f| print $"  ($f)" }
+        print $"\n(ansi yellow)💡 Update documentation to reference new unified setup script(ansi reset)"
     } else {
-        print "✅ Documentation appears up to date"
+        print $"(ansi green)✅ Documentation appears up to date(ansi reset)"
     }
 }
 
 def check_performance [] {
-    print "\n🔍 Checking for performance issues..."
+    print $"\n(ansi blue)🔍 Checking for performance issues...(ansi reset)"
     let performance_patterns = [
         "nix build.*--rebuild",
         "nix-collect-garbage.*-d",
         "rm -rf.*nix/store"
     ]
-    let performance_issues = ($performance_patterns | each { |pattern|
-        let matches = (grep -r -n -i $pattern . --exclude-dir=.git --exclude-dir=coverage-tmp --exclude-dir=tmp out+err> /dev/null | lines | each { |line|
+    let performance_issues = ($performance_patterns | each { | pattern|
+        let matches = (grep -r -n -i $pattern . --exclude-dir=.git --exclude-dir=coverage-tmp --exclude-dir=tmp out+err> /dev/null | lines | each { | line|
             let parts = ($line | split row ":")
             if ($parts | length) >= 3 {
                 {
@@ -447,42 +444,42 @@ def check_performance [] {
     } | flatten)
 
     if ($performance_issues | length) > 0 {
-        print $"\n⚠️  Found ($performance_issues | length) potential performance issues:"
-        $performance_issues | each { |issue|
+        print $"\n(ansi yellow)⚠️  Found ($performance_issues | length) potential performance issues:(ansi reset)"
+        $performance_issues | each { | issue|
             print $"  ($issue.file):($issue.line) - Potentially expensive operation"
         }
-        print "\n💡 Consider optimizing expensive operations"
+        print $"\n(ansi yellow)💡 Consider optimizing expensive operations(ansi reset)"
     } else {
-        print "✅ No obvious performance issues found"
+        print $"(ansi green)✅ No obvious performance issues found(ansi reset)"
     }
 }
 
 # Export functions for use in other scripts
-export def analyze [] {
-    main
+export def analyze_code_quality [] {
+    main_code_quality
 }
 
-export def check-syntax [] {
+export def check_syntax_issues_code_quality [] {
     let nix_results = (check_nix_syntax)
-    let nu_results = (check_nushell_syntax)
+    let nu_results = (check_syntax_issues_code_quality)
 
-    print "Syntax Check Results:"
+    print $"(ansi blue)Syntax Check Results:(ansi reset)"
     print "===================="
 
     let nix_errors = ($nix_results | where status == "invalid")
     let nu_errors = ($nu_results | where status == "invalid")
 
     if ($nix_errors | is-empty) and ($nu_errors | is-empty) {
-        print "✅ All files have valid syntax"
+        print $"(ansi green)✅ All files have valid syntax(ansi reset)"
     } else {
         if not ($nix_errors | is-empty) {
-            print "❌ Nix syntax errors:"
+            print $"(ansi red)❌ Nix syntax errors:(ansi reset)"
             for error in $nix_errors {
                 print $"  ($error.file): ($error.error)"
             }
         }
         if not ($nu_errors | is-empty) {
-            print "❌ Nushell syntax errors:"
+            print $"(ansi red)❌ Nushell syntax errors:(ansi reset)"
             for error in $nu_errors {
                 print $"  ($error.file): ($error.error)"
             }
@@ -490,15 +487,3 @@ export def check-syntax [] {
     }
 }
 
-export def check-security [] {
-    let security_issues = (check_security_issues)
-
-    if ($security_issues | is-empty) {
-        print "✅ No security issues found"
-    } else {
-        print "⚠️ Security issues found:"
-        for issue in $security_issues {
-            print $"  • ($issue)"
-        }
-    }
-}

@@ -5,7 +5,7 @@
 
 
 
-export def get_system_overview [] {
+export def get_system_overview_module [] {
     let platform_info = get_platform_info
     let performance = try { get_system_performance } catch { {} }
     
@@ -21,8 +21,8 @@ export def get_system_overview [] {
     }
 }
 
-export def get_detailed_system_info [] {
-    let system_info = get_system_overview
+export def get_detailed_system_info_module [] {
+    let system_info = get_system_overview_module
     
     # Get additional system details
     let disk_info = try {
@@ -37,7 +37,7 @@ export def get_detailed_system_info [] {
     }
     
     let network_info = try {
-        let network_interfaces = (ip addr show | grep "inet " | split row " " | get 2 | split row "/" | get 0)
+        let network_interfaces = (ip addr show | grep "inet " | split row " " | get 2 | split row "/" | first)
         {
             ip_addresses: $network_interfaces
         }
@@ -50,8 +50,8 @@ export def get_detailed_system_info [] {
     $system_info | merge $disk_info | merge $network_info
 }
 
-export def get_system_health [] {
-    let system_info = get_detailed_system_info
+export def get_system_health_module [] {
+    let system_info = get_detailed_system_info_module
     
     let health_status = {
         overall: "healthy"
@@ -83,7 +83,7 @@ export def get_system_health [] {
     # Check load average
     let load_avg = $system_info.load_average
     if ($load_avg | length) >= 3 {
-        let current_load = ($load_avg | get 0)
+        let current_load = ($load_avg | first)
         let cpu_count = (sys | get cpu | length)
         if $current_load > ($cpu_count * 2) {
             $health_status | upsert overall "warning"
@@ -94,12 +94,12 @@ export def get_system_health [] {
     $health_status
 }
 
-export def get_process_info [] {
+export def get_process_info_module [] {
     try {
-        let processes = (ps | skip 1 | each { |line|
+        let processes = (ps | skip 1 | each { | line|
             let parts = ($line | split row " " | where $it != "")
             {
-                user: ($parts | get 0),
+                user: ($parts | first),
                 pid: ($parts | get 1 | into int),
                 cpu: ($parts | get 2 | into float),
                 mem: ($parts | get 3 | into float),
@@ -119,7 +119,7 @@ export def get_process_info [] {
     }
 }
 
-export def get_service_status [] {
+export def get_service_status_module [] {
     try {
         let services = [
             "nix-daemon"
@@ -128,7 +128,7 @@ export def get_service_status [] {
             "sshd"
         ]
         
-        let service_status = ($services | each { |service|
+        let service_status = ($services | each { | service|
             let status = try {
                 systemctl is-active $service
             } catch {

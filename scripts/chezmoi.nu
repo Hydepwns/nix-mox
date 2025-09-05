@@ -11,7 +11,7 @@ use ./lib/validators.nu
 def main [
     ...args
 ] {
-    let command = ($args | get 0 | default "help")
+    let command = ($args | first | default "help")
     let dry_run = ("--dry-run" in $args)
     let context = "chezmoi"
     info $"chezmoi ($command)" --context $context

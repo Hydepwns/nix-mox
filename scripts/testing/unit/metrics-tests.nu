@@ -217,7 +217,7 @@ export def run_metrics_tests [] {
             } else {
                 let failed = $failed + 1
             }
-        } catch { |err|
+        } catch { | err|
             error $"Test failed with error: ($err.msg)" --context "metrics-test"
             let failed = $failed + 1
         }

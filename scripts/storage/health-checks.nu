@@ -19,7 +19,7 @@ export def storage_health_check [] {
         { name: "storage_devices", checker: "check_storage_devices" }
     ]
     
-    let results = ($health_checks | each { |check|
+    let results = ($health_checks | each { | check|
         try {
             let result = match $check.checker {
                 "check_disk_usage" => (check_disk_usage),
@@ -34,7 +34,7 @@ export def storage_health_check [] {
                 message: ($result | get message? | default "OK"),
                 details: ($result | get details? | default {})
             }
-        } catch { |err|
+        } catch { | err|
             {
                 name: $check.name,
                 healthy: false,
@@ -44,7 +44,7 @@ export def storage_health_check [] {
         }
     })
     
-    let overall_healthy = ($results | all {|r| $r.healthy })
+    let overall_healthy = ($results | all {| r| $r.healthy })
     
     if $overall_healthy {
         success "Storage health check passed" --context "storage-health"
@@ -68,7 +68,7 @@ export def storage_health_check [] {
 export def check_disk_usage [] {
     try {
         let df_output = (df -h | from ssv -a)
-        let critical_partitions = ($df_output | where {|row| 
+        let critical_partitions = ($df_output | where {| row| 
             ($row.use% | str replace "%" "" | into int) > 90
         })
         
@@ -85,7 +85,7 @@ export def check_disk_usage [] {
                 details: { partitions: $df_output }
             }
         }
-    } catch { |err|
+    } catch { | err|
         {
             healthy: false,
             message: $"Failed to check disk usage: ($err.msg)",
@@ -107,7 +107,7 @@ export def validate_filesystem_errors [] {
     
     try {
         # Check dmesg for filesystem errors
-        let dmesg_check = (dmesg | grep -i "error\|fail\|corrupt" | tail -10 | complete)
+        let dmesg_check = (dmesg | grep -i "error\| fail\| corrupt" | tail -10 | complete)
         if $dmesg_check.exit_code == 0 and (($dmesg_check.stdout | lines | length) > 0) {
             {
                 healthy: false,
@@ -121,7 +121,7 @@ export def validate_filesystem_errors [] {
                 details: {}
             }
         }
-    } catch { |err|
+    } catch { | err|
         {
             healthy: false,
             message: $"Failed to check filesystem errors: ($err.msg)",
@@ -147,7 +147,7 @@ export def check_mount_status [] {
                 details: {}
             }
         }
-    } catch { |err|
+    } catch { | err|
         {
             healthy: false,
             message: $"Failed to check mount status: ($err.msg)",
@@ -183,7 +183,7 @@ export def check_storage_devices [] {
                 details: {}
             }
         }
-    } catch { |err|
+    } catch { | err|
         {
             healthy: false,
             message: $"Failed to check storage devices: ($err.msg)",

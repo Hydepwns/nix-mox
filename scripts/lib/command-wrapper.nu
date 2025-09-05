@@ -85,7 +85,7 @@ export def execute_command [
             }
             $result
         }
-    } catch { |err|
+    } catch { | err|
         error $"Execution failed: ($err.msg)" --context $context
         { success: false, stdout: "", stderr: $err.msg, exit_code: 1 }
     }
@@ -97,13 +97,13 @@ export def with_retry [
     delay: duration = 1sec,
     --backoff = false
 ] {
-    |operation: closure|
+    | operation: closure|
     
     # Simplified retry - just try the operation once for now
     # TODO: Implement proper retry logic without mutable variables  
     try {
         do $operation
-    } catch { |err|
+    } catch { | err|
         warn $"Operation failed: ($err.msg)" --context "retry"
         error make { msg: $"Operation failed: ($err)" }
     }
@@ -194,7 +194,7 @@ export def service_command [
 # Pipeline command composition
 export def pipe_commands [commands: list<list<string>>, --context: string = "pipeline"] {
     debug "Starting command pipeline" --context $context
-    $commands | reduce { |cmd, acc|
+    $commands | reduce { | cmd, acc|
         let result = (execute_command $cmd --context $context)
         if $result.exit_code != 0 {
             error $"Pipeline failed at: ($cmd | str join ' ')" --context $context
@@ -206,7 +206,7 @@ export def pipe_commands [commands: list<list<string>>, --context: string = "pip
 
 # Conditional command execution
 export def execute_if [condition] {
-    |command: list<string>, context: string = "conditional"|
+    | command: list<string>, context: string = "conditional"|
     if $condition {
         execute_command $command --context $context
     } else {

@@ -34,7 +34,7 @@ export def ensure_dir [path: path] {
         try {
             mkdir $path
             success $"Created directory: ($path)" --context "linux-common"
-        } catch { |err|
+        } catch { | err|
             error $"Failed to create directory ($path): ($err)" --context "linux-common"
         }
     }
@@ -181,7 +181,7 @@ export def create_backup [source: path, destination: path] {
         cp -r $source $destination
         success $"Backup created successfully: ($destination)" --context $context
         {success: true, backup_path: $destination}
-    } catch { |err|
+    } catch { | err|
         error $"Backup failed: ($err)" --context $context
         {success: false, error: $"Backup failed: ($err)"}
     }

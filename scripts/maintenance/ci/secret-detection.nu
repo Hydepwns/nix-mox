@@ -20,10 +20,10 @@ export def detect_secrets [
             $staged_files
         } catch {
             warn "Could not get staged files, checking all files"
-            (glob "**/*" | where { |f| ($f | path type) == "file" })
+            (glob "**/*" | where { | f| ($f | path type) == "file" })
         }
     } else {
-        (glob "**/*" | where { |f| ($f | path type) == "file" })
+        (glob "**/*" | where { | f| ($f | path type) == "file" })
     }
     
     mut found_secrets = []

@@ -29,7 +29,7 @@ def main [] {
     let available_packages = ["backup-system"]
 
     # Analyze package sizes
-    let package_sizes = ($available_packages | each { |pkg|
+    let package_sizes = ($available_packages | each { | pkg|
         try {
             let size = (nix path-info --closure-size .#$pkg 2>/dev/null | str trim | into int)
             {
@@ -131,7 +131,7 @@ def analyze_packages [system: string] {
             }
         }
 
-        $results = ($results | append (|it| it | merge {
+        $results = ($results | append (| it| it | merge {
             name: $package
             system: $system
             closure_size: $closure_size
@@ -181,7 +181,7 @@ def analyze_devshells [system: string] {
                 }
             }
 
-            $results = ($results | append ({|it| it | merge {
+            $results = ($results | append ({| it| it | merge {
                 type: "devshell"
                 name: $shell
                 system: $system
@@ -190,7 +190,7 @@ def analyze_devshells [system: string] {
                 available: true
             }}))
         } else {
-            $results = ($results | append ({|it| it | merge {
+            $results = ($results | append ({| it| it | merge {
                 type: "devshell"
                 name: $shell
                 system: $system
@@ -242,7 +242,7 @@ def analyze_templates [system: string] {
                 }
             }
 
-            $results = ($results | append ({|it| it | merge {
+            $results = ($results | append ({| it| it | merge {
                 type: "template"
                 name: $template
                 system: $system
@@ -346,19 +346,19 @@ def generate_summary [packages: list, devshells: list, templates: list] {
     let grand_total = ($total_package_size + $total_devshell_size + $total_template_size)
 
     let largest_package = if ($packages | length) > 0 {
-        ($packages | sort-by size -r | get 0)
+        ($packages | sort-by size -r | first)
     } else {
         null
     }
 
     let largest_devshell = if ($devshells | where available == true | length) > 0 {
-        ($devshells | where available == true | sort-by closure_size -r | get 0)
+        ($devshells | where available == true | sort-by closure_size -r | first)
     } else {
         null
     }
 
     let largest_template = if ($templates | length) > 0 {
-        ($templates | sort-by closure_size -r | get 0)
+        ($templates | sort-by closure_size -r | first)
     } else {
         null
     }
