@@ -29,10 +29,19 @@ def banner [title: string, context: string = "dashboard"] {
     print ""
 }
 
+# Simple command execution with fallback
+def simple_command [cmd: string, fallback: string] {
+    try {
+        sh -c $cmd
+    } catch {
+        $fallback
+    }
+}
+
 # Platform detection
 def get_platform [] {
     let os = $env.OS?
-    let uname = (safe_command_with_fallback "uname -s" "unknown" --context "platform-detection" | str downcase)
+    let uname = (simple_command "uname -s" "unknown"  | str downcase)
     
     if $os == "Windows_NT" {
         "windows"
@@ -108,8 +117,8 @@ def collect_basic_data [] {
     {
         platform: $platform,
         timestamp: $timestamp,
-        hostname: (safe_command_with_fallback "hostname" "unknown" --context "system-info" ),
-        uptime: (safe_command_with_fallback "uptime" "unknown" --context "system-info"  | str trim)
+        hostname: (simple_command "hostname" "unknown"  ),
+        uptime: (simple_command "uptime" "unknown"   | str trim)
     }
 }
 
