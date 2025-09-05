@@ -63,12 +63,12 @@ export def load_config_file [path: string] {
         # Validate configuration
         let validation = (validate_config $config)
         if not $validation.valid {
-            handle_script_error $"Invalid configuration in ($path): ($validation.errors | str join ', ')" "CONFIG_INVALID" { file: $path, errors: $validation.errors }
+            handle_script_error  $"Invalid configuration in ($path): ($validation.errors | str join ', ')" --context "CONFIG_INVALID" { file: $path, errors: $validation.errors }
         }
 
         $config
-    } catch { |err|
-        handle_script_error $"Failed to load configuration from ($path): ($err)" "CONFIG_INVALID" { file: $path }
+    } catch { | err|
+        handle_script_error  $"Failed to load configuration from ($path): ($err)" --context "CONFIG_INVALID" { file: $path }
     }
 }
 
@@ -91,7 +91,7 @@ export def load_config [] {
     # Final validation
     let validation = (validate_config $config)
     if not $validation.valid {
-        handle_script_error $"Configuration validation failed: ($validation.errors | str join ', ')" "CONFIG_INVALID" { errors: $validation.errors }
+        handle_script_error  $"Configuration validation failed: ($validation.errors | str join ', ')" --context "CONFIG_INVALID" { errors: $validation.errors }
     }
 
     $config
@@ -177,7 +177,7 @@ export def validate_config [config: record] {
 
         if ($logging | get level?) != null {
             let level = $logging | get level
-            if not ($valid_levels | any { |l| $l == $level }) {
+            if not ($valid_levels | any { | l| $l == $level }) {
                 $errors = ($errors | append $"Invalid log level: ($level). Valid levels: ($valid_levels | str join ', ')")
             }
         }
@@ -197,7 +197,7 @@ export def validate_config [config: record] {
 
         if ($platform | get preferred?) != null {
             let preferred = $platform | get preferred
-            if not ($valid_platforms | any { |p| $p == $preferred }) {
+            if not ($valid_platforms | any { | p| $p == $preferred }) {
                 $errors = ($errors | append $"Invalid platform: ($preferred). Valid platforms: ($valid_platforms | str join ', ')")
             }
         }
@@ -234,7 +234,7 @@ export def save_config [config: record, path: string] {
         # Validate before saving
         let validation = (validate_config $config)
         if not $validation.valid {
-            handle_script_error $"Cannot save invalid configuration: ($validation.errors | str join ', ')" "CONFIG_INVALID" { errors: $validation.errors }
+            handle_script_error  $"Cannot save invalid configuration: ($validation.errors | str join ', ')" --context "CONFIG_INVALID" { errors: $validation.errors }
         }
 
         # Ensure directory exists
@@ -246,8 +246,8 @@ export def save_config [config: record, path: string] {
         # Save configuration
         $config | to json | save $path
         log_info $"Configuration saved to ($path)"
-    } catch { |err|
-        handle_script_error $"Failed to save configuration to ($path): ($err)" "CONFIG_INVALID" { file: $path }
+    } catch { | err|
+        handle_script_error  $"Failed to save configuration to ($path): ($err)" --context "CONFIG_INVALID" { file: $path }
     }
 }
 
@@ -272,9 +272,9 @@ export def get_config_value [config: record, path: string, default: any = null] 
 export def set_config_value [config: record, path: string, value: any] {
     let keys = ($path | split row ".")
     if ($keys | length) == 1 {
-        $config | upsert ($keys | get 0) $value
+        $config | upsert ($keys | first) $value
     } else {
-        let first = ($keys | get 0)
+        let first = ($keys | first)
         let rest = ($keys | skip 1 | str join ".")
         let first_value = try { $config | get $first } catch { null }
         let sub = if $first_value == null {

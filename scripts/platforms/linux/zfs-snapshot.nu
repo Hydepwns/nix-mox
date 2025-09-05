@@ -40,7 +40,7 @@ def main [] {
                 $env.STATE = ($env.STATE | upsert dry_run true)
             }
             "--retention" => {
-                let idx = ($args | find $arg | get 0)
+                let idx = ($args | find $arg | first)
                 let new_retention = ($args | get ($idx + 1))
                 if ($new_retention | is-empty) {
                     error "Retention days must be provided after --retention"
@@ -49,7 +49,7 @@ def main [] {
                 $env.STATE = ($env.STATE | upsert retention_days ($new_retention | into int))
             }
             "--pool" => {
-                let idx = ($args | find $arg | get 0)
+                let idx = ($args | find $arg | first)
                 let new_pool = ($args | get ($idx + 1))
                 if ($new_pool | is-empty) {
                     error "Pool name must be provided after --pool"
@@ -119,7 +119,7 @@ def create_snapshot [] {
 
     # Check if snapshot already exists
     let existing_snapshots = (zfs list -t snapshot -H -o name | lines)
-    if ($existing_snapshots | any { |snap| $snap == $full_snap_name }) {
+    if ($existing_snapshots | any { | snap| $snap == $full_snap_name }) {
         warn $"Snapshot ($full_snap_name) already exists. Skipping creation."
         return
     }
@@ -145,13 +145,13 @@ def prune_snapshots [] {
     }
 
     # Calculate time cutoff
-    let time_cutoff = ((date now) - ($env.STATE.retention_days * 24hr) | into int)
+    let time_cutoff = ((date now) - (((($env.STATE.retention_days * 24hr) * 1ms) * 1ms) * 1ms) | into int)
 
     # Get snapshots with creation timestamps
     let snapshots = (zfs list -p -H -t snapshot -o name,creation -S creation -r $env.STATE.pool | lines | split column " " name creation)
 
     # Process each snapshot
-    let results = ($snapshots | each { |snapshot|
+    let results = ($snapshots | each { | snapshot|
         # Filter for our auto-generated snapshots
         if not ($snapshot.name | str contains $"@($SNAP_NAME_PREFIX)") {
             false
@@ -178,7 +178,7 @@ def prune_snapshots [] {
     })
 
     # Update state if any pruning failed
-    if ($results | any { |result| $result == true }) {
+    if ($results | any { | result| $result == true }) {
         $env.STATE = ($env.STATE | upsert prune_failed true)
     }
 }

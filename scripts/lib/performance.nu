@@ -130,7 +130,7 @@ export def store_performance_metrics [metrics: record] {
     # Append metrics to file
     try {
         $metrics | to json | save --append $metrics_file
-    } catch { |err|
+    } catch { | err|
         error $"Failed to store performance metrics: ($err)" --context "performance"
     }
 }
@@ -148,7 +148,7 @@ export def get_performance_stats [metrics_file: string = "logs/performance.json"
     }
 
     try {
-        let metrics = (open $metrics_file | lines | each { |line| $line | from json })
+        let metrics = (open $metrics_file | lines | each { | line| $line | from json })
 
         if ($metrics | length) == 0 {
             return {
@@ -176,7 +176,7 @@ export def get_performance_stats [metrics_file: string = "logs/performance.json"
             memory_usage: { average: $memory_average, peak: $memory_peak }
             cpu_usage: { average: $cpu_average, peak: $cpu_peak }
         }
-    } catch { |err|
+    } catch { | err|
         error $"Failed to get performance stats: ($err)" --context "performance"
         {
             total_operations: 0
@@ -195,7 +195,7 @@ export def get_operation_performance [operation: string, metrics_file: string = 
     }
 
     try {
-        let metrics = (open $metrics_file | lines | each { |line| $line | from json })
+        let metrics = (open $metrics_file | lines | each { | line| $line | from json })
         let operation_metrics = ($metrics | where operation == $operation)
 
         if ($operation_metrics | length) == 0 {
@@ -217,7 +217,7 @@ export def get_operation_performance [operation: string, metrics_file: string = 
             cpu: { average: $average_cpu }
             recent_runs: ($operation_metrics | last 5)
         }
-    } catch { |err|
+    } catch { | err|
         error $"Failed to get operation performance: ($err)" --context "performance"
         null
     }
@@ -230,19 +230,19 @@ export def clean_performance_metrics [days: int = 30, metrics_file: string = "lo
     }
 
     try {
-        let cutoff_date = ((date now) - ($days * 24hr))
-        let metrics = (open $metrics_file | lines | each { |line| $line | from json })
-        let recent_metrics = ($metrics | where { |metric|
+        let cutoff_date = ((date now) - (((($days * 24hr) * 1ms) * 1ms) * 1ms))
+        let metrics = (open $metrics_file | lines | each { | line| $line | from json })
+        let recent_metrics = ($metrics | where { | metric|
             let metric_date = ($metric.start_time | into datetime)
             $metric_date > $cutoff_date
         })
 
         # Save filtered metrics back
-        $recent_metrics | each { |metric| $metric | to json } | save $metrics_file
+        $recent_metrics | each { | metric| $metric | to json } | save $metrics_file
 
         let removed_count = ($metrics | length) - ($recent_metrics | length)
         info $"Cleaned performance metrics: ($removed_count) metrics removed" --context "performance"
-    } catch { |err|
+    } catch { | err|
         error $"Failed to clean performance metrics: ($err)" --context "performance"
     }
 }
@@ -307,7 +307,7 @@ export def generate_performance_report [output_file: string = "logs/performance-
         $report | to json | save $output_file
         info $"Performance report generated: ($output_file)" --context "performance"
         $report
-    } catch { |err|
+    } catch { | err|
         error $"Failed to generate performance report: ($err)" --context "performance"
         null
     }

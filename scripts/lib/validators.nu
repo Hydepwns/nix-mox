@@ -8,8 +8,8 @@ use platform.nu *
 
 # Core validation pipeline function
 export def validate_pipeline [...validators: closure] {
-    |input|
-    $validators | reduce --fold $input { |validator, acc|
+    | input|
+    $validators | reduce --fold $input { | validator, acc|
         $acc | do $validator
     }
 }
@@ -30,7 +30,7 @@ export def optional_validator [validator: closure] {
 
 # Quiet command validator (no error logging for optional components)
 export def validate_command_quiet [cmd: string] {
-    |input|
+    | input|
     # Input type validation
     if ($cmd | is-empty) {
         return (validation_result false "Command name cannot be empty" {})
@@ -52,7 +52,7 @@ export def validate_command_quiet [cmd: string] {
 
 # Quiet file validator (no error logging for optional components)  
 export def validate_file_quiet [path: string] {
-    |input|
+    | input|
     # Input type validation
     if ($path | is-empty) {
         return (validation_result false "File path cannot be empty" {})
@@ -74,7 +74,7 @@ export def validate_file_quiet [path: string] {
 
 # Quiet directory validator (no error logging for optional components)
 export def validate_directory_quiet [path: string] {
-    |input|
+    | input|
     # Input type validation
     if ($path | is-empty) {
         return (validation_result false "Directory path cannot be empty" {})
@@ -96,7 +96,7 @@ export def validate_directory_quiet [path: string] {
 
 # Resilient network validator with timeout handling
 export def validate_network_resilient [host: string = "8.8.8.8", timeout: int = 3] {
-    |input|
+    | input|
     # Input type validation
     if ($host | is-empty) {
         return (validation_result false "Host cannot be empty" {})
@@ -153,7 +153,7 @@ export def create_error [message: string, context: string, severity: string, cod
 
 # Command existence validator
 export def validate_command [cmd: string] {
-    |input|
+    | input|
     # Input type validation
     if ($cmd | is-empty) {
         error "Command name cannot be empty" --context "validator"
@@ -184,7 +184,7 @@ export def validate_command [cmd: string] {
 
 # File existence validator
 export def validate_file [path: string, --required = true] {
-    |input|
+    | input|
     # Input type validation
     if ($path | is-empty) {
         let msg = "File path cannot be empty"
@@ -223,7 +223,7 @@ export def validate_file [path: string, --required = true] {
 
 # Directory existence validator
 export def validate_directory [path: string] {
-    |input|
+    | input|
     # Input type validation
     if ($path | is-empty) {
         error "Directory path cannot be empty" --context "validator"
@@ -250,7 +250,7 @@ export def validate_directory [path: string] {
 
 # Disk space validator
 export def validate_disk_space [threshold: int = 80] {
-    |input|
+    | input|
     # Input type validation
     if ($threshold | describe) != "int" {
         error $"Threshold must be an integer, got ($threshold | describe)" --context "validator"
@@ -262,7 +262,7 @@ export def validate_disk_space [threshold: int = 80] {
     }
     
     try {
-        let df_output = (^df -h / | lines | skip 1 | get 0 | split row -r '\s+')
+        let df_output = (^df -h / | lines | skip 1 | first | split row -r '\s+')
         let usage = ($df_output | get 4 | str replace "%" "" | into int)
         if $usage < $threshold {
             let usage_msg = $"Disk usage ($usage)% is below threshold ($threshold)%"
@@ -273,7 +273,7 @@ export def validate_disk_space [threshold: int = 80] {
             warn $usage_msg --context "validator"
             validation_result false $"Disk space critical: ($usage)%" {}
         }
-    } catch { |err|
+    } catch { | err|
         error $"Failed to check disk space: ($err.msg)" --context "validator"
         validation_result false "Disk space check failed" {}
     }
@@ -281,7 +281,7 @@ export def validate_disk_space [threshold: int = 80] {
 
 # Memory usage validator
 export def validate_memory [threshold: int = 80] {
-    |input|
+    | input|
     # Input type validation
     if ($threshold | describe) != "int" {
         error $"Threshold must be an integer, got ($threshold | describe)" --context "validator"
@@ -305,7 +305,7 @@ export def validate_memory [threshold: int = 80] {
             warn $mem_msg --context "validator" 
             validation_result false $"Memory usage high: ($usage_percent)%" {}
         }
-    } catch { |err|
+    } catch { | err|
         error $"Failed to check memory: ($err.msg)" --context "validator"
         validation_result false "Memory check failed" {}
     }
@@ -313,7 +313,7 @@ export def validate_memory [threshold: int = 80] {
 
 # Network connectivity validator
 export def validate_network [host: string = "8.8.8.8"] {
-    |input|
+    | input|
     # Input type validation
     if ($host | is-empty) {
         error "Host cannot be empty" --context "validator"
@@ -337,7 +337,7 @@ export def validate_network [host: string = "8.8.8.8"] {
             error $"Network connectivity to ($host) failed" --context "validator"
             validation_result false $"Network connectivity failed" {}
         }
-    } catch { |err|
+    } catch { | err|
         error $"Network check failed: ($err.msg)" --context "validator"
         validation_result false "Network check error" {}
     }
@@ -345,7 +345,7 @@ export def validate_network [host: string = "8.8.8.8"] {
 
 # Nix store validator
 export def validate_nix_store [] {
-    |input|
+    | input|
     try {
         let result = (nix --extra-experimental-features "nix-command" store ping | complete)
         if $result.exit_code == 0 {
@@ -355,7 +355,7 @@ export def validate_nix_store [] {
             error "Nix store is not accessible" --context "validator"
             validation_result false "Nix store inaccessible" {}
         }
-    } catch { |err|
+    } catch { | err|
         error $"Nix store check failed: ($err.msg)" --context "validator"
         validation_result false "Nix store check error" {}
     }
@@ -363,7 +363,7 @@ export def validate_nix_store [] {
 
 # Flake syntax validator
 export def validate_flake_syntax [flake_path: string = "."] {
-    |input|
+    | input|
     # Input type validation
     if ($flake_path | is-empty) {
         error "Flake path cannot be empty" --context "validator"
@@ -387,7 +387,7 @@ export def validate_flake_syntax [flake_path: string = "."] {
             error $"Flake syntax invalid in ($flake_path): ($result.stderr)" --context "validator"
             validation_result false $"Flake syntax error: ($result.stderr)" {}
         }
-    } catch { |err|
+    } catch { | err|
         error $"Flake syntax check failed: ($err.msg)" --context "validator"
         validation_result false "Flake syntax check error" {}
     }
@@ -395,7 +395,7 @@ export def validate_flake_syntax [flake_path: string = "."] {
 
 # Platform validator
 export def validate_platform [expected_platforms: list<string>] {
-    |input|
+    | input|
     # Input type validation
     if ($expected_platforms | describe) != "list<string>" {
         error $"Expected platforms must be a list of strings, got ($expected_platforms | describe)" --context "validator"
@@ -420,7 +420,7 @@ export def validate_platform [expected_platforms: list<string>] {
 
 # Root privileges validator
 export def validate_root_required [] {
-    |input|
+    | input|
     let current_user = (whoami | str trim)
     if $current_user == "root" {
         success "Running with required root privileges" --context "validator"
@@ -433,7 +433,7 @@ export def validate_root_required [] {
 
 # Environment variable validator
 export def validate_env_var [var_name: string, --required = true] {
-    |input|
+    | input|
     # Input type validation
     if ($var_name | is-empty) {
         let msg = "Environment variable name cannot be empty"
@@ -500,13 +500,13 @@ export def run_validations [
     
     info $"Running ($validations | length) validations..." --context $context
     
-    let results = ($validations | each { |validation|
+    let results = ($validations | each { | validation|
         try {
             let validator = ($validation.validator)
             let result = (null | do $validator)
             # Add name from validation to result
             $result | merge {name: $validation.name}
-        } catch { |err|
+        } catch { | err|
             {
                 success: false,
                 message: $"Validation error: ($err.msg)",
@@ -515,7 +515,7 @@ export def run_validations [
         }
     })
     
-    let all_success = ($results | all { |result| $result.success })
+    let all_success = ($results | all { | result| $result.success })
     
     let summary = {
         success: $all_success,
@@ -623,7 +623,7 @@ export def validate_file_enhanced [
                 } else {
                     validation_result false $"File too large: ($size_mb)MB, max allowed ($max_size_mb)MB" {}
                 }
-            } catch { |err|
+            } catch { | err|
                 create_error $"Failed to check file size: ($err.msg)" "filesystem" "LOW" "E_SIZE_CHECK_FAILED" {path: $path}
             }
         })
@@ -653,7 +653,7 @@ export def validate_directory_enhanced [
         if $min_space_mb > 0 {
             $validations = ($validations | append {||
                 try {
-                    let df_result = (^df $path | lines | skip 1 | get 0 | split row -r '\s+')
+                    let df_result = (^df $path | lines | skip 1 | first | split row -r '\s+')
                     let available_kb = ($df_result | get 3 | into int)
                     let available_mb = $available_kb / 1024
                     
@@ -662,7 +662,7 @@ export def validate_directory_enhanced [
                     } else {
                         validation_result false $"Directory has insufficient space: ($available_mb)MB available, need ($min_space_mb)MB" {}
                     }
-                } catch { |err|
+                } catch { | err|
                     validation_result false $"Failed to check directory space: ($err.msg)" {}
                 }
             })
@@ -713,8 +713,8 @@ export def validate_system_resources [
             memory: $memory_result
         }
     } else {
-        let failures = ([$disk_result, $memory_result] | where {|r| not $r.success})
-        let error_msg = ($failures | each {|r| $r.message} | str join "; ")
+        let failures = ([$disk_result, $memory_result] | where {| r| not $r.success})
+        let error_msg = ($failures | each {| r| $r.message} | str join "; ")
         validation_result false $"System resource validation failed: ($error_msg)" {
             disk: $disk_result,
             memory: $memory_result
@@ -738,7 +738,7 @@ export def validate_system_enhanced [
             } else {
                 validation_result false $"System load too high: ($load_avg), max allowed ($max_load_average)" {}
             }
-        } catch { |err|
+        } catch { | err|
             validation_result false $"Failed to check system load: ($err.msg)" {}
         }
     } else {
@@ -772,7 +772,7 @@ export def run_validations_enhanced [
     
     info $"Running ($validations | length) enhanced validations..." --context $context
     
-    let results = ($validations | each { |validation|
+    let results = ($validations | each { | validation|
         let validator_name = ($validation | get name? | default "unnamed")
         let validator_func = ($validation | get validator? | default null)
         
@@ -792,7 +792,7 @@ export def run_validations_enhanced [
                             result: $result
                         }
                     }
-                } catch { |err|
+                } catch { | err|
                     create_error $"Validator ($validator_name) threw exception: ($err.msg)" "validation" "HIGH" "E_VALIDATOR_EXCEPTION" {
                         validator: $validator_name,
                         error: $err.msg
@@ -817,14 +817,14 @@ export def run_validations_enhanced [
         }
     })
     
-    let successes = ($results | where {|r| is_success $r})
-    let failures = ($results | where {|r| is_error $r})
+    let successes = ($results | where {| r| is_success $r})
+    let failures = ($results | where {| r| is_error $r})
     let passed_count = ($successes | length)
     let failed_count = ($failures | length)
     let total_count = ($results | length)
     
     # Log all errors
-    $failures | each {|failure| log_error $failure $context}
+    $failures | each {| failure| log_error $failure $context}
     
     let summary = {
         total: $total_count,
@@ -838,7 +838,7 @@ export def run_validations_enhanced [
         success $"All ($total_count) enhanced validations passed!" --context $context
         validation_result true "All validations passed" $summary
     } else {
-        let failure_summary = ($failures | each {|f| 
+        let failure_summary = ($failures | each {| f| 
             $"($f.message? | default 'validation failed')"
         } | str join "; ")
         
@@ -879,7 +879,7 @@ export def gaming_setup_validations [] {
 
 # Port validator
 export def validate_port [port: int] {
-    |input|
+    | input|
     # Input type validation
     if ($port | describe) != "int" {
         error $"Port must be an integer, got ($port | describe)" --context "validator"
@@ -895,7 +895,7 @@ export def validate_port [port: int] {
 
 # URL validator
 export def validate_url [url: string] {
-    |input|
+    | input|
     # Input type validation
     if ($url | is-empty) {
         error "URL cannot be empty" --context "validator"
@@ -971,7 +971,7 @@ export def validate_permission [path: string, permission: string] {
                 }
             }
         }
-    } catch { |err|
+    } catch { | err|
         error $"Failed to check permission: ($err.msg)" --context "validator"
         validation_result false "Permission check failed" {}
     }
@@ -989,12 +989,12 @@ export def compose_validators [validators: list<closure>] {
         return {|| validation_result true "No validators to run" {}}
     }
     
-    {|input|
-        let results = ($validators | each { |validator|
+    {| input|
+        let results = ($validators | each { | validator|
             $input | do $validator
         })
         
-        let all_success = ($results | all { |result| $result.success })
+        let all_success = ($results | all { | result| $result.success })
         let failed_results = ($results | where success == false)
         
         if $all_success {

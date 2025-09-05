@@ -20,7 +20,7 @@ def main [] {
             "--dry-run" => { $env.DRY_RUN = true }
             "--help" | "-h" => { usage }
             _ => {
-                error $"Unknown option: ($arg)" "uninstall"
+                error  $"Unknown option: ($arg)" --context "uninstall"
                 usage
             }
         }
@@ -33,7 +33,7 @@ def main [] {
     }
 
     if not ($MANIFEST_FILE | path exists) {
-        warn $"Install manifest not found at ($MANIFEST_FILE). Nothing to do." "uninstall"
+        warn  $"Install manifest not found at ($MANIFEST_FILE). Nothing to do." --context "uninstall"
         exit 0
     }
 
@@ -61,25 +61,25 @@ def main [] {
 
         if ($item | path exists) {
             if ($item | path type) == "file" {
-                info $"Removing file: ($item)" "uninstall"
+                info  $"Removing file: ($item)" --context "uninstall"
                 rm $item
             } else if ($item | path type) == "dir" {
                 # Attempt to remove directory, will only succeed if empty
                 try {
                     rmdir $item
-                    info $"Removing empty directory: ($item)" "uninstall"
+                    info  $"Removing empty directory: ($item)" --context "uninstall"
                 } catch {
-                    warn $"Directory not empty or does not exist, skipping: ($item)" "uninstall"
+                    warn  $"Directory not empty or does not exist, skipping: ($item)" --context "uninstall"
                 }
             }
         } else {
-            warn $"Item not found, skipping: ($item)" "uninstall"
+            warn  $"Item not found, skipping: ($item)" --context "uninstall"
         }
     }
 
     # Finally, remove the manifest file itself if not in dry run
     if not $env.DRY_RUN {
-        info $"Removing manifest file: ($MANIFEST_FILE)" "uninstall"
+        info  $"Removing manifest file: ($MANIFEST_FILE)" --context "uninstall"
         rm $MANIFEST_FILE
         # Try to remove the parent dir, will fail if not empty (which is fine)
         try {

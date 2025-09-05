@@ -33,7 +33,7 @@ def main [] {
                 $env.STATE = ($env.STATE | upsert dry_run true)
             }
             "--windows-dir" => {
-                let idx = ($args | find $arg | get 0)
+                let idx = ($args | find $arg | first)
                 let new_dir = ($args | get ($idx + 1))
                 if not ($new_dir | str starts-with "/") {
                     error "Windows path must be absolute." "install"
@@ -45,7 +45,7 @@ def main [] {
                 usage
             }
             _ => {
-                error $"Unknown option: ($arg)" "install"
+                error  $"Unknown option: ($arg)" --context "install"
                 usage
             }
         }
@@ -68,7 +68,7 @@ def main [] {
     }
 
     # 1. Install Linux scripts
-    info $"Installing Linux scripts to ($INSTALL_DIR)..." "install"
+    info  $"Installing Linux scripts to ($INSTALL_DIR)..." --context "install"
     for script in (ls *.nu) {
         if ($script.name == "_common.nu" or $script.name == "install.nu" or $script.name == "uninstall.nu") {
             continue
@@ -78,7 +78,7 @@ def main [] {
         if $env.STATE.dry_run {
             dry_run $"Would install '($script.name)' to '($dest_path)'" "install"
         } else {
-            info $"Installing '($script.name)' to '($dest_path)'..." "install"
+            info  $"Installing '($script.name)' to '($dest_path)'..." --context "install"
             cp $script.name $dest_path
             chmod 755 $dest_path
             $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $dest_path))
@@ -87,7 +87,7 @@ def main [] {
 
     # 2. Copy Windows scripts if requested
     if $env.STATE.windows_dir != "" {
-        info $"Copying Windows scripts to ($env.STATE.windows_dir)..." "install"
+        info  $"Copying Windows scripts to ($env.STATE.windows_dir)..." --context "install"
         let win_scripts_src = "../windows"
 
         if $env.STATE.dry_run {
@@ -98,7 +98,7 @@ def main [] {
 
             for f in (ls ($win_scripts_src + "/*")) {
                 let dest_file = $env.STATE.windows_dir + "/" + ($f.name | path basename)
-                info $"Copying '($f.name)' to '($dest_file)'..." "install"
+                info  $"Copying '($f.name)' to '($dest_file)'..." --context "install"
                 cp $f.name $dest_file
                 $env.STATE = ($env.STATE | upsert created_files ($env.STATE.created_files | append $dest_file))
             }
@@ -109,7 +109,7 @@ def main [] {
         dry_run "Dry run complete." "install"
     } else {
         success "Installation complete." "install"
-        info $"An install manifest has been created at: ($MANIFEST_FILE)" "install"
+        info  $"An install manifest has been created at: ($MANIFEST_FILE)" --context "install"
         info "Use uninstall.nu to remove all installed files." "install"
     }
 
@@ -128,15 +128,15 @@ def cleanup [created_files: list] {
     for item in ($created_files | reverse) {
         if ($item | path exists) {
             if ($item | path type) == "file" {
-                warn $"Removing file: ($item)" "install"
+                warn  $"Removing file: ($item)" --context "install"
                 rm $item
             } else if ($item | path type) == "dir" {
                 # Only remove dir if it's empty
                 try {
                     rmdir $item
-                    warn $"Removing directory: ($item)" "install"
+                    warn  $"Removing directory: ($item)" --context "install"
                 } catch {
-                    warn $"Directory not empty, skipping removal: ($item)" "install"
+                    warn  $"Directory not empty, skipping removal: ($item)" --context "install"
                 }
             }
         }
