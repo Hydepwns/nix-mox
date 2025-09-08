@@ -68,7 +68,7 @@ jobs:
           nix --extra-experimental-features "nix-command flakes" develop --command nu scripts/testing/generate-coverage.nu --output coverage-tmp/lcov.info
           
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           file: coverage-tmp/lcov.info
           fail_ci_if_error: false
