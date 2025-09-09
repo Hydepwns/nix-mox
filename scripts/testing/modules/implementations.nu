@@ -38,11 +38,11 @@ export def test_validation_basic [] {
     info "Testing basic validation" --context "test"
     
     # Test validator functions
-    let platform_result = (validate_command_available "nix")
-    assert $platform_result
+    let platform_result = (null | validate_command "nix")
+    assert $platform_result.success
     
-    let file_result = (validate_file_exists "flake.nix")
-    assert $file_result
+    let file_result = (null | validate_file "flake.nix")
+    assert $file_result.success
     
     { success: true, message: "basic validation test passed" }
 }
@@ -63,8 +63,8 @@ export def test_validation_platform [] {
     
     # Test platform detection
     let platform = (get_platform)
-    assert (($platform | str length) > 0) "Platform should be detected"
-    assert ($platform in ["linux", "macos", "windows"]) "Platform should be recognized"
+    assert (($platform.normalized | str length) > 0) "Platform should be detected"
+    assert ($platform.normalized in ["linux", "macos", "windows"]) "Platform should be recognized"
     
     { success: true, message: "platform validation test passed" }
 }
@@ -103,7 +103,7 @@ export def test_platform_detection [] {
     info "Testing platform detection" --context "test"
     
     let platform = (get_platform)
-    assert (($platform | str length) > 0) "Platform should be detected"
+    assert (($platform.normalized | str length) > 0) "Platform should be detected"
     
     { success: true, message: "platform detection test passed" }
 }
@@ -113,12 +113,12 @@ export def test_validation_functions [] {
     info "Testing validation functions" --context "test"
     
     # Test command validation
-    let nix_available = (validate_command_available "nix")
-    assert $nix_available "Nix command should be available"
+    let nix_available = (null | validate_command "nix")
+    assert $nix_available.success "Nix command should be available"
     
     # Test file validation
-    let flake_exists = (validate_file_exists "flake.nix")
-    assert $flake_exists "flake.nix should exist"
+    let flake_exists = (null | validate_file "flake.nix")
+    assert $flake_exists.success "flake.nix should exist"
     
     { success: true, message: "validation functions test passed" }
 }
@@ -265,8 +265,8 @@ export def test_validation_integration [] {
     info "Testing validation integration" --context "test"
     
     # Test integrated validation workflow
-    let validation_result = (validate_command_available "nix")
-    assert $validation_result "Validation integration should work"
+    let validation_result = (null | validate_command "nix")
+    assert $validation_result.success "Validation integration should work"
     
     { success: true, message: "validation integration test passed" }
 }
@@ -327,7 +327,7 @@ export def test_platform_detection_comprehensive [] {
     info "Testing comprehensive platform detection" --context "test"
     
     let platform = (get_platform)
-    assert ($platform in ["linux", "macos", "windows"]) "Platform should be detected correctly"
+    assert ($platform.normalized in ["linux", "macos", "windows"]) "Platform should be detected correctly"
     
     { success: true, message: "comprehensive platform detection test passed" }
 }
@@ -338,7 +338,7 @@ export def test_platform_operations_comprehensive [] {
     
     # Test platform-specific operations
     let platform = (get_platform)
-    assert (($platform | str length) > 0) "Platform operations should work"
+    assert (($platform.normalized | str length) > 0) "Platform operations should work"
     
     { success: true, message: "comprehensive platform operations test passed" }
 }
