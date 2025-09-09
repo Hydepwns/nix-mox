@@ -374,7 +374,7 @@ export def test_platform_environment_validation [] {
     mut env_vars_available = 0
     
     for var in $required_env_vars {
-        if ($env | get $ -ovar | is-not-empty) {
+        if ($env | get $var | is-not-empty) {
             $env_vars_available += 1
         }
     }
@@ -622,7 +622,3 @@ export def run_platform_comprehensive_tests [] {
     return true
 }
 
-# If script is run directly, run tests
-if ($env.PWD | str contains "scripts/testing/platform") {
-    run_platform_comprehensive_tests
-}
