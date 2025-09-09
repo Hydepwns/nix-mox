@@ -17,7 +17,7 @@ export def validate_wayland_config [] {
     # Check if Wayland is enabled for GDM
     let gdm_wayland_check = (try {
         let result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.services.xserver.displayManager.gdm.wayland --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.services.xserver.displayManager.gdm.wayland --json
             | complete
         )
         
@@ -69,12 +69,12 @@ export def validate_gpu_drivers [] {
     # Check NVIDIA configuration
     let nvidia_check = (try {
         let nvidia_enable = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.hardware.nvidia.modesetting.enable --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.hardware.nvidia.modesetting.enable --json
             | complete
         )
         
         let blacklist = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.boot.blacklistedKernelModules --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.boot.blacklistedKernelModules --json
             | complete
         )
         
@@ -109,7 +109,7 @@ export def validate_gpu_drivers [] {
     # Check graphics hardware support
     let graphics_check = (try {
         let result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.hardware.graphics.enable --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.hardware.graphics.enable --json
             | complete
         )
         
@@ -153,7 +153,7 @@ export def validate_display_dependencies [] {
     # Check for required packages
     let packages_check = (try {
         let result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.environment.systemPackages --apply 'builtins.map (p: p.name or "unknown")'
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.environment.systemPackages --apply 'builtins.map (p: p.name or "unknown")'
             | complete
         )
         
@@ -196,7 +196,7 @@ export def validate_config_syntax [] {
     let syntax_check = (try {
         print "  Testing full configuration evaluation..."
         let result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.system.build.toplevel.drvPath
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.system.build.toplevel.drvPath
             | complete
         )
         

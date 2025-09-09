@@ -17,7 +17,7 @@ export def validate_stage1_boot [] {
     # Check initrd modules
     let initrd_check = (try {
         let config_eval = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.boot.initrd.kernelModules --json 
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.boot.initrd.kernelModules --json 
             | complete
         )
         
@@ -51,7 +51,7 @@ export def validate_stage1_boot [] {
     let required_modules = ["nvidia" "nvidia_modeset" "nvidia_drm" "i915" "amdgpu"]
     let boot_modules_check = (try {
         let config_eval = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.boot.kernelModules --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.boot.kernelModules --json
             | complete
         )
         
@@ -85,7 +85,7 @@ export def validate_stage1_boot [] {
     # Check boot.loader configuration
     let bootloader_check = (try {
         let config_eval = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.boot.loader.systemd-boot.enable --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.boot.loader.systemd-boot.enable --json
             | complete
         )
         
@@ -117,7 +117,7 @@ export def validate_stage1_boot [] {
     let stage1_build_check = (try {
         print "  Testing stage-1 build (this may take a moment)..."
         let build_result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix build .#nixosConfigurations.nixos.config.system.build.initialRamdisk --dry-run
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" build .#nixosConfigurations.nixos.config.system.build.initialRamdisk --dry-run
             | complete
         )
         
@@ -158,19 +158,19 @@ export def validate_display_manager [] {
     let dm_check = (try {
         # Check for SDDM
         let sddm_result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.services.xserver.displayManager.sddm.enable --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.services.xserver.displayManager.sddm.enable --json
             | complete
         )
         
         # Check for GDM
         let gdm_result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.services.xserver.displayManager.gdm.enable --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.services.xserver.displayManager.gdm.enable --json
             | complete
         )
         
         # Check for LightDM
         let lightdm_result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.services.xserver.displayManager.lightdm.enable --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.services.xserver.displayManager.lightdm.enable --json
             | complete
         )
         
@@ -210,7 +210,7 @@ export def validate_display_manager [] {
     # Check if X11 is enabled
     let xserver_check = (try {
         let result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.services.xserver.enable --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.services.xserver.enable --json
             | complete
         )
         
@@ -255,13 +255,13 @@ export def validate_greeter_config [] {
     let desktop_check = (try {
         # Check for Plasma
         let plasma_result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.services.xserver.desktopManager.plasma6.enable --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.services.xserver.desktopManager.plasma6.enable --json
             | complete
         )
         
         # Check for GNOME
         let gnome_result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.services.xserver.desktopManager.gnome.enable --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.services.xserver.desktopManager.gnome.enable --json
             | complete
         )
         
@@ -291,7 +291,7 @@ export def validate_greeter_config [] {
     # Check for autologin (which can cause issues)
     let autologin_check = (try {
         let result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.services.xserver.displayManager.autoLogin.enable --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.services.xserver.displayManager.autoLogin.enable --json
             | complete
         )
         
@@ -335,7 +335,7 @@ export def validate_xserver_config [] {
     # Check video drivers
     let video_drivers_check = (try {
         let result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.services.xserver.videoDrivers --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.services.xserver.videoDrivers --json
             | complete
         )
         
@@ -367,7 +367,7 @@ export def validate_xserver_config [] {
     # Check for conflicting drivers
     let conflict_check = (try {
         let result = (
-            INCLUDE_NIXOS_CONFIGS=1 ^nix eval .#nixosConfigurations.nixos.config.services.xserver.videoDrivers --json
+            INCLUDE_NIXOS_CONFIGS=1 ^nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.nixos.config.services.xserver.videoDrivers --json
             | complete
         )
         
